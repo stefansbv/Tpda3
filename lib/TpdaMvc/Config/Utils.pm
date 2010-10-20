@@ -48,6 +48,35 @@ sub load {
     return \%config;
 }
 
+=head2 find_subdirs
+
+Find subdirectories of a directory, not recursively
+
+=cut
+
+sub find_subdirs {
+    my ($self, $dir) = @_;
+
+    # Find all the sub directories of a given directory
+    my $rule = File::Find::Rule->new
+        ->mindepth(1)
+        ->maxdepth(1);
+    # Ignore git
+    $rule->or(
+        $rule->new
+            ->directory
+            ->name('.git')
+            ->prune
+            ->discard,
+        $rule->new);
+
+    my @subdirs = $rule->directory->in( $dir );
+
+    my @dbs = map { basename($_); } @subdirs;
+
+    return \@dbs;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

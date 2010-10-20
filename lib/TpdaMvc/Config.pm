@@ -58,6 +58,11 @@ sub _new_instance {
 
     # Load configuration and create accessors
     $self->_config_main_load($args);
+    if ( $args->{cfgname} ) {
+        # If no config name don't bother to load this
+        $self->_config_conn_load($args);
+        # $self->_config_other_load();
+    }
 
     return $self;
 }
@@ -106,10 +111,58 @@ sub _config_main_load {
     $msg   .= qq{\n  from '$main_qfn'!};
     my $maincfg = $self->_config_file_load($main_qfn, $msg);
 
-    print Dumper( $maincfg );
-    $self->_make_accessors($maincfg);
+    # Misc
+    my $main_hr = {
+        cfgpath => $configpath,
+        contmpl => catdir( $configpath, $maincfg->{path}{conntmpl} ),
+        conpath => catdir( $configpath, $maincfg->{path}{connections} ),
+        confile => $maincfg->{configs}{connection},
+        cfother => $maincfg->{other},
+    };
+
+    # Setup when GUI runtime
+    if ( $args->{cfgname} ) {
+        $main_hr->{cfgname} = $args->{cfgname};
+    }
+
+    $self->_make_accessors($main_hr);
 
     return $maincfg;
+}
+
+=head2 _config_conn_load
+
+Initialize the runtime connection configuration file name and path and
+some miscellaneous info from the main configuration file.
+
+The B<connection> configuration is special.  More than one connection
+configuration is allowed and the name of the used connection is known
+only at runtime from the I<cfgname> argument.
+
+Load the connection configuration file.  This is treated separately
+because the path is only known at runtime.
+
+=cut
+
+sub _config_conn_load {
+    my ( $self, $args ) = @_;
+
+    # Connection
+    my $cfgconn_f = $self->conn_cfg_filename($self->cfgname);
+
+    my $msg = qq{\nConfiguration error, to fix, run\n\n};
+    $msg   .= qq{  tpda-mvc -init };
+    $msg   .= $self->cfgname . qq{\n\n};
+    $msg   .= qq{then edit: $cfgconn_f\n};
+    my $cfg_data = $self->_config_file_load($cfgconn_f, $msg);
+
+    $cfg_data->{cfgconnf} = $cfgconn_f; # Accessor for connection file
+    $cfg_data->{conninfo}{user} = $args->{user};
+    $cfg_data->{conninfo}{pass} = $args->{pass};
+
+    $self->_make_accessors($cfg_data);
+
+    return;
 }
 
 =head2 _config_file_load
@@ -129,6 +182,41 @@ sub _config_file_load {
     }
 
     return TpdaMvc::Config::Utils->load($conf_file);
+}
+
+=head2 conn_cfg_filename
+
+Return full path to connection file.
+
+=cut
+
+sub conn_cfg_filename {
+    my ($self, $cfgname) = @_;
+
+    return catfile($self->conpath, $cfgname, 'etc', $self->confile );
+}
+
+=head2 list_configs
+
+List all existing connection configurations.
+
+=cut
+
+sub list_configs {
+    my $self = shift;
+
+    my $conpath = $self->conpath;
+    my $conn_list = TpdaMvc::Config::Utils->find_subdirs($conpath);
+
+    print "Connection configurations:\n";
+    foreach my $cfg_name ( @{$conn_list} ) {
+        my $ccfn = $self->conn_cfg_filename($cfg_name);
+        # If connection file exist than list as connection name
+        if (-f $ccfn) {
+            print "  > $cfg_name\n";
+        }
+    }
+    print " in '$conpath'\n";
 }
 
 =head1 AUTHOR
