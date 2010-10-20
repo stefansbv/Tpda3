@@ -1,0 +1,65 @@
+# Perl Database Query Manager
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+toolbar:
+  tb_cn:
+    id:      1001
+    type:    item_check
+    icon:    connectyes16
+    tooltip: Connect/disconnect
+    help:    Connect/disconnect from the database
+    sep:     after
+  tb_sv:
+    id:      1002
+    type:    item_normal
+    icon:    filesave16
+    tooltip: Save
+    help:    Save query definition file
+    sep:     none
+  tb_rf:
+    id:      1003
+    type:    item_normal
+    icon:    actreload16
+    tooltip: Reload
+    help:    Refresh data
+    sep:     after
+  tb_ad:
+    id:      1004
+    type:    item_normal
+    icon:    actitemadd16
+    tooltip: Add report
+    help:    Create new query definition file
+    sep:     none
+  tb_rm:
+    id:      1005
+    type:    item_normal
+    icon:    actitemdelete16
+    tooltip: Remove
+    help:    Remove query definition file
+    sep:     none
+  tb_ed:
+    id:      1006
+    type:    item_check
+    icon:    edit16
+    tooltip: Edit
+    help:    Edit mode on/off
+    sep:     after
+  tb_ls:
+    id:      1007
+    type:    item_list
+    sep:     after
+  tb_go:
+    id:      1008
+    type:    item_normal
+    icon:    navforward16
+    tooltip: Run
+    help:    Run export
+    sep:     after
+  tb_qt:
+    id:      1009
+    type:    item_normal
+    icon:    actexit16
+    tooltip: Quit
+    help:    Quit the application
+    sep:     none

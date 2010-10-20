@@ -1,0 +1,9 @@
+# Lines starting with '#' are considered comments.
+Makefile
+META.yml
+pm_to_blib
+blib/
+inc/
+*.tmp
+*~
+*.sqlite
