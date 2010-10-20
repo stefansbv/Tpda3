@@ -8,6 +8,7 @@ use Data::Dumper;
 use File::HomeDir;
 use File::UserConfig;
 use File::Spec::Functions;
+use File::Basename;
 
 use TpdaMvc::Config::Utils;
 
@@ -25,7 +26,6 @@ Version 0.10
 
 our $VERSION = '0.10';
 
-
 =head1 SYNOPSIS
 
 Reads configuration files in I<Config::General> format and create a
@@ -37,7 +37,6 @@ automatically create methods from the keys of the hash.
     my $cfg = TpdaMvc::Config->instance($args); # first time init
 
     my $cfg = TpdaMvc::Config->instance(); # later, in other modules
-
 
 =head1 METHODS
 
@@ -61,7 +60,7 @@ sub _new_instance {
     if ( $args->{cfgname} ) {
         # If no config name don't bother to load this
         $self->_config_conn_load($args);
-        # $self->_config_other_load();
+        $self->_config_other_load();
     }
 
     return $self;
@@ -165,10 +164,39 @@ sub _config_conn_load {
     return;
 }
 
+=head2 _config_other_load
+
+Process the main configuration file and automaticaly load all the
+other defined configuration files.  That means if we add a YAML
+configuration file to the tree, all defined values should be available
+at restart.
+
+=cut
+
+sub _config_other_load {
+    my $self = shift;
+
+    foreach my $sec ( keys %{ $self->cfother } ) {
+        next if $sec eq 'connection';
+
+        my $cfg_file = catfile( $self->cfgpath, $self->cfother->{$sec} );
+        my $msg = qq{\nConfiguration error: \n Can't read configurations};
+        $msg   .= qq{\n  from '$cfg_file'!};
+        my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+
+        $self->_make_accessors($cfg_data);
+    }
+
+    return;
+}
+
 =head2 _config_file_load
 
-Load a generic config file and return the Perl data structure.  Die,
+Load a config file and return the Perl data structure.  Die,
 if can't read file.
+
+It loads a file in Config::General format or in YAML::Tiny format,
+depending on the extension of the file.
 
 =cut
 
@@ -181,7 +209,17 @@ sub _config_file_load {
         die;
     }
 
-    return TpdaMvc::Config::Utils->load($conf_file);
+    my (undef, undef, $suf) = fileparse($conf_file, qr/\.[^.]*/);
+    if ( $suf =~ m{conf} )  {
+        return TpdaMvc::Config::Utils->load_conf($conf_file);
+    }
+    elsif ( $suf =~ m{yml} ) {
+        return TpdaMvc::Config::Utils->load_yaml($conf_file);
+    }
+    else {
+        print "Config file: $conf_file has wrong suffix ($suf)\n";
+        die;
+    }
 }
 
 =head2 conn_cfg_filename

@@ -1,64 +1,95 @@
-# Perl Database Query Manager
+# tpda-mvc
 # Interface configuration
 # Don't touch!, not for users ;)
 ---
 toolbar:
   tb_cn:
     id:      1001
-    type:    item_check
+    type:    _item_check
     icon:    connectyes16
     tooltip: Connect/disconnect
     help:    Connect/disconnect from the database
     sep:     after
-  tb_sv:
+  tb_fm:
     id:      1002
-    type:    item_normal
-    icon:    filesave16
-    tooltip: Save
-    help:    Save query definition file
+    type:    _item_check
+    icon:    filefind16
+    tooltip: Toggle find mode
+    help:    Toggle find mode
     sep:     none
-  tb_rf:
+  tb_fe:
     id:      1003
-    type:    item_normal
+    type:    _item_normal
+    icon:    actcheck16
+    tooltip: Execute found
+    help:    Execute found
+    sep:     none
+  tb_fc:
+    id:      1004
+    type:    _item_normal
+    icon:    acthelp16
+    tooltip: Execute count
+    help:    Execute count
+    sep:     after
+  tb_pr:
+    id:      1005
+    type:    _item_normal
+    icon:    fileprint16
+    tooltip: Print (preview)
+    help:    Print (preview) default report button
+    sep:     after
+  tb_tn:
+    id:      1006
+    type:    _item_normal
+    icon:    apppencil16
+    tooltip: Take note button
+    help:    Take note button
+    sep:     none
+  tb_tr:
+    id:      1007
+    type:    _item_normal
+    icon:    actredo16
+    tooltip: Restore note button
+    help:    Restore note button
+    sep:     after
+  tb_cl:
+    id:      1008
+    type:    _item_normal
+    icon:    filenew16
+    tooltip: Clear button
+    help:    Clear button
+    sep:     none
+  tb_rr:
+    id:      1009
+    type:    _item_normal
     icon:    actreload16
-    tooltip: Reload
-    help:    Refresh data
+    tooltip: Refresh button
+    help:    Refresh button
     sep:     after
   tb_ad:
-    id:      1004
-    type:    item_normal
+    id:      1010
+    type:    _item_normal
     icon:    actitemadd16
     tooltip: Add report
     help:    Create new query definition file
     sep:     none
   tb_rm:
-    id:      1005
-    type:    item_normal
+    id:      1011
+    type:    _item_normal
     icon:    actitemdelete16
     tooltip: Remove
     help:    Remove query definition file
     sep:     none
-  tb_ed:
-    id:      1006
-    type:    item_check
-    icon:    edit16
-    tooltip: Edit
-    help:    Edit mode on/off
-    sep:     after
-  tb_ls:
-    id:      1007
-    type:    item_list
-    sep:     after
-  tb_go:
-    id:      1008
-    type:    item_normal
-    icon:    navforward16
-    tooltip: Run
-    help:    Run export
-    sep:     after
+  tb_sv:
+    id:      1012
+    type:    _item_normal
+    icon:    filesave16
+    tooltip: Save
+    help:    Save query definition file
+    sep:     none
   tb_qt:
-    id:      1009
-    type:    item_normal
+    id:      1013
+    type:    _item_normal
     icon:    actexit16
     tooltip: Quit
     help:    Quit the application

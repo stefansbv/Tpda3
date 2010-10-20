@@ -3,6 +3,8 @@ package TpdaMvc;
 use strict;
 use warnings;
 
+use TpdaMvc::Tk::App;
+
 =head1 NAME
 
 TpdaMvc - The great new Tpda!
@@ -28,18 +30,50 @@ Perhaps a little code snippet.
 
 =head1 METHODS
 
-=head2 function1
+
+=head2 new
+
+Constructor method.
 
 =cut
 
-sub function1 {
+sub new {
+    my ($class, $args) = @_;
+
+    my $self = {};
+
+    bless $self, $class;
+
+    $self->_init($args);
+
+    return $self;
 }
 
-=head2 function2
+=head2 _init
+
+Initialize the configurations module and create the PerlTk application
+instance.
 
 =cut
 
-sub function2 {
+sub _init {
+    my ( $self, $args ) = @_;
+
+    TpdaMvc::Config->instance($args);
+
+    $self->{gui} = TpdaMvc::Tk::App->create();
+}
+
+=head2 run
+
+Execute the application
+
+=cut
+
+sub run {
+    my $self = shift;
+
+    ### $self->{gui}->run; ???
 }
 
 =head1 AUTHOR

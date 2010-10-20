@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 use lib qw( lib ../lib );
 
@@ -31,3 +31,13 @@ my $c2 = TpdaMvc::Config->instance();
 ok( $c2->isa('TpdaMvc::Config'), 'created TpdaMvc::Config instance 2' );
 
 is( $c1, $c2, 'both instances are the same object' );
+
+# Check some config key => value pairs ( stollen from Padre ;) )
+
+ok( $c1->connection->{database} =~ m{testdb},
+    'connection has expected config value for "database"' )
+  or diag( '"database" defined as "'
+      . $c1->connection->{database}
+      . '" and not "testdb" in config' );
+
+# end tests

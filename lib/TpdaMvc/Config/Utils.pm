@@ -7,7 +7,9 @@ use File::Basename;
 use File::Find::Rule;
 use File::Path 2.07 qw( make_path );
 use File::Copy;
+use YAML::Tiny;
 use Config::General;
+
 #use Log::Log4perl qw(get_logger);
 
 =head1 NAME
@@ -31,14 +33,14 @@ our $VERSION = '0.01';
 
 =head1 METHODS
 
-=head2 load
+=head2 load_conf
 
 Load a generic config file in Config::General format and return the
 Perl data structure.
 
 =cut
 
-sub load {
+sub load_conf {
     my ( $self, $config_file ) = @_;
 
     my $conf = Config::General->new($config_file);
@@ -46,6 +48,19 @@ sub load {
     my %config = $conf->getall;
 
     return \%config;
+}
+
+=head2 load_yaml
+
+Use YAML::Tiny to load a YAML file and return as a Perl hash data
+structure.
+
+=cut
+
+sub load_yaml {
+    my ( $self, $yaml_file ) = @_;
+
+    return YAML::Tiny::LoadFile( $yaml_file );
 }
 
 =head2 find_subdirs
