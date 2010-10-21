@@ -1,0 +1,45 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+menubar:
+  menu_app:
+    id:    1001
+    label: App
+    underline: 0
+    popup:
+      1:
+        label: Run report
+        underline: 0
+        sep: after
+        key: ~
+      2:
+        label: Exit
+        underline: 1
+        sep: none
+        key: Alt-X
+  menu_tool:
+    id:    1002
+    label: Tools
+    underline: 0
+    popup:
+      1:
+        label: Save window geometry
+        underline: 0
+        sep: none
+        key: Alt-g
+  menu_help:
+    id:    1003
+    label: Add
+    underline: 0
+    popup:
+      1:
+        label: Guide
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        label: About
+        underline: 0
+        sep: none
+        key: ~

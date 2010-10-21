@@ -1,0 +1,8 @@
+# tpda-mvc
+# Database connection configuration
+---
+connection:
+  driver: postgresql
+  server: localhost
+  dbname: testdb
+  port:   5432

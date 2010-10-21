@@ -130,79 +130,63 @@ sub _create_menu {
 
     $self->{_menu} = $self->Menu();
 
-    # Add a Tpda::Search menu
-    my $edit_menu = $self->{_menu}->Menu();
+    # Get MenuBar atributes
+    my $cfg = TpdaMvc::Config->instance();
+    my $attribs = $cfg->menubar;
 
-    $edit_menu->add(
-        'command',
-        -label => 'Run Report',
-        -underline => 4,
-        -command => sub { $self->dlg_repman(); },
-    );
+    #-- Sort by id
+    #- Keep only key and id for sorting
+    my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
 
-    $edit_menu->add('separator');
+    #- Sort with  ST
+    my @attribs = map  { $_->[0] }
+        sort { $a->[1] <=> $b->[1] }
+        map  { [ $_ => $temp{$_} ] }
+        keys %temp;
 
-    $edit_menu->add(
-        'command',
-        -label       => 'Exit',
-        -command     => [ \&on_quit, $self ],
-        -accelerator => 'Alt-X',
-        -underline => 1,
-    );
+    # Create menus
+    foreach my $menu_name (@attribs) {
 
-    # Add all to the menu bar for the application
-    $self->{_menu}->add(
-        'cascade',
-        -menu      => $edit_menu,
-        -label     => 'App',
-        -underline => 0,
-    );
+        $self->{_menu}{$menu_name} = $self->{_menu}->Menu();
 
-    # Add a Utilitare menu
-    my $util_menu = $self->{_menu}->Menu();
-
-    $util_menu->add(
-        'command',
-        -label   => 'Save window geometry',
-        -underline => 12,
-        -command => sub {
-            $self->gui_set_window_geom();
+        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        foreach my $id (@popups) {
+            $self->make_popup_item(
+                $self->{_menu}{$menu_name},
+                $attribs->{$menu_name}{popup}{$id},
+            );
         }
-    );
 
-    $self->{_menu}->add(
-        'cascade',
-        -menu      => $util_menu,
-        -label     => 'Tools',
-        -underline => 0,
-    );
-
-    # Add a Help menu
-    my $help_menu = $self->{_menu}->Menu();
-
-    $help_menu->add(
-        'command',
-        -label   => 'Guide',
-        -underline => 0,
-        -command => sub {
-            $self->show_userguide();
-        }
-    );
-
-    $help_menu->add(
-        'command',
-        -label   => 'About ...',
-        -command => sub { $self->show_aboutscreen(); }
-    );
-
-    $self->{_menu}->add(
-        'cascade',
-        -menu      => $help_menu,
-        -label     => 'Help',
-        -underline => 0,
-    );
+        $self->{_menu}->add(
+            'cascade',
+            -menu      => $self->{_menu}{$menu_name},
+            -label     => $attribs->{$menu_name}{label},
+            -underline => $attribs->{$menu_name}{underline},
+        );
+    }
 
     $self->configure( -menu => $self->{_menu} );
+}
+
+=head2 make_popup_item
+
+Make popup item
+
+=cut
+
+sub make_popup_item {
+    my ( $self, $menu, $item ) = @_;
+
+    $menu->add('separator') if $item->{sep} eq 'before';
+
+    $menu->add(
+        'command',
+        -label       => $item->{label},
+        -accelerator => $item->{key},
+        -underline   => $item->{underline},
+    );
+
+    $menu->add('separator') if $item->{sep} eq 'after';
 }
 
 =head2 get_menubar
@@ -213,6 +197,7 @@ Return the menu bar handler
 
 sub get_menubar {
     my $self = shift;
+
     return $self->{_menu};
 }
 
@@ -285,21 +270,11 @@ Setup toolbar
 sub _create_toolbar {
     my $self = shift;
 
-    # Toolbars in 3 frames ;-)
+    # Frame for toolbar
+    my $tbf = $self->Frame();
+    $tbf->pack( -side => 'top', -anchor => 'nw', -fill => 'x' );
 
-    # Main frame
-    my $tbf0 = $self->Frame();
-    $tbf0->pack( -side => 'top', -anchor => 'nw', -fill => 'x' );
-
-    # Frame for main toolbar
-    my $tbf1 = $tbf0->Frame();
-    $tbf1->pack( -side => 'left', -anchor => 'w' );
-
-    # Frame for nav toolbar
-    my $tbf2 = $tbf0->Frame();
-    $tbf2->pack( -side => 'right', -anchor => 'e' );
-
-    $self->{_tb} = $tbf1->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
+    $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
 
     # Get ToolBar button atributes
     my $cfg = TpdaMvc::Config->instance();

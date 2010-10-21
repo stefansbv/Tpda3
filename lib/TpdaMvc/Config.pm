@@ -53,7 +53,7 @@ sub _new_instance {
 
     my $self = bless {}, $class;
 
-    $args->{cfgmain} = 'etc/main.conf'; # hardcoded main config file name
+    $args->{cfgmain} = 'etc/main.yml'; # hardcoded main config file name
 
     # Load configuration and create accessors
     $self->_config_main_load($args);
@@ -113,8 +113,8 @@ sub _config_main_load {
     # Misc
     my $main_hr = {
         cfgpath => $configpath,
-        contmpl => catdir( $configpath, $maincfg->{path}{conntmpl} ),
-        conpath => catdir( $configpath, $maincfg->{path}{connections} ),
+        contmpl => catdir( $configpath, $maincfg->{paths}{conntmpl} ),
+        conpath => catdir( $configpath, $maincfg->{paths}{connections} ),
         confile => $maincfg->{configs}{connection},
         cfother => $maincfg->{other},
     };

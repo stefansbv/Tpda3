@@ -34,10 +34,10 @@ is( $c1, $c2, 'both instances are the same object' );
 
 # Check some config key => value pairs ( stollen from Padre ;) )
 
-ok( $c1->connection->{database} =~ m{testdb},
-    'connection has expected config value for "database"' )
-  or diag( '"database" defined as "'
-      . $c1->connection->{database}
+ok( $c1->connection->{dbname} =~ m{testdb},
+    'connection has expected config value for "dbname"' )
+  or diag( '"dbname" defined as "'
+      . $c1->connection->{dbname}
       . '" and not "testdb" in config' );
 
 # end tests

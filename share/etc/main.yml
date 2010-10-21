@@ -1,0 +1,14 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+paths:
+  # Connections config dir
+  connections: apps
+  # Templates
+  conntmpl: template/connection.yml
+configs:
+  connection: connection.yml
+other:
+  toolbar: etc/interfaces/toolbar.yml
+  menubar: etc/interfaces/menubar.yml
