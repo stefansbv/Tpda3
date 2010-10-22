@@ -4,7 +4,7 @@
 # From Class::Singleton test script
 #   by Andy Wardley <abw@wardley.org>
 
-use Test::More tests => 11;
+use Test::More tests => 10;
 
 diag( "Testing with Perl $], $^X" );
 
@@ -16,6 +16,5 @@ use_ok('TpdaMvc::Db::Connection');
 use_ok('TpdaMvc::Db::Connection::Postgresql');
 use_ok('TpdaMvc::Model');
 use_ok('TpdaMvc::Observable');
-use_ok('TpdaMvc::Tk::App');
 use_ok('TpdaMvc::Tk::Controller');
 use_ok('TpdaMvc::Tk::View');

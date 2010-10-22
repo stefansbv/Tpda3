@@ -3,7 +3,7 @@ package TpdaMvc;
 use strict;
 use warnings;
 
-use TpdaMvc::Tk::App;
+use TpdaMvc::Tk::Controller;
 
 =head1 NAME
 
@@ -61,7 +61,9 @@ sub _init {
 
     TpdaMvc::Config->instance($args);
 
-    $self->{gui} = TpdaMvc::Tk::App->create();
+    $self->{gui} = TpdaMvc::Tk::Controller->new();
+
+    $self->{gui}->start();
 }
 
 =head2 run
@@ -73,7 +75,7 @@ Execute the application
 sub run {
     my $self = shift;
 
-    ### $self->{gui}->run; ???
+    $self->{gui}->MainLoop;
 }
 
 =head1 AUTHOR

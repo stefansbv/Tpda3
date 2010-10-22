@@ -179,8 +179,7 @@ sub make_popup_item {
 
     $menu->add('separator') if $item->{sep} eq 'before';
 
-    $menu->add(
-        'command',
+    $self->{_menu}{ $item->{name} } = $menu->command(
         -label       => $item->{label},
         -accelerator => $item->{key},
         -underline   => $item->{underline},
@@ -189,16 +188,16 @@ sub make_popup_item {
     $menu->add('separator') if $item->{sep} eq 'after';
 }
 
-=head2 get_menubar
+=head2 get_menu_popup_item
 
-Return the menu bar handler
+Return a menu popup by name
 
 =cut
 
-sub get_menubar {
-    my $self = shift;
+sub get_menu_popup_item {
+    my ($self, $name) = @_;
 
-    return $self->{_menu};
+    return $self->{_menu}{$name};
 }
 
 =head2 create_statusbar

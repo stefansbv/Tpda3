@@ -9,11 +9,13 @@ menubar:
     underline: 0
     popup:
       1:
+        name: mn_rr
         label: Run report
         underline: 0
         sep: after
         key: ~
       2:
+        name: mn_qt
         label: Exit
         underline: 1
         sep: none
@@ -24,6 +26,7 @@ menubar:
     underline: 0
     popup:
       1:
+        name: mn_sg
         label: Save window geometry
         underline: 0
         sep: none
@@ -34,11 +37,13 @@ menubar:
     underline: 0
     popup:
       1:
+        name: mn_gd
         label: Guide
         underline: 0
         sep: none
         key: ~
       2:
+        name: mn_ab
         label: About
         underline: 0
         sep: none

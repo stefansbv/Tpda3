@@ -50,7 +50,6 @@ sub new {
     my $self = {
         _model   => $model,
         _view    => $view,
-        # _nbook   => $view->get_notebook,
         _toolbar => $view->get_toolbar,
     };
 
@@ -58,20 +57,17 @@ sub new {
 
     $self->_set_event_handlers;
 
-    $self->_view->MainLoop;
-
     return $self;
 }
 
 =head2 start
 
-Populate list with titles, populate configurations page, set default
-choice for export and initial mode.
+Initialization of states
 
 =cut
 
 sub start {
-    my ($self, ) = @_;
+    my $self = shift;
 
     # Connect to database at start
     # $self->_model->db_connect();
@@ -82,18 +78,6 @@ sub start {
 
 =head2 _set_event_handlers
 
-Close the application window
-
-=cut
-
-my $closeWin = sub {
-    my ( $self, $event ) = @_;
-
-    $self->Destroy();
-};
-
-=head2 _set_event_handlers
-
 Setup event handlers
 
 =cut
@@ -101,15 +85,20 @@ Setup event handlers
 sub _set_event_handlers {
     my $self = shift;
 
-    # #- Menu
-    # EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
-    # EVT_MENU $self->_view, wxID_HELP, $about;
-    # EVT_MENU $self->_view, wxID_EXIT,  $exit;
+    #- Menu
+
+    #-- Exit
+    my $pop = $self->_view->get_menu_popup_item('mn_qt');
+    $pop->configure(
+        -command => sub {
+            $self->_view->on_quit;
+        }
+    );
 
     #- Toolbar
 
-    #- Quit
-    my $tb_qt = $self->_view->get_toolbar_btn('tb_qt')->bind(
+    #-- Quit
+    $self->_view->get_toolbar_btn('tb_qt')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_view->on_quit;
         }
@@ -149,23 +138,28 @@ Toggle controls appropriate for diferent states of the application
 sub toggle_controls {
     my $self = shift;
 
-    # my $is_edit = $self->_model->is_editmode ? 1 : 0;
+    my $is_edit = 0; # $self->_model->is_editmode ? 1 : 0;
 
-    # # Tool buttons states
-    # my $states = {
-    #     tb_cn => !$is_edit,
-    #     tb_sv => $is_edit,
-    #     tb_rf => !$is_edit,
-    #     tb_ad => !$is_edit,
-    #     tb_rm => !$is_edit,
-    #     tb_ls => !$is_edit,
-    #     tb_go => !$is_edit,
-    #     tb_qt => !$is_edit,
-    # };
+    # Tool buttons states
+    my $states = {
+        tb_cn => !$is_edit,
+        tb_fm => $is_edit,
+        tb_fe => $is_edit,
+        tb_fc => $is_edit,
+        tb_pr => $is_edit,
+        tb_tn => $is_edit,
+        tb_tr => $is_edit,
+        tb_cl => $is_edit,
+        tb_rr => $is_edit,
+        tb_ad => $is_edit,
+        tb_rm => $is_edit,
+        tb_sv => $is_edit,
+        tb_qt => !$is_edit,
+    };
 
-    # foreach my $btn ( keys %{$states} ) {
-    #     $self->toggle_controls_tb( $btn, $states->{$btn} );
-    # }
+    foreach my $btn ( keys %{$states} ) {
+        $self->toggle_controls_tb( $btn, $states->{$btn} );
+    }
 
     # # List control
     # $self->{_list}->Enable(!$is_edit);
@@ -185,8 +179,10 @@ Toggle the toolbar buttons state
 sub toggle_controls_tb {
     my ( $self, $btn_name, $status ) = @_;
 
-    # my $tb_btn = $self->_view->get_toolbar_btn_id($btn_name);
-    # $self->{_toolbar}->EnableTool( $tb_btn, $status );
+    my $state = $status ? 'normal' : 'disabled';
+    print " $btn_name is $state\n";
+    my $tb_btn = $self->_view->get_toolbar_btn($btn_name);
+    $tb_btn->configure( -state => $state );
 }
 
 =head2 toggle_controls_page
