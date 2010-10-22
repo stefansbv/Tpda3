@@ -1,11 +1,11 @@
-package TpdaMvc::Observable;
+package Tpda3::Observable;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-TpdaMvc::Observable - Obrserver patern implementation
+Tpda3::Observable - Obrserver patern implementation
 
 
 =head1 VERSION
@@ -19,14 +19,14 @@ our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-    use TpdaMvc::Observable;
+    use Tpda3::Observable;
 
     sub new {
         my $class = shift;
 
         my $self = {
-            _data1 => TpdaMvc::Observable->new(),
-            _data2 => TpdaMvc::Observable->new(),
+            _data1 => Tpda3::Observable->new(),
+            _data2 => Tpda3::Observable->new(),
         };
 
         bless $self, $class;
@@ -170,4 +170,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Observable
+1; # End of Tpda3::Observable

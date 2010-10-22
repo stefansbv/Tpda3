@@ -1,5 +1,5 @@
 #
-# TpdaMvc::Config test script
+# Tpda3::Config test script
 #
 # From Class::Singleton test script
 #   by Andy Wardley <abw@wardley.org>
@@ -8,13 +8,13 @@ use Test::More tests => 10;
 
 diag( "Testing with Perl $], $^X" );
 
-use_ok('TpdaMvc');
-use_ok('TpdaMvc::Config');
-use_ok('TpdaMvc::Config::Utils');
-use_ok('TpdaMvc::Db');
-use_ok('TpdaMvc::Db::Connection');
-use_ok('TpdaMvc::Db::Connection::Postgresql');
-use_ok('TpdaMvc::Model');
-use_ok('TpdaMvc::Observable');
-use_ok('TpdaMvc::Tk::Controller');
-use_ok('TpdaMvc::Tk::View');
+use_ok('Tpda3');
+use_ok('Tpda3::Config');
+use_ok('Tpda3::Config::Utils');
+use_ok('Tpda3::Db');
+use_ok('Tpda3::Db::Connection');
+use_ok('Tpda3::Db::Connection::Postgresql');
+use_ok('Tpda3::Model');
+use_ok('Tpda3::Observable');
+use_ok('Tpda3::Tk::Controller');
+use_ok('Tpda3::Tk::View');

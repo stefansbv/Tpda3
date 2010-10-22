@@ -33,7 +33,7 @@ menubar:
         key: Alt-g
   menu_help:
     id:    1003
-    label: Add
+    label: Help
     underline: 0
     popup:
       1:

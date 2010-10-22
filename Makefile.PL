@@ -11,8 +11,8 @@ use warnings;
 
 use inc::Module::Install;
 
-name     'TpdaMvc';
-all_from 'lib/TpdaMvc.pm';
+name     'Tpda3';
+all_from 'lib/Tpda3.pm';
 
 requires 'perl'                       => '5.008005';
 requires 'Class::Singleton'           => '1.4';

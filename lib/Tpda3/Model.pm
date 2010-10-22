@@ -1,15 +1,15 @@
-package TpdaMvc::Model;
+package Tpda3::Model;
 
 use strict;
 use warnings;
 
-use TpdaMvc::Config;
-use TpdaMvc::Observable;
-use TpdaMvc::Db;
+use Tpda3::Config;
+use Tpda3::Observable;
+use Tpda3::Db;
 
 =head1 NAME
 
-TpdaMvc::Model - The Model
+Tpda3::Model - The Model
 
 =head1 VERSION
 
@@ -21,9 +21,9 @@ our $VERSION = '0.08';
 
 =head1 SYNOPSIS
 
-    use TpdaMvc::Model;
+    use Tpda3::Model;
 
-    my $model = TpdaMvc::Model->new();
+    my $model = Tpda3::Model->new();
 
 =head1 METHODS
 
@@ -37,11 +37,11 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _connected   => TpdaMvc::Observable->new(),
-        _stdout      => TpdaMvc::Observable->new(),
-        _itemchanged => TpdaMvc::Observable->new(),
-        _editmode    => TpdaMvc::Observable->new(),
-        _choice      => TpdaMvc::Observable->new(),
+        _connected   => Tpda3::Observable->new(),
+        _stdout      => Tpda3::Observable->new(),
+        _itemchanged => Tpda3::Observable->new(),
+        _editmode    => Tpda3::Observable->new(),
+        _choice      => Tpda3::Observable->new(),
     };
 
     bless $self, $class;
@@ -78,7 +78,7 @@ sub _connect {
     my $self = shift;
 
     # Connect to database
-    $self->{_dbh} = TpdaMvc::Db->instance->dbh;
+    $self->{_dbh} = Tpda3::Db->instance->dbh;
 
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
@@ -221,4 +221,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Model
+1; # End of Tpda3::Model

@@ -1,4 +1,4 @@
-package TpdaMvc::Config;
+package Tpda3::Config;
 
 use strict;
 use warnings;
@@ -10,13 +10,13 @@ use File::UserConfig;
 use File::Spec::Functions;
 use File::Basename;
 
-use TpdaMvc::Config::Utils;
+use Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
 
 =head1 NAME
 
-TpdaMvc::Config - Tpda Tpda configuration module
+Tpda3::Config - Tpda Tpda configuration module
 
 =head1 VERSION
 
@@ -32,11 +32,11 @@ Reads configuration files in I<Config::General> format and create a
 complex Perl data structure (HoH).  Then using I<Class::Accessor>,
 automatically create methods from the keys of the hash.
 
-    use TpdaMvc::Config;
+    use Tpda3::Config;
 
-    my $cfg = TpdaMvc::Config->instance($args); # first time init
+    my $cfg = Tpda3::Config->instance($args); # first time init
 
-    my $cfg = TpdaMvc::Config->instance(); # later, in other modules
+    my $cfg = Tpda3::Config->instance(); # later, in other modules
 
 =head1 METHODS
 
@@ -211,10 +211,10 @@ sub _config_file_load {
 
     my (undef, undef, $suf) = fileparse($conf_file, qr/\.[^.]*/);
     if ( $suf =~ m{conf} )  {
-        return TpdaMvc::Config::Utils->load_conf($conf_file);
+        return Tpda3::Config::Utils->load_conf($conf_file);
     }
     elsif ( $suf =~ m{yml} ) {
-        return TpdaMvc::Config::Utils->load_yaml($conf_file);
+        return Tpda3::Config::Utils->load_yaml($conf_file);
     }
     else {
         print "Config file: $conf_file has wrong suffix ($suf)\n";
@@ -244,7 +244,7 @@ sub list_configs {
     my $self = shift;
 
     my $conpath = $self->conpath;
-    my $conn_list = TpdaMvc::Config::Utils->find_subdirs($conpath);
+    my $conn_list = Tpda3::Config::Utils->find_subdirs($conpath);
 
     print "Connection configurations:\n";
     foreach my $cfg_name ( @{$conn_list} ) {
@@ -277,4 +277,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Config
+1; # End of Tpda3::Config

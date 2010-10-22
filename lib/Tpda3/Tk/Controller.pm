@@ -1,4 +1,4 @@
-package TpdaMvc::Tk::Controller;
+package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
@@ -7,12 +7,12 @@ use Data::Dumper;
 
 use Tk;
 
-use TpdaMvc::Model;
-use TpdaMvc::Tk::View;
+use Tpda3::Model;
+use Tpda3::Tk::View;
 
 =head1 NAME
 
-TpdaMvc::Tk::Controller - The Controller
+Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
@@ -24,9 +24,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use TpdaMvc::Tk::Controller;
+    use Tpda3::Tk::Controller;
 
-    my $controller = TpdaMvc::Tk::Controller->new();
+    my $controller = Tpda3::Tk::Controller->new();
 
     $controller->start();
 
@@ -41,9 +41,9 @@ Constructor method.
 sub new {
     my ( $class, $app ) = @_;
 
-    my $model = TpdaMvc::Model->new();
+    my $model = Tpda3::Model->new();
 
-    my $view = TpdaMvc::Tk::View->new(
+    my $view = Tpda3::Tk::View->new(
         $model,
     );
 
@@ -180,7 +180,7 @@ sub toggle_controls_tb {
     my ( $self, $btn_name, $status ) = @_;
 
     my $state = $status ? 'normal' : 'disabled';
-    print " $btn_name is $state\n";
+    # print " $btn_name is $state\n";
     my $tb_btn = $self->_view->get_toolbar_btn($btn_name);
     $tb_btn->configure( -state => $state );
 }
@@ -250,4 +250,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Tk::Controller
+1; # End of Tpda3::Tk::Controller

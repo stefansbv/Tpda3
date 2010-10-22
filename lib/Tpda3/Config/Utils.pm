@@ -1,4 +1,4 @@
-package TpdaMvc::Config::Utils;
+package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
@@ -14,7 +14,7 @@ use Config::General;
 
 =head1 NAME
 
-TpdaMvc::Config::Utils - Utility functions for config paths and files
+Tpda3::Config::Utils - Utility functions for config paths and files
 
 =head1 VERSION
 
@@ -26,9 +26,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use TpdaMvc::Config::Utils;
+    use Tpda3::Config::Utils;
 
-    my $cu = TpdaMvc::Config::Utils->new();
+    my $cu = Tpda3::Config::Utils->new();
 
 
 =head1 METHODS
@@ -113,4 +113,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Config::Utils
+1; # End of Tpda3::Config::Utils

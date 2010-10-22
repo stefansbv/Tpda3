@@ -1,4 +1,4 @@
-package TpdaMvc::Tk::View;
+package Tpda3::Tk::View;
 
 use strict;
 use warnings;
@@ -12,11 +12,11 @@ use Tk::widgets qw(ToolBar NoteBook StatusBar Dialog
 
 use base 'Tk::MainWindow';
 
-use TpdaMvc::Config;
+use Tpda3::Config;
 
 =head1 NAME
 
-TpdaMvc::Tk::App - Tk Perl application class
+Tpda3::Tk::App - Tk Perl application class
 
 =head1 VERSION
 
@@ -28,9 +28,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use TpdaMvc::Tk::Notebook;
+    use Tpda3::Tk::Notebook;
 
-    $self->{_nb} = TpdaMvc::Tk::Notebook->new( $gui );
+    $self->{_nb} = Tpda3::Tk::Notebook->new( $gui );
 
 
 =head1 METHODS
@@ -64,7 +64,7 @@ sub new {
     $self->_create_statusbar();
 
     #-- Notebook
-    # $self->{_nb} = TpdaMvc::Tk::Notebook->new( $self );
+    # $self->{_nb} = Tpda3::Tk::Notebook->new( $self );
 
     $self->_set_model_callbacks();
 
@@ -131,7 +131,7 @@ sub _create_menu {
     $self->{_menu} = $self->Menu();
 
     # Get MenuBar atributes
-    my $cfg = TpdaMvc::Config->instance();
+    my $cfg = Tpda3::Config->instance();
     my $attribs = $cfg->menubar;
 
     #-- Sort by id
@@ -276,7 +276,7 @@ sub _create_toolbar {
     $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
 
     # Get ToolBar button atributes
-    my $cfg = TpdaMvc::Config->instance();
+    my $cfg = Tpda3::Config->instance();
     my $attribs = $cfg->toolbar;
 
     #-- Sort by id
@@ -436,4 +436,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of TpdaMvc::Tk::View
+1; # End of Tpda3::Tk::View

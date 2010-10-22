@@ -1,13 +1,13 @@
-package TpdaMvc;
+package Tpda3;
 
 use strict;
 use warnings;
 
-use TpdaMvc::Tk::Controller;
+use Tpda3::Tk::Controller;
 
 =head1 NAME
 
-TpdaMvc - The great new Tpda!
+Tpda3 - The great new Tpda!
 
 =head1 VERSION
 
@@ -23,9 +23,9 @@ Quick summary of what the module does.
 
 Perhaps a little code snippet.
 
-    use TpdaMvc;
+    use Tpda3;
 
-    my $foo = TpdaMvc->new();
+    my $foo = Tpda3->new();
     ...
 
 =head1 METHODS
@@ -59,9 +59,9 @@ instance.
 sub _init {
     my ( $self, $args ) = @_;
 
-    TpdaMvc::Config->instance($args);
+    Tpda3::Config->instance($args);
 
-    $self->{gui} = TpdaMvc::Tk::Controller->new();
+    $self->{gui} = Tpda3::Tk::Controller->new();
 
     $self->{gui}->start();
 }
@@ -88,7 +88,7 @@ Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc TpdaMvc
+    perldoc Tpda3
 
 You can also look for information at:
 
@@ -114,4 +114,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of TpdaMvc
+1; # End of Tpda3

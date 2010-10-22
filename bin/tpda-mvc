@@ -6,8 +6,8 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
-use TpdaMvc;
-use TpdaMvc::Config;
+use Tpda3;
+use Tpda3::Config;
 
 # Parse options and print usage if there is a syntax error,
 # or if usage was explicitly requested.
@@ -47,7 +47,7 @@ my $opts = {};
 if ( defined $list xor $init ) {
 
     # Initialize configurations
-    my $cfg = TpdaMvc::Config->instance();
+    my $cfg = Tpda3::Config->instance();
 
     if ( $list ) {
         $cfg->list_configs();
@@ -68,7 +68,7 @@ if ( $cfgname ) {
     $opts->{cfgname} = $cfgname;
 
     # Go and run the app
-    TpdaMvc->new( $opts )->run;
+    Tpda3->new( $opts )->run;
 
     print "Normal exit.\n";
     exit 0;
@@ -82,7 +82,7 @@ pod2usage(1);
 
 sub tpda_mvc_version {
 
-    my $ver = $TpdaMvc::VERSION;
+    my $ver = $Tpda3::VERSION;
     print "TPDA - Query Repository Tool v$ver\n(C) 2010 Stefan Suciu\n\n";
 }
 
