@@ -176,6 +176,8 @@ sub _create_menu {
     }
 
     $self->configure( -menu => $self->{_menu} );
+
+    $self->bind( '<Alt-x>' => sub { $self->on_quit } );
 }
 
 =head2 make_popup_item
@@ -298,7 +300,7 @@ sub set_status {
 
 =head2 _create_toolbar
 
-Setup toolbar
+Create toolbar
 
 =cut
 
@@ -370,13 +372,86 @@ sub _item_check {
         -type        => 'Checkbutton',
         -indicatoron => 0,
         -tip         => $attribs->{tooltip},
-
-        #-variable    => \$self->{tpda}->{$variable},
     );
 
     $self->{_tb}->separator if $attribs->{sep} =~ m{after};
 
     return;
+}
+
+=head2 create_notebook
+
+Create the NoteBook and the 3 panes.  The pane first named 'rec'
+contains widgets mostly of the type Entry, maped to the fields of a
+table.  The pane second contains a MListbox widget and is used for
+listing the search results.  The third pane is for records from a
+dependent table.
+
+=cut
+
+sub create_notebook {
+    my $self = shift;
+
+    #- NoteBook
+
+    $self->{_nb} = $self->NoteBook()->pack(
+        -side   => 'top',
+        -padx   => 3, -pady   => 3,
+        -ipadx  => 6, -ipady  => 6,
+        -fill   => 'both',
+        -expand => 1,
+    );
+
+    #- Panels
+
+    $self->{_nb}{rec} = $self->{_nb}->add(
+        'rec',
+        -label     => 'Record',
+        -underline => 0,
+    );
+
+    $self->{_nb}{sel} = $self->{_nb}->add(
+        'sel',
+        -label     => 'List',
+        -underline => 0,
+    );
+
+    $self->{_nb}{det} = $self->{_nb}->add(
+        'det',
+        -label     => 'Details',
+        -underline => 0,
+    );
+
+    # Frame box
+    my $frm_box = $self->{_nb}{sel}->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Tpda::Search results',
+        -labelside  => 'acrosstop'
+    )->pack( -expand => 1, -fill => 'both' );
+
+    $self->{_rc} = $frm_box->Scrolled(
+        'MListbox',
+        -scrollbars         => 'osoe',
+        -background         => 'white',
+        -textwidth          => 10,
+        -highlightthickness => 2,
+        -width              => 0,
+        -selectmode         => 'browse',
+        -relief             => 'sunken',
+        -columns            => [ [qw/-text Nul -textwidth 10/] ]
+    );
+
+    $self->{_rc}->pack( -expand => 1, -fill => 'both' );
+
+    $self->{_nb}->pack(
+        -side   => 'top',
+        -fill   => 'both',
+        -padx   => 5, -pady   => 5,
+        -expand => 1,
+    );
+
+    # Initialize
+    $self->{_nb}->raise('rec');
 }
 
 =head2 get_notebook
@@ -389,6 +464,18 @@ sub get_notebook {
     my $self = shift;
 
     return $self->{_nb};
+}
+
+=head2 destroy_notebook
+
+Destroy existing window, before the creation of an other.
+
+=cut
+
+sub destroy_notebook {
+    my $self = shift;
+
+    $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
 }
 
 =head2 get_toolbar_btn

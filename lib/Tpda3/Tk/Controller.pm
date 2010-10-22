@@ -3,9 +3,10 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(get_logger);
-
 use Tk;
+use Class::Unload;
+use Class::Inspector;
+use Log::Log4perl qw(get_logger);
 
 use Tpda3::Model;
 use Tpda3::Tk::View;
@@ -121,6 +122,13 @@ sub _set_event_handlers {
         }
     );
 
+    # Experimental
+    $self->_view->get_toolbar_btn('tb_rm')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->screen_load();
+        }
+    );
+
     #-- Quit
     $self->_view->get_toolbar_btn('tb_qt')->bind(
         '<ButtonRelease-1>' => sub {
@@ -176,7 +184,7 @@ sub toggle_controls {
         tb_cl => $is_edit,
         tb_rr => $is_edit,
         tb_ad => !$is_edit,
-        tb_rm => $is_edit,
+        tb_rm => !$is_edit,
         tb_sv => $is_edit,
         tb_qt => !$is_edit,
     };
@@ -248,17 +256,51 @@ sub toggle_controls_page {
     # }
 }
 
+=head2 screen_load
+
+Load screen: experimental
+
+=cut
+
+sub screen_load {
+    my ($self, ) = @_;
+
+    # Destroy existing NoteBook widget
+    $self->_view->destroy_notebook();
+
+    # Make new NoteBook widget
+    $self->_view->create_notebook();
+
+    my $class = 'Tpda3::App::test::Products';
+    (my $file = "$class.pm") =~ s/::/\//g;
+    require $file;
+    $class->import;
+
+    if ($class->can('run_screen') ) {
+        print "INFO: Loaded '$class'\n";
+    }
+    else {
+        warn "ERROR loading screen!\n";
+    }
+
+    # New screen instance
+    $self->{screen} = $class->new();
+
+    # Show screen
+    $self->{idobj} = $self->{screen}->run_screen(
+        $self->_view->{_nb}{rec},
+    );
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
-
 
 =head1 BUGS
 
 None known.
 
 Please report any bugs or feature requests to the author.
-
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -85,7 +85,7 @@ sub _connect {
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
         $self->_status_msg('connectyes16','cn');
-        $self->_print('Connected.');
+        # $self->_print('Connected.');
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
@@ -105,7 +105,7 @@ sub _disconnect {
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
     $self->_status_msg('connectno16','cn');
-    $self->_print('Disconnected.');
+    # $self->_print('Disconnected.');
 }
 
 =head2 is_connected
@@ -158,7 +158,6 @@ sub _print {
     $sb_id = 0 if not defined $sb_id;
 
     print "$line\n";
-    #$self->get_stdout_observable->set( "$line:$sb_id" );
 }
 
 =head2 get_statusmsg_observable

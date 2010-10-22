@@ -19,7 +19,7 @@ menubar:
         label: Exit
         underline: 1
         sep: none
-        key: Alt-X
+        key: Alt-x
   menu_tool:
     id:    1002
     label: Tools
