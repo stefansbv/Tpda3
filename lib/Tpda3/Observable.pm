@@ -7,7 +7,6 @@ use warnings;
 
 Tpda3::Observable - Obrserver patern implementation
 
-
 =head1 VERSION
 
 Version 0.02
@@ -15,7 +14,6 @@ Version 0.02
 =cut
 
 our $VERSION = '0.02';
-
 
 =head1 SYNOPSIS
 
@@ -33,7 +31,6 @@ our $VERSION = '0.02';
 
         return $self;
     }
-
 
 =head1 METHODS
 
@@ -141,13 +138,11 @@ sub unset {
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 
-
 =head1 BUGS
 
 None known.
 
 Please report any bugs or feature requests to the author.
-
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -156,7 +151,6 @@ Author: Rutger Vos, 17/Aug/2006 13:57
         http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
              /cipres/framework/perl/cipres/lib/Cipres/
 Thank You!
-
 
 =head1 LICENSE AND COPYRIGHT
 

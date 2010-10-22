@@ -37,11 +37,10 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _connected   => Tpda3::Observable->new(),
-        _stdout      => Tpda3::Observable->new(),
-        _itemchanged => Tpda3::Observable->new(),
-        _editmode    => Tpda3::Observable->new(),
-        _choice      => Tpda3::Observable->new(),
+        _connected => Tpda3::Observable->new(),
+        _stdout    => Tpda3::Observable->new(),
+        _status    => Tpda3::Observable->new(),
+        _editmode  => Tpda3::Observable->new(),
     };
 
     bless $self, $class;
@@ -83,11 +82,12 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
-        $self->_print('Connected');
+        $self->_status_msg('connectyes16','cn');
+        $self->_print('Connected.');
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
-        $self->_print('Disconnected.');
+        $self->_print('Connection error!');
     }
 }
 
@@ -102,6 +102,7 @@ sub _disconnect {
 
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
+    $self->_status_msg('connectno16','cn');
     $self->_print('Disconnected.');
 }
 
@@ -145,7 +146,7 @@ sub get_stdout_observable {
 
 =head2 _print
 
-Put a message on a Wx text controll
+Put a message on a text controll
 
 =cut
 
@@ -154,7 +155,34 @@ sub _print {
 
     $sb_id = 0 if not defined $sb_id;
 
-    $self->get_stdout_observable->set( "$line:$sb_id" );
+    print "$line\n";
+    #$self->get_stdout_observable->set( "$line:$sb_id" );
+}
+
+=head2 get_status_observable
+
+Get status observable
+
+=cut
+
+sub get_status_observable {
+    my $self = shift;
+
+    return $self->{_status};
+}
+
+=head2 _status_msg
+
+Put a message on the status bar
+
+=cut
+
+sub _status_msg {
+    my ( $self, $line, $sb_id ) = @_;
+
+    $sb_id = 'll' if ! $sb_id;
+
+    $self->get_status_observable->set( "$line:$sb_id" );
 }
 
 =head2 set_idlemode
@@ -171,9 +199,10 @@ sub set_idlemode {
     }
     if ( $self->is_editmode ) {
         $self->_print('edit', 1);
+        $self->_status_msg('idle','lr');
     }
     else {
-        $self->_print('idle', 1);
+        $self->_status_msg('idle', 'lr');
     }
 }
 

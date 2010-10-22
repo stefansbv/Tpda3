@@ -56,7 +56,7 @@ Connect method, uses I<Tpda3::Config> module for configuration.
 sub _connect {
     my $self = shift;
 
-    # my $log = get_logger();
+    my $log = get_logger();
 
     my $inst = Tpda3::Config->instance;
     my $conf = $inst->connection;
@@ -72,6 +72,7 @@ sub _connect {
 
     my $driver = $conf->{driver};
     my $db;
+    $log->debug("Database driver is $driver");
 
   SWITCH: for ( $driver ) {
         /^$/ && do warn "No driver name?\n";

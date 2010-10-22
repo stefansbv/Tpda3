@@ -50,7 +50,6 @@ sub new {
     my $self = {
         _model   => $model,
         _view    => $view,
-        _toolbar => $view->get_toolbar,
     };
 
     bless $self, $class;
@@ -70,7 +69,7 @@ sub start {
     my $self = shift;
 
     # Connect to database at start
-    # $self->_model->db_connect();
+    $self->_model->toggle_db_connect();
 
     $self->_model->set_idlemode();
     $self->toggle_controls;
@@ -88,8 +87,7 @@ sub _set_event_handlers {
     #- Menu
 
     #-- Exit
-    my $pop = $self->_view->get_menu_popup_item('mn_qt');
-    $pop->configure(
+    $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
             $self->_view->on_quit;
         }
@@ -165,7 +163,7 @@ sub toggle_controls {
     };
 
     foreach my $btn ( keys %{$states} ) {
-        $self->toggle_controls_tb( $btn, $states->{$btn} );
+        $self->set_controls_tb( $btn, $states->{$btn} );
     }
 
     # # List control
@@ -177,19 +175,19 @@ sub toggle_controls {
     # }
 }
 
-=head2 toggle_controls_tb
+=head2 set_controls_tb
 
 Toggle the toolbar buttons state
 
 =cut
 
-sub toggle_controls_tb {
+sub set_controls_tb {
     my ( $self, $btn_name, $status ) = @_;
 
     my $state = $status ? 'normal' : 'disabled';
     # print " $btn_name is $state\n";
-    my $tb_btn = $self->_view->get_toolbar_btn($btn_name);
-    $tb_btn->configure( -state => $state );
+
+    $self->_view->toggle_tool($btn_name, $state);
 }
 
 =head2 toggle_controls_page

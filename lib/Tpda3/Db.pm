@@ -84,21 +84,17 @@ sub DESTROY {
 #    $self->{conn}->disconnect () if defined $self->{conn};
 }
 
-
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
-
 
 =head1 BUGS
 
 Please report any bugs or feature requests to the author.
 
-
 =head1 ACKNOWLEDGEMENTS
 
 Inspired from PerlMonks node [id://609543] by GrandFather.
-
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -117,7 +113,6 @@ GNU General Public License for more details.
 A copy of the GNU General Public License is available in the source tree;
 if not, write to the Free Software Foundation, Inc.,
 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
 
 =cut
 

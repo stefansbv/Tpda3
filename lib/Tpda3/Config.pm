@@ -108,7 +108,7 @@ sub _config_main_load {
     Log::Log4perl->init($log_qfn);
 
     my $log = get_logger();
-    $log->info('*** New session begin:');
+    $log->info("\n*** New session begin:");
 
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );

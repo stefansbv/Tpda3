@@ -3,12 +3,12 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
+use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Tk;
 use Tk::widgets qw(ToolBar NoteBook StatusBar Dialog
-    Checkbutton LabFrame MListbox JComboBox Font);
+  Checkbutton LabFrame MListbox JComboBox Font);
 
 use base 'Tk::MainWindow';
 
@@ -47,7 +47,7 @@ sub new {
 
     #- The MainWindow
 
-    my $self = __PACKAGE__->SUPER::new( @_ );
+    my $self = __PACKAGE__->SUPER::new(@_);
 
     $self->geometry('490x80+672+320');
     $self->title(" Tpda ");
@@ -92,11 +92,11 @@ Define the model callbacks
 sub _set_model_callbacks {
     my $self = shift;
 
-    # my $tb = $self->get_toolbar();
-    # #-
-    # my $co = $self->_model->get_connection_observable;
-    # $co->add_callback(
-    #     sub { $tb->ToggleTool( $self->get_toolbar_btn_id('tb_cn'), $_[0] ) } );
+    #-
+    my $co = $self->_model->get_connection_observable;
+    $co->add_callback(
+        sub { $self->toggle_tool_check( 'tb_cn', $_[0] ) } );
+
     # #--
     # my $em = $self->_model->get_editmode_observable;
     # $em->add_callback(
@@ -110,9 +110,27 @@ sub _set_model_callbacks {
     # $upd->add_callback(
     #     sub { $self->controls_populate(); } );
     # #--
-    # my $so = $self->_model->get_stdout_observable;
-    # #$so->add_callback( sub{ $self->log_msg( $_[0] ) } );
-    # $so->add_callback( sub{ $self->status_msg( @_ ) } );
+    my $so = $self->_model->get_stdout_observable;
+    $so->add_callback( sub { $self->log_msg( $_[0] ) } );
+
+    #$so->add_callback( sub{ $self->status_msg( @_ ) } );
+
+    my $st = $self->_model->get_status_observable;
+    $st->add_callback( sub { $self->set_status(@_) } );
+}
+
+=head2 log_msg
+
+Log messages
+
+=cut
+
+sub log_msg {
+    my ( $self, $msg ) = @_;
+
+    my $log = get_logger();
+
+    $log->info($msg);
 }
 
 =head2 create_menu
@@ -131,7 +149,7 @@ sub _create_menu {
     $self->{_menu} = $self->Menu();
 
     # Get MenuBar atributes
-    my $cfg = Tpda3::Config->instance();
+    my $cfg     = Tpda3::Config->instance();
     my $attribs = $cfg->menubar;
 
     #-- Sort by id
@@ -139,10 +157,10 @@ sub _create_menu {
     my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
 
     #- Sort with  ST
-    my @attribs = map  { $_->[0] }
-        sort { $a->[1] <=> $b->[1] }
-        map  { [ $_ => $temp{$_} ] }
-        keys %temp;
+    my @attribs = map { $_->[0] }
+      sort { $a->[1] <=> $b->[1] }
+      map { [ $_ => $temp{$_} ] }
+      keys %temp;
 
     # Create menus
     foreach my $menu_name (@attribs) {
@@ -195,7 +213,7 @@ Return a menu popup by name
 =cut
 
 sub get_menu_popup_item {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
     return $self->{_menu}{$name};
 }
@@ -214,37 +232,38 @@ sub _create_statusbar {
     # Dummy label for left space
     my $ldumy = $sb->addLabel(
         -width  => 1,
-        -relief => 'flat'
+        -relief => 'flat',
     );
 
-    $self->{sb}{ll} = $sb->addLabel( -relief => 'flat' );
+    $self->{_sb}{ll} = $sb->addLabel( -relief => 'flat' );
 
-    $self->{sb}{lc} = $sb->addLabel(
+    $self->{_sb}{cn} = $sb->addLabel(
         -width  => 20,
         -relief => 'raised',
         -anchor => 'center',
-        -side   => 'right'
+        -side   => 'right',
     );
 
-    $self->{sb}{ld} = $sb->addLabel(
+    $self->{_sb}{ld} = $sb->addLabel(
         -width  => 15,
         -anchor => 'center',
-        -side   => 'right'
+        -side   => 'right',
     );
 
-    $self->{sb}{pr} = $sb->addProgressBar(
+    $self->{_sb}{pr} = $sb->addProgressBar(
         -length     => 100,
         -from       => 0,
         -to         => 100,
         -variable   => \$self->{progres},
-        -foreground => 'blue'
+        -foreground => 'blue',
     );
 
-    $self->{sb}{lr} = $sb->addLabel(
+    $self->{_sb}{lr} = $sb->addLabel(
         -width      => 6,
         -anchor     => 'center',
         -side       => 'right',
-        -foreground => 'blue'
+        -foreground => 'blue',
+        -background => 'yellow',
     );
 }
 
@@ -255,12 +274,37 @@ Return the status bar handler
 =cut
 
 sub get_statusbar {
-    my $self = shift;
+    my ( $self, $sb_id ) = @_;
 
-    return $self->{_sb};
+    return $self->{_sb}{$sb_id};
 }
 
-=head2 _setup_toolbar
+=head2 set_status
+
+Set message to status bar
+
+=cut
+
+sub set_status {
+    my ( $self, $msg, $color ) = @_;
+
+    my ( $text, $sb_id ) = split ':', $msg;    # Work around until I learn how
+                                               # to pass other parameters ;)
+
+    my $sb = $self->get_statusbar($sb_id);
+
+    if ( $sb_id eq 'cn' ) {
+        $sb->configure( -image => $text ) if defined $text;
+    }
+    else {
+        $sb->configure( -textvariable => \$text ) if defined $text;
+        $sb->configure( -foreground   => $color ) if defined $color;
+    }
+
+    return;
+}
+
+=head2 _create_toolbar
 
 Setup toolbar
 
@@ -276,7 +320,7 @@ sub _create_toolbar {
     $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
 
     # Get ToolBar button atributes
-    my $cfg = Tpda3::Config->instance();
+    my $cfg     = Tpda3::Config->instance();
     my $attribs = $cfg->toolbar;
 
     #-- Sort by id
@@ -285,10 +329,10 @@ sub _create_toolbar {
     my %temp = map { $_ => $attribs->{$_}{id} } keys %$attribs;
 
     #- Sort with  ST
-    my @attribs = map  { $_->[0] }
-        sort { $a->[1] <=> $b->[1] }
-        map  { [ $_ => $temp{$_} ] }
-        keys %temp;
+    my @attribs = map { $_->[0] }
+      sort { $a->[1] <=> $b->[1] }
+      map { [ $_ => $temp{$_} ] }
+      keys %temp;
 
     # Create buttons in ID order; use sub defined by 'type'
     foreach my $name (@attribs) {
@@ -304,13 +348,13 @@ Create a normal toolbar button
 =cut
 
 sub _item_normal {
-    my ($self, $name, $attribs) = @_;
+    my ( $self, $name, $attribs ) = @_;
 
     $self->{_tb}->separator if $attribs->{sep} =~ m{before};
 
     $self->{_tb}{$name} = $self->{_tb}->ToolButton(
-        -image   => $attribs->{icon},
-        -tip     => $attribs->{tooltip},
+        -image => $attribs->{icon},
+        -tip   => $attribs->{tooltip},
     );
 
     $self->{_tb}->separator if $attribs->{sep} =~ m{after};
@@ -325,7 +369,7 @@ Create a check toolbar button
 =cut
 
 sub _item_check {
-    my ($self, $name, $attribs) = @_;
+    my ( $self, $name, $attribs ) = @_;
 
     $self->{_tb}->separator if $attribs->{sep} =~ m{before};
 
@@ -334,6 +378,7 @@ sub _item_check {
         -type        => 'Checkbutton',
         -indicatoron => 0,
         -tip         => $attribs->{tooltip},
+
         #-variable    => \$self->{tpda}->{$variable},
     );
 
@@ -361,20 +406,59 @@ Return a toolbar button when we know the its name
 =cut
 
 sub get_toolbar_btn {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
     return $self->{_tb}{$name};
 }
 
-=head2 get_toolbar
+=head2 toggle_tool
 
-Return the toolbar handler
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
 
 =cut
 
-sub get_toolbar {
-    my $self = shift;
-    return $self->{_tb};
+sub toggle_tool {
+    my ($self, $btn_name, $state) = @_;
+
+    my $tb_btn = $self->get_toolbar_btn($btn_name);
+
+    my $other;
+    if ($state) {
+        if ( $state =~ m{norma|disabled} ) {
+            $other = $state;
+        }
+        else {
+            $other = $state ? 'normal' : 'disabled';
+        }
+    }
+    else {
+        $state = $tb_btn->cget(-state);
+        $other = $state eq 'normal' ? 'disabled' : 'normal';
+    }
+
+    $tb_btn->configure( -state => $other );
+}
+
+=head2 toggle_tool_check
+
+Toggle a toolbar checkbutton.
+
+=cut
+
+sub toggle_tool_check {
+    my ($self, $btn_name, $state) = @_;
+
+    my $tb_btn = $self->get_toolbar_btn($btn_name);
+
+    if ($state) {
+        $tb_btn->select;
+    }
+    else {
+        $tb_btn->deselect;
+    }
 }
 
 =head2 get_controls_conf
@@ -387,9 +471,7 @@ configurations page
 sub get_controls_conf {
     my $self = shift;
 
-    return [
-        { path => [ $self->{path}, 'disabled', 'lightgrey' ] },
-    ];
+    return [ { path => [ $self->{path}, 'disabled', 'lightgrey' ] }, ];
 }
 
 =head2 get_control_by_name
@@ -399,9 +481,9 @@ Return the control instance by name
 =cut
 
 sub get_control_by_name {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
-    return $self->{$name},
+    return $self->{$name},;
 }
 
 =head2 on_quit
@@ -436,4 +518,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::View
+1;    # End of Tpda3::Tk::View
