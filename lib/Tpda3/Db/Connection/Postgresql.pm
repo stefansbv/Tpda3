@@ -3,6 +3,8 @@ package Tpda3::Db::Connection::Postgresql;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger);
+
 use DBI;
 
 =head1 NAME
@@ -53,7 +55,7 @@ Connect to database
 sub db_connect {
     my ($self, $conf) = @_;
 
-    my $dbname = $conf->{database};
+    my $dbname = $conf->{dbname};
     my $host   = $conf->{server};
     my $port   = $conf->{port};
     my $driver = $conf->{driver};

@@ -3,7 +3,7 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Data::Dumper;
+use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;
 use File::UserConfig;
@@ -103,6 +103,13 @@ sub _config_main_load {
         sharedir => 'share',
     )->configdir;
 
+    # Log init
+    my $log_qfn = catfile( $configpath, 'etc/log.conf' );
+    Log::Log4perl->init($log_qfn);
+
+    my $log = get_logger();
+    $log->info('*** New session begin:');
+
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );
 
@@ -117,6 +124,8 @@ sub _config_main_load {
         conpath => catdir( $configpath, $maincfg->{paths}{connections} ),
         confile => $maincfg->{configs}{connection},
         cfother => $maincfg->{other},
+        user    => $args->{user}, # make accessors for user and pass
+        pass    => $args->{pass},
     };
 
     # Setup when GUI runtime

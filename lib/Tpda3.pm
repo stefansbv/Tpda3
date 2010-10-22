@@ -3,11 +3,13 @@ package Tpda3;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger);
+
 use Tpda3::Tk::Controller;
 
 =head1 NAME
 
-Tpda3 - The great new Tpda!
+Tpda3 - The third incarnation of Tpda!
 
 =head1 VERSION
 

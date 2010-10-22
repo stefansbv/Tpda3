@@ -3,6 +3,8 @@ package Tpda3::Db::Connection;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger);
+
 use Tpda3::Config;
 
 =head1 NAME
@@ -54,22 +56,21 @@ Connect method, uses I<Tpda3::Config> module for configuration.
 sub _connect {
     my $self = shift;
 
-    my $log = get_logger();
+    # my $log = get_logger();
 
     my $inst = Tpda3::Config->instance;
     my $conf = $inst->connection;
 
-    my $cfgn = $inst->cfgname;
-    $conf->{$cfgn}{user} = $inst->user;    # add user and pass to options
-    if ( !$conf->{$cfgn}{user} ) {
-        $conf->{$cfgn}{user} = $self->read_username();
+    $conf->{user} = $inst->user;    # add user and pass to options
+    if ( !$conf->{user} ) {
+        $conf->{user} = $self->read_username();
     }
-    $conf->{$cfgn}{pass} = $inst->pass;
-    if ( !$conf->{$cfgn}{pass} ) {
-        $conf->{$cfgn}{pass} = $self->read_password();
+    $conf->{pass} = $inst->pass;
+    if ( !$conf->{pass} ) {
+        $conf->{pass} = $self->read_password();
     }
 
-    my $driver = $conf->{$cfgn}{driver};
+    my $driver = $conf->{driver};
     my $db;
 
   SWITCH: for ( $driver ) {
@@ -95,7 +96,7 @@ sub _connect {
     }
 
     $self->{dbc} = $db;
-    $self->{dbh} = $db->db_connect( $conf->{$cfgn} );
+    $self->{dbh} = $db->db_connect( $conf );
 }
 
 =head2 read_username

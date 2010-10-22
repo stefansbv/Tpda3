@@ -3,7 +3,7 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
+use Log::Log4perl qw(get_logger);
 
 use Tk;
 
@@ -96,6 +96,13 @@ sub _set_event_handlers {
     );
 
     #- Toolbar
+
+    #-- Connect
+    $self->_view->get_toolbar_btn('tb_cn')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->_model->toggle_db_connect;
+        }
+    );
 
     #-- Quit
     $self->_view->get_toolbar_btn('tb_qt')->bind(
