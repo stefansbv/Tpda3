@@ -72,6 +72,7 @@ sub start {
     $self->_model->toggle_db_connect();
 
     $self->_model->set_idlemode();
+
     $self->toggle_controls;
 }
 
@@ -99,6 +100,24 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_cn')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->toggle_db_connect;
+        }
+    );
+
+    #-- Find mode
+    $self->_view->get_toolbar_btn('tb_fm')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->_model->is_findmode
+                ? $self->_model->set_idlemode
+                : $self->_model->set_findmode;
+        }
+    );
+
+    #-- Add mode
+    $self->_view->get_toolbar_btn('tb_ad')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->_model->is_addmode
+                ? $self->_model->set_idlemode
+                : $self->_model->set_addmode;
         }
     );
 
@@ -148,7 +167,7 @@ sub toggle_controls {
     # Tool buttons states
     my $states = {
         tb_cn => !$is_edit,
-        tb_fm => $is_edit,
+        tb_fm => !$is_edit,
         tb_fe => $is_edit,
         tb_fc => $is_edit,
         tb_pr => $is_edit,
@@ -156,7 +175,7 @@ sub toggle_controls {
         tb_tr => $is_edit,
         tb_cl => $is_edit,
         tb_rr => $is_edit,
-        tb_ad => $is_edit,
+        tb_ad => !$is_edit,
         tb_rm => $is_edit,
         tb_sv => $is_edit,
         tb_qt => !$is_edit,
@@ -166,10 +185,6 @@ sub toggle_controls {
         $self->set_controls_tb( $btn, $states->{$btn} );
     }
 
-    # # List control
-    # $self->{_list}->Enable(!$is_edit);
-
-    # # Controls by page Enabled in edit mode
     # foreach my $page ( qw(para list conf sql ) ) {
     #     $self->toggle_controls_page( $page, $is_edit );
     # }

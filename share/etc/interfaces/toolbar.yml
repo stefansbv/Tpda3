@@ -68,7 +68,7 @@ toolbar:
     sep:     after
   tb_ad:
     id:      1010
-    type:    _item_normal
+    type:    _item_check
     icon:    actitemadd16
     tooltip: Add report
     help:    Create new query definition file

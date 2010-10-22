@@ -92,30 +92,22 @@ Define the model callbacks
 sub _set_model_callbacks {
     my $self = shift;
 
-    #-
     my $co = $self->_model->get_connection_observable;
     $co->add_callback(
         sub { $self->toggle_tool_check( 'tb_cn', $_[0] ) } );
 
-    # #--
-    # my $em = $self->_model->get_editmode_observable;
-    # $em->add_callback(
-    #     sub {
-    #         $tb->ToggleTool( $self->get_toolbar_btn_id('tb_ed'), $_[0] );
-    #         $self->toggle_sql_replace();
-    #     }
-    # );
-    # #--
-    # my $upd = $self->_model->get_itemchanged_observable;
-    # $upd->add_callback(
-    #     sub { $self->controls_populate(); } );
-    # #--
+    my $em = $self->_model->get_findmode_observable;
+    $em->add_callback(
+        sub { $self->toggle_tool_check( 'tb_fm', $_[0] ) } );
+
+    my $ad = $self->_model->get_addmode_observable;
+    $ad->add_callback(
+        sub { $self->toggle_tool_check( 'tb_ad', $_[0] ) } );
+
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub { $self->log_msg( $_[0] ) } );
 
-    #$so->add_callback( sub{ $self->status_msg( @_ ) } );
-
-    my $st = $self->_model->get_status_observable;
+    my $st = $self->_model->get_statusmsg_observable;
     $st->add_callback( sub { $self->set_status(@_) } );
 }
 

@@ -39,8 +39,10 @@ sub new {
     my $self = {
         _connected => Tpda3::Observable->new(),
         _stdout    => Tpda3::Observable->new(),
-        _status    => Tpda3::Observable->new(),
+        _statusmsg => Tpda3::Observable->new(),
+        _addmode   => Tpda3::Observable->new(),
         _editmode  => Tpda3::Observable->new(),
+        _findmode  => Tpda3::Observable->new(),
     };
 
     bless $self, $class;
@@ -159,16 +161,16 @@ sub _print {
     #$self->get_stdout_observable->set( "$line:$sb_id" );
 }
 
-=head2 get_status_observable
+=head2 get_statusmsg_observable
 
-Get status observable
+Get statusmsg observable
 
 =cut
 
-sub get_status_observable {
+sub get_statusmsg_observable {
     my $self = shift;
 
-    return $self->{_status};
+    return $self->{_statusmsg};
 }
 
 =head2 _status_msg
@@ -182,7 +184,7 @@ sub _status_msg {
 
     $sb_id = 'll' if ! $sb_id;
 
-    $self->get_status_observable->set( "$line:$sb_id" );
+    $self->get_statusmsg_observable->set( "$line:$sb_id" );
 }
 
 =head2 set_idlemode
@@ -194,16 +196,92 @@ Set idle mode
 sub set_idlemode {
     my $self = shift;
 
+    if ( $self->is_addmode ) {
+        $self->get_addmode_observable->set(0);
+    }
     if ( $self->is_editmode ) {
         $self->get_editmode_observable->set(0);
     }
-    if ( $self->is_editmode ) {
-        $self->_print('edit', 1);
-        $self->_status_msg('idle','lr');
+    if ( $self->is_findmode ) {
+        $self->get_findmode_observable->set(0);
+    }
+
+    $self->_status_msg('idle', 'lr');
+}
+
+=head2 set_addmode
+
+Set add mode
+
+=cut
+
+sub set_addmode {
+    my $self = shift;
+
+    $self->set_idlemode();
+
+    $self->get_addmode_observable->set(1);
+
+    if ( $self->is_addmode ) {
+        $self->_status_msg('add', 'lr');
     }
     else {
         $self->_status_msg('idle', 'lr');
     }
+}
+
+=head2 set_editmode
+
+Set edit mode
+
+=cut
+
+sub set_editmode {
+    my $self = shift;
+
+    $self->set_idlemode();
+
+    $self->get_editmode_observable->set(1);
+
+    if ( $self->is_editmode ) {
+        $self->_status_msg('edit', 'lr');
+    }
+    else {
+        $self->_status_msg('idle', 'lr');
+    }
+}
+
+=head2 set_findmode
+
+Set find mode
+
+=cut
+
+sub set_findmode {
+    my $self = shift;
+
+    $self->set_idlemode();
+
+    $self->get_findmode_observable->set(1);
+
+    if ( $self->is_findmode ) {
+        $self->_status_msg('find', 'lr');
+    }
+    else {
+        $self->_status_msg('idle', 'lr');
+    }
+}
+
+=head2 is_addmode
+
+Return true if is add mode
+
+=cut
+
+sub is_addmode {
+    my $self = shift;
+
+    return $self->get_addmode_observable->get;
 }
 
 =head2 is_editmode
@@ -218,6 +296,30 @@ sub is_editmode {
     return $self->get_editmode_observable->get;
 }
 
+=head2 is_findmode
+
+Return true if is find mode
+
+=cut
+
+sub is_findmode {
+    my $self = shift;
+
+    return $self->get_findmode_observable->get;
+}
+
+=head2 get_addmode_observable
+
+Return add mode observable status
+
+=cut
+
+sub get_addmode_observable {
+    my $self = shift;
+
+    return $self->{_addmode};
+}
+
 =head2 get_editmode_observable
 
 Return edit mode observable status
@@ -228,6 +330,18 @@ sub get_editmode_observable {
     my $self = shift;
 
     return $self->{_editmode};
+}
+
+=head2 get_findmode_observable
+
+Return find mode observable status
+
+=cut
+
+sub get_findmode_observable {
+    my $self = shift;
+
+    return $self->{_findmode};
 }
 
 =head1 AUTHOR
