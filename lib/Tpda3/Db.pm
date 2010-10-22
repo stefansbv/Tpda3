@@ -3,7 +3,7 @@ package Tpda3::Db;
 use strict;
 use warnings;
 
-#use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger);
 
 use Tpda3::Db::Connection;
 
