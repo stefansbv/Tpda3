@@ -60,51 +60,78 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Product',
         -labelside  => 'acrosstop',
-    )->pack;
+    )->pack( -expand => 1, -fill => 'x' );
 
     # Code (productcode)
     my $lproductcode = $frame1->Label( -text => 'Code' );
-    $lproductcode->form(
-        -left => [ %0, 0 ],
-        -top  => [ %0, 0 ],
+    $lproductcode->grid(
+        -row    => 0,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $eproductcode = $frame1->Entry( -width => 15 );
-    $eproductcode->form(
-        -top  => [ '&', $lproductcode, 0 ],
-        -left => [ %0,  80 ],
+    $eproductcode->grid(
+        -row    => 0,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
-
+    Tk::grid
     # Name (productname)
     my $lproductname = $frame1->Label( -text => 'Name' );
-    $lproductname->form(
-        -left => [ %0,            0 ],
-        -top  => [ $lproductcode, 0 ],
+    $lproductname->grid(
+        -row    => 1,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $eproductname = $frame1->Entry( -width => 35 );
-    $eproductname->form(
-        -top  => [ '&', $lproductname, 0 ],
-        -left => [ %0,  80 ],
+    $eproductname->grid(
+        -row    => 1,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
 
     # Line (productline)
     my $lproductline = $frame1->Label( -text => 'Line' );
-    $lproductline->form(
-        -left => [ %0,            0 ],
-        -top  => [ $lproductname, 0 ],
+    $lproductline->grid(
+        -row    => 2,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $eproductline = $frame1->Entry( -width => 28 );
-    $eproductline->form(
-        -top  => [ '&', $lproductline, 0 ],
-        -left => [ %0,  80 ],
+    $eproductline->grid(
+        -row    => 2,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
     $eproductline->bind(
         '<KeyPress-Return>' => sub {
@@ -118,79 +145,135 @@ sub run_screen {
         -disabledbackground => $bg,
         -disabledforeground => 'black',
     );
-    $eproductlinecode->form(
-        -top   => [ '&', $lproductline, 0 ],
-        -right => [ '&', $eproductname, 0 ],
+    $eproductlinecode->grid(
+        -row    => 2,
+        -column => 2,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'e',
+        -padx => 5,
+        -pady => 5,
     );
 
     # Scale (productscale)
     my $lproductscale = $frame1->Label( -text => 'Scale' );
-    $lproductscale->form(
-        -left => [ %0,            0 ],
-        -top  => [ $lproductline, 0 ],
+    $lproductscale->grid(
+        -row    => 3,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $eproductscale = $frame1->Entry( -width => 10 );
-    $eproductscale->form(
-        -top  => [ '&', $lproductscale, 0 ],
-        -left => [ %0,  80 ],
+    $eproductscale->grid(
+        -row    => 3,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
 
     # Vendor (productvendor)
     my $lproductvendor = $frame1->Label( -text => 'Vendor' );
-    $lproductvendor->form(
-        -left => [ %0,             0 ],
-        -top  => [ $lproductscale, 0 ],
+    $lproductvendor->grid(
+        -row    => 5,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $eproductvendor = $frame1->Entry( -width => 35 );
-    $eproductvendor->form(
-        -top  => [ '&', $lproductvendor, 0 ],
-        -left => [ %0,  80 ]
+    $eproductvendor->grid(
+        -row    => 5,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
 
     # Stock (quantityinstock)
     my $lquantityinstock = $frame1->Label( -text => 'Stock' );
-    $lquantityinstock->form(
-        -left => [ %0,              0 ],
-        -top  => [ $lproductvendor, 0 ],
+    $lquantityinstock->grid(
+        -row    => 6,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $equantityinstock = $frame1->Entry( -width => 5 );
-    $equantityinstock->form(
-        -top  => [ '&', $lquantityinstock, 0 ],
-        -left => [ %0,  80 ],
+    $equantityinstock->grid(
+        -row    => 6,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
     );
 
     # Buy price (buyprice)
     my $lbuyprice = $frame1->Label( -text => 'Buy price' );
-    $lbuyprice->form(
-        -left => [ %0,                0 ],
-        -top  => [ $lquantityinstock, 0 ],
+    $lbuyprice->grid(
+        -row    => 7,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $ebuyprice = $frame1->Entry( -width => 8 );
-    $ebuyprice->form( -top => [ '&', $lbuyprice, 0 ], -left => [ %0, 80 ] );
+    $ebuyprice->grid(
+        -row    => 7,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
+    );
 
     # MSRP (msrp)
     my $lmsrp = $frame1->Label( -text => 'MSRP' );
-    $lmsrp->form(
-        -left => [ %0,         0 ],
-        -top  => [ $lbuyprice, 0 ],
+    $lmsrp->grid(
+        -row    => 8,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
 
     my $emsrp = $frame1->Entry( -width => 8 );
-    $emsrp->form( -top => [ '&', $lmsrp, 0 ], -left => [ %0, 80 ] );
+    $emsrp->grid(
+        -row    => 8,
+        -column => 1,
+        -ipadx  => 3,
+        -ipady  => 3,
+        -sticky => 'w',
+        -padx => 5,
+        -pady => 5,
+        -columnspan => 2,
+    );
 
     # Frame 2
 
@@ -198,7 +281,7 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Description',
         -labelside  => 'acrosstop',
-    )->pack;
+    )->pack( -expand => 1, -fill => 'x' );
 
     # Font
     my $my_font = $eproductcode->cget('-font');
@@ -213,9 +296,12 @@ sub run_screen {
         -font       => $my_font,
     );
 
-    $tproductdescription->form(
-        -left => [ %0, 0 ],
-        -top  => [ %0, 0 ],
+    $tproductdescription->grid(
+        -row    => 0,
+        -column => 0,
+        -ipadx  => 5,
+        -ipady  => 5,
+        -sticky => 'w',
         -padx => 5,
         -pady => 5,
     );
