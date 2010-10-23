@@ -70,22 +70,22 @@ toolbar:
     id:      1010
     type:    _item_check
     icon:    actitemadd16
-    tooltip: Add report
-    help:    Create new query definition file
+    tooltip: Add record
+    help:    Add record
     sep:     none
   tb_rm:
     id:      1011
     type:    _item_normal
     icon:    actitemdelete16
-    tooltip: Remove
-    help:    Remove query definition file
+    tooltip: Remove record
+    help:    Remove record
     sep:     none
   tb_sv:
     id:      1012
     type:    _item_normal
     icon:    filesave16
-    tooltip: Save
-    help:    Save query definition file
+    tooltip: Save record
+    help:    Save record
     sep:     none
   tb_qt:
     id:      1013

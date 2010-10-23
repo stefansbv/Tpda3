@@ -265,6 +265,9 @@ Load screen: experimental
 sub screen_load {
     my ($self, ) = @_;
 
+    # Unload current screen
+    # Class::Unload->unload( 'Some::Class' );
+
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();
 
@@ -275,6 +278,8 @@ sub screen_load {
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
     $class->import;
+
+    # Class::Inspector->loaded( 'Some::Class' ); # Returns false
 
     if ($class->can('run_screen') ) {
         print "INFO: Loaded '$class'\n";

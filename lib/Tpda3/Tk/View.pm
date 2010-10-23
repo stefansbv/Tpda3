@@ -3,6 +3,8 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
@@ -56,6 +58,7 @@ sub new {
 
     #-- Menu
     $self->_create_menu();
+    $self->_create_app_menu();
 
     #-- ToolBar
     $self->_create_toolbar();
@@ -125,7 +128,7 @@ sub log_msg {
     $log->info($msg);
 }
 
-=head2 create_menu
+=head2 _create_menu
 
 Create the menu
 
@@ -134,9 +137,7 @@ Create the menu
 sub _create_menu {
     my $self = shift;
 
-    ### Menu
-
-    ## Menu bar
+    #- Menu bar
 
     $self->{_menu} = $self->Menu();
 
@@ -144,18 +145,36 @@ sub _create_menu {
     my $cfg     = Tpda3::Config->instance();
     my $attribs = $cfg->menubar;
 
-    #-- Sort by id
-    #- Keep only key and id for sorting
-    my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
+    $self->make_menus($attribs);
 
-    #- Sort with  ST
-    my @attribs = map { $_->[0] }
-      sort { $a->[1] <=> $b->[1] }
-      map { [ $_ => $temp{$_} ] }
-      keys %temp;
+    $self->configure( -menu => $self->{_menu} );
 
-    # Create menus
-    foreach my $menu_name (@attribs) {
+    $self->bind( '<Alt-x>' => sub { $self->on_quit } );
+}
+
+sub _create_app_menu {
+    my $self = shift;
+
+    my $cfg     = Tpda3::Config->instance();
+    my $attribs = $cfg->appmenubar;
+
+    $self->make_menus($attribs, 2);   # Add starting with position = 2
+}
+
+=head2 make_menus
+
+Make menus
+
+=cut
+
+sub make_menus {
+    my ($self, $attribs, $position) = @_;
+
+    $position = 1 if ! $position;
+    my $menus = $self->sort_hash_by_id($attribs);
+
+    #- Create menus
+    foreach my $menu_name ( @{$menus} ) {
 
         $self->{_menu}{$menu_name} = $self->{_menu}->Menu();
 
@@ -167,17 +186,18 @@ sub _create_menu {
             );
         }
 
-        $self->{_menu}->add(
+        $self->{_menu}->insert(
+            $position,
             'cascade',
             -menu      => $self->{_menu}{$menu_name},
             -label     => $attribs->{$menu_name}{label},
             -underline => $attribs->{$menu_name}{underline},
         );
+
+        $position++;
     }
 
-    $self->configure( -menu => $self->{_menu} );
-
-    $self->bind( '<Alt-x>' => sub { $self->on_quit } );
+    return;
 }
 
 =head2 make_popup_item
@@ -575,6 +595,28 @@ sub on_quit {
     my $self = shift;
 
     $self->destroy();
+}
+
+=head2 sort_hash_by_id
+
+Use ST to sort hash by value (Id)
+
+=cut
+
+sub sort_hash_by_id {
+    my ($self, $attribs) = @_;
+
+    #-- Sort by id
+    #- Keep only key and id for sorting
+    my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
+
+    #- Sort with  ST
+    my @attribs = map { $_->[0] }
+      sort { $a->[1] <=> $b->[1] }
+      map { [ $_ => $temp{$_} ] }
+      keys %temp;
+
+    return \@attribs;
 }
 
 =head1 AUTHOR

@@ -2,7 +2,7 @@
 # Interface configuration
 # Don't touch!, not for users ;)
 ---
-menubar:
+appmenubar:
   menu_app:
     id:    1001
     label: Contracte
@@ -18,7 +18,7 @@ menubar:
         name: ContrTr
         label: Contracte terti
         underline: 0
-        sep: none
+        sep: after
         key: ~
       3:
         name: FacturiPr
