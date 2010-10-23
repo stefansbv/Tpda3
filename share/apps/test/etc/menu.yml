@@ -1,0 +1,92 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+menubar:
+  menu_app:
+    id:    1001
+    label: Contracte
+    underline: 0
+    popup:
+      1:
+        name: ContrPr
+        label: Contracte proprii
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: ContrTr
+        label: Contracte terti
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: FacturiPr
+        label: Facturi proprii
+        underline: 0
+        sep: none
+        key: ~
+      4:
+        name: FacturiTr
+        label: Facturi terti
+        underline: 0
+        sep: after
+        key: ~
+      5:
+        name: Casa
+        label: Casa
+        underline: 0
+        sep: none
+        key: ~
+      6:
+        name: Banca
+        label: Banca
+        underline: 0
+        sep: none
+        key: ~
+  menu_rep:
+    id:    1002
+    label: Raportari
+    underline: 0
+    popup:
+      1:
+        name: RaportDb
+        label: Debite
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: RaportCr
+        label: Creante
+        underline: 0
+        sep: none
+        key: ~
+  menu_cat:
+    id:    1003
+    label: Cataloage
+    underline: 7
+    popup:
+      1:
+        name: Firma
+        label: Date firma
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: Terti
+        label: Terti
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: ProdServ
+        label: Produse si Servicii
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: Localitati
+        label: Localitati
+        underline: 0
+        sep: none
+        key: ~

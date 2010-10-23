@@ -3,6 +3,8 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;
@@ -59,8 +61,10 @@ sub _new_instance {
     $self->_config_main_load($args);
     if ( $args->{cfgname} ) {
         # If no config name don't bother to load this
-        $self->_config_conn_load($args);
-        $self->_config_other_load();
+        # Interface configs
+        $self->_config_interface_load();
+        # Application configs
+        $self->_config_application_load($args);
     }
 
     return $self;
@@ -108,24 +112,25 @@ sub _config_main_load {
     Log::Log4perl->init($log_qfn);
 
     my $log = get_logger();
-    $log->info("\n*** New session begin:");
+    $log->info("*** New session begin:");
 
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );
+    $log->info("Main config file is $main_qfn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
     $msg   .= qq{\n  from '$main_qfn'!};
     my $maincfg = $self->_config_file_load($main_qfn, $msg);
+    $log->info("Main config file loaded.");
 
-    # Misc
+    # Base configuration methods
     my $main_hr = {
-        cfgpath => $configpath,
-        contmpl => catdir( $configpath, $maincfg->{paths}{conntmpl} ),
-        conpath => catdir( $configpath, $maincfg->{paths}{connections} ),
-        confile => $maincfg->{configs}{connection},
-        cfother => $maincfg->{other},
-        user    => $args->{user}, # make accessors for user and pass
-        pass    => $args->{pass},
+        cfpath    => $configpath,
+        cfapppath => catdir($configpath, 'apps'),
+        cfiface   => $maincfg->{interface},
+        cfapp     => $maincfg->{application},
+        user      => $args->{user}, # make accessors for user and pass
+        pass      => $args->{pass},
     };
 
     # Setup when GUI runtime
@@ -133,65 +138,70 @@ sub _config_main_load {
         $main_hr->{cfgname} = $args->{cfgname};
     }
 
+    my @accessor = keys %{$main_hr};
+    $log->info("Making accessors for @accessor");
+
     $self->_make_accessors($main_hr);
 
     return $maincfg;
 }
 
-=head2 _config_conn_load
-
-Initialize the runtime connection configuration file name and path and
-some miscellaneous info from the main configuration file.
-
-The B<connection> configuration is special.  More than one connection
-configuration is allowed and the name of the used connection is known
-only at runtime from the I<cfgname> argument.
-
-Load the connection configuration file.  This is treated separately
-because the path is only known at runtime.
-
-=cut
-
-sub _config_conn_load {
-    my ( $self, $args ) = @_;
-
-    # Connection
-    my $cfgconn_f = $self->conn_cfg_filename($self->cfgname);
-
-    my $msg = qq{\nConfiguration error, to fix, run\n\n};
-    $msg   .= qq{  tpda-mvc -init };
-    $msg   .= $self->cfgname . qq{\n\n};
-    $msg   .= qq{then edit: $cfgconn_f\n};
-    my $cfg_data = $self->_config_file_load($cfgconn_f, $msg);
-
-    $cfg_data->{cfgconnf} = $cfgconn_f; # Accessor for connection file
-    $cfg_data->{conninfo}{user} = $args->{user};
-    $cfg_data->{conninfo}{pass} = $args->{pass};
-
-    $self->_make_accessors($cfg_data);
-
-    return;
-}
-
-=head2 _config_other_load
+=head2 _config_interface_load
 
 Process the main configuration file and automaticaly load all the
-other defined configuration files.  That means if we add a YAML
+interface defined configuration files.  That means if we add a YAML
 configuration file to the tree, all defined values should be available
 at restart.
 
 =cut
 
-sub _config_other_load {
+sub _config_interface_load {
     my $self = shift;
 
-    foreach my $sec ( keys %{ $self->cfother } ) {
-        next if $sec eq 'connection';
+    my $log = get_logger();
 
-        my $cfg_file = catfile( $self->cfgpath, $self->cfother->{$sec} );
+    foreach my $section ( keys %{ $self->cfiface } ) {
+        my $cfg_file = $self->_config_iface_file_name($section);
+
         my $msg = qq{\nConfiguration error: \n Can't read configurations};
         $msg   .= qq{\n  from '$cfg_file'!};
+
+        $log->info("Loading $section config file: $cfg_file");
         my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+
+        my @accessor = keys %{$cfg_data};
+        $log->info("Making accessors for @accessor");
+
+        $self->_make_accessors($cfg_data);
+    }
+
+    return;
+}
+
+=head2 _config_application_load
+
+Load the application configuration files.  This are treated separately
+because the path is only known at runtime.
+
+=cut
+
+sub _config_application_load {
+    my ( $self, $args ) = @_;
+
+    my $log = get_logger();
+
+    foreach my $section ( keys %{ $self->cfapp } ) {
+        my $cfg_file = $self->_config_app_file_name($section);
+
+        $log->info("Loading $section config file: $cfg_file");
+        my $msg = qq{\nConfiguration error, to fix, run\n\n};
+        $msg   .= qq{  tpda-mvc -init };
+        $msg   .= $self->cfgname . qq{\n\n};
+        #$msg   .= qq{then edit: $cfgconn_f\n};
+        my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+
+        my @accessor = keys %{$cfg_data};
+        $log->info("Making accessors for @accessor");
 
         $self->_make_accessors($cfg_data);
     }
@@ -231,16 +241,22 @@ sub _config_file_load {
     }
 }
 
-=head2 conn_cfg_filename
+=head2 _config_file_name
 
 Return full path to connection file.
 
 =cut
 
-sub conn_cfg_filename {
-    my ($self, $cfgname) = @_;
+sub _config_iface_file_name {
+    my ($self, $section) = @_;
 
-    return catfile($self->conpath, $cfgname, 'etc', $self->confile );
+    return catfile( $self->cfpath, $self->cfiface->{$section} );
+}
+
+sub _config_app_file_name {
+    my ($self, $section) = @_;
+
+    return catfile($self->cfapppath, $self->cfgname, $self->cfapp->{$section} );
 }
 
 =head2 list_configs
@@ -257,7 +273,7 @@ sub list_configs {
 
     print "Connection configurations:\n";
     foreach my $cfg_name ( @{$conn_list} ) {
-        my $ccfn = $self->conn_cfg_filename($cfg_name);
+        my $ccfn = $self->_config_file_name($cfg_name);
         # If connection file exist than list as connection name
         if (-f $ccfn) {
             print "  > $cfg_name\n";
@@ -287,3 +303,17 @@ by the Free Software Foundation.
 =cut
 
 1; # End of Tpda3::Config
+
+#cfgname    = test
+#$cfpath   = ~/.tpda_mvc
+
+#application:
+#conninfo   = ~/$cfpath/app/$cfgname/etc/connection.yml
+#appmenu    = ~/$cfpath/app/$cfgname/etc/menu.yml
+
+#interfaces:
+#menubar    = ~/$cfpath/etc/interfaces/menubar.yml
+#toolbar    = ~/$cfpath/etc/interfaces/toolbar.yml
+
+#general:
+#conntmpl   = ~/$cfpath/etc/template/connection.yml
