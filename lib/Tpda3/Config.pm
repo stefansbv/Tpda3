@@ -108,20 +108,22 @@ sub _config_main_load {
     )->configdir;
 
     # Log init
+    # Can't do before we know the application config path
     my $log_qfn = catfile( $configpath, 'etc/log.conf' );
     Log::Log4perl->init($log_qfn);
 
-    my $log = get_logger();
-    $log->info("*** New session begin:");
+    $self->{_log} = get_logger();
+
+    $self->{_log}->info("*** New session begin:");
 
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );
-    $log->info("Main config file is $main_qfn");
+    $self->{_log}->info("Main config file is $main_qfn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
     $msg   .= qq{\n  from '$main_qfn'!};
     my $maincfg = $self->_config_file_load($main_qfn, $msg);
-    $log->info("Main config file loaded.");
+    $self->{_log}->info("Main config file loaded.");
 
     # Base configuration methods
     my $main_hr = {
@@ -139,7 +141,7 @@ sub _config_main_load {
     }
 
     my @accessor = keys %{$main_hr};
-    $log->info("Making accessors for @accessor");
+    $self->{_log}->info("Making accessors for @accessor");
 
     $self->_make_accessors($main_hr);
 
@@ -158,19 +160,17 @@ at restart.
 sub _config_interface_load {
     my $self = shift;
 
-    my $log = get_logger();
-
     foreach my $section ( keys %{ $self->cfiface } ) {
         my $cfg_file = $self->_config_iface_file_name($section);
 
         my $msg = qq{\nConfiguration error: \n Can't read configurations};
         $msg   .= qq{\n  from '$cfg_file'!};
 
-        $log->info("Loading $section config file: $cfg_file");
+        $self->{_log}->info("Loading $section config file: $cfg_file");
         my $cfg_data = $self->_config_file_load($cfg_file, $msg);
 
         my @accessor = keys %{$cfg_data};
-        $log->info("Making accessors for @accessor");
+        $self->{_log}->info("Making accessors for @accessor");
 
         $self->_make_accessors($cfg_data);
     }
@@ -188,12 +188,10 @@ because the path is only known at runtime.
 sub _config_application_load {
     my ( $self, $args ) = @_;
 
-    my $log = get_logger();
-
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->_config_app_file_name($section);
 
-        $log->info("Loading $section config file: $cfg_file");
+        $self->{_log}->info("Loading $section config file: $cfg_file");
         my $msg = qq{\nConfiguration error, to fix, run\n\n};
         $msg   .= qq{  tpda-mvc -init };
         $msg   .= $self->cfgname . qq{\n\n};
@@ -201,7 +199,7 @@ sub _config_application_load {
         my $cfg_data = $self->_config_file_load($cfg_file, $msg);
 
         my @accessor = keys %{$cfg_data};
-        $log->info("Making accessors for @accessor");
+        $self->{_log}->info("Making accessors for @accessor");
 
         $self->_make_accessors($cfg_data);
     }
