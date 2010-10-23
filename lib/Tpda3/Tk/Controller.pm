@@ -56,6 +56,8 @@ sub new {
         _screen  => undef,
     };
 
+    $self->{_log} = get_logger();
+
     bless $self, $class;
 
     $self->_set_event_handlers;
@@ -277,7 +279,7 @@ sub toggle_controls_page {
 
 =head2 screen_load
 
-Load screen: experimental
+Load screen
 
 =cut
 
@@ -286,14 +288,13 @@ sub screen_load {
 
     # Unload current screen
     if ( $self->{_curent} ) {
-        print "Unloading $self->{_curent} screen ...";
         Class::Unload->unload( $self->{_curent} );
 
         if ( ! Class::Inspector->loaded( $self->{_curent} ) ) {
-            print " done\n";
+            $self->{_log}->trace("Unloaded $self->{_curent} screen");
         }
         else {
-            print " Error unloading  $self->{_curent} screen\n";
+            $self->{_log}->trace("Error unloading  $self->{_curent} screen");
         }
     }
 
@@ -309,10 +310,10 @@ sub screen_load {
     $class->import;
 
     if ($class->can('run_screen') ) {
-        print "INFO: Loaded '$class'\n";
+        $self->{_log}->trace("Screen can 'run_screen'");
     }
     else {
-        warn "ERROR loading screen!\n";
+        $self->{_log}->error("Error, screen can not 'run_screen'");
     }
 
     # New screen instance
