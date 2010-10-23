@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger);
@@ -142,6 +144,19 @@ sub _set_event_handlers {
             $self->_view->on_quit;
         }
     );
+
+    #-- NoteBook
+
+    # Must initialize only after the notebook is created
+    # -raisecmd  => [ \&tab_event, $self, 'rec' ]
+    # my $nb = $self->_view->get_notebook('rec');
+    # print Dumper( $nb );
+    # $nb->configure(
+    #     -raisecmd => sub {
+    #         print "tab changed\n";
+    #         #$self->_view->on_quit;
+    #     }
+    # );
 }
 
 =head2 _model

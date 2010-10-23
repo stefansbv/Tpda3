@@ -495,9 +495,9 @@ Return the notebook handler
 =cut
 
 sub get_notebook {
-    my $self = shift;
+    my ($self, $panel) = @_;
 
-    return $self->{_nb};
+    return $self->{_nb}{$panel};
 }
 
 =head2 destroy_notebook

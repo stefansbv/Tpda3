@@ -1,11 +1,11 @@
-package Tpda3::App::test::Products;
+package Tpda3::App::test::Products2;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Tpda3::App::test::Products screen
+Tpda3::App::test::Products2 screen
 
 =head1 VERSION
 
@@ -17,9 +17,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    require Tpda3::App::test::Products;
+    require Tpda3::App::test::Products2;
 
-    my $scr = Tpda3::App::test::Products->new;
+    my $scr = Tpda3::App::test::Products2->new;
 
     $scr->run_screen($args);
 
@@ -60,15 +60,7 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Product',
         -labelside  => 'acrosstop',
-    );
-    $frame1->grid(
-        $frame1,
-        -row    => 0,
-        -column => 0,
-        -ipadx  => 3,
-        -ipady  => 3,
-        -sticky => 'nsew',
-    );
+    )->pack;
 
     # Code (productcode)
     my $lproductcode = $frame1->Label( -text => 'Code' );
@@ -206,13 +198,7 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Description',
         -labelside  => 'acrosstop',
-    );
-    $frame2->grid(
-        $frame2,
-        -row    => 1,
-        -column => 0,
-        -sticky => 'nsew',
-    );
+    )->pack;
 
     # Font
     my $my_font = $eproductcode->cget('-font');
@@ -281,11 +267,6 @@ sub run_screen {
     return $eproductcode;
 }
 
-# +--------------------------------------------------------------------------+
-# | G e t   e n t r y   o b j e c t s   m e t h o d s.                       |
-# +--------------------------------------------------------------------------+
-
-
 =head2 get_eobj_rec
 
 return record
@@ -314,4 +295,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::test::Products
+1; # End of Tpda3::App::test::Products2
