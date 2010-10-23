@@ -14,3 +14,9 @@ appmenubar:
         underline: 0
         sep: none
         key: ~
+      2:
+        name: Products2
+        label: Products2
+        underline: 0
+        sep: none
+        key: ~

@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger);
@@ -279,12 +277,17 @@ sub toggle_controls_page {
 
 =head2 screen_load
 
-Load screen
+Load screen chosen from the menu
 
 =cut
 
 sub screen_load {
     my ($self, $what) = @_;
+
+    my $loglevel_old = $self->{_log}->level();
+
+    # Set log level to trace in this sub
+    $self->{_log}->level($Log::Log4perl::TRACE);
 
     # Unload current screen
     if ( $self->{_curent} ) {
@@ -310,10 +313,10 @@ sub screen_load {
     $class->import;
 
     if ($class->can('run_screen') ) {
-        $self->{_log}->trace("Screen can 'run_screen'");
+        $self->{_log}->trace("Screen $class can 'run_screen'");
     }
     else {
-        $self->{_log}->error("Error, screen can not 'run_screen'");
+        $self->{_log}->error("Error, screen $class can not 'run_screen'");
     }
 
     # New screen instance
@@ -326,6 +329,9 @@ sub screen_load {
 
     # Store currently loaded screen class
     $self->{_curent} = $class;
+
+    # Restore default log level
+    $self->{_log}->level($loglevel_old);
 }
 
 =head1 AUTHOR
