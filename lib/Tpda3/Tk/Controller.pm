@@ -3,9 +3,10 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
-use Class::Inspector;
 use Log::Log4perl qw(get_logger);
 
 use Tpda3::Model;
@@ -51,6 +52,8 @@ sub new {
     my $self = {
         _model   => $model,
         _view    => $view,
+        _curent  => undef,
+        _screen  => undef,
     };
 
     bless $self, $class;
@@ -86,7 +89,7 @@ Setup event handlers
 sub _set_event_handlers {
     my $self = shift;
 
-    #- Menu
+    #- Base menu
 
     #-- Exit
     $self->_view->get_menu_popup_item('mn_qt')->configure(
@@ -94,6 +97,17 @@ sub _set_event_handlers {
             $self->_view->on_quit;
         }
     );
+
+    #- Custom application menu from menu.yml
+
+    my $appmenus = $self->_view->get_app_menus_list();
+    foreach my $item ( @{$appmenus} ) {
+        $self->_view->get_menu_popup_item($item)->configure(
+            -command => sub {
+                $self->screen_load($item);
+            }
+        );
+    }
 
     #- Toolbar
 
@@ -119,13 +133,6 @@ sub _set_event_handlers {
             $self->_model->is_addmode
                 ? $self->_model->set_idlemode
                 : $self->_model->set_addmode;
-        }
-    );
-
-    # Experimental
-    $self->_view->get_toolbar_btn('tb_rm')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->screen_load();
         }
     );
 
@@ -159,6 +166,18 @@ sub _view {
     my $self = shift;
 
     return $self->{_view};
+}
+
+=head2 _screen
+
+Return current screen instance variable.
+
+=cut
+
+sub _screen {
+    my $self = shift;
+
+    return $self->{_screen};
 }
 
 =head2 toggle_controls
@@ -263,10 +282,20 @@ Load screen: experimental
 =cut
 
 sub screen_load {
-    my ($self, ) = @_;
+    my ($self, $what) = @_;
 
     # Unload current screen
-    # Class::Unload->unload( 'Some::Class' );
+    if ( $self->{_curent} ) {
+        print "Unloading $self->{_curent} screen ...";
+        Class::Unload->unload( $self->{_curent} );
+
+        if ( ! Class::Inspector->loaded( $self->{_curent} ) ) {
+            print " done\n";
+        }
+        else {
+            print " Error unloading  $self->{_curent} screen\n";
+        }
+    }
 
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();
@@ -274,12 +303,10 @@ sub screen_load {
     # Make new NoteBook widget
     $self->_view->create_notebook();
 
-    my $class = 'Tpda3::App::test::Products';
+    my $class = "Tpda3::App::test::$what";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
     $class->import;
-
-    # Class::Inspector->loaded( 'Some::Class' ); # Returns false
 
     if ($class->can('run_screen') ) {
         print "INFO: Loaded '$class'\n";
@@ -289,12 +316,15 @@ sub screen_load {
     }
 
     # New screen instance
-    $self->{screen} = $class->new();
+    $self->{_screen} = $class->new();
 
     # Show screen
-    $self->{idobj} = $self->{screen}->run_screen(
+    $self->{idobj} = $self->{_screen}->run_screen(
         $self->_view->{_nb}{rec},
     );
+
+    # Store currently loaded screen class
+    $self->{_curent} = $class;
 }
 
 =head1 AUTHOR

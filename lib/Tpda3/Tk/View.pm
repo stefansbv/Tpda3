@@ -3,8 +3,6 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
@@ -50,6 +48,8 @@ sub new {
     #- The MainWindow
 
     my $self = __PACKAGE__->SUPER::new(@_);
+
+    $self->{_cfg} = Tpda3::Config->instance();
 
     $self->geometry('490x80+672+320');
     $self->title(" Tpda ");
@@ -142,8 +142,8 @@ sub _create_menu {
     $self->{_menu} = $self->Menu();
 
     # Get MenuBar atributes
-    my $cfg     = Tpda3::Config->instance();
-    my $attribs = $cfg->menubar;
+
+    my $attribs = $self->{_cfg}->menubar;
 
     $self->make_menus($attribs);
 
@@ -155,8 +155,7 @@ sub _create_menu {
 sub _create_app_menu {
     my $self = shift;
 
-    my $cfg     = Tpda3::Config->instance();
-    my $attribs = $cfg->appmenubar;
+    my $attribs = $self->{_cfg}->appmenubar;
 
     $self->make_menus($attribs, 2);   # Add starting with position = 2
 }
@@ -198,6 +197,31 @@ sub make_menus {
     }
 
     return;
+}
+
+=head2 get_app_menus_list
+
+Get application menus list, needed for binding the command to load the
+screen.  We only need the name of the popup which is also the name of
+the screen (and also the name of the module).
+
+=cut
+
+sub get_app_menus_list {
+    my $self = shift;
+
+    my $attribs = $self->{_cfg}->appmenubar;
+    my $menus = $self->sort_hash_by_id($attribs);
+
+    my @menulist;
+    foreach my $menu_name ( @{$menus} ) {
+        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        foreach my $item (@popups) {
+            push @menulist, $attribs->{$menu_name}{popup}{$item}{name};
+        }
+    }
+
+    return \@menulist;
 }
 
 =head2 make_popup_item
@@ -277,7 +301,7 @@ sub _create_statusbar {
         -anchor     => 'center',
         -side       => 'right',
         -foreground => 'blue',
-        -background => 'yellow',
+        -background => 'lightyellow',
     );
 }
 
@@ -334,22 +358,12 @@ sub _create_toolbar {
     $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
 
     # Get ToolBar button atributes
-    my $cfg     = Tpda3::Config->instance();
-    my $attribs = $cfg->toolbar;
+    my $attribs = $self->{_cfg}->toolbar;
 
-    #-- Sort by id
-
-    #- Keep only key and id for sorting
-    my %temp = map { $_ => $attribs->{$_}{id} } keys %$attribs;
-
-    #- Sort with  ST
-    my @attribs = map { $_->[0] }
-      sort { $a->[1] <=> $b->[1] }
-      map { [ $_ => $temp{$_} ] }
-      keys %temp;
+    my $toolbars = $self->sort_hash_by_id($attribs);
 
     # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name (@attribs) {
+    foreach my $name (@{$toolbars}) {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
     }
