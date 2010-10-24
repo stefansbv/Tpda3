@@ -357,16 +357,31 @@ sub _create_toolbar {
 
     $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
 
-    # Get ToolBar button atributes
-    my $attribs = $self->{_cfg}->toolbar;
-
-    my $toolbars = $self->sort_hash_by_id($attribs);
+    my ($toolbars, $attribs) = $self->toolbar_names();
 
     # Create buttons in ID order; use sub defined by 'type'
     foreach my $name (@{$toolbars}) {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
     }
+}
+
+=head2 toolbar_names
+
+Toolbar names array reference
+
+=cut
+
+sub toolbar_names {
+    my $self = shift;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->{_cfg}->toolbar;
+
+    # TODO: Change the config file so we don't need this sorting anymore
+    my $toolbars = $self->sort_hash_by_id($attribs);
+
+    return ($toolbars, $attribs);
 }
 
 =head2 item_normal

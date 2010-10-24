@@ -7,7 +7,7 @@ use Data::Dumper;
 
 use Tk;
 use Class::Unload;
-use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Model;
 use Tpda3::Tk::View;
@@ -126,6 +126,7 @@ sub _set_event_handlers {
             $self->_model->is_findmode
                 ? $self->_model->set_idlemode
                 : $self->_model->set_findmode;
+            $self->toggle_controls;
         }
     );
 
@@ -135,6 +136,7 @@ sub _set_event_handlers {
             $self->_model->is_addmode
                 ? $self->_model->set_idlemode
                 : $self->_model->set_addmode;
+            $self->toggle_controls;
         }
     );
 
@@ -204,28 +206,27 @@ Toggle controls appropriate for diferent states of the application
 sub toggle_controls {
     my $self = shift;
 
-    my $is_edit = 0; # $self->_model->is_editmode ? 1 : 0;
+    my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
 
-    # Tool buttons states
-    my $states = {
-        tb_cn => !$is_edit,
-        tb_fm => !$is_edit,
-        tb_fe => $is_edit,
-        tb_fc => $is_edit,
-        tb_pr => $is_edit,
-        tb_tn => $is_edit,
-        tb_tr => $is_edit,
-        tb_cl => $is_edit,
-        tb_rr => $is_edit,
-        tb_ad => !$is_edit,
-        tb_rm => !$is_edit,
-        tb_sv => $is_edit,
-        tb_qt => !$is_edit,
-    };
-
-    foreach my $btn ( keys %{$states} ) {
-        $self->set_controls_tb( $btn, $states->{$btn} );
+    my $mode = 'idle';
+    if ( $self->_model->is_findmode ) {
+        $mode = 'find';
     }
+    if ( $self->_model->is_addmode ) {
+        $mode = 'add';
+    }
+    # If record loaded 'edit' mode ?
+
+    foreach my $name (@{$toolbars}) {
+        my $status = $attribs->{$name}{state}{$mode};
+        print "$name : $status\n";
+        #$self->set_controls_tb( $name, $status );
+        $self->_view->toggle_tool($name, $status);
+    }
+
+    # foreach my $btn ( keys %{$states} ) {
+    #     $self->set_controls_tb( $btn, $states->{$btn} );
+    # }
 
     # foreach my $page ( qw(para list conf sql ) ) {
     #     $self->toggle_controls_page( $page, $is_edit );
@@ -302,17 +303,18 @@ sub screen_load {
     my $loglevel_old = $self->{_log}->level();
 
     # Set log level to trace in this sub
-    $self->{_log}->level($Log::Log4perl::TRACE);
+    # $self->{_log}->level($Log::Log4perl::TRACE);
+    $self->{_log}->level($TRACE);
 
     # Unload current screen
     if ( $self->{_curent} ) {
         Class::Unload->unload( $self->{_curent} );
 
         if ( ! Class::Inspector->loaded( $self->{_curent} ) ) {
-            $self->{_log}->trace("Unloaded $self->{_curent} screen");
+            $self->{_log}->trace("Unloaded '$self->{_curent}' screen");
         }
         else {
-            $self->{_log}->trace("Error unloading  $self->{_curent} screen");
+            $self->{_log}->trace("Error unloading '$self->{_curent}' screen");
         }
     }
 
@@ -325,13 +327,13 @@ sub screen_load {
     my $class = "Tpda3::App::test::$what";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
-    $class->import;
+    # $class->import;
 
     if ($class->can('run_screen') ) {
-        $self->{_log}->trace("Screen $class can 'run_screen'");
+        $self->{_log}->trace("Screen '$class' can 'run_screen'");
     }
     else {
-        $self->{_log}->error("Error, screen $class can not 'run_screen'");
+        $self->{_log}->error("Error, screen '$class' can not 'run_screen'");
     }
 
     # New screen instance
@@ -344,6 +346,8 @@ sub screen_load {
 
     # Store currently loaded screen class
     $self->{_curent} = $class;
+
+    # my $eobj = $self->{_screen}->get_eobj_rec();
 
     # Restore default log level
     $self->{_log}->level($loglevel_old);
