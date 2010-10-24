@@ -9,6 +9,7 @@ use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 
+use Tpda3::Config;
 use Tpda3::Model;
 use Tpda3::Tk::View;
 
@@ -54,7 +55,10 @@ sub new {
         _view    => $view,
         _curent  => undef,
         _screen  => undef,
+        _scr_id  => undef,
     };
+
+    $self->{_cfg} = Tpda3::Config->instance();
 
     $self->{_log} = get_logger();
 
@@ -97,6 +101,14 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
             $self->_view->on_quit;
+        }
+    );
+
+    #-- Save geometry
+    $self->_view->get_menu_popup_item('mn_sg')->configure(
+        -command => sub {
+            $self->{_cfg}->config_save_instance( $self->{_scr_id},
+                $self->_view->w_geometry() );
         }
     );
 
@@ -292,6 +304,8 @@ Load screen chosen from the menu
 
 sub screen_load {
     my ($self, $what) = @_;
+
+    $self->{_scr_id} = lc $what;             # save for later use
 
     my $loglevel_old = $self->{_log}->level();
 

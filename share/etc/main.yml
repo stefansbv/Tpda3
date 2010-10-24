@@ -8,6 +8,8 @@ interface:
 application:
   conninfo: etc/connection.yml
   appmenu: etc/menu.yml
+runtime:
+  instance: etc/instance.yml
 general:
   # Connections template path
   conntmpl: template/connection.yml

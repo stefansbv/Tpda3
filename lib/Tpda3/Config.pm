@@ -127,12 +127,13 @@ sub _config_main_load {
 
     # Base configuration methods
     my $main_hr = {
-        cfpath    => $configpath,
-        cfapppath => catdir($configpath, 'apps'),
-        cfiface   => $maincfg->{interface},
-        cfapp     => $maincfg->{application},
-        user      => $args->{user}, # make accessors for user and pass
-        pass      => $args->{pass},
+        cfpath  => $configpath,
+        cfapps  => catdir($configpath, 'apps'),
+        cfiface => $maincfg->{interface},
+        cfapp   => $maincfg->{application},
+        cfrun   => $maincfg->{runtime},
+        user    => $args->{user}, # make accessors for user and pass
+        pass    => $args->{pass},
     };
 
     # Setup when GUI runtime
@@ -254,7 +255,7 @@ sub _config_iface_file_name {
 sub _config_app_file_name {
     my ($self, $section) = @_;
 
-    return catfile($self->cfapppath, $self->cfgname, $self->cfapp->{$section} );
+    return catfile($self->cfapps, $self->cfgname, $self->cfapp->{$section} );
 }
 
 =head2 list_configs
@@ -278,6 +279,23 @@ sub list_configs {
         }
     }
     print " in '$conpath'\n";
+}
+
+=head2 config_save_instance
+
+Save instance configuarations.  Only window geometry configuration for
+now.
+
+=cut
+
+sub config_save_instance {
+    my ($self, $key, $value) = @_;
+
+    my $inst = $self->cfrun->{instance};
+
+    my $inst_qfn = catfile($self->cfapps, $self->cfgname, $inst );
+
+    Tpda3::Config::Utils->save_yaml($inst_qfn, $key, $value);
 }
 
 =head1 AUTHOR

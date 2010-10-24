@@ -92,6 +92,35 @@ sub find_subdirs {
     return \@dbs;
 }
 
+=head2 save_yaml
+
+Save a YAML config file
+
+=cut
+
+sub save_yaml {
+    my ( $self, $yaml_file, $key, $value ) = @_;
+
+    my $yaml;
+    if (-f $yaml_file) {
+        # Open file
+        $yaml = YAML::Tiny->read($yaml_file);
+    }
+    else {
+        # Create a new YAML file
+        $yaml = YAML::Tiny->new;
+    }
+
+    # $geom_data
+    # Changing data
+    # delete $yaml->[0]->{section};              # Delete a value or section
+    $yaml->[0]->{geometry} = { $key => $value }; # Add a section
+    # $yaml->[0]->{$key} = $value;
+
+    # Save the file
+    $yaml->write($yaml_file);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

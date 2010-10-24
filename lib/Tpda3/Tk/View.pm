@@ -674,6 +674,31 @@ sub sort_hash_by_id {
     return \@attribs;
 }
 
+=head2 w_geometry
+
+Return window geometry
+
+=cut
+
+sub w_geometry {
+    my $self = shift;
+
+    my $wsys = $self->windowingsystem;
+    my $name = $self->name;
+    my $geom = $self->geometry;
+
+    # All dimensions are in pixels.
+    my $sh = $self->screenheight;
+    my $sw = $self->screenwidth;
+
+    print "\nSystem   = $wsys\n";
+    print "Name     = $name\n";
+    print "Geometry = $geom\n";
+    print "Screen   = $sw x $sh\n";
+
+    return $geom;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
