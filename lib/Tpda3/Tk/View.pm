@@ -97,21 +97,27 @@ sub _set_model_callbacks {
 
     my $co = $self->_model->get_connection_observable;
     $co->add_callback(
-        sub { $self->toggle_tool_check( 'tb_cn', $_[0] ) } );
+        sub {
+            $self->toggle_tool_check( 'tb_cn', $_[0] );
+            $self->toggle_status_cn( $_[0] );
+        }
+    );
 
-    my $em = $self->_model->get_findmode_observable;
-    $em->add_callback(
-        sub { $self->toggle_tool_check( 'tb_fm', $_[0] ) } );
+    # my $em = $self->_model->get_findmode_observable;
+    # $em->add_callback(
+    #     sub { $self->toggle_tool_check( 'tb_fm', $_[0] ) } );
 
-    my $ad = $self->_model->get_addmode_observable;
-    $ad->add_callback(
-        sub { $self->toggle_tool_check( 'tb_ad', $_[0] ) } );
+    # my $ad = $self->_model->get_addmode_observable;
+    # $ad->add_callback(
+    #     sub { $self->toggle_tool_check( 'tb_ad', $_[0] ) } );
 
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub { $self->log_msg( $_[0] ) } );
 
-    my $st = $self->_model->get_statusmsg_observable;
-    $st->add_callback( sub { $self->set_status(@_) } );
+    # When te status changes, update the status bar
+    my $apm = $self->_model->get_appmode_observable;
+    $apm->add_callback(
+        sub { $self->set_status($self->_model->get_appmode, 'lr') } );
 }
 
 =head2 log_msg
@@ -324,10 +330,11 @@ Set message to status bar
 =cut
 
 sub set_status {
-    my ( $self, $msg, $color ) = @_;
+    my ( $self, $text, $sb_id, $color ) = @_;
+    # my ( $self, $msg, $color ) = @_;
 
-    my ( $text, $sb_id ) = split ':', $msg;    # Work around until I learn how
-                                               # to pass other parameters ;)
+    # my ( $text, $sb_id ) = split ':', $msg;    # Work around until I learn how
+    #                                            # to pass other parameters ;)
 
     my $sb = $self->get_statusbar($sb_id);
 
@@ -431,8 +438,8 @@ sub _item_check {
 =head2 create_notebook
 
 Create the NoteBook and the 3 panes.  The pane first named 'rec'
-contains widgets mostly of the type Entry, maped to the fields of a
-table.  The pane second contains a MListbox widget and is used for
+contains widgets mostly of the type Entry, mapped to the fields of a
+table.  The second pane contains a MListbox widget and is used for
 listing the search results.  The third pane is for records from a
 dependent table.
 
@@ -453,26 +460,12 @@ sub create_notebook {
 
     #- Panels
 
-    $self->{_nb}{rec} = $self->{_nb}->add(
-        'rec',
-        -label     => 'Record',
-        -underline => 0,
-    );
-
-    $self->{_nb}{sel} = $self->{_nb}->add(
-        'sel',
-        -label     => 'List',
-        -underline => 0,
-    );
-
-    $self->{_nb}{det} = $self->{_nb}->add(
-        'det',
-        -label     => 'Details',
-        -underline => 0,
-    );
+    $self->create_notebook_panel('rec', 'Record');
+    $self->create_notebook_panel('lst', 'List');
+    # $self->create_notebook_panel('det', 'Details');
 
     # Frame box
-    my $frm_box = $self->{_nb}{sel}->LabFrame(
+    my $frm_box = $self->{_nb}{lst}->LabFrame(
         -foreground => 'blue',
         -label      => 'Tpda::Search results',
         -labelside  => 'acrosstop'
@@ -501,6 +494,22 @@ sub create_notebook {
 
     # Initialize
     $self->{_nb}->raise('rec');
+}
+
+=head2 create_notebook_panel
+
+Create a NoteBook panel
+
+=cut
+
+sub create_notebook_panel {
+    my ($self, $id, $label) = @_;
+
+    $self->{_nb}{$id} = $self->{_nb}->add(
+        $id,
+        -label     => $label,
+        -underline => 0,
+    );
 }
 
 =head2 get_notebook
@@ -586,6 +595,23 @@ sub toggle_tool_check {
     }
     else {
         $tb_btn->deselect;
+    }
+}
+
+=head2 toggle_status_cn
+
+Toggle the icon in the status bar
+
+=cut
+
+sub toggle_status_cn {
+    my ($self, $status) = @_;
+
+    if ($status) {
+        $self->set_status('connectyes16','cn');
+    }
+    else {
+        $self->set_status('connectno16','cn');
     }
 }
 

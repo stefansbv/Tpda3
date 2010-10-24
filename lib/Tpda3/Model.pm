@@ -39,10 +39,7 @@ sub new {
     my $self = {
         _connected => Tpda3::Observable->new(),
         _stdout    => Tpda3::Observable->new(),
-        _statusmsg => Tpda3::Observable->new(),
-        _addmode   => Tpda3::Observable->new(),
-        _editmode  => Tpda3::Observable->new(),
-        _findmode  => Tpda3::Observable->new(),
+        _appmode   => Tpda3::Observable->new(),
     };
 
     bless $self, $class;
@@ -84,7 +81,6 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
-        $self->_status_msg('connectyes16','cn');
         # $self->_print('Connected.');
     }
     else {
@@ -104,7 +100,6 @@ sub _disconnect {
 
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
-    $self->_status_msg('connectno16','cn');
     # $self->_print('Disconnected.');
 }
 
@@ -160,32 +155,6 @@ sub _print {
     print "$line\n";
 }
 
-=head2 get_statusmsg_observable
-
-Get statusmsg observable
-
-=cut
-
-sub get_statusmsg_observable {
-    my $self = shift;
-
-    return $self->{_statusmsg};
-}
-
-=head2 _status_msg
-
-Put a message on the status bar
-
-=cut
-
-sub _status_msg {
-    my ( $self, $line, $sb_id ) = @_;
-
-    $sb_id = 'll' if ! $sb_id;
-
-    $self->get_statusmsg_observable->set( "$line:$sb_id" );
-}
-
 =head2 set_idlemode
 
 Set idle mode
@@ -195,17 +164,7 @@ Set idle mode
 sub set_idlemode {
     my $self = shift;
 
-    if ( $self->is_addmode ) {
-        $self->get_addmode_observable->set(0);
-    }
-    if ( $self->is_editmode ) {
-        $self->get_editmode_observable->set(0);
-    }
-    if ( $self->is_findmode ) {
-        $self->get_findmode_observable->set(0);
-    }
-
-    $self->_status_msg('idle', 'lr');
+    $self->get_appmode_observable->set('idle');
 }
 
 =head2 set_addmode
@@ -217,16 +176,7 @@ Set add mode
 sub set_addmode {
     my $self = shift;
 
-    $self->set_idlemode();
-
-    $self->get_addmode_observable->set(1);
-
-    if ( $self->is_addmode ) {
-        $self->_status_msg('add', 'lr');
-    }
-    else {
-        $self->_status_msg('idle', 'lr');
-    }
+    $self->get_appmode_observable->set('add');
 }
 
 =head2 set_editmode
@@ -238,16 +188,7 @@ Set edit mode
 sub set_editmode {
     my $self = shift;
 
-    $self->set_idlemode();
-
-    $self->get_editmode_observable->set(1);
-
-    if ( $self->is_editmode ) {
-        $self->_status_msg('edit', 'lr');
-    }
-    else {
-        $self->_status_msg('idle', 'lr');
-    }
+    $self->get_appmode_observable->set('edit');
 }
 
 =head2 set_findmode
@@ -259,16 +200,7 @@ Set find mode
 sub set_findmode {
     my $self = shift;
 
-    $self->set_idlemode();
-
-    $self->get_findmode_observable->set(1);
-
-    if ( $self->is_findmode ) {
-        $self->_status_msg('find', 'lr');
-    }
-    else {
-        $self->_status_msg('idle', 'lr');
-    }
+    $self->get_appmode_observable->set('find');
 }
 
 =head2 is_addmode
@@ -280,7 +212,7 @@ Return true if is add mode
 sub is_addmode {
     my $self = shift;
 
-    return $self->get_addmode_observable->get;
+    return 1 if $self->get_appmode_observable->get eq 'add';
 }
 
 =head2 is_editmode
@@ -292,7 +224,7 @@ Return true if is edit mode
 sub is_editmode {
     my $self = shift;
 
-    return $self->get_editmode_observable->get;
+    return 1 if $self->get_appmode_observable->get eq 'edit';
 }
 
 =head2 is_findmode
@@ -304,43 +236,31 @@ Return true if is find mode
 sub is_findmode {
     my $self = shift;
 
-    return $self->get_findmode_observable->get;
+    return 1 if $self->get_appmode_observable->get eq 'find';
 }
 
-=head2 get_addmode_observable
+=head2 get_appmode_observable
 
 Return add mode observable status
 
 =cut
 
-sub get_addmode_observable {
+sub get_appmode_observable {
     my $self = shift;
 
-    return $self->{_addmode};
+    return $self->{_appmode};
 }
 
-=head2 get_editmode_observable
+=head2 get_appmode
 
-Return edit mode observable status
+Return application mode
 
 =cut
 
-sub get_editmode_observable {
+sub get_appmode {
     my $self = shift;
 
-    return $self->{_editmode};
-}
-
-=head2 get_findmode_observable
-
-Return find mode observable status
-
-=cut
-
-sub get_findmode_observable {
-    my $self = shift;
-
-    return $self->{_findmode};
+    return $self->get_appmode_observable->get;
 }
 
 =head1 AUTHOR

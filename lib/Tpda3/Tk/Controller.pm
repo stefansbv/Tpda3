@@ -208,18 +208,11 @@ sub toggle_controls {
 
     my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
 
-    my $mode = 'idle';
-    if ( $self->_model->is_findmode ) {
-        $mode = 'find';
-    }
-    if ( $self->_model->is_addmode ) {
-        $mode = 'add';
-    }
-    # If record loaded 'edit' mode ?
+    my $mode = $self->_model->get_appmode;
 
     foreach my $name (@{$toolbars}) {
         my $status = $attribs->{$name}{state}{$mode};
-        print "$name : $status\n";
+        # print "$name : $status\n";
         #$self->set_controls_tb( $name, $status );
         $self->_view->toggle_tool($name, $status);
     }
