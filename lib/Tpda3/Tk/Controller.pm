@@ -107,8 +107,9 @@ sub _set_event_handlers {
     #-- Save geometry
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
-            $self->{_cfg}->config_save_instance( $self->{_scr_id},
-                $self->_view->w_geometry() );
+            my $scr_name = $self->{_scr_id} ||= 'main';
+            $self->{_cfg}
+              ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
     );
 
