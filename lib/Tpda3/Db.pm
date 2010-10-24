@@ -23,20 +23,23 @@ our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-Connect to a database.
+Create a new connection instance only once and use it many times.
 
     use Tpda3::Db;
 
-    my $db = Tpda3::Db->_new_instance();
+    my $dbi = Tpda3::Db->instance($args); # first time init
 
-    my $dbh = $db->dbh;
+    my $dbi = Tpda3::Db->instance();      # later, in other modules
 
+    my $dbh = $dbi->dbh;
 
 =head1 METHODS
 
-=head2 new
+=head2 _new_instance
 
-Constructor method.
+Constructor method, the first and only time a new instance is created.
+All parameters passed to the instance() method are forwarded to this
+method. (From I<Class::Singleton> docs).
 
 =cut
 
