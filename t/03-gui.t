@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 use lib qw( lib ../lib );
 
@@ -29,6 +29,8 @@ my $a = Tpda3->new($args);
 
 ok($a->{gui}{_view}->after(1000, sub {
                                $a->{gui}->screen_load('Products'); } ));
+ok($a->{gui}{_view}->after(2000, sub {
+                               $a->{gui}->screen_load('Products2'); } ));
 ok($a->{gui}{_view}->after(3000, sub {
                                $a->{gui}{_view}->on_quit; } ));
 
