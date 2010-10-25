@@ -120,6 +120,20 @@ sub _set_model_callbacks {
         sub { $self->set_status($self->_model->get_appmode, 'lr') } );
 }
 
+=head2 set_geom
+
+Set window geometry
+
+=cut
+
+sub set_geom {
+    my ($self, $geom) = @_;
+
+    $self->geometry($geom);
+
+    return;
+}
+
 =head2 log_msg
 
 Log messages

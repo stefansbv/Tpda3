@@ -208,6 +208,29 @@ sub _config_application_load {
     return;
 }
 
+=head2 config_screen_load
+
+Load a config files at request
+
+=cut
+
+sub config_screen_load {
+    my ($self, $file_name) = @_;
+
+    my $cfg_file = $self->_config_scr_file_name($file_name);
+
+    my $msg = qq{\nConfiguration error: \n Can't read configurations};
+    $msg   .= qq{\n  from '$cfg_file'!};
+
+    $self->{_log}->info("Loading '$file_name' config file: $cfg_file");
+    my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+
+    my @accessor = keys %{$cfg_data};
+    $self->{_log}->info("Making accessors for @accessor");
+
+    $self->_make_accessors($cfg_data);
+}
+
 =head2 _config_file_load
 
 Load a config file and return the Perl data structure.  Die,
@@ -256,6 +279,12 @@ sub _config_app_file_name {
     my ($self, $section) = @_;
 
     return catfile($self->cfapps, $self->cfgname, $self->cfapp->{$section} );
+}
+
+sub _config_scr_file_name {
+    my ($self, $file_name) = @_;
+
+    return catfile($self->cfapps, $self->cfgname, 'scr', $file_name);
 }
 
 =head2 list_configs

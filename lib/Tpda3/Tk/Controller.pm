@@ -56,11 +56,9 @@ sub new {
         _curent  => undef,
         _screen  => undef,
         _scr_id  => undef,
+        _cfg     => Tpda3::Config->instance(),
+        _log     => get_logger(),
     };
-
-    $self->{_cfg} = Tpda3::Config->instance();
-
-    $self->{_log} = get_logger();
 
     bless $self, $class;
 
@@ -108,7 +106,7 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
             my $scr_name = $self->{_scr_id} ||= 'main';
-            $self->{_cfg}
+            $self->_cfg
               ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
     );
@@ -196,6 +194,31 @@ sub _view {
     my $self = shift;
 
     return $self->{_view};
+}
+
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{_cfg};
+}
+
+
+=head2 _log
+
+Return log instance variable
+
+=cut
+
+sub _log {
+    my $self = shift;
+
+    return $self->{_log};
 }
 
 =head2 _screen
@@ -308,21 +331,21 @@ sub screen_load {
 
     $self->{_scr_id} = lc $what;             # save for later use
 
-    my $loglevel_old = $self->{_log}->level();
+    my $loglevel_old = $self->_log->level();
 
     # Set log level to trace in this sub
-    # $self->{_log}->level($Log::Log4perl::TRACE);
-    $self->{_log}->level($TRACE);
+    # $self->_log->level($Log::Log4perl::TRACE);
+    $self->_log->level($TRACE);
 
     # Unload current screen
     if ( $self->{_curent} ) {
         Class::Unload->unload( $self->{_curent} );
 
         if ( ! Class::Inspector->loaded( $self->{_curent} ) ) {
-            $self->{_log}->trace("Unloaded '$self->{_curent}' screen");
+            $self->_log->trace("Unloaded '$self->{_curent}' screen");
         }
         else {
-            $self->{_log}->trace("Error unloading '$self->{_curent}' screen");
+            $self->_log->trace("Error unloading '$self->{_curent}' screen");
         }
     }
 
@@ -338,10 +361,10 @@ sub screen_load {
     # $class->import;
 
     if ($class->can('run_screen') ) {
-        $self->{_log}->trace("Screen '$class' can 'run_screen'");
+        $self->_log->trace("Screen '$class' can 'run_screen'");
     }
     else {
-        $self->{_log}->error("Error, screen '$class' can not 'run_screen'");
+        $self->_log->error("Error, screen '$class' can not 'run_screen'");
     }
 
     # New screen instance
@@ -352,13 +375,21 @@ sub screen_load {
         $self->_view->{_nb}{rec},
     );
 
+    $self->_cfg->config_screen_load('localitati.conf');
+
+    # print Dumper( $self->_cfg->screen );
+
+    # Update window geometry
+    my $geom = $self->_cfg->screen->{pos};
+    $self->_view->set_geom($geom);
+
     # Store currently loaded screen class
     $self->{_curent} = $class;
 
     # my $eobj = $self->{_screen}->get_eobj_rec();
 
     # Restore default log level
-    $self->{_log}->level($loglevel_old);
+    $self->_log->level($loglevel_old);
 }
 
 =head1 AUTHOR
