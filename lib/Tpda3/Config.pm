@@ -3,14 +3,11 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;
 use File::UserConfig;
 use File::Spec::Functions;
-use File::Basename;
 
 use Tpda3::Config::Utils;
 
@@ -58,25 +55,25 @@ sub _new_instance {
     $args->{cfgmain} = 'etc/main.yml'; # hardcoded main config file name
 
     # Load configuration and create accessors
-    $self->_config_main_load($args);
+    $self->config_main_load($args);
     if ( $args->{cfgname} ) {
         # If no config name don't bother to load this
         # Interface configs
-        $self->_config_interface_load();
+        $self->config_interface_load();
         # Application configs
-        $self->_config_application_load($args);
+        $self->config_application_load($args);
     }
 
     return $self;
 }
 
-=head2 _make_accessors
+=head2 make_accessors
 
 Automatically make accessors for the hash keys.
 
 =cut
 
-sub _make_accessors {
+sub make_accessors {
     my ( $self, $cfg_hr ) = @_;
 
     __PACKAGE__->mk_accessors( keys %{$cfg_hr} );
@@ -87,7 +84,7 @@ sub _make_accessors {
     }
 }
 
-=head2 _config_main_load
+=head2 config_main_load
 
 Initialize configuration variables from arguments, also initialize the
 user configuration tree if not exists, with the I<File::UserConfig>
@@ -99,7 +96,7 @@ Make accessors.
 
 =cut
 
-sub _config_main_load {
+sub config_main_load {
     my ( $self, $args ) = @_;
 
     my $configpath = File::UserConfig->new(
@@ -122,7 +119,7 @@ sub _config_main_load {
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
     $msg   .= qq{\n  from '$main_qfn'!};
-    my $maincfg = $self->_config_file_load($main_qfn, $msg);
+    my $maincfg = Tpda3::Config::Utils->config_file_load($main_qfn, $msg);
     $self->{_log}->info("Main config file loaded.");
 
     # Base configuration methods
@@ -144,12 +141,12 @@ sub _config_main_load {
     my @accessor = keys %{$main_hr};
     $self->{_log}->info("Making accessors for @accessor");
 
-    $self->_make_accessors($main_hr);
+    $self->make_accessors($main_hr);
 
     return $maincfg;
 }
 
-=head2 _config_interface_load
+=head2 config_interface_load
 
 Process the main configuration file and automaticaly load all the
 interface defined configuration files.  That means if we add a YAML
@@ -158,133 +155,81 @@ at restart.
 
 =cut
 
-sub _config_interface_load {
+sub config_interface_load {
     my $self = shift;
 
     foreach my $section ( keys %{ $self->cfiface } ) {
-        my $cfg_file = $self->_config_iface_file_name($section);
+        my $cfg_file = $self->config_iface_file_name($section);
 
         my $msg = qq{\nConfiguration error: \n Can't read configurations};
-        $msg   .= qq{\n  from '$cfg_file'!};
+        $msg .= qq{\n  from '$cfg_file'!};
 
         $self->{_log}->info("Loading $section config file: $cfg_file");
-        my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+        my $cfg_data =
+          Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_data};
         $self->{_log}->info("Making accessors for @accessor");
 
-        $self->_make_accessors($cfg_data);
+        $self->make_accessors($cfg_data);
     }
 
     return;
 }
 
-=head2 _config_application_load
+=head2 config_application_load
 
 Load the application configuration files.  This are treated separately
 because the path is only known at runtime.
 
 =cut
 
-sub _config_application_load {
+sub config_application_load {
     my ( $self, $args ) = @_;
 
     foreach my $section ( keys %{ $self->cfapp } ) {
-        my $cfg_file = $self->_config_app_file_name($section);
+        my $cfg_file = $self->config_app_file_name($section);
 
         $self->{_log}->info("Loading $section config file: $cfg_file");
         my $msg = qq{\nConfiguration error, to fix, run\n\n};
-        $msg   .= qq{  tpda-mvc -init };
-        $msg   .= $self->cfgname . qq{\n\n};
+        $msg .= qq{  tpda-mvc -init };
+        $msg .= $self->cfgname . qq{\n\n};
+
         #$msg   .= qq{then edit: $cfgconn_f\n};
-        my $cfg_data = $self->_config_file_load($cfg_file, $msg);
+        my $cfg_data =
+          Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_data};
         $self->{_log}->info("Making accessors for @accessor");
 
-        $self->_make_accessors($cfg_data);
+        $self->make_accessors($cfg_data);
     }
 
     return;
 }
 
-=head2 config_screen_load
+=head2 config_iface_file_name
 
-Load a config files at request
-
-=cut
-
-sub config_screen_load {
-    my ($self, $file_name) = @_;
-
-    my $cfg_file = $self->_config_scr_file_name($file_name);
-
-    my $msg = qq{\nConfiguration error: \n Can't read configurations};
-    $msg   .= qq{\n  from '$cfg_file'!};
-
-    $self->{_log}->info("Loading '$file_name' config file: $cfg_file");
-    my $cfg_data = $self->_config_file_load($cfg_file, $msg);
-
-    my @accessor = keys %{$cfg_data};
-    $self->{_log}->info("Making accessors for @accessor");
-
-    $self->_make_accessors($cfg_data);
-}
-
-=head2 _config_file_load
-
-Load a config file and return the Perl data structure.  Die,
-if can't read file.
-
-It loads a file in Config::General format or in YAML::Tiny format,
-depending on the extension of the file.
+Return fully qualified application interface configuration file name.
 
 =cut
 
-sub _config_file_load {
-    my ($self, $conf_file, $message) = @_;
-
-    print "Config file: $conf_file\n";
-    if (! -f $conf_file) {
-        print "$message\n";
-        die;
-    }
-
-    my (undef, undef, $suf) = fileparse($conf_file, qr/\.[^.]*/);
-    if ( $suf =~ m{conf} )  {
-        return Tpda3::Config::Utils->load_conf($conf_file);
-    }
-    elsif ( $suf =~ m{yml} ) {
-        return Tpda3::Config::Utils->load_yaml($conf_file);
-    }
-    else {
-        print "Config file: $conf_file has wrong suffix ($suf)\n";
-        die;
-    }
-}
-
-=head2 _config_file_name
-
-Return full path to connection file.
-
-=cut
-
-sub _config_iface_file_name {
+sub config_iface_file_name {
     my ($self, $section) = @_;
 
     return catfile( $self->cfpath, $self->cfiface->{$section} );
 }
 
-sub _config_app_file_name {
+=head2 config_app_file_name
+
+Return fully qualified application configuration file name.
+
+=cut
+
+sub config_app_file_name {
     my ($self, $section) = @_;
 
-    return catfile($self->cfapps, $self->cfgname, $self->cfapp->{$section} );
-}
-
-sub _config_scr_file_name {
-    my ($self, $file_name) = @_;
-
-    return catfile($self->cfapps, $self->cfgname, 'scr', $file_name);
+    return catfile( $self->cfapps, $self->cfgname,  $self->cfapp->{$section} );
 }
 
 =head2 list_configs
@@ -301,7 +246,7 @@ sub list_configs {
 
     print "Connection configurations:\n";
     foreach my $cfg_name ( @{$conn_list} ) {
-        my $ccfn = $self->_config_file_name($cfg_name);
+        my $ccfn = Tpda3::Config::Utils->config_file_name($cfg_name);
         # If connection file exist than list as connection name
         if (-f $ccfn) {
             print "  > $cfg_name\n";

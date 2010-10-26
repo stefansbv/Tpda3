@@ -10,6 +10,7 @@ use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Config;
+use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Tk::View;
 
@@ -55,6 +56,7 @@ sub new {
         _view    => $view,
         _curent  => undef,
         _screen  => undef,
+        _scrcfg  => undef,
         _scr_id  => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
@@ -233,6 +235,18 @@ sub _screen {
     return $self->{_screen};
 }
 
+=head2 _scrcfg
+
+Return current screen config instance variable.
+
+=cut
+
+sub _scrcfg {
+    my $self = shift;
+
+    return $self->{_scrcfg};
+}
+
 =head2 toggle_controls
 
 Toggle controls appropriate for diferent states of the application
@@ -377,10 +391,11 @@ sub screen_load {
 
     # Load screen config.
     # TODO: Make sure this replaces the precedent screen config
-    $self->_cfg->config_screen_load($self->{_scr_id} . '.conf');
+    $self->{_scrcfg} = Tpda3::Config::Screen->new();
+    $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
 
     # Update window geometry
-    my $geom = $self->_cfg->screen->{pos};
+    my $geom = $self->_scrcfg->screen->{pos};
     $self->_view->set_geom($geom);
 
     # Store currently loaded screen class

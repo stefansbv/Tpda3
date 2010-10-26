@@ -4,9 +4,10 @@ use strict;
 use warnings;
 
 use File::Basename;
+use File::Copy;
 use File::Find::Rule;
 use File::Path 2.07 qw( make_path );
-use File::Copy;
+use File::Spec::Functions;
 use YAML::Tiny;
 use Config::General;
 
@@ -32,6 +33,38 @@ our $VERSION = '0.01';
 
 
 =head1 METHODS
+
+=head2 config_file_load
+
+Load a config file and return the Perl data structure.  Die,
+if can't read file.
+
+It loads a file in Config::General format or in YAML::Tiny format,
+depending on the extension of the file.
+
+=cut
+
+sub config_file_load {
+    my ($self, $conf_file, $message) = @_;
+
+    print "Config file: $conf_file\n";
+    if (! -f $conf_file) {
+        print "$message\n";
+        die;
+    }
+
+    my (undef, undef, $suf) = fileparse($conf_file, qr/\.[^.]*/);
+    if ( $suf =~ m{conf} )  {
+        return Tpda3::Config::Utils->load_conf($conf_file);
+    }
+    elsif ( $suf =~ m{yml} ) {
+        return Tpda3::Config::Utils->load_yaml($conf_file);
+    }
+    else {
+        print "Config file: $conf_file has wrong suffix ($suf)\n";
+        die;
+    }
+}
 
 =head2 load_conf
 
