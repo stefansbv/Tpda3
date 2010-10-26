@@ -375,9 +375,9 @@ sub screen_load {
         $self->_view->{_nb}{rec},
     );
 
-    $self->_cfg->config_screen_load('localitati.conf');
-
-    # print Dumper( $self->_cfg->screen );
+    # Load screen config.
+    # TODO: Make sure this replaces the precedent screen config
+    $self->_cfg->config_screen_load($self->{_scr_id} . '.conf');
 
     # Update window geometry
     my $geom = $self->_cfg->screen->{pos};
