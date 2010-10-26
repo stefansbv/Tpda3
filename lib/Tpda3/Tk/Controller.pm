@@ -369,7 +369,8 @@ sub screen_load {
     # Make new NoteBook widget
     $self->_view->create_notebook();
 
-    my $class = "Tpda3::App::test::$what";
+    my $cfname = $self->_cfg->cfname;
+    my $class = "Tpda3::App::$cfname::$what";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
     # $class->import;

@@ -14,7 +14,7 @@ use lib qw( lib ../lib );
 use Tpda3::Config;
 
 my $args = {
-    cfgname => 'test',
+    cfname => 'test',
     user    => undef,
     pass    => undef,
 };

@@ -141,7 +141,7 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    return catfile( $self->_cfg->cfapps, $self->_cfg->cfgname, 'scr',
+    return catfile( $self->_cfg->cfapps, $self->_cfg->cfname, 'scr',
         $file_name );
 }
 

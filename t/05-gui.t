@@ -20,7 +20,7 @@ BEGIN {
 }
 
 my $args = {
-    cfgname => 'test',
+    cfname => 'test',
     user    => 'stefan',
     pass    => 'pass',
 };

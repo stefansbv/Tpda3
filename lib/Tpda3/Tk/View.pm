@@ -713,6 +713,12 @@ sub w_geometry {
     return $geom;
 }
 
+# sub Tk::Error{
+#     my ($widget, $error, @where) = @_;
+
+#     print "$widget, $error, @where\n";
+# }
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

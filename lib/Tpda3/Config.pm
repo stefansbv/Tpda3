@@ -56,7 +56,7 @@ sub _new_instance {
 
     # Load configuration and create accessors
     $self->config_main_load($args);
-    if ( $args->{cfgname} ) {
+    if ( $args->{cfname} ) {
         # If no config name don't bother to load this
         # Interface configs
         $self->config_interface_load();
@@ -134,8 +134,8 @@ sub config_main_load {
     };
 
     # Setup when GUI runtime
-    if ( $args->{cfgname} ) {
-        $main_hr->{cfgname} = $args->{cfgname};
+    if ( $args->{cfname} ) {
+        $main_hr->{cfname} = $args->{cfname};
     }
 
     my @accessor = keys %{$main_hr};
@@ -193,7 +193,7 @@ sub config_application_load {
         $self->{_log}->info("Loading $section config file: $cfg_file");
         my $msg = qq{\nConfiguration error, to fix, run\n\n};
         $msg .= qq{  tpda-mvc -init };
-        $msg .= $self->cfgname . qq{\n\n};
+        $msg .= $self->cfname . qq{\n\n};
 
         #$msg   .= qq{then edit: $cfgconn_f\n};
         my $cfg_data =
@@ -229,7 +229,7 @@ Return fully qualified application configuration file name.
 sub config_app_file_name {
     my ($self, $section) = @_;
 
-    return catfile( $self->cfapps, $self->cfgname,  $self->cfapp->{$section} );
+    return catfile( $self->cfapps, $self->cfname,  $self->cfapp->{$section} );
 }
 
 =head2 list_configs
@@ -267,7 +267,7 @@ sub config_save_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile($self->cfapps, $self->cfgname, $inst );
+    my $inst_qfn = catfile($self->cfapps, $self->cfname, $inst );
 
     Tpda3::Config::Utils->save_yaml($inst_qfn, $key, $value);
 }
@@ -294,12 +294,12 @@ by the Free Software Foundation.
 
 1; # End of Tpda3::Config
 
-#cfgname    = test
+#cfname    = test
 #$cfpath   = ~/.tpda_mvc
 
 #application:
-#conninfo   = ~/$cfpath/app/$cfgname/etc/connection.yml
-#appmenu    = ~/$cfpath/app/$cfgname/etc/menu.yml
+#conninfo   = ~/$cfpath/app/$cfname/etc/connection.yml
+#appmenu    = ~/$cfpath/app/$cfname/etc/menu.yml
 
 #interfaces:
 #menubar    = ~/$cfpath/etc/interfaces/menubar.yml
