@@ -56,6 +56,18 @@ sub new {
     return $self;
 }
 
+=head2 DESTROY
+
+Destructor
+
+=cut
+
+sub DESTROY {
+    my $self = shift;
+
+    $self->_log->trace('Destroyed!');
+}
+
 =head2 cfg
 
 Accessor for config object

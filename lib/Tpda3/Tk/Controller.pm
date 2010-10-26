@@ -389,8 +389,7 @@ sub screen_load {
         $self->_view->{_nb}{rec},
     );
 
-    # Load screen config.
-    # TODO: Make sure this replaces the precedent screen config
+    # Load screen config, and replace the precedent screen config
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
     $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
 
@@ -402,6 +401,7 @@ sub screen_load {
     $self->{_curent} = $class;
 
     # my $eobj = $self->{_screen}->get_eobj_rec();
+    # print Dumper( $eobj );
 
     # Restore default log level
     $self->_log->level($loglevel_old);
