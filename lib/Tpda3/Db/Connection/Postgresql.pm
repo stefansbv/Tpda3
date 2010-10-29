@@ -3,6 +3,7 @@ package Tpda3::Db::Connection::Postgresql;
 use strict;
 use warnings;
 
+use Try::Tiny;
 use Log::Log4perl qw(get_logger);
 
 use DBI;
@@ -55,32 +56,24 @@ Connect to database
 sub db_connect {
     my ($self, $conf) = @_;
 
-    my $dbname = $conf->{dbname};
-    my $host   = $conf->{server};
-    my $port   = $conf->{port};
-    my $driver = $conf->{driver};
-    my $user   = $conf->{user};
-    my $pass   = $conf->{pass};
-
     my $log = get_logger();
 
-    $log->info("Connecting to the $driver server");
+    $log->info("Connecting to the $conf->{driver} server");
     $log->info("Parameters:");
-    $log->info("  => Database = $dbname\n");
-    $log->info("  => Server   = $host\n");
-    $log->info("  => User     = $user\n");
+    $log->info("  => Database = $conf->{dbname}\n");
+    $log->info("  => Server   = $conf->{server}\n");
+    $log->info("  => User     = $conf->{user}\n");
 
-    eval {
+    try {
         $self->{_dbh} = DBI->connect(
             "dbi:Pg:"
-                . "dbname="
-                . $dbname
-                . ";host="
-                . $host
-                . ";port="
-                . $port,
-            $user,
-            $pass,
+              . "dbname="
+              . $conf->{dbname}
+              . ";host="
+              . $conf->{server}
+              . ";port="
+              . $conf->{port},
+            $conf->{user}, $conf->{pass},
             {
                 FetchHashKeyName => 'NAME_lc',
                 AutoCommit       => 1,
@@ -89,28 +82,30 @@ sub db_connect {
                 LongReadLen      => 524288,
             }
         );
+    }
+    catch {
+        $log->fatal("Transaction aborted: $_")
+          or print STDERR "$_\n";
+
+          # exit 1;
     };
-    if ($@) {
-        $log->fatal("Transaction aborted because $@")
-            or print STDERR "$@\n";
-        exit 1;
-    }
-    else {
-        ## Date format
-        # set: datestyle = 'iso' in postgresql.conf
-        ##
-        $self->{_dbh}{pg_enable_utf8} = 1;
 
-        $log->info("Connected to database $dbname");
+    ## Date format
+    # set: datestyle = 'iso' in postgresql.conf
+    ##
+    $self->{_dbh}{pg_enable_utf8} = 1;
 
-        return $self->{_dbh};
-    }
+    $log->info("Connected to database $conf->{dbname}");
+
+    return $self->{_dbh};
 }
 
 =head2 table_info_short
 
 Table info 'short'.  The 'table_info' method from the Pg driver
 doesn't seem to be reliable.
+
+TODO: Implement using SQL::Abstract !
 
 =cut
 
@@ -136,17 +131,17 @@ sub table_info_short {
     $self->{_dbh}{ChopBlanks} = 1;          # trim CHAR fields
 
     my $flds_ref;
-    eval {
+    try {
 
         # List of lists
         my $sth = $self->{_dbh}->prepare($sql);
         $sth->execute;
         $flds_ref = $sth->fetchall_hashref('pos');
-    };
-    if ($@) {
-        $log->fatal("Transaction aborted because $@")
-            or print STDERR "$@\n";
     }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
 
     return $flds_ref;
 }
@@ -154,6 +149,8 @@ sub table_info_short {
 =head2 table_exists
 
 Check if table exists in the database.
+
+TODO: Implement using SQL::Abstract !
 
 =cut
 
@@ -174,13 +171,13 @@ sub table_exists {
     $log->trace("SQL= $sql");
 
     my $val_ret;
-    eval {
+    try {
         ($val_ret) = $self->{_dbh}->selectrow_array($sql);
-    };
-    if ($@) {
-        $log->fatal("Transaction aborted because $@")
-            or print STDERR "$@\n";
     }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
 
     return $val_ret;
 }
@@ -188,6 +185,8 @@ sub table_exists {
 =head2 table_keys
 
 Get the primary key field name of the table.
+
+TODO: Implement using SQL::Abstract !
 
 =cut
 
@@ -218,14 +217,14 @@ sub table_keys {
     $self->{_dbh}{RaiseError} = 0;
 
     my $pkf = [];
-    eval {
+    try {
         # List of lists
         $pkf = $self->{_dbh}->selectall_arrayref( $sql );
-    };
-    if ($@) {
-        $log->fatal("Transaction aborted because $@")
-            or print STDERR "$@\n";
     }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
 
     return $pkf;
 }
@@ -246,13 +245,11 @@ sub table_deps {
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 
-
 =head1 BUGS
 
 None known.
 
 Please report any bugs or feature requests to the author.
-
 
 =head1 LICENSE AND COPYRIGHT
 

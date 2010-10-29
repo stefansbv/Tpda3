@@ -87,6 +87,8 @@ sub _connect {
         $self->get_connection_observable->set( 0 ); # no ;)
         $self->_print('Connection error!');
     }
+
+    return;
 }
 
 =head2 _disconnect
@@ -101,6 +103,8 @@ sub _disconnect {
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
     # $self->_print('Disconnected.');
+
+    return;
 }
 
 =head2 is_connected
@@ -153,6 +157,8 @@ sub _print {
     $sb_id = 0 if not defined $sb_id;
 
     print "$line\n";
+
+    return;
 }
 
 =head2 set_idlemode
@@ -165,6 +171,8 @@ sub set_idlemode {
     my $self = shift;
 
     $self->get_appmode_observable->set('idle');
+
+    return;
 }
 
 =head2 set_addmode
@@ -177,6 +185,8 @@ sub set_addmode {
     my $self = shift;
 
     $self->get_appmode_observable->set('add');
+
+    return;
 }
 
 =head2 set_editmode
@@ -189,6 +199,8 @@ sub set_editmode {
     my $self = shift;
 
     $self->get_appmode_observable->set('edit');
+
+    return;
 }
 
 =head2 set_findmode
@@ -201,42 +213,25 @@ sub set_findmode {
     my $self = shift;
 
     $self->get_appmode_observable->set('find');
+
+    return;
 }
 
-=head2 is_addmode
+=head2 is_mode
 
-Return true if is add mode
+Return true if is mode
 
 =cut
 
-sub is_addmode {
-    my $self = shift;
+sub is_mode {
+    my ($self, $mode) = @_;
 
-    return 1 if $self->get_appmode_observable->get eq 'add';
-}
-
-=head2 is_editmode
-
-Return true if is edit mode
-
-=cut
-
-sub is_editmode {
-    my $self = shift;
-
-    return 1 if $self->get_appmode_observable->get eq 'edit';
-}
-
-=head2 is_findmode
-
-Return true if is find mode
-
-=cut
-
-sub is_findmode {
-    my $self = shift;
-
-    return 1 if $self->get_appmode_observable->get eq 'find';
+    if ($self->get_appmode_observable->get eq $mode) {
+        return 1;
+    }
+    else {
+        return;
+    }
 }
 
 =head2 get_appmode_observable

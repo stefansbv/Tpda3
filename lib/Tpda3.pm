@@ -3,6 +3,8 @@ package Tpda3;
 use strict;
 use warnings;
 
+use 5.008005;
+
 use Log::Log4perl qw(get_logger);
 
 use Tpda3::Tk::Controller;
@@ -40,7 +42,7 @@ Constructor method.
 =cut
 
 sub new {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
     my $self = {};
 
@@ -66,6 +68,8 @@ sub _init {
     $self->{gui} = Tpda3::Tk::Controller->new();
 
     $self->{gui}->start();
+
+    return;
 }
 
 =head2 run
@@ -78,6 +82,8 @@ sub run {
     my $self = shift;
 
     $self->{gui}->MainLoop;
+
+    return;
 }
 
 =head1 AUTHOR
@@ -116,4 +122,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3
+1;    # End of Tpda3

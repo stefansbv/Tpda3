@@ -2,6 +2,7 @@ package Tpda3::Db::Connection;
 
 use strict;
 use warnings;
+use Carp;
 
 use Log::Log4perl qw(get_logger);
 
@@ -75,18 +76,18 @@ sub _connect {
     $log->debug("Database driver is $driver");
 
   SWITCH: for ( $driver ) {
-        /^$/ && do warn "No driver name?\n";
-        /firebird/i && do {
+        /^$/x && do warn "No driver name?\n";
+        /firebird/xi && do {
             require Tpda3::Db::Connection::Firebird;
             $db = Tpda3::Db::Connection::Firebird->new();
             last SWITCH;
         };
-        /postgresql/i && do {
+        /postgresql/xi && do {
             require Tpda3::Db::Connection::Postgresql;
             $db = Tpda3::Db::Connection::Postgresql->new();
             last SWITCH;
         };
-        /mysql/i && do {
+        /mysql/xi && do {
             require Tpda3::Db::Connection::Mysql;
             $db = Tpda3::Db::Connection::MySql->new();
             last SWITCH;
@@ -98,6 +99,8 @@ sub _connect {
 
     $self->{dbc} = $db;
     $self->{dbh} = $db->db_connect( $conf );
+
+    return;
 }
 
 =head2 read_username
@@ -109,7 +112,9 @@ Read and return user name from command line
 sub read_username {
     my $self = shift;
 
-    warn 'read_username not implemented';
+    carp 'read_username not implemented';
+
+    return;
 }
 
 =head2 read_password
@@ -121,7 +126,9 @@ Read and return password from command line
 sub read_password {
     my $self = shift;
 
-    warn 'read_password not implemented';
+    carp 'read_password not implemented';
+
+    return;
 }
 
 =head1 AUTHOR

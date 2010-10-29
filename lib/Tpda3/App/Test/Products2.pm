@@ -1,11 +1,13 @@
-package Tpda3::App::test::Products2;
+package Tpda3::App::Test::Products2;
 
 use strict;
 use warnings;
 
+use base 'Tpda3::Tk::Screen';
+
 =head1 NAME
 
-Tpda3::App::test::Products2 screen
+Tpda3::App::Test::Products2 screen
 
 =head1 VERSION
 
@@ -17,29 +19,13 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    require Tpda3::App::test::Products2;
+    require Tpda3::App::Test::Products2;
 
-    my $scr = Tpda3::App::test::Products2->new;
+    my $scr = Tpda3::App::Test::Products2->new;
 
     $scr->run_screen($args);
 
 =head1 METHODS
-
-=head2 new
-
-Constructor method
-
-=cut
-
-sub new {
-    my $type = shift;
-
-    my $self = {};
-
-    bless( $self, $type );
-
-    return $self;
-}
 
 =head2 run_screen
 
@@ -48,7 +34,6 @@ The screen layout
 =cut
 
 sub run_screen {
-
     my ( $self, $inreg_p ) = @_;
 
     my $gui    = $inreg_p->toplevel;
@@ -306,39 +291,23 @@ sub run_screen {
         -pady => 5,
     );
 
-    # Entry objects
-    #     fld_name => [0-tip_entry, 1-w|r-updatable? 2-var_asoc, 3-var_obiect,
-    #                            4-state, 5-color, 6-decimals, 7-type_of_find]
-    # Type_of_find: 0=none, 1=all number, 2=contains_str, 3=all_str
-    $self->{eobj_rec} = {
-        productcode =>
-          [ 'e', 'w', undef, $eproductcode, 'normal', 'white', undef, 2 ],
-        buyprice =>
-          [ 'e', 'w', undef, $ebuyprice, 'normal', 'white', undef, 0 ],
-        msrp =>
-          [ 'e', 'w', undef, $emsrp, 'normal', 'white', undef, 0 ],
-        productvendor =>
-          [ 'e', 'w', undef, $eproductvendor, 'normal', 'white', undef, 1 ],
-        productscale =>
-          [ 'e', 'w', undef, $eproductscale, 'normal', 'white', undef, 1 ],
-        quantityinstock =>
-          [ 'e', 'w', undef, $equantityinstock, 'normal', 'white', undef, 1 ],
-        productline =>
-          [ 'e', 'r', undef, $eproductline, 'normal', 'lightgreen', undef, 2 ],
-        productlinecode => [
-            'e', 'w', undef, $eproductlinecode, 'disabled', 'lightgrey', undef,
-            1
-        ],
-        productdescription => [
-            't', 'w', undef, $tproductdescription, 'normal', 'white', undef, 2
-        ],
-        productname =>
-          [ 'e', 'w', undef, $eproductname, 'normal', 'white', undef, 2 ],
+    # Entry objects: var_asoc, var_obiect
+    $self->{controls} = {
+        productcode        => [ undef, $eproductcode ],
+        buyprice           => [ undef, $ebuyprice ],
+        msrp               => [ undef, $emsrp ],
+        productvendor      => [ undef, $eproductvendor ],
+        productscale       => [ undef, $eproductscale ],
+        quantityinstock    => [ undef, $equantityinstock ],
+        productline        => [ undef, $eproductline ],
+        productlinecode    => [ undef, $eproductlinecode ],
+        productdescription => [ undef, $tproductdescription ],
+        productname        => [ undef, $eproductname ],
     };
 
     # Required fields: fld_name => [#, Label]
     # If there is no value in the screen for this fields show a dialog message
-    $self->{fld_label} = {
+    $self->{req_controls} = {
         productcode        => [ 0, '  Product code' ],
         productname        => [ 1, '  Product name' ],
         productlinecode    => [ 2, '  Product Line' ],
@@ -352,14 +321,6 @@ sub run_screen {
 
     return $eproductcode;
 }
-
-=head2 get_eobj_rec
-
-return record
-
-=cut
-
-sub get_eobj_rec { return $_[0]->{eobj_rec}; }
 
 =head1 AUTHOR
 
@@ -381,4 +342,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::test::Products2
+1; # End of Tpda3::App::Test::Products2

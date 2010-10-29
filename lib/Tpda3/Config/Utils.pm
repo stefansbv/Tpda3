@@ -2,6 +2,7 @@ package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
+use Carp;
 
 use File::Basename;
 use File::Copy;
@@ -36,7 +37,7 @@ our $VERSION = '0.01';
 
 =head2 config_file_load
 
-Load a config file and return the Perl data structure.  Die,
+Load a config file and return the Perl data structure.  croak,
 if can't read file.
 
 It loads a file in Config::General format or in YAML::Tiny format,
@@ -47,13 +48,14 @@ depending on the extension of the file.
 sub config_file_load {
     my ($self, $conf_file, $message) = @_;
 
-    print "Config file: $conf_file\n";
     if (! -f $conf_file) {
-        print "$message\n";
-        die;
+        croak("$message");
+    }
+    else {
+        print "Config file: $conf_file\n";
     }
 
-    my (undef, undef, $suf) = fileparse($conf_file, qr/\.[^.]*/);
+    my $suf = ( fileparse($conf_file, qr/\.[^.]*/x) )[2];
     if ( $suf =~ m{conf} )  {
         return Tpda3::Config::Utils->load_conf($conf_file);
     }
@@ -61,9 +63,10 @@ sub config_file_load {
         return Tpda3::Config::Utils->load_yaml($conf_file);
     }
     else {
-        print "Config file: $conf_file has wrong suffix ($suf)\n";
-        die;
+        croak("Config file: $conf_file has wrong suffix ($suf)");
     }
+
+    return;
 }
 
 =head2 load_conf
@@ -144,14 +147,12 @@ sub save_yaml {
         $yaml = YAML::Tiny->new;
     }
 
-    # $geom_data
-    # Changing data
-    # delete $yaml->[0]->{section};              # Delete a value or section
-    $yaml->[0]->{geometry} = { $key => $value }; # Add a section
-    # $yaml->[0]->{$key} = $value;
+    $yaml->[0]->{geometry} = { $key => $value }; # Add section
 
     # Save the file
     $yaml->write($yaml_file);
+
+    return;
 }
 
 =head1 AUTHOR

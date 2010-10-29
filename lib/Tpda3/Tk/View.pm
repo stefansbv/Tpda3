@@ -2,6 +2,7 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+use Carp;
 
 use Log::Log4perl qw(get_logger);
 
@@ -84,6 +85,8 @@ sub _model {
     my $self = shift;
 
     $self->{_model};
+
+    return;
 }
 
 =head2 _set_model_callbacks
@@ -118,6 +121,8 @@ sub _set_model_callbacks {
     my $apm = $self->_model->get_appmode_observable;
     $apm->add_callback(
         sub { $self->set_status($self->_model->get_appmode, 'lr') } );
+
+    return;
 }
 
 =head2 set_geom
@@ -146,6 +151,8 @@ sub log_msg {
     my $log = get_logger();
 
     $log->info($msg);
+
+    return;
 }
 
 =head2 _create_menu
@@ -170,6 +177,8 @@ sub _create_menu {
     $self->configure( -menu => $self->{_menu} );
 
     $self->bind( '<Alt-x>' => sub { $self->on_quit } );
+
+    return;
 }
 
 sub _create_app_menu {
@@ -178,6 +187,8 @@ sub _create_app_menu {
     my $attribs = $self->{_cfg}->appmenubar;
 
     $self->make_menus($attribs, 2);   # Add starting with position = 2
+
+    return;
 }
 
 =head2 make_menus
@@ -262,6 +273,8 @@ sub make_popup_item {
     );
 
     $menu->add('separator') if $item->{sep} eq 'after';
+
+    return;
 }
 
 =head2 get_menu_popup_item
@@ -323,6 +336,8 @@ sub _create_statusbar {
         -foreground => 'blue',
         -background => 'lightyellow',
     );
+
+    return;
 }
 
 =head2 get_statusbar
@@ -385,6 +400,8 @@ sub _create_toolbar {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
     }
+
+    return;
 }
 
 =head2 toolbar_names
@@ -508,6 +525,8 @@ sub create_notebook {
 
     # Initialize
     $self->{_nb}->raise('rec');
+
+    return;
 }
 
 =head2 create_notebook_panel
@@ -524,6 +543,8 @@ sub create_notebook_panel {
         -label     => $label,
         -underline => 0,
     );
+
+    return;
 }
 
 =head2 get_notebook
@@ -548,6 +569,8 @@ sub destroy_notebook {
     my $self = shift;
 
     $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
+
+    return;
 }
 
 =head2 get_toolbar_btn
@@ -578,7 +601,7 @@ sub toggle_tool {
 
     my $other;
     if ($state) {
-        if ( $state =~ m{norma|disabled} ) {
+        if ( $state =~ m{norma|disabled}x ) {
             $other = $state;
         }
         else {
@@ -591,6 +614,8 @@ sub toggle_tool {
     }
 
     $tb_btn->configure( -state => $other );
+
+    return;
 }
 
 =head2 toggle_tool_check
@@ -610,6 +635,8 @@ sub toggle_tool_check {
     else {
         $tb_btn->deselect;
     }
+
+    return;
 }
 
 =head2 toggle_status_cn
@@ -627,6 +654,8 @@ sub toggle_status_cn {
     else {
         $self->set_status('connectno16','cn');
     }
+
+    return;
 }
 
 =head2 get_controls_conf
@@ -664,6 +693,8 @@ sub on_quit {
     my $self = shift;
 
     $self->destroy();
+
+    return;
 }
 
 =head2 sort_hash_by_id
@@ -713,11 +744,11 @@ sub w_geometry {
     return $geom;
 }
 
-# sub Tk::Error{
-#     my ($widget, $error, @where) = @_;
+sub Tk::Error {
+    my ($widget, $error, @where) = @_;
 
-#     print "$widget, $error, @where\n";
-# }
+    croak("$widget, $error"); # , @where
+}
 
 =head1 AUTHOR
 

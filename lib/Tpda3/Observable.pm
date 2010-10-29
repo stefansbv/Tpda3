@@ -93,6 +93,8 @@ sub _docallbacks {
     foreach my $cb ( keys %{ $self->{_callbacks} } ) {
         $self->{_callbacks}->{$cb}->( $self->{_data} );
     }
+
+    return;
 }
 
 =head2 set
@@ -106,6 +108,8 @@ sub set {
 
     $self->{_data} = $data;
     $self->_docallbacks();
+
+    return;
 }
 
 =head2 get
@@ -126,13 +130,13 @@ Set data to undef
 
 =cut
 
-sub unset {
-    my $self = shift;
+# sub unset {
+#     my $self = shift;
 
-    $self->{_data} = undef;
+#     $self->{_data} = undef;
 
-    return $self;
-}
+#     return $self;
+# }
 
 =head1 AUTHOR
 

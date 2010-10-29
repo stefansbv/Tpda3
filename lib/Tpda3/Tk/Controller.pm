@@ -136,7 +136,7 @@ sub _set_event_handlers {
     #-- Find mode
     $self->_view->get_toolbar_btn('tb_fm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->_model->is_findmode
+            $self->_model->is_mode('find')
                 ? $self->_model->set_idlemode
                 : $self->_model->set_findmode;
             $self->toggle_controls;
@@ -146,7 +146,7 @@ sub _set_event_handlers {
     #-- Add mode
     $self->_view->get_toolbar_btn('tb_ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->_model->is_addmode
+            $self->_model->is_mode('add')
                 ? $self->_model->set_idlemode
                 : $self->_model->set_addmode;
             $self->toggle_controls;
@@ -341,14 +341,13 @@ Load screen chosen from the menu
 =cut
 
 sub screen_load {
-    my ($self, $what) = @_;
+    my ($self, $module) = @_;
 
-    $self->{_scr_id} = lc $what;             # save for later use
+    $self->{_scr_id} = lc $module;           # for instance config filename
 
     my $loglevel_old = $self->_log->level();
 
     # Set log level to trace in this sub
-    # $self->_log->level($Log::Log4perl::TRACE);
     $self->_log->level($TRACE);
 
     # Unload current screen
@@ -369,8 +368,9 @@ sub screen_load {
     # Make new NoteBook widget
     $self->_view->create_notebook();
 
-    my $cfname = $self->_cfg->cfname;
-    my $class = "Tpda3::App::$cfname::$what";
+    # The application name
+    my $name = ucfirst $self->_cfg->cfname;
+    my $class = "Tpda3::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
     # $class->import;
@@ -394,6 +394,10 @@ sub screen_load {
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
     $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
 
+    # foreach my $fld ( keys %{ $self->{_scrcfg}{screen}{table}{fields} } ) {
+    #     print '', $self->{_scrcfg}{screen}{table}{fields}{$fld}{ctrlref}, "\n";
+    # }
+
     # Update window geometry
     my $geom = $self->_scrcfg->screen->{pos};
     $self->_view->set_geom($geom);
@@ -401,8 +405,7 @@ sub screen_load {
     # Store currently loaded screen class
     $self->{_curent} = $class;
 
-    # my $eobj = $self->{_screen}->get_eobj_rec();
-    # print Dumper( $eobj );
+    my $ctrls = $self->{_screen}->get_controls();
 
     # Restore default log level
     $self->_log->level($loglevel_old);

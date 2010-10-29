@@ -82,6 +82,8 @@ sub make_accessors {
     foreach ( keys %{$cfg_hr} ) {
         $self->$_( $cfg_hr->{$_} );
     }
+
+    return;
 }
 
 =head2 config_main_load
@@ -253,6 +255,8 @@ sub list_configs {
         }
     }
     print " in '$conpath'\n";
+
+    return;
 }
 
 =head2 config_save_instance
@@ -270,6 +274,8 @@ sub config_save_instance {
     my $inst_qfn = catfile($self->cfapps, $self->cfname, $inst );
 
     Tpda3::Config::Utils->save_yaml($inst_qfn, $key, $value);
+
+    return;
 }
 
 =head1 AUTHOR

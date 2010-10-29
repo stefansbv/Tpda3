@@ -66,6 +66,8 @@ sub DESTROY {
     my $self = shift;
 
     $self->_log->trace('Destroyed!');
+
+    return;
 }
 
 =head2 cfg
@@ -107,6 +109,8 @@ sub _make_accessors {
     foreach ( keys %{$cfg_hr} ) {
         $self->$_( $cfg_hr->{$_} );
     }
+
+    return;
 }
 
 =head2 config_screen_load
@@ -122,14 +126,16 @@ sub config_screen_load {
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
-
     $self->_log->info("Loading '$file_name' config file: $cfg_file");
+
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
     my @accessor = keys %{$cfg_data};
     $self->_log->info("Making accessors for @accessor");
 
     $self->_make_accessors($cfg_data);
+
+    return;
 }
 
 =head2 config_scr_file_name
