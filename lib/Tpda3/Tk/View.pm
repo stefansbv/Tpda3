@@ -84,9 +84,7 @@ Return model instance
 sub _model {
     my $self = shift;
 
-    $self->{_model};
-
-    return;
+    return $self->{_model};
 }
 
 =head2 _set_model_callbacks
