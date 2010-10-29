@@ -292,7 +292,7 @@ sub run_screen {
     );
 
     # Entry objects: var_asoc, var_obiect
-    # $self->{controls} = {
+    $self->{controls} = {
     #     productcode        => [ undef, $eproductcode ],
     #     buyprice           => [ undef, $ebuyprice ],
     #     msrp               => [ undef, $emsrp ],
@@ -303,7 +303,7 @@ sub run_screen {
     #     productlinecode    => [ undef, $eproductlinecode ],
     #     productdescription => [ undef, $tproductdescription ],
     #     productname        => [ undef, $eproductname ],
-    # };
+    };
 
     # # Required fields: fld_name => [#, Label]
     # # If there is no value in the screen for this fields show a dialog message

@@ -160,18 +160,29 @@ sub _set_event_handlers {
         }
     );
 
-    #-- NoteBook
+    return;
+}
 
-    # Must initialize only after the notebook is created
-    # -raisecmd  => [ \&tab_event, $self, 'rec' ]
-    # my $nb = $self->_view->get_notebook('rec');
-    # print Dumper( $nb );
-    # $nb->configure(
-    #     -raisecmd => sub {
-    #         print "tab changed\n";
-    #         #$self->_view->on_quit;
-    #     }
-    # );
+=head2 event_handler_nb
+
+Separate event handler fro notebook because must be initialized only
+after the notebook is created.
+
+=cut
+
+sub event_handler_nb {
+    my ($self, $page) = @_;
+
+    my $nb = $self->_view->get_notebook();
+
+    $nb->pageconfigure(
+        $page,
+        -raisecmd => sub {
+            # print "$page tab activated\n";
+        },
+    );
+
+    return;
 }
 
 =head2 _model
@@ -267,13 +278,7 @@ sub toggle_controls {
         $self->_view->toggle_tool($name, $status);
     }
 
-    # foreach my $btn ( keys %{$states} ) {
-    #     $self->set_controls_tb( $btn, $states->{$btn} );
-    # }
-
-    # foreach my $page ( qw(para list conf sql ) ) {
-    #     $self->toggle_controls_page( $page, $is_edit );
-    # }
+    return;
 }
 
 =head2 set_controls_tb
@@ -289,49 +294,6 @@ sub set_controls_tb {
     # print " $btn_name is $state\n";
 
     $self->_view->toggle_tool($btn_name, $state);
-}
-
-=head2 toggle_controls_page
-
-Toggle the controls on page
-
-=cut
-
-sub toggle_controls_page {
-    my ($self, $page, $is_edit) = @_;
-
-    # my $get = 'get_controls_'.$page;
-    # my $controls = $self->_view->$get();
-
-    # foreach my $control ( @{$controls} ) {
-    #     foreach my $name ( keys %{$control} ) {
-
-    #         my $state = $control->{$name}->[1];  # normal | disabled
-    #         my $color = $control->{$name}->[2];  # name
-
-    #         # Controls state are defined in View as strings
-    #         # Here we need to transform them to 0|1
-    #         my $editable;
-    #         if (!$is_edit) {
-    #             $editable = 0;
-    #             $color = 'lightgrey'; # Default color for disabled ctrl
-    #         }
-    #         else {
-    #             $editable = $state eq 'normal' ? 1 : 0;
-    #         }
-
-    #         if ($page ne 'sql') {
-    #             $control->{$name}->[0]->SetEditable($editable);
-    #         }
-    #         else {
-    #             $control->{$name}->[0]->Enable($editable);
-    #         }
-
-    #         $control->{$name}->[0]->SetBackgroundColour(
-    #             Tk::Colour->new( $color ),
-    #         );
-    #     }
-    # }
 }
 
 =head2 screen_load
@@ -367,6 +329,7 @@ sub screen_load {
 
     # Make new NoteBook widget
     $self->_view->create_notebook();
+    $self->event_handler_nb('rec');
 
     # The application name
     my $name = ucfirst $self->_cfg->cfname;
@@ -386,9 +349,8 @@ sub screen_load {
     $self->{_screen} = $class->new();
 
     # Show screen
-    $self->{idobj} = $self->{_screen}->run_screen(
-        $self->_view->{_nb}{rec},
-    );
+    my $nb = $self->_view->get_notebook('rec');
+    $self->{idobj} = $self->{_screen}->run_screen($nb);
 
     # Load screen config, and replace the precedent screen config
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
@@ -400,7 +362,7 @@ sub screen_load {
 
     # Update window geometry
     my $geom = $self->_scrcfg->screen->{pos};
-    $self->_view->set_geom($geom);
+    $self->_view->set_geometry($geom);
 
     # Store currently loaded screen class
     $self->{_curent} = $class;

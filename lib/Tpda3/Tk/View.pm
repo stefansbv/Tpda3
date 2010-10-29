@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Log::Log4perl qw(get_logger);
@@ -67,9 +69,6 @@ sub new {
     #-- Statusbar
     $self->_create_statusbar();
 
-    #-- Notebook
-    # $self->{_nb} = Tpda3::Tk::Notebook->new( $self );
-
     $self->_set_model_callbacks();
 
     return $self;
@@ -123,13 +122,13 @@ sub _set_model_callbacks {
     return;
 }
 
-=head2 set_geom
+=head2 set_geometry
 
 Set window geometry
 
 =cut
 
-sub set_geom {
+sub set_geometry {
     my ($self, $geom) = @_;
 
     $self->geometry($geom);
@@ -496,7 +495,7 @@ sub create_notebook {
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
         -foreground => 'blue',
-        -label      => 'Tpda::Search results',
+        -label      => 'Search results',
         -labelside  => 'acrosstop'
     )->pack( -expand => 1, -fill => 'both' );
 
@@ -534,10 +533,10 @@ Create a NoteBook panel
 =cut
 
 sub create_notebook_panel {
-    my ($self, $id, $label) = @_;
+    my ($self, $panel, $label) = @_;
 
-    $self->{_nb}{$id} = $self->{_nb}->add(
-        $id,
+    $self->{_nb}{$panel} = $self->{_nb}->add(
+        $panel,
         -label     => $label,
         -underline => 0,
     );
@@ -552,9 +551,14 @@ Return the notebook handler
 =cut
 
 sub get_notebook {
-    my ($self, $panel) = @_;
+    my ($self, $page) = @_;
 
-    return $self->{_nb}{$panel};
+    if ($page) {
+        return $self->{_nb}{$page};
+    }
+    else {
+        return $self->{_nb};
+    }
 }
 
 =head2 destroy_notebook

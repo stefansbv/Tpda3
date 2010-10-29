@@ -56,7 +56,8 @@ sub get_controls {
     my $self = shift;
 
     print "'get_controls' not implemented.\n"
-        unless exists $self->{controls};
+        unless exists $self->{controls}
+            and scalar %{ $self->{controls} };
 
     return $self->{controls};
 }
