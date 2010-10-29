@@ -292,32 +292,32 @@ sub run_screen {
     );
 
     # Entry objects: var_asoc, var_obiect
-    $self->{controls} = {
-        productcode        => [ undef, $eproductcode ],
-        buyprice           => [ undef, $ebuyprice ],
-        msrp               => [ undef, $emsrp ],
-        productvendor      => [ undef, $eproductvendor ],
-        productscale       => [ undef, $eproductscale ],
-        quantityinstock    => [ undef, $equantityinstock ],
-        productline        => [ undef, $eproductline ],
-        productlinecode    => [ undef, $eproductlinecode ],
-        productdescription => [ undef, $tproductdescription ],
-        productname        => [ undef, $eproductname ],
-    };
+    # $self->{controls} = {
+    #     productcode        => [ undef, $eproductcode ],
+    #     buyprice           => [ undef, $ebuyprice ],
+    #     msrp               => [ undef, $emsrp ],
+    #     productvendor      => [ undef, $eproductvendor ],
+    #     productscale       => [ undef, $eproductscale ],
+    #     quantityinstock    => [ undef, $equantityinstock ],
+    #     productline        => [ undef, $eproductline ],
+    #     productlinecode    => [ undef, $eproductlinecode ],
+    #     productdescription => [ undef, $tproductdescription ],
+    #     productname        => [ undef, $eproductname ],
+    # };
 
-    # Required fields: fld_name => [#, Label]
-    # If there is no value in the screen for this fields show a dialog message
-    $self->{req_controls} = {
-        productcode        => [ 0, '  Product code' ],
-        productname        => [ 1, '  Product name' ],
-        productlinecode    => [ 2, '  Product Line' ],
-        productscale       => [ 3, '  Product scale' ],
-        productvendor      => [ 4, '  Product vendor' ],
-        quantityinstock    => [ 5, '  Quantity in stock' ],
-        buyprice           => [ 6, '  Buy price' ],
-        msrp               => [ 7, '  MSRP' ],
-        productdescription => [ 8, '  Product description' ],
-    };
+    # # Required fields: fld_name => [#, Label]
+    # # If there is no value in the screen for this fields show a dialog message
+    # $self->{req_controls} = {
+    #     productcode        => [ 0, '  Product code' ],
+    #     productname        => [ 1, '  Product name' ],
+    #     productlinecode    => [ 2, '  Product Line' ],
+    #     productscale       => [ 3, '  Product scale' ],
+    #     productvendor      => [ 4, '  Product vendor' ],
+    #     quantityinstock    => [ 5, '  Quantity in stock' ],
+    #     buyprice           => [ 6, '  Buy price' ],
+    #     msrp               => [ 7, '  MSRP' ],
+    #     productdescription => [ 8, '  Product description' ],
+    # };
 
     return $eproductcode;
 }

@@ -56,7 +56,7 @@ toolbar:
     type:    _item_normal
     icon:    fileprint16
     tooltip: Print (preview)
-    help:    Print (preview) default report button
+    help:    Print (preview) default report
     sep:     after
     state:
       idle: disabled
@@ -67,8 +67,8 @@ toolbar:
     id:      1006
     type:    _item_normal
     icon:    apppencil16
-    tooltip: Take note button
-    help:    Take note button
+    tooltip: Take note
+    help:    Take note
     sep:     none
     state:
       idle: disabled
@@ -79,8 +79,8 @@ toolbar:
     id:      1007
     type:    _item_normal
     icon:    actredo16
-    tooltip: Restore note button
-    help:    Restore note button
+    tooltip: Restore note
+    help:    Restore note
     sep:     after
     state:
       idle: disabled
@@ -91,8 +91,8 @@ toolbar:
     id:      1008
     type:    _item_normal
     icon:    filenew16
-    tooltip: Clear button
-    help:    Clear button
+    tooltip: Clear
+    help:    Clear
     sep:     none
     state:
       idle: disabled
@@ -103,8 +103,8 @@ toolbar:
     id:      1009
     type:    _item_normal
     icon:    actreload16
-    tooltip: Refresh button
-    help:    Refresh button
+    tooltip: Refresh
+    help:    Refresh
     sep:     after
     state:
       idle: disabled
@@ -153,7 +153,7 @@ toolbar:
     icon:    actexit16
     tooltip: Quit
     help:    Quit the application
-    sep:     none
+    sep:     after
     state:
       idle: normal
       add:  disabled

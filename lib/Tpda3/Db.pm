@@ -84,8 +84,7 @@ Destroy method.
 sub DESTROY {
     my $self = shift;
 
-    print " disconnecting\n";
-    $self->{conn}{dbc}->disconnect () if defined $self->{conn};
+    $self->{conn}{dbh}->disconnect () if defined $self->{conn}{dbh};
 
     return;
 }

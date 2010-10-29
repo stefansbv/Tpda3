@@ -41,7 +41,7 @@ sub run_screen {
 
     my ( $self, $inreg_p ) = @_;
 
-    print " Not implemented.\n";
+    print 'run_screen not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -55,7 +55,8 @@ Get a data structure containing references to the widgets.
 sub get_controls {
     my $self = shift;
 
-    print "Not implemented.\n" if scalar keys %{ $self->{controls} };
+    print "'get_controls' not implemented.\n"
+        unless exists $self->{controls};
 
     return $self->{controls};
 }
