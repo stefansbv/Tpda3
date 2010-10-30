@@ -223,6 +223,7 @@ sub run_screen {
     # Entry objects: var_asoc, var_obiect
     $self->{controls} = {
         productcode        => [ undef, $eproductcode ],
+        productname        => [ undef, $eproductname ],
         buyprice           => [ undef, $ebuyprice ],
         msrp               => [ undef, $emsrp ],
         productvendor      => [ undef, $eproductvendor ],

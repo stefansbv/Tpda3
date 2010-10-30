@@ -163,21 +163,23 @@ sub _set_event_handlers {
     return;
 }
 
-=head2 event_handler_nb
+=head2 _set_event_handler_nb
 
-Separate event handler fro notebook because must be initialized only
-after the notebook is created.
+Separate event handler for NoteBook because must be initialized only
+after the NoteBook is (re)created and that happens when a new screen is
+required (selected from the applications menu) to load.
 
 =cut
 
-sub event_handler_nb {
-    my ($self, $page) = @_;
+sub _set_event_handler_nb {
+    my ( $self, $page ) = @_;
 
     my $nb = $self->_view->get_notebook();
 
     $nb->pageconfigure(
         $page,
         -raisecmd => sub {
+
             # print "$page tab activated\n";
         },
     );
@@ -260,7 +262,9 @@ sub _scrcfg {
 
 =head2 toggle_controls
 
-Toggle controls appropriate for diferent states of the application
+Toggle controls appropriate for different states of the application.
+
+There is a distinct state at the beginning when no screen is loaded yet.
 
 =cut
 
@@ -274,16 +278,17 @@ sub toggle_controls {
     foreach my $name (@{$toolbars}) {
         my $status = $attribs->{$name}{state}{$mode};
         # print "$name : $status\n";
-        #$self->set_controls_tb( $name, $status );
         $self->_view->toggle_tool($name, $status);
     }
+
+    $self->do_something($mode);
 
     return;
 }
 
 =head2 set_controls_tb
 
-Toggle the toolbar buttons state
+Toggle the toolbar buttons state.
 
 =cut
 
@@ -296,14 +301,69 @@ sub set_controls_tb {
     $self->_view->toggle_tool($btn_name, $state);
 }
 
+=head2 do_something
+
+Inspired by an article on Planet Perl
+by Ovid Tue 19 Oct 2010 03:32:02 PM EET
+
+=cut
+
+sub do_something {
+    my ($self, $mode) = @_;
+
+    my %method_for = (
+        add  => 'application_add',
+        find => 'application_find',
+        idle => 'application_idle',
+    );
+
+    if ( my $method_name = $method_for{$mode} ) {
+        $self->$method_name();
+    }
+
+    return;
+}
+
+sub application_idle {
+    my ($self, ) = @_;
+
+    print " i am in idle mode\n";
+
+    return;
+}
+
+sub application_add {
+    my ($self, ) = @_;
+
+    print " i am in add mode\n";
+
+    return;
+}
+
+=head2 application_find
+
+When in I<find> mode set status to normal and clear to all controls
+from the I<Screen> and change the background to light green.
+
+=cut
+
+sub application_find {
+    my ($self, ) = @_;
+
+    print " i am in find mode\n";
+    $self->screen_write();
+
+    return;
+}
+
 =head2 screen_load
 
-Load screen chosen from the menu
+Load screen chosen from the menu.
 
 =cut
 
 sub screen_load {
-    my ($self, $module) = @_;
+    my ( $self, $module ) = @_;
 
     $self->{_scr_id} = lc $module;           # for instance config filename
 
@@ -327,9 +387,9 @@ sub screen_load {
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();
 
-    # Make new NoteBook widget
+    # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    $self->event_handler_nb('rec');
+    $self->_set_event_handler_nb('rec');
 
     # The application name
     my $name = ucfirst $self->_cfg->cfname;
@@ -352,16 +412,12 @@ sub screen_load {
     my $nb = $self->_view->get_notebook('rec');
     $self->{idobj} = $self->{_screen}->run_screen($nb);
 
-    # Load screen config, and replace the precedent screen config
+    # Load the new screen configuration
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
     $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
 
-    # foreach my $fld ( keys %{ $self->{_scrcfg}{screen}{table}{fields} } ) {
-    #     print '', $self->{_scrcfg}{screen}{table}{fields}{$fld}{ctrlref}, "\n";
-    # }
-
     # Update window geometry
-    my $geom = $self->_scrcfg->screen->{pos};
+    my $geom = $self->_scrcfg->geom;
     $self->_view->set_geometry($geom);
 
     # Store currently loaded screen class
@@ -371,6 +427,188 @@ sub screen_load {
 
     # Restore default log level
     $self->_log->level($loglevel_old);
+}
+
+sub screen_read {
+    my ($self, $eobj, $all) = @_;
+
+    # Initialize
+    $self->{scrdata} = {};
+
+    # # Entry (widget) objects hash
+    # # Entry objects hash EXPERIMENTAL
+    # $eobj = $self->get_eobj() unless defined $eobj;
+    # # my $eobj = $self->get_eobj();
+
+    # # Scan fields
+    # foreach my $field ( keys %{$eobj} ) {
+
+    #     my $etip = $eobj->{$field}[0];    # Type of Entry
+    #     my $erw  = $eobj->{$field}[1];    # R/W
+
+    #     # print " Field: $field [$erw]\n";
+    #     # RFC
+    #     # Skip READ ONLY fields if not FIND status
+    #     # Read ALL if $all == true (don't skip)
+    #     if ( ! ( $all or $self->is_app_status_find() ) ) {
+    #         if ($erw eq 'r') {
+    #             print " skiping RO field '$field'\n"
+    #                 if $self->{run_ref}{verbose} >= 2;
+    #             next;
+    #         }
+    #     }
+
+    #     # Run appropriate sub according to entry widget type
+    #     my $sub_name = "screen_read_entry_$etip";
+    #     if ( $self->can($sub_name) ) {
+    #         $self->$sub_name( $eobj, $field );
+    #     }
+    #     else {
+    #         print "New type of Entry for reading '$field'?\n";
+    #     }
+    # }
+
+    return;
+}
+
+sub control_read_entry_e {
+    my ( $self, $eobj, $field ) = @_;
+
+    # # Tip Entry 'e'
+    # unless ( $eobj->{$field}[3] ) {
+    #     warn "Undefined: [e] $field\n";
+    #     return;
+    # }
+
+    # my $value = $eobj->{$field}[3]->get;
+
+    # # Clean '\n' from end
+    # $value =~ s/\n$//mg;        # m=multiline
+
+    # # Support search for NULL fields
+    # if ($value =~ /NULL/) {
+    #     $self->{scrdata}{"$field:b"} = 'NULL';
+    # } else {
+
+    #     # Add value if not empty
+    #     if ( $value =~ /\S+/ ) {
+    #         $self->{scrdata}{"$field:e"} = $value;
+    #         # print "Screen (e): $field = $value\n";
+    #     } else {
+    #         # If update(=edit) status, add NULL value
+    #         if ( $self->is_app_status_edit() ) {
+    #             $self->{scrdata}{"$field:e"} = undef;
+    #             # print "Screen (e): $field = undef\n";
+    #         }
+    #     }
+    # }
+
+    return;
+}
+
+=head2 screen_write
+
+Write to all controls from I<Screen>.
+
+=cut
+
+sub screen_write {
+    my ($self, $inreg_ref, $sursa) = @_;
+
+    # unless ( ref $inreg_ref ) {
+    #     warn "  no records, to write to screen?\n";
+    #     return;
+    # }
+
+    # Entry objects hash
+    # my $eobj = $self->get_eobj();
+
+    # # Save screen status
+    # my $stare      = $self->get_app_status();
+    # my $stari      = $self->{coord}->get_app_status_def($stare);
+    # my $scr_status = $stari->[0];
+
+    # # Swich on to allow write
+    # $self->{gui}->sw_ecran('on');
+
+    # Scan and fill Entry widgets
+    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+        print "name is $field:\n";
+        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+        my $ctrl_ref     = $self->{_screen}->get_controls();
+
+        # Control type?
+        my $ctrltype = $field_cfg_hr->{ctrltype};
+
+        my $value = 'T';            # $inreg_ref->{ lc $field };
+        print "$field => $value\n";
+
+        if ( defined $value ) {              # TODO: Check this!
+            # Trim spaces and \n
+            $value =~ s/^\s+//;
+            $value =~ s/\s+$//;
+            $value =~ s/\n$//mg; # m=multiline
+        }
+        else {
+            next;
+        }
+
+        #     my $places = $eobj->{$field}[6];
+        #     if ( (defined $places ) and ( $places > 0 ) ) {
+
+        #         # If PLACES > 0, format as number
+        #         $value = sprintf( "%.${places}f", $value );
+        #     }
+
+        my $sub_name = "control_write_entry_$ctrltype";
+        print " do $sub_name\n";
+
+        # Run appropriate sub according to control (entry widget) type
+        if ( $self->can($sub_name) ) {
+            $self->$sub_name( $ctrl_ref, $field, $value );
+        }
+        else {
+            print "New type of Entry for writing '$field'?\n";
+        }
+    }
+
+    # # Different messages
+    # if ( $sursa eq 'db' ) {
+    #     # $self->{gui}->refresh_sb('ll','Record loaded', "blue");
+    # }
+    # elsif ( $sursa eq 're' ) {
+    #     $self->{gui}->refresh_sb( 'll', 'Record reloaded', 'blue' );
+    # }
+    # else {
+    #     $self->{gui}->refresh_sb( 'll', 'Restored', 'blue' );
+    # }
+
+    # # Restore screen status
+    # if ( $scr_status ) {
+    #     $self->{gui}->sw_ecran($scr_status);
+    # }
+
+    return;
+}
+
+sub control_write_entry_e {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    # Tip Entry 'e'
+    $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
+    $ctrl_ref->{$field}[1]->insert( 0, $value );
+
+    return;
+}
+
+sub control_write_entry_t {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    # Tip TextEntry 't'
+    $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
+    $ctrl_ref->{$field}[1]->insert( '1.0', $value );
+
+    return;
 }
 
 =head1 AUTHOR

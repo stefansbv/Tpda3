@@ -51,9 +51,6 @@ sub config_file_load {
     if (! -f $conf_file) {
         croak("$message");
     }
-    else {
-        print "Config file: $conf_file\n";
-    }
 
     my $suf = ( fileparse($conf_file, qr/\.[^.]*/x) )[2];
     if ( $suf =~ m{conf} )  {

@@ -58,7 +58,7 @@ sub new {
 
 =head2 DESTROY
 
-Destructor
+Destructor (just to check is destoyed)
 
 =cut
 
@@ -130,10 +130,10 @@ sub config_screen_load {
 
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
-    my @accessor = keys %{$cfg_data};
+    my @accessor = keys %{ $cfg_data->{screen} };
     $self->_log->info("Making accessors for @accessor");
 
-    $self->_make_accessors($cfg_data);
+    $self->_make_accessors( $cfg_data->{screen} );
 
     return;
 }

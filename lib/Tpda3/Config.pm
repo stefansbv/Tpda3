@@ -167,13 +167,12 @@ sub config_interface_load {
         $msg .= qq{\n  from '$cfg_file'!};
 
         $self->{_log}->info("Loading $section config file: $cfg_file");
-        my $cfg_data =
-          Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
-        my @accessor = keys %{$cfg_data};
+        my @accessor = keys %{$cfg_hr};
         $self->{_log}->info("Making accessors for @accessor");
 
-        $self->make_accessors($cfg_data);
+        $self->make_accessors($cfg_hr);
     }
 
     return;
@@ -198,13 +197,12 @@ sub config_application_load {
         $msg .= $self->cfname . qq{\n\n};
 
         #$msg   .= qq{then edit: $cfgconn_f\n};
-        my $cfg_data =
-          Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
-        my @accessor = keys %{$cfg_data};
+        my @accessor = keys %{$cfg_hr};
         $self->{_log}->info("Making accessors for @accessor");
 
-        $self->make_accessors($cfg_data);
+        $self->make_accessors($cfg_hr);
     }
 
     return;

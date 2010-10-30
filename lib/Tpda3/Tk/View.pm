@@ -103,13 +103,8 @@ sub _set_model_callbacks {
         }
     );
 
-    # my $em = $self->_model->get_findmode_observable;
-    # $em->add_callback(
-    #     sub { $self->toggle_tool_check( 'tb_fm', $_[0] ) } );
-
-    # my $ad = $self->_model->get_addmode_observable;
-    # $ad->add_callback(
-    #     sub { $self->toggle_tool_check( 'tb_ad', $_[0] ) } );
+    # my $am = $self->_model->get_appmode_observable;
+    # $am->add_callback( sub { $self->do_something( $_[0] ) } );
 
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub { $self->log_msg( $_[0] ) } );
@@ -658,31 +653,6 @@ sub toggle_status_cn {
     }
 
     return;
-}
-
-=head2 get_controls_conf
-
-Return a AoH with information regarding the controls from the
-configurations page
-
-=cut
-
-sub get_controls_conf {
-    my $self = shift;
-
-    return [ { path => [ $self->{path}, 'disabled', 'lightgrey' ] }, ];
-}
-
-=head2 get_control_by_name
-
-Return the control instance by name
-
-=cut
-
-sub get_control_by_name {
-    my ( $self, $name ) = @_;
-
-    return $self->{$name},;
 }
 
 =head2 on_quit
