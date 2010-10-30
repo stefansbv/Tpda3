@@ -260,102 +260,6 @@ sub _scrcfg {
     return $self->{_scrcfg};
 }
 
-=head2 toggle_controls
-
-Toggle controls appropriate for different states of the application.
-
-There is a distinct state at the beginning when no screen is loaded yet.
-
-=cut
-
-sub toggle_controls {
-    my $self = shift;
-
-    my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
-
-    my $mode = $self->_model->get_appmode;
-
-    foreach my $name (@{$toolbars}) {
-        my $status = $attribs->{$name}{state}{$mode};
-        # print "$name : $status\n";
-        $self->_view->toggle_tool($name, $status);
-    }
-
-    $self->do_something($mode);
-
-    return;
-}
-
-=head2 set_controls_tb
-
-Toggle the toolbar buttons state.
-
-=cut
-
-sub set_controls_tb {
-    my ( $self, $btn_name, $status ) = @_;
-
-    my $state = $status ? 'normal' : 'disabled';
-    # print " $btn_name is $state\n";
-
-    $self->_view->toggle_tool($btn_name, $state);
-}
-
-=head2 do_something
-
-Inspired by an article on Planet Perl
-by Ovid Tue 19 Oct 2010 03:32:02 PM EET
-
-=cut
-
-sub do_something {
-    my ($self, $mode) = @_;
-
-    my %method_for = (
-        add  => 'application_add',
-        find => 'application_find',
-        idle => 'application_idle',
-    );
-
-    if ( my $method_name = $method_for{$mode} ) {
-        $self->$method_name();
-    }
-
-    return;
-}
-
-sub application_idle {
-    my ($self, ) = @_;
-
-    print " i am in idle mode\n";
-
-    return;
-}
-
-sub application_add {
-    my ($self, ) = @_;
-
-    print " i am in add mode\n";
-
-    return;
-}
-
-=head2 application_find
-
-When in I<find> mode set status to normal and clear to all controls
-from the I<Screen> and change the background to light green.
-
-=cut
-
-sub application_find {
-    my ($self, ) = @_;
-
-    print " i am in find mode\n";
-    $self->screen_write();
-
-    return;
-}
-
 =head2 screen_load
 
 Load screen chosen from the menu.
@@ -392,11 +296,10 @@ sub screen_load {
     $self->_set_event_handler_nb('rec');
 
     # The application name
-    my $name = ucfirst $self->_cfg->cfname;
+    my $name  = ucfirst $self->_cfg->cfname;
     my $class = "Tpda3::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
-    # $class->import;
 
     if ($class->can('run_screen') ) {
         $self->_log->trace("Screen '$class' can 'run_screen'");
@@ -429,82 +332,211 @@ sub screen_load {
     $self->_log->level($loglevel_old);
 }
 
-sub screen_read {
-    my ($self, $eobj, $all) = @_;
+=head2 toggle_controls
 
-    # Initialize
-    $self->{scrdata} = {};
+Toggle controls appropriate for different states of the application.
 
-    # # Entry (widget) objects hash
-    # # Entry objects hash EXPERIMENTAL
-    # $eobj = $self->get_eobj() unless defined $eobj;
-    # # my $eobj = $self->get_eobj();
+There is a distinct state at the beginning when no screen is loaded yet.
 
-    # # Scan fields
-    # foreach my $field ( keys %{$eobj} ) {
+=cut
 
-    #     my $etip = $eobj->{$field}[0];    # Type of Entry
-    #     my $erw  = $eobj->{$field}[1];    # R/W
+sub toggle_controls {
+    my $self = shift;
 
-    #     # print " Field: $field [$erw]\n";
-    #     # RFC
-    #     # Skip READ ONLY fields if not FIND status
-    #     # Read ALL if $all == true (don't skip)
-    #     if ( ! ( $all or $self->is_app_status_find() ) ) {
-    #         if ($erw eq 'r') {
-    #             print " skiping RO field '$field'\n"
-    #                 if $self->{run_ref}{verbose} >= 2;
-    #             next;
-    #         }
-    #     }
+    my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
 
-    #     # Run appropriate sub according to entry widget type
-    #     my $sub_name = "screen_read_entry_$etip";
-    #     if ( $self->can($sub_name) ) {
-    #         $self->$sub_name( $eobj, $field );
-    #     }
-    #     else {
-    #         print "New type of Entry for reading '$field'?\n";
-    #     }
-    # }
+    my $mode = $self->_model->get_appmode;
+
+    foreach my $name (@{$toolbars}) {
+        my $status = $attribs->{$name}{state}{$mode};
+        # print "$name : $status\n";
+        $self->_view->toggle_tool($name, $status);
+    }
+
+    # Screen methods according to mode
+    $self->do_something($mode);
 
     return;
 }
 
-sub control_read_entry_e {
-    my ( $self, $eobj, $field ) = @_;
+=head2 set_controls_tb
 
-    # # Tip Entry 'e'
-    # unless ( $eobj->{$field}[3] ) {
-    #     warn "Undefined: [e] $field\n";
-    #     return;
-    # }
+Toggle the toolbar buttons state.
 
-    # my $value = $eobj->{$field}[3]->get;
+=cut
 
-    # # Clean '\n' from end
-    # $value =~ s/\n$//mg;        # m=multiline
+sub set_controls_tb {
+    my ( $self, $btn_name, $status ) = @_;
 
-    # # Support search for NULL fields
-    # if ($value =~ /NULL/) {
-    #     $self->{scrdata}{"$field:b"} = 'NULL';
-    # } else {
+    my $state = $status ? 'normal' : 'disabled';
+    # print " $btn_name is $state\n";
 
-    #     # Add value if not empty
-    #     if ( $value =~ /\S+/ ) {
-    #         $self->{scrdata}{"$field:e"} = $value;
-    #         # print "Screen (e): $field = $value\n";
-    #     } else {
-    #         # If update(=edit) status, add NULL value
-    #         if ( $self->is_app_status_edit() ) {
-    #             $self->{scrdata}{"$field:e"} = undef;
-    #             # print "Screen (e): $field = undef\n";
-    #         }
-    #     }
-    # }
+    $self->_view->toggle_tool($btn_name, $state);
+}
+
+=head2 do_something
+
+Inspired by an article on Planet Perl
+by Ovid Tue 19 Oct 2010 03:32:02 PM EET
+
+Invoke a method acording to the status of the application.
+
+=cut
+
+sub do_something {
+    my ($self, $mode) = @_;
+
+    my %method_for = (
+        add  => 'application_add',
+        find => 'application_find',
+        idle => 'application_idle',
+    );
+
+    if ( my $method_name = $method_for{$mode} ) {
+        $self->$method_name();
+    }
 
     return;
 }
+
+=head2 application_idle
+
+when in I<idle> mode set status to I<normal> and clear all controls
+content in the I<Screen> than set status of controls to I<disabled>.
+
+=cut
+
+sub application_idle {
+    my ($self, ) = @_;
+
+    print " i am in idle mode\n";
+
+    return;
+}
+
+=head2 application_add
+
+When in I<add> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to the default
+color as specified in the configuration.
+
+=cut
+
+sub application_add {
+    my ($self, ) = @_;
+
+    print " i am in add mode\n";
+
+    my $record_ref = {
+        productcode        => 'S700_2047',
+        productname        => 'HMS Bounty',
+        buyprice           => '39.83',
+        msrp               => '90.52',
+        productvendor      => 'Unimax Art Galleries',
+        productscale       => '1:700',
+        quantityinstock    => '3501',
+        productline        => 'Ships',
+        productlinecode    => '2',
+        productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
+    };
+
+    $self->screen_write($record_ref);
+
+    return;
+}
+
+=head2 application_find
+
+When in I<find> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to light green.
+
+=cut
+
+sub application_find {
+    my ($self, ) = @_;
+
+    print " i am in find mode\n";
+    $self->screen_write();                   # Empty the controls
+
+    return;
+}
+
+# sub screen_read {
+#     my ($self, $eobj, $all) = @_;
+
+#     # Initialize
+#     $self->{scrdata} = {};
+
+#     # # Entry (widget) objects hash
+#     # # Entry objects hash EXPERIMENTAL
+#     # $eobj = $self->get_eobj() unless defined $eobj;
+#     # # my $eobj = $self->get_eobj();
+
+#     # # Scan fields
+#     # foreach my $field ( keys %{$eobj} ) {
+
+#     #     my $etip = $eobj->{$field}[0];    # Type of Entry
+#     #     my $erw  = $eobj->{$field}[1];    # R/W
+
+#     #     # print " Field: $field [$erw]\n";
+#     #     # RFC
+#     #     # Skip READ ONLY fields if not FIND status
+#     #     # Read ALL if $all == true (don't skip)
+#     #     if ( ! ( $all or $self->is_app_status_find() ) ) {
+#     #         if ($erw eq 'r') {
+#     #             print " skiping RO field '$field'\n"
+#     #                 if $self->{run_ref}{verbose} >= 2;
+#     #             next;
+#     #         }
+#     #     }
+
+#     #     # Run appropriate sub according to entry widget type
+#     #     my $sub_name = "screen_read_entry_$etip";
+#     #     if ( $self->can($sub_name) ) {
+#     #         $self->$sub_name( $eobj, $field );
+#     #     }
+#     #     else {
+#     #         print "New type of Entry for reading '$field'?\n";
+#     #     }
+#     # }
+
+#     return;
+# }
+
+# sub control_read_entry_e {
+#     my ( $self, $eobj, $field ) = @_;
+
+#     # # Tip Entry 'e'
+#     # unless ( $eobj->{$field}[3] ) {
+#     #     warn "Undefined: [e] $field\n";
+#     #     return;
+#     # }
+
+#     # my $value = $eobj->{$field}[3]->get;
+
+#     # # Clean '\n' from end
+#     # $value =~ s/\n$//mg;        # m=multiline
+
+#     # # Support search for NULL fields
+#     # if ($value =~ /NULL/) {
+#     #     $self->{scrdata}{"$field:b"} = 'NULL';
+#     # } else {
+
+#     #     # Add value if not empty
+#     #     if ( $value =~ /\S+/ ) {
+#     #         $self->{scrdata}{"$field:e"} = $value;
+#     #         # print "Screen (e): $field = $value\n";
+#     #     } else {
+#     #         # If update(=edit) status, add NULL value
+#     #         if ( $self->is_app_status_edit() ) {
+#     #             $self->{scrdata}{"$field:e"} = undef;
+#     #             # print "Screen (e): $field = undef\n";
+#     #         }
+#     #     }
+#     # }
+
+#     return;
+# }
 
 =head2 screen_write
 
@@ -513,7 +545,7 @@ Write to all controls from I<Screen>.
 =cut
 
 sub screen_write {
-    my ($self, $inreg_ref, $sursa) = @_;
+    my ($self, $record_ref) = @_;
 
     # unless ( ref $inreg_ref ) {
     #     warn "  no records, to write to screen?\n";
@@ -529,50 +561,46 @@ sub screen_write {
     # my $scr_status = $stari->[0];
 
     # # Swich on to allow write
-    # $self->{gui}->sw_ecran('on');
+    # $self->{gui}->toggle_screen_state('on');
 
     # Scan and fill Entry widgets
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
-        print "name is $field:\n";
+
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
         my $ctrl_ref     = $self->{_screen}->get_controls();
 
         # Control type?
         my $ctrltype = $field_cfg_hr->{ctrltype};
 
-        my $value = 'T';            # $inreg_ref->{ lc $field };
-        print "$field => $value\n";
+        my $value = $record_ref->{ lc $field };
+        if ( defined $value ) {
 
-        if ( defined $value ) {              # TODO: Check this!
             # Trim spaces and \n
             $value =~ s/^\s+//;
             $value =~ s/\s+$//;
-            $value =~ s/\n$//mg; # m=multiline
+            $value =~ s/\n$//mg;    # m=multiline
+
+            my $decimals = $field_cfg_hr->{decimals};
+            if ( $decimals ) {
+                if ( $decimals > 0 ) {
+
+                    # if decimals > 0, format as number
+                    $value = sprintf( "%.${decimals}f", $value );
+                }
+            }
         }
-        else {
-            next;
-        }
-
-        #     my $places = $eobj->{$field}[6];
-        #     if ( (defined $places ) and ( $places > 0 ) ) {
-
-        #         # If PLACES > 0, format as number
-        #         $value = sprintf( "%.${places}f", $value );
-        #     }
-
-        my $sub_name = "control_write_entry_$ctrltype";
-        print " do $sub_name\n";
 
         # Run appropriate sub according to control (entry widget) type
+        my $sub_name = "control_write_$ctrltype";
         if ( $self->can($sub_name) ) {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
         else {
-            print "New type of Entry for writing '$field'?\n";
+            print "WARN: New type of Entry for writing '$field'?\n";
         }
     }
 
-    # # Different messages
+    # Different messages
     # if ( $sursa eq 'db' ) {
     #     # $self->{gui}->refresh_sb('ll','Record loaded', "blue");
     # }
@@ -583,7 +611,7 @@ sub screen_write {
     #     $self->{gui}->refresh_sb( 'll', 'Restored', 'blue' );
     # }
 
-    # # Restore screen status
+    # Restore screen status
     # if ( $scr_status ) {
     #     $self->{gui}->sw_ecran($scr_status);
     # }
@@ -591,22 +619,34 @@ sub screen_write {
     return;
 }
 
-sub control_write_entry_e {
+=head2 control_write_e
+
+Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_e {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
     # Tip Entry 'e'
     $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
-    $ctrl_ref->{$field}[1]->insert( 0, $value );
+    $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
 
     return;
 }
 
-sub control_write_entry_t {
+=head2 control_write_t
+
+Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_t {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
     # Tip TextEntry 't'
     $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
-    $ctrl_ref->{$field}[1]->insert( '1.0', $value );
+    $ctrl_ref->{$field}[1]->insert( '1.0', $value ) if $value;
 
     return;
 }
