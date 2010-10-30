@@ -83,7 +83,7 @@ sub start {
 
     $self->_model->set_idlemode();
 
-    $self->toggle_controls;
+    $self->toggle_interface_controls;
 }
 
 =head2 _set_event_handlers
@@ -139,7 +139,8 @@ sub _set_event_handlers {
             $self->_model->is_mode('find')
                 ? $self->_model->set_idlemode
                 : $self->_model->set_findmode;
-            $self->toggle_controls;
+            $self->toggle_interface_controls;
+            $self->toggle_screen_controls;
         }
     );
 
@@ -149,7 +150,8 @@ sub _set_event_handlers {
             $self->_model->is_mode('add')
                 ? $self->_model->set_idlemode
                 : $self->_model->set_addmode;
-            $self->toggle_controls;
+            $self->toggle_interface_controls;
+            $self->toggle_screen_controls;
         }
     );
 
@@ -332,29 +334,28 @@ sub screen_load {
     $self->_log->level($loglevel_old);
 }
 
-=head2 toggle_controls
+=head2 toggle_interface_controls
 
 Toggle controls appropriate for different states of the application.
 
-There is a distinct state at the beginning when no screen is loaded yet.
+TODO: There is a distinct state at the beginning when no screen is
+loaded yet.
 
 =cut
 
-sub toggle_controls {
+sub toggle_interface_controls {
     my $self = shift;
 
     my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
 
     my $mode = $self->_model->get_appmode;
 
-    foreach my $name (@{$toolbars}) {
+    foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        # print "$name : $status\n";
-        $self->_view->toggle_tool($name, $status);
-    }
 
-    # Screen methods according to mode
-    $self->do_something($mode);
+        # print "$name : $status\n";
+        $self->_view->toggle_tool( $name, $status );
+    }
 
     return;
 }
@@ -369,9 +370,24 @@ sub set_controls_tb {
     my ( $self, $btn_name, $status ) = @_;
 
     my $state = $status ? 'normal' : 'disabled';
-    # print " $btn_name is $state\n";
 
     $self->_view->toggle_tool($btn_name, $state);
+
+    return;
+}
+
+=head2 toggle_screen_controls
+
+Screen methods according to mode
+
+=cut
+
+sub toggle_screen_controls {
+    my $self = shift;
+
+    $self->do_something( $self->_model->get_appmode );
+
+    return;
 }
 
 =head2 do_something
@@ -427,6 +443,7 @@ sub application_add {
 
     print " i am in add mode\n";
 
+    # Test record data
     my $record_ref = {
         productcode        => 'S700_2047',
         productname        => 'HMS Bounty',
@@ -440,6 +457,7 @@ sub application_add {
         productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
     };
 
+    $self->toggle_screen_controls_state('edit');
     $self->screen_write($record_ref);
 
     return;
@@ -538,12 +556,6 @@ sub application_find {
 #     return;
 # }
 
-=head2 screen_write
-
-Write to all controls from I<Screen>.
-
-=cut
-
 sub screen_write {
     my ($self, $record_ref) = @_;
 
@@ -563,7 +575,7 @@ sub screen_write {
     # # Swich on to allow write
     # $self->{gui}->toggle_screen_state('on');
 
-    # Scan and fill Entry widgets
+    # Scan and write to controls
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
@@ -615,6 +627,69 @@ sub screen_write {
     # if ( $scr_status ) {
     #     $self->{gui}->sw_ecran($scr_status);
     # }
+
+    return;
+}
+
+=head2 toggle_screen_controls_state
+
+Toggle all controls state from I<Screen>.
+
+=cut
+
+sub toggle_screen_controls_state {
+    my ($self, $state) = @_;
+
+    # my $mode = $self->_model->get_appmode;
+
+    # Scan and write to controls
+    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+
+        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+        my $ctrl_ref     = $self->{_screen}->get_controls();
+
+        my $ctrltype      = $field_cfg_hr->{ctrltype};
+        my $default_state = $field_cfg_hr->{state};
+        my $default_color = $field_cfg_hr->{bgcolor};
+        my $findtype      = $field_cfg_hr->{findtype};
+
+        # 0 = normal = default state like in screen config file
+        # 1 = on     = toate in stare 'normal'
+        # 2 = find   = write on + light green background
+        # 3 = off    = disabled + grey background
+
+        my $screen_states = {
+            off => {
+                state      => 'disabled',
+                background => $self->{bg},
+            },
+            idle => {
+                state      => 'disabled',
+                background => $self->{bg},
+            },
+            nofind => {
+                state      => 'disabled',
+                background => $self->{bg},
+            },
+            find => {
+                state      => 'normal',
+                background => 'lightgreen',
+            },
+            on   => { -state => 'normal', },
+            edit => {
+                state      => $default_state,
+                background => $default_color,
+            },
+        };
+
+        # Configure controls
+        $ctrl_ref->{$field}[1]->configure(
+            -state      => $screen_states->{$state}{state},
+        ) if exists $screen_states->{$state}{state};
+        $ctrl_ref->{$field}[1]->configure(
+            -background => $screen_states->{$state}{background},
+        ) if exists $screen_states->{$state}{background};
+    }
 
     return;
 }
