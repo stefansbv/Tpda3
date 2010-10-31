@@ -65,6 +65,7 @@ sub new {
     bless $self, $class;
 
     $self->_set_event_handlers;
+    $self->_control_states_set;
 
     return $self;
 }
@@ -107,7 +108,7 @@ sub _set_event_handlers {
     #-- Save geometry
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
-            my $scr_name = $self->{_scr_id} ||= 'main';
+            my $scr_name = $self->{_scr_id} || 'main';
             $self->_cfg
               ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
@@ -185,6 +186,40 @@ sub _set_event_handler_nb {
             # print "$page tab activated\n";
         },
     );
+
+    return;
+}
+
+=head2 control_states_set
+
+Data structure with setting for the different modes of the controls.
+
+=cut
+
+sub _control_states_set {
+    my $self = shift;
+
+    $self->{control_states} = {
+        off => {
+            state      => 'disabled',
+            background => 'disabled_bgcolor',
+        },
+        on   => {
+            state => 'normal',
+        },
+        find => {
+            state      => 'normal',
+            background => 'lightgreen',
+        },
+        nofind => {
+            state      => 'disabled',
+            background => 'disabled_bgcolor',
+        },
+        edit => {
+            state      => 'from_config',
+            background => 'from_config',
+        },
+    };
 
     return;
 }
@@ -276,7 +311,7 @@ sub screen_load {
     my $loglevel_old = $self->_log->level();
 
     # Set log level to trace in this sub
-    $self->_log->level($TRACE);
+    $self->_log->level($Log::Log4Perl::TRACE);
 
     # Unload current screen
     if ( $self->{_curent} ) {
@@ -426,6 +461,9 @@ sub application_idle {
     my ($self, ) = @_;
 
     print " i am in idle mode\n";
+    $self->screen_controls_state_to('on');
+    $self->screen_write();                   # Empty the controls
+    $self->screen_controls_state_to('off');
 
     return;
 }
@@ -457,7 +495,7 @@ sub application_add {
         productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
     };
 
-    $self->toggle_screen_controls_state('edit');
+    $self->screen_controls_state_to('edit');
     $self->screen_write($record_ref);
 
     return;
@@ -474,7 +512,9 @@ sub application_find {
     my ($self, ) = @_;
 
     print " i am in find mode\n";
+    $self->screen_controls_state_to('on');
     $self->screen_write();                   # Empty the controls
+    $self->screen_controls_state_to('find');
 
     return;
 }
@@ -556,24 +596,18 @@ sub application_find {
 #     return;
 # }
 
+=head2 screen_write
+
+Write record to screen.  Controls must be I<on> to allow write.
+
+=cut
+
 sub screen_write {
     my ($self, $record_ref) = @_;
 
-    # unless ( ref $inreg_ref ) {
-    #     warn "  no records, to write to screen?\n";
-    #     return;
-    # }
-
-    # Entry objects hash
-    # my $eobj = $self->get_eobj();
-
-    # # Save screen status
-    # my $stare      = $self->get_app_status();
-    # my $stari      = $self->{coord}->get_app_status_def($stare);
-    # my $scr_status = $stari->[0];
-
-    # # Swich on to allow write
-    # $self->{gui}->toggle_screen_state('on');
+    unless ( ref $record_ref ) {
+        $self->_log->trace("No record data, emptying the screen");
+    }
 
     # Scan and write to controls
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
@@ -612,83 +646,57 @@ sub screen_write {
         }
     }
 
-    # Different messages
-    # if ( $sursa eq 'db' ) {
-    #     # $self->{gui}->refresh_sb('ll','Record loaded', "blue");
-    # }
-    # elsif ( $sursa eq 're' ) {
-    #     $self->{gui}->refresh_sb( 'll', 'Record reloaded', 'blue' );
-    # }
-    # else {
-    #     $self->{gui}->refresh_sb( 'll', 'Restored', 'blue' );
-    # }
-
-    # Restore screen status
-    # if ( $scr_status ) {
-    #     $self->{gui}->sw_ecran($scr_status);
-    # }
-
     return;
 }
 
-=head2 toggle_screen_controls_state
+=head2 screen_controls_state_to
 
 Toggle all controls state from I<Screen>.
 
 =cut
 
-sub toggle_screen_controls_state {
+sub screen_controls_state_to {
     my ($self, $state) = @_;
 
-    # my $mode = $self->_model->get_appmode;
+    my $ctrl_ref     = $self->{_screen}->get_controls();
 
-    # Scan and write to controls
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
-        my $ctrl_ref     = $self->{_screen}->get_controls();
 
-        my $ctrltype      = $field_cfg_hr->{ctrltype};
-        my $default_state = $field_cfg_hr->{state};
-        my $default_color = $field_cfg_hr->{bgcolor};
-        my $findtype      = $field_cfg_hr->{findtype};
+        # Special case for find, for fields with 'findtype' set to none
+        if ($state eq 'find') {
+            $state = $field_cfg_hr->{findtype} eq 'none' ? 'nofind' : 'find';
+        }
 
-        # 0 = normal = default state like in screen config file
-        # 1 = on     = toate in stare 'normal'
-        # 2 = find   = write on + light green background
-        # 3 = off    = disabled + grey background
-
-        my $screen_states = {
-            off => {
-                state      => 'disabled',
-                background => $self->{bg},
-            },
-            idle => {
-                state      => 'disabled',
-                background => $self->{bg},
-            },
-            nofind => {
-                state      => 'disabled',
-                background => $self->{bg},
-            },
-            find => {
-                state      => 'normal',
-                background => 'lightgreen',
-            },
-            on   => { -state => 'normal', },
-            edit => {
-                state      => $default_state,
-                background => $default_color,
-            },
-        };
+        my $control_states = $self->control_states($state);
 
         # Configure controls
-        $ctrl_ref->{$field}[1]->configure(
-            -state      => $screen_states->{$state}{state},
-        ) if exists $screen_states->{$state}{state};
-        $ctrl_ref->{$field}[1]->configure(
-            -background => $screen_states->{$state}{background},
-        ) if exists $screen_states->{$state}{background};
+        if ( exists $control_states->{state} ) {
+            my $state = $control_states->{state};
+            $state = $field_cfg_hr->{state} if $state eq 'from_config';
+
+            $ctrl_ref->{$field}[1]->configure(
+                -state => $state,
+            );
+        }
+
+        if ( exists $control_states->{background} ) {
+            my $background = $control_states->{background};
+            if (defined $background) {
+                my $bg_color;
+                $bg_color = $field_cfg_hr->{background}
+                    if $background eq 'from_config';
+                $bg_color = $self->{_screen}->get_bgcolor()
+                    if $background eq 'disabled_bgcolor';
+
+                if ($bg_color) {
+                    $ctrl_ref->{$field}[1]->configure(
+                        -background => $bg_color,
+                    );
+                }
+            }
+        }
     }
 
     return;
@@ -724,6 +732,18 @@ sub control_write_t {
     $ctrl_ref->{$field}[1]->insert( '1.0', $value ) if $value;
 
     return;
+}
+
+=head2 control_states
+
+Return settings for controls, according to the state of the application.
+
+=cut
+
+sub control_states {
+    my ($self, $state) = @_;
+
+    return $self->{control_states}->{$state};
 }
 
 =head1 AUTHOR

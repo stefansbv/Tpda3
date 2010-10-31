@@ -62,6 +62,23 @@ sub get_controls {
     return $self->{controls};
 }
 
+=head2 get_bgcolor
+
+Return the background color of the main window.
+
+Must be setup like this in run_screen method of every screen
+
+ my $gui     = $inreg_p->toplevel;
+ $self->{bg} = $gui->cget('-background');
+
+=cut
+
+sub get_bgcolor {
+    my $self = shift;
+
+    return $self->{bg};
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

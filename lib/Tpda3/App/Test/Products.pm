@@ -37,9 +37,9 @@ sub run_screen {
 
     my ( $self, $inreg_p ) = @_;
 
-    my $gui    = $inreg_p->toplevel;
-    my $main_p = $inreg_p->parent;
-    my $bg     = $gui->cget('-background');
+    my $gui     = $inreg_p->toplevel;
+    my $main_p  = $inreg_p->parent;
+    $self->{bg} = $gui->cget('-background');
 
     # Products
     my $frame1 = $inreg_p->LabFrame(
@@ -109,7 +109,7 @@ sub run_screen {
     # + Productlinecode
     my $eproductlinecode = $frame1->Entry(
         -width              => 5,
-        -disabledbackground => $bg,
+        -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
     $eproductlinecode->form(
@@ -221,6 +221,7 @@ sub run_screen {
     );
 
     # Entry objects: var_asoc, var_obiect
+    # Other configurations in 'products.conf'
     $self->{controls} = {
         productcode        => [ undef, $eproductcode ],
         productname        => [ undef, $eproductname ],
