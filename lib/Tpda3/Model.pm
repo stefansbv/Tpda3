@@ -3,6 +3,10 @@ package Tpda3::Model;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
+use SQL::Abstract;
+
 use Tpda3::Config;
 use Tpda3::Observable;
 use Tpda3::Db;
@@ -256,6 +260,58 @@ sub get_appmode {
     my $self = shift;
 
     return $self->get_appmode_observable->get;
+}
+
+=head2 count_records
+
+Count records in table
+
+=cut
+
+sub count_records {
+    my ( $self, $data_hr ) = @_;
+
+    my $where = {};
+
+    while ( my ( $field, $value ) = each( %{$data_hr} ) ) {
+        print "$field: $value\n";
+        $where->{ $field } = { -like => $self->quote4like($value) };
+    }
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) =
+        $sql->select( 'products', ['COUNT(productcode) AS recnum'], $where );
+
+    print "SQL : $stmt\n";
+    print "bind: @bind\n";
+
+    my $sth = $self->{_dbh}->prepare($stmt);
+
+    $sth->execute(@bind);
+
+    while ( my $rezultat = $sth->fetchrow_hashref() ) {
+        print Dumper($rezultat);
+    }
+
+    return;
+}
+
+=head2 quote4like
+
+Surround text with '%' for SQL LIKE
+
+=cut
+
+sub quote4like {
+    my ( $self, $text ) = @_;
+
+    if ( $text =~ m{%}xm ) {
+        return $text;
+    }
+    else {
+        return qq{%$text%};
+    }
 }
 
 =head1 AUTHOR

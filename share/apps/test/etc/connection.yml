@@ -4,5 +4,5 @@
 connection:
   driver: postgresql
   server: localhost
-  dbname: test
+  dbname: classicmodels
   port:   5432

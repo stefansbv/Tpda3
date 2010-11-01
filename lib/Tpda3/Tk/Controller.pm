@@ -145,6 +145,35 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Find execute
+    $self->_view->get_toolbar_btn('tb_fe')->bind(
+        '<ButtonRelease-1>' => sub {
+            my $success = 0;
+            if ( $self->_model->is_mode('find') ) {
+                $success = $self->application_find_exec;
+            }
+            else {
+                print "WARN: Not in find mode\n";
+            }
+            # $self->toggle_interface_controls if $success;
+        }
+    );
+
+    #-- Find count
+    $self->_view->get_toolbar_btn('tb_fc')->bind(
+        '<ButtonRelease-1>' => sub {
+            my $records = 0;
+            if ( $self->_model->is_mode('find') ) {
+                $records = $self->application_find_count;
+                print " $records records found\n";
+            }
+            else {
+                print "WARN: Not in find mode\n";
+            }
+            $self->toggle_interface_controls if $records;
+        }
+    );
+
     #-- Add mode
     $self->_view->get_toolbar_btn('tb_ad')->bind(
         '<ButtonRelease-1>' => sub {
@@ -200,22 +229,19 @@ sub _control_states_set {
     my $self = shift;
 
     $self->{control_states} = {
-        off => {
+        off    => {
             state      => 'disabled',
             background => 'disabled_bgcolor',
         },
-        on   => {
-            state => 'normal',
+        on     => {
+            state      => 'normal',
+            background => 'from_config',
         },
-        find => {
+        find   => {
             state      => 'normal',
             background => 'lightgreen',
         },
-        nofind => {
-            state      => 'disabled',
-            background => 'disabled_bgcolor',
-        },
-        edit => {
+        edit   => {
             state      => 'from_config',
             background => 'from_config',
         },
@@ -519,82 +545,158 @@ sub application_find {
     return;
 }
 
-# sub screen_read {
-#     my ($self, $eobj, $all) = @_;
+=head2 application_find_exec
 
-#     # Initialize
-#     $self->{scrdata} = {};
+Execute find
 
-#     # # Entry (widget) objects hash
-#     # # Entry objects hash EXPERIMENTAL
-#     # $eobj = $self->get_eobj() unless defined $eobj;
-#     # # my $eobj = $self->get_eobj();
+=cut
 
-#     # # Scan fields
-#     # foreach my $field ( keys %{$eobj} ) {
+sub application_find_exec {
+    my ($self, ) = @_;
 
-#     #     my $etip = $eobj->{$field}[0];    # Type of Entry
-#     #     my $erw  = $eobj->{$field}[1];    # R/W
+    print " i run find\n";
+    $self->screen_read();
 
-#     #     # print " Field: $field [$erw]\n";
-#     #     # RFC
-#     #     # Skip READ ONLY fields if not FIND status
-#     #     # Read ALL if $all == true (don't skip)
-#     #     if ( ! ( $all or $self->is_app_status_find() ) ) {
-#     #         if ($erw eq 'r') {
-#     #             print " skiping RO field '$field'\n"
-#     #                 if $self->{run_ref}{verbose} >= 2;
-#     #             next;
-#     #         }
-#     #     }
+    return 1;
+}
 
-#     #     # Run appropriate sub according to entry widget type
-#     #     my $sub_name = "screen_read_entry_$etip";
-#     #     if ( $self->can($sub_name) ) {
-#     #         $self->$sub_name( $eobj, $field );
-#     #     }
-#     #     else {
-#     #         print "New type of Entry for reading '$field'?\n";
-#     #     }
-#     # }
+=head2 application_find_count
 
-#     return;
-# }
+Execute find: count
 
-# sub control_read_entry_e {
-#     my ( $self, $eobj, $field ) = @_;
+=cut
 
-#     # # Tip Entry 'e'
-#     # unless ( $eobj->{$field}[3] ) {
-#     #     warn "Undefined: [e] $field\n";
-#     #     return;
-#     # }
+sub application_find_count {
+    my ($self, ) = @_;
 
-#     # my $value = $eobj->{$field}[3]->get;
+    print " i run find count\n";
 
-#     # # Clean '\n' from end
-#     # $value =~ s/\n$//mg;        # m=multiline
+    $self->screen_read();
 
-#     # # Support search for NULL fields
-#     # if ($value =~ /NULL/) {
-#     #     $self->{scrdata}{"$field:b"} = 'NULL';
-#     # } else {
+    $self->_model->count_records( $self->{scrdata} );
 
-#     #     # Add value if not empty
-#     #     if ( $value =~ /\S+/ ) {
-#     #         $self->{scrdata}{"$field:e"} = $value;
-#     #         # print "Screen (e): $field = $value\n";
-#     #     } else {
-#     #         # If update(=edit) status, add NULL value
-#     #         if ( $self->is_app_status_edit() ) {
-#     #             $self->{scrdata}{"$field:e"} = undef;
-#     #             # print "Screen (e): $field = undef\n";
-#     #         }
-#     #     }
-#     # }
+    # $self->screen_controls_state_to('idle');
 
-#     return;
-# }
+    return 1;
+}
+
+=head2 screen_read
+
+Read screen controls (widgets) and save in a Perl data stucture.
+
+=cut
+
+sub screen_read {
+     my ($self, $all) = @_;
+
+     # Initialize
+     $self->{scrdata} = {};
+
+     # Scan and write to controls
+     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+
+         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+         my $ctrl_ref     = $self->{_screen}->get_controls();
+
+         # Control type?
+         my $ctrltype = $field_cfg_hr->{ctrltype};
+         my $ctrlrw   = $field_cfg_hr->{rw};
+
+         print " Field: $field \[$ctrltype\]\n";
+
+         # Skip READ ONLY fields if not FIND status
+         # Read ALL if $all == true (don't skip)
+         if ( ! ( $all or $self->_model->is_mode('find') ) ) {
+             if ($ctrlrw eq 'r') {
+                 print " skiping RO field '$field'\n";
+                 next;
+             }
+         }
+
+         # Run appropriate sub according to control (entry widget) type
+         my $sub_name = "control_read_$ctrltype";
+         if ( $self->can($sub_name) ) {
+             $self->$sub_name( $ctrl_ref, $field );
+         }
+         else {
+             print "WARN: New ctrl type '$ctrltype' for reading '$field'?\n";
+         }
+     }
+
+     return;
+}
+
+=head2 control_read_e
+
+Read contents of a Tk::Entry control.
+
+=cut
+
+sub control_read_e {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [e] $field\n";
+        return;
+    }
+
+    my $value = $ctrl_ref->{$field}[1]->get;
+
+    # Clean '\n' from end
+    $value =~ s/\n$//mg;    # m=multiline
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (e): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = undef;
+            print "Screen (e): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
+=head2 control_read_t
+
+Read contents of a Tk::Text control.
+
+=cut
+
+sub control_read_t {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [t] $field\n";
+        return;
+    }
+
+    my $value = $ctrl_ref->{$field}[1]->get( '0.0', 'end' );
+
+    # Clean '\n' from end
+    $value =~ s/\n$//mg;    # m=multiline
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (t): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = undef;
+            print "Screen (t): $field = undef\n";
+        }
+    }
+
+    return;
+}
 
 =head2 screen_write
 
@@ -642,7 +744,7 @@ sub screen_write {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
         else {
-            print "WARN: New type of Entry for writing '$field'?\n";
+            print "WARN: New ctrl type '$ctrltype' for writing '$field'?\n";
         }
     }
 
@@ -656,47 +758,39 @@ Toggle all controls state from I<Screen>.
 =cut
 
 sub screen_controls_state_to {
-    my ($self, $state) = @_;
+    my ( $self, $state ) = @_;
 
-    my $ctrl_ref     = $self->{_screen}->get_controls();
+    my $ctrl_ref       = $self->{_screen}->get_controls();
+    my $control_states = $self->control_states($state);
 
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
-
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
 
-        # Special case for find, for fields with 'findtype' set to none
-        if ($state eq 'find') {
-            $state = $field_cfg_hr->{findtype} eq 'none' ? 'nofind' : 'find';
-        }
+        # Skip for some control types
+        # next if $field_cfg_hr->{ctrltype} = '';
 
-        my $control_states = $self->control_states($state);
+        my $ctrl_state = $control_states->{state};
+        $ctrl_state = $field_cfg_hr->{state}
+            if $ctrl_state eq 'from_config';
 
-        # Configure controls
-        if ( exists $control_states->{state} ) {
-            my $state = $control_states->{state};
-            $state = $field_cfg_hr->{state} if $state eq 'from_config';
+        my $bkground = $control_states->{background};
+        my $bg_color = $bkground;
+        $bg_color = $field_cfg_hr->{bgcolor}
+            if $bkground eq 'from_config';
+        $bg_color = $self->{_screen}->get_bgcolor()
+            if $bkground eq 'disabled_bgcolor';
 
-            $ctrl_ref->{$field}[1]->configure(
-                -state => $state,
-            );
-        }
-
-        if ( exists $control_states->{background} ) {
-            my $background = $control_states->{background};
-            if (defined $background) {
-                my $bg_color;
-                $bg_color = $field_cfg_hr->{background}
-                    if $background eq 'from_config';
-                $bg_color = $self->{_screen}->get_bgcolor()
-                    if $background eq 'disabled_bgcolor';
-
-                if ($bg_color) {
-                    $ctrl_ref->{$field}[1]->configure(
-                        -background => $bg_color,
-                    );
-                }
+        # Special case for find mode and fields with 'findtype' set to none
+        if ( $state eq 'find' ) {
+            if ( $field_cfg_hr->{findtype} eq 'none' ) {
+                $ctrl_state = 'disabled';
+                $bg_color   = $self->{_screen}->get_bgcolor();
             }
         }
+
+        # Configure controls
+        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
+        $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
     }
 
     return;
@@ -743,7 +837,7 @@ Return settings for controls, according to the state of the application.
 sub control_states {
     my ($self, $state) = @_;
 
-    return $self->{control_states}->{$state};
+    return $self->{control_states}{$state};
 }
 
 =head1 AUTHOR

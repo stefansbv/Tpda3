@@ -2,6 +2,8 @@ package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use File::Basename;
@@ -144,7 +146,7 @@ sub save_yaml {
         $yaml = YAML::Tiny->new;
     }
 
-    $yaml->[0]->{geometry} = { $key => $value }; # Add section
+    $yaml->[0]->{geometry}{$key} = $value; # add new key => value
 
     # Save the file
     $yaml->write($yaml_file);

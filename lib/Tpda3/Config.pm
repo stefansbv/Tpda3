@@ -297,17 +297,3 @@ by the Free Software Foundation.
 =cut
 
 1; # End of Tpda3::Config
-
-#cfname    = test
-#$cfpath   = ~/.tpda_mvc
-
-#application:
-#conninfo   = ~/$cfpath/app/$cfname/etc/connection.yml
-#appmenu    = ~/$cfpath/app/$cfname/etc/menu.yml
-
-#interfaces:
-#menubar    = ~/$cfpath/etc/interfaces/menubar.yml
-#toolbar    = ~/$cfpath/etc/interfaces/toolbar.yml
-
-#general:
-#conntmpl   = ~/$cfpath/etc/template/connection.yml
