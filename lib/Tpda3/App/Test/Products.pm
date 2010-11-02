@@ -34,7 +34,6 @@ The screen layout
 =cut
 
 sub run_screen {
-
     my ( $self, $inreg_p ) = @_;
 
     my $gui     = $inreg_p->toplevel;
@@ -225,15 +224,14 @@ sub run_screen {
     $self->{controls} = {
         productcode        => [ undef, $eproductcode ],
         productname        => [ undef, $eproductname ],
-        buyprice           => [ undef, $ebuyprice ],
-        msrp               => [ undef, $emsrp ],
-        productvendor      => [ undef, $eproductvendor ],
-        productscale       => [ undef, $eproductscale ],
-        quantityinstock    => [ undef, $equantityinstock ],
         productline        => [ undef, $eproductline ],
         productlinecode    => [ undef, $eproductlinecode ],
+        productscale       => [ undef, $eproductscale ],
+        productvendor      => [ undef, $eproductvendor ],
+        quantityinstock    => [ undef, $equantityinstock ],
+        buyprice           => [ undef, $ebuyprice ],
+        msrp               => [ undef, $emsrp ],
         productdescription => [ undef, $tproductdescription ],
-        productname        => [ undef, $eproductname ],
     };
 
     # Required fields: fld_name => [#, Label]

@@ -389,7 +389,9 @@ sub screen_load {
     # Store currently loaded screen class
     $self->{_curent} = $class;
 
-    my $ctrls = $self->{_screen}->get_controls();
+    # my $ctrls = $self->{_screen}->get_controls();
+
+    $self->screen_controls_state_to('off');
 
     # Restore default log level
     $self->_log->level($loglevel_old);

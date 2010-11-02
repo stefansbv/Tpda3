@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 15;
 
 use lib qw( lib ../lib );
 
@@ -21,17 +21,61 @@ BEGIN {
 
 my $args = {
     cfname => 'test',
-    user    => 'stefan',
-    pass    => 'pass',
+    user   => 'stefan',
+    pass   => 'pass',
 };
+
+my $delay = 1;
 
 my $a = Tpda3->new($args);
 
-ok($a->{gui}{_view}->after(1000, sub {
-                               $a->{gui}->screen_load('Products'); } ));
-ok($a->{gui}{_view}->after(2000, sub {
-                               $a->{gui}->screen_load('Products2'); } ));
-ok($a->{gui}{_view}->after(3000, sub {
-                               $a->{gui}{_view}->on_quit; } ));
+#- Test some screens
+
+# Products
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub { $a->{gui}->screen_load('Products'); } )
+);
+
+foreach my $state (qw{on off find off edit off}) {
+    ok( $a->{gui}{_view}->after(
+        $delay * 1000,
+        sub {
+            $a->{gui}->screen_controls_state_to($state);
+        }
+    ) );
+    $delay++;
+}
+
+$delay++;
+
+# Products2
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub { $a->{gui}->screen_load('Products2'); } )
+);
+
+foreach my $state (qw{on off find off edit off}) {
+    ok( $a->{gui}{_view}->after(
+        $delay * 1000,
+        sub {
+            $a->{gui}->screen_controls_state_to($state);
+        }
+    ) );
+    $delay++;
+}
+
+$delay++;
+
+# Quit
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub {
+        $a->{gui}{_view}->on_quit;
+    }
+) );
 
 $a->run;

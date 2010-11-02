@@ -36,9 +36,9 @@ The screen layout
 sub run_screen {
     my ( $self, $inreg_p ) = @_;
 
-    my $gui    = $inreg_p->toplevel;
-    my $main_p = $inreg_p->parent;
-    my $bg     = $gui->cget('-background');
+    my $gui     = $inreg_p->toplevel;
+    my $main_p  = $inreg_p->parent;
+    $self->{bg} = $gui->cget('-background');
 
     # Products
     my $frame1 = $inreg_p->LabFrame(
@@ -127,7 +127,7 @@ sub run_screen {
     # + Productlinecode
     my $eproductlinecode = $frame1->Entry(
         -width              => 5,
-        -disabledbackground => $bg,
+        -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
     $eproductlinecode->grid(
@@ -292,32 +292,33 @@ sub run_screen {
     );
 
     # Entry objects: var_asoc, var_obiect
+    # Other configurations in 'products.conf'
     $self->{controls} = {
-    #     productcode        => [ undef, $eproductcode ],
-    #     buyprice           => [ undef, $ebuyprice ],
-    #     msrp               => [ undef, $emsrp ],
-    #     productvendor      => [ undef, $eproductvendor ],
-    #     productscale       => [ undef, $eproductscale ],
-    #     quantityinstock    => [ undef, $equantityinstock ],
-    #     productline        => [ undef, $eproductline ],
-    #     productlinecode    => [ undef, $eproductlinecode ],
-    #     productdescription => [ undef, $tproductdescription ],
-    #     productname        => [ undef, $eproductname ],
+        productcode        => [ undef, $eproductcode ],
+        productname        => [ undef, $eproductname ],
+        productline        => [ undef, $eproductline ],
+        productlinecode    => [ undef, $eproductlinecode ],
+        productscale       => [ undef, $eproductscale ],
+        productvendor      => [ undef, $eproductvendor ],
+        quantityinstock    => [ undef, $equantityinstock ],
+        buyprice           => [ undef, $ebuyprice ],
+        msrp               => [ undef, $emsrp ],
+        productdescription => [ undef, $tproductdescription ],
     };
 
-    # # Required fields: fld_name => [#, Label]
-    # # If there is no value in the screen for this fields show a dialog message
-    # $self->{req_controls} = {
-    #     productcode        => [ 0, '  Product code' ],
-    #     productname        => [ 1, '  Product name' ],
-    #     productlinecode    => [ 2, '  Product Line' ],
-    #     productscale       => [ 3, '  Product scale' ],
-    #     productvendor      => [ 4, '  Product vendor' ],
-    #     quantityinstock    => [ 5, '  Quantity in stock' ],
-    #     buyprice           => [ 6, '  Buy price' ],
-    #     msrp               => [ 7, '  MSRP' ],
-    #     productdescription => [ 8, '  Product description' ],
-    # };
+    # Required fields: fld_name => [#, Label]
+    # If there is no value in the screen for this fields show a dialog message
+    $self->{req_controls} = {
+        productcode        => [ 0, '  Product code' ],
+        productname        => [ 1, '  Product name' ],
+        productlinecode    => [ 2, '  Product Line' ],
+        productscale       => [ 3, '  Product scale' ],
+        productvendor      => [ 4, '  Product vendor' ],
+        quantityinstock    => [ 5, '  Quantity in stock' ],
+        buyprice           => [ 6, '  Buy price' ],
+        msrp               => [ 7, '  MSRP' ],
+        productdescription => [ 8, '  Product description' ],
+    };
 
     return $eproductcode;
 }
