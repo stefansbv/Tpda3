@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);

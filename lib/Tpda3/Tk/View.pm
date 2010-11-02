@@ -2,8 +2,6 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Log::Log4perl qw(get_logger);
@@ -54,7 +52,6 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
-    print Dumper( $self->{_cfg}->connection->{dbname} );
     $self->geometry('490x80+672+320');
     $self->title(" Tpda ");
 
@@ -105,7 +102,10 @@ sub _set_model_callbacks {
     );
 
     my $so = $self->_model->get_stdout_observable;
-    $so->add_callback( sub { $self->log_msg( $_[0] ) } );
+    $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
+
+    # my $so = $self->_model->get_stdout_observable;
+    # $so->add_callback( sub { $self->log_msg( $_[0] ) } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
@@ -332,8 +332,10 @@ sub _create_statusbar {
         -relief => 'flat',
     );
 
-    $self->{_sb}{ll} = $sb->addLabel( -relief => 'flat' );
+    # First label for various messages
+    $self->{_sb}{ms} = $sb->addLabel( -relief => 'flat' );
 
+    # Connection icon
     $self->{_sb}{cn} = $sb->addLabel(
         -width  => 20,
         -relief => 'raised',
@@ -341,6 +343,7 @@ sub _create_statusbar {
         -side   => 'right',
     );
 
+    # Database name
     $self->{_sb}{db} = $sb->addLabel(
         -width      => 15,
         -anchor     => 'center',
@@ -348,6 +351,7 @@ sub _create_statusbar {
         -background => 'lightyellow',
     );
 
+    # Progress
     $self->{_sb}{pr} = $sb->addProgressBar(
         -length     => 100,
         -from       => 0,
@@ -356,6 +360,7 @@ sub _create_statusbar {
         -foreground => 'blue',
     );
 
+    # Mode
     $self->{_sb}{md} = $sb->addLabel(
         -width      => 6,
         -anchor     => 'center',

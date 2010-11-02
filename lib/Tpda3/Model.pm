@@ -85,7 +85,7 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
-        # $self->_print('Connected.');
+        $self->_print('Connected.');
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
@@ -106,7 +106,7 @@ sub _disconnect {
 
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
-    # $self->_print('Disconnected.');
+    $self->_print('Disconnected.');
 
     return;
 }
@@ -156,11 +156,9 @@ Put a message on a text controll
 =cut
 
 sub _print {
-    my ( $self, $line, $sb_id ) = @_;
+    my ( $self, $msg ) = @_;
 
-    $sb_id = 0 if not defined $sb_id;
-
-    print "$line\n";
+    $self->get_stdout_observable->set( "$msg" );
 
     return;
 }
