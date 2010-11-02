@@ -2,6 +2,8 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -163,58 +165,16 @@ sub _print {
     return;
 }
 
-=head2 set_idlemode
+=head2 set_mode
 
-Set idle mode
-
-=cut
-
-sub set_idlemode {
-    my $self = shift;
-
-    $self->get_appmode_observable->set('idle');
-
-    return;
-}
-
-=head2 set_addmode
-
-Set add mode
+Set mode
 
 =cut
 
-sub set_addmode {
-    my $self = shift;
+sub set_mode {
+    my ($self, $mode) = @_;
 
-    $self->get_appmode_observable->set('add');
-
-    return;
-}
-
-=head2 set_editmode
-
-Set edit mode
-
-=cut
-
-sub set_editmode {
-    my $self = shift;
-
-    $self->get_appmode_observable->set('edit');
-
-    return;
-}
-
-=head2 set_findmode
-
-Set find mode
-
-=cut
-
-sub set_findmode {
-    my $self = shift;
-
-    $self->get_appmode_observable->set('find');
+    $self->get_appmode_observable->set($mode);
 
     return;
 }
@@ -304,6 +264,51 @@ sub count_records {
     $self->_print("$record_count records found") ;
 
     return;
+}
+
+=head2 query_records
+
+Count records in table.  Here we need the contents of the screen to
+build an sql where clause and also the column names from the
+I<columns> configuration.
+
+=cut
+
+sub query_records {
+    my ( $self, $data_hr ) = @_;
+
+    my $table  = $data_hr->{table};
+    my $pk_col = $data_hr->{pk_col};
+
+    my $where = {};
+    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+        if ( $attrib->[1] eq 'contains') {
+            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
+        }
+    }
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select(
+        $table, $data_hr->{columns}, $where );
+
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
+
+    my $ary_ref;
+    try {
+        $ary_ref =
+          $self->{_dbh}->selectall_arrayref( $stmt, { MaxRows => 100 }, @bind );
+    }
+    catch {
+        $self->_print("Database error!") ;
+        carp("Transaction aborted: $_");
+    };
+
+    # print Dumper( $ary_ref );
+    # $self->_print("$record_count records found") ;
+
+    return $ary_ref;
 }
 
 =head2 quote4like

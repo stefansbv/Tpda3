@@ -106,8 +106,8 @@ sub _set_model_callbacks {
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
 
-    # my $so = $self->_model->get_stdout_observable;
-    # $so->add_callback( sub { $self->log_msg( $_[0] ) } );
+    # my $ls = $self->_model->get_db_data_observable;
+    # $ls->add_callback( sub { $self->load_list() } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
@@ -809,6 +809,33 @@ sub make_list_header {
 
         $colcnt++;
     }
+
+    return;
+}
+
+=head2 list_populate
+
+Polulate list with data from query result.
+
+=cut
+
+sub list_populate {
+    my ( $self, $paramdata ) = @_;
+
+    my $ary_ref = $self->_model->query_records($paramdata);
+
+    # Data
+    foreach my $record ( @{$ary_ref} ) {
+        $self->{_rc}->insert( 'end', $record );
+        $self->{_rc}->see('end');
+        $self->{_rc}->update;
+    }
+
+    # Activate and select last
+    $self->{_rc}->selectionClear( 0, 'end' );
+    $self->{_rc}->activate('end');
+    $self->{_rc}->selectionSet('end');
+    $self->{_rc}->see('active');
 
     return;
 }

@@ -82,7 +82,7 @@ sub start {
     # Connect to database at start
     $self->_model->toggle_db_connect();
 
-    $self->_model->set_idlemode();
+    $self->_model->set_mode('idle');
 
     $self->toggle_interface_controls;
 }
@@ -146,7 +146,7 @@ sub _set_event_handlers {
         '<ButtonRelease-1>' => sub {
             my $success = 0;
             if ( $self->_model->is_mode('find') ) {
-                $success = $self->record_find_exec;
+                $success = $self->record_find_execute;
             }
             else {
                 print "WARN: Not in find mode\n";
@@ -323,7 +323,7 @@ Load screen chosen from the menu.
 sub screen_load {
     my ( $self, $module ) = @_;
 
-    $self->_model->set_idlemode();
+    $self->_model->set_mode('idle');
 
     $self->{_scr_id} = lc $module;           # for instance config filename
 
@@ -386,7 +386,7 @@ sub screen_load {
     # my $ctrls = $self->{_screen}->get_controls();
 
     # $self->screen_controls_state_to('off');
-    # $self->_model->set_idlemode();            ???
+    # $self->_model->set_mode('idle');            ???
 
     $self->_view->make_list_header( $self->_scrcfg->columns );
 
@@ -527,19 +527,44 @@ sub on_screen_mode_find {
     return;
 }
 
-=head2 record_find_exec
+=head2 record_find_execute
 
 Execute find
 
 =cut
 
-sub record_find_exec {
+sub record_find_execute {
     my ($self, ) = @_;
 
-    print " i run find\n";
     $self->screen_read();
 
-    return 1;
+    # Table configs
+    my $table_hr = $self->{_scrcfg}->table;
+    my $fields_hr = $self->{_scrcfg}->fields;
+    # Columns configs
+    my $cols_ref = $self->_scrcfg->columns;
+
+    my $paramdata = {};
+
+    # Columns data (for found list)
+    my @cols;
+    foreach my $col (@{ $cols_ref->{column} } ) {
+        push(@cols,  $col->{name} );
+    }
+    $paramdata->{columns} = \@cols;
+
+    # Add findtype info to screen data
+    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+        $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+    }
+
+    # Table data
+    $paramdata->{table} = $table_hr->{view};   # use view instead of table
+    $paramdata->{pk_col} = $table_hr->{pk_col}{name};
+
+    $self->_view->list_populate($paramdata);
+
+    return;
 }
 
 =head2 record_find_count
@@ -745,8 +770,8 @@ sub toggle_mode_find {
     my $self = shift;
 
     $self->_model->is_mode('find')
-        ? $self->_model->set_idlemode
-        : $self->_model->set_findmode;
+        ? $self->_model->set_mode('idle')
+        : $self->_model->set_mode('find');
     $self->toggle_interface_controls;
     $self->toggle_screen_controls;
 
@@ -763,8 +788,8 @@ sub toggle_mode_add {
     my $self = shift;
 
     $self->_model->is_mode('add')
-        ? $self->_model->set_idlemode
-        : $self->_model->set_addmode;
+        ? $self->_model->set_mode('idle')
+        : $self->_model->set_mode('add');
     $self->toggle_interface_controls;
     $self->toggle_screen_controls;
 
