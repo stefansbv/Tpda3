@@ -388,6 +388,8 @@ sub screen_load {
     # $self->screen_controls_state_to('off');
     # $self->_model->set_idlemode();            ???
 
+    $self->_view->make_list_header( $self->_scrcfg->columns );
+
     # Restore default log level
     $self->_log->level($loglevel_old);
 }

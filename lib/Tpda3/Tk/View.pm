@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Log::Log4perl qw(get_logger);
@@ -758,6 +760,57 @@ sub Tk::Error {
     my ($widget, $error, @where) = @_;
 
     croak("$widget, $error"); # , @where
+}
+
+=head2 get_recordlist
+
+Return the record list handler
+
+=cut
+
+sub get_recordlist {
+    my $self  = shift;
+
+    return $self->{_rc};
+}
+
+=head2 make_list_header
+
+Make header for list
+
+=cut
+
+sub make_list_header {
+    my ($self, $cols_ref) = @_;
+
+    # Empty list
+    $self->{_rc}->selectionClear( 0, 'end' );
+    $self->{_rc}->columnDelete( 0, 'end' );
+
+    # Header
+    my $colcnt = 0;
+    foreach my $col (@{ $cols_ref->{column} } ) {
+        $self->{_rc}->columnInsert( 'end', -text => $col->{label} );
+        $self->{_rc}->columnGet($colcnt)
+            ->Subwidget('heading')
+            ->configure( -background => 'tan' );
+        $self->{_rc}->columnGet($colcnt)
+            ->Subwidget('heading')
+            ->configure( -width => $col->{width} );
+        if ( defined $col->{sort} ) {
+            if ($col->{sort} eq 'N') {
+                $self->{_rc}->columnGet($colcnt)
+                    ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
+            }
+        }
+        else {
+            warn " Warning: no sort option for $col->{name}\n";
+        }
+
+        $colcnt++;
+    }
+
+    return;
 }
 
 =head1 AUTHOR
