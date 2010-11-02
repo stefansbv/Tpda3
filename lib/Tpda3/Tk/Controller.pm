@@ -146,7 +146,7 @@ sub _set_event_handlers {
         '<ButtonRelease-1>' => sub {
             my $success = 0;
             if ( $self->_model->is_mode('find') ) {
-                $success = $self->application_find_exec;
+                $success = $self->record_find_exec;
             }
             else {
                 print "WARN: Not in find mode\n";
@@ -160,7 +160,7 @@ sub _set_event_handlers {
         '<ButtonRelease-1>' => sub {
             my $records = 0;
             if ( $self->_model->is_mode('find') ) {
-                $records = $self->application_find_count;
+                $records = $self->record_find_count;
                 print " $records records found\n";
             }
             else {
@@ -351,6 +351,7 @@ sub screen_load {
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
     $self->_set_event_handler_nb('rec');
+    $self->_set_event_handler_nb('lst');
 
     # The application name
     my $name  = ucfirst $self->_cfg->cfname;
@@ -441,27 +442,12 @@ Screen methods according to mode
 sub toggle_screen_controls {
     my $self = shift;
 
-    $self->do_something( $self->_model->get_appmode );
-
-    return;
-}
-
-=head2 do_something
-
-Inspired by an article on Planet Perl
-by Ovid Tue 19 Oct 2010 03:32:02 PM EET
-
-Invoke a method acording to the status of the application.
-
-=cut
-
-sub do_something {
-    my ($self, $mode) = @_;
+    my $mode = $self->_model->get_appmode();
 
     my %method_for = (
-        add  => 'application_add',
-        find => 'application_find',
-        idle => 'application_idle',
+        add  => 'on_screen_mode_add',
+        find => 'on_screen_mode_find',
+        idle => 'on_screen_mode_idle',
     );
 
     if ( my $method_name = $method_for{$mode} ) {
@@ -471,14 +457,14 @@ sub do_something {
     return;
 }
 
-=head2 application_idle
+=head2 on_screen_mode_idle
 
 when in I<idle> mode set status to I<normal> and clear all controls
 content in the I<Screen> than set status of controls to I<disabled>.
 
 =cut
 
-sub application_idle {
+sub on_screen_mode_idle {
     my $self = shift;
 
     print " i am in idle mode\n";
@@ -489,7 +475,7 @@ sub application_idle {
     return;
 }
 
-=head2 application_add
+=head2 on_screen_mode_add
 
 When in I<add> mode set status to I<normal> and clear all controls
 content in the I<Screen> and change the background to the default
@@ -497,7 +483,7 @@ color as specified in the configuration.
 
 =cut
 
-sub application_add {
+sub on_screen_mode_add {
     my ($self, ) = @_;
 
     print " i am in add mode\n";
@@ -522,14 +508,14 @@ sub application_add {
     return;
 }
 
-=head2 application_find
+=head2 on_screen_mode_find
 
 When in I<find> mode set status to I<normal> and clear all controls
 content in the I<Screen> and change the background to light green.
 
 =cut
 
-sub application_find {
+sub on_screen_mode_find {
     my ($self, ) = @_;
 
     print " i am in find mode\n";
@@ -540,13 +526,13 @@ sub application_find {
     return;
 }
 
-=head2 application_find_exec
+=head2 record_find_exec
 
 Execute find
 
 =cut
 
-sub application_find_exec {
+sub record_find_exec {
     my ($self, ) = @_;
 
     print " i run find\n";
@@ -555,13 +541,13 @@ sub application_find_exec {
     return 1;
 }
 
-=head2 application_find_count
+=head2 record_find_count
 
 Execute find: count
 
 =cut
 
-sub application_find_count {
+sub record_find_count {
     my ($self, ) = @_;
 
     print " i run find count\n";

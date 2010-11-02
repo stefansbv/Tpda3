@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Log::Log4perl qw(get_logger);
@@ -52,6 +54,7 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
+    print Dumper( $self->{_cfg}->connection->{dbname} );
     $self->geometry('490x80+672+320');
     $self->title(" Tpda ");
 
@@ -115,7 +118,8 @@ sub _set_model_callbacks {
 =head2 update_gui_components
 
 When the application status (mode) changes, update gui components.
-Screen controls are not handled here, but in controller module.
+Screen controls (widgets) are not handled here, but in controller
+module.
 
 =cut
 
@@ -124,7 +128,7 @@ sub update_gui_components {
 
     my $mode = $self->_model->get_appmode();
 
-    $self->set_status($mode, 'lr');
+    $self->set_status($mode, 'md');          # update statusbar
 
     SWITCH: {
           $mode eq 'find' && do {
@@ -141,7 +145,7 @@ sub update_gui_components {
               $self->toggle_tool_check( 'tb_fm', 0 );
               last SWITCH;
           };
-          print "\$mode is not in (find add idle)!\n";
+          warn "\$mode is not in (find add idle)!\n";
       }
 
     return;
@@ -337,10 +341,11 @@ sub _create_statusbar {
         -side   => 'right',
     );
 
-    $self->{_sb}{ld} = $sb->addLabel(
-        -width  => 15,
-        -anchor => 'center',
-        -side   => 'right',
+    $self->{_sb}{db} = $sb->addLabel(
+        -width      => 15,
+        -anchor     => 'center',
+        -side       => 'right',
+        -background => 'lightyellow',
     );
 
     $self->{_sb}{pr} = $sb->addProgressBar(
@@ -351,7 +356,7 @@ sub _create_statusbar {
         -foreground => 'blue',
     );
 
-    $self->{_sb}{lr} = $sb->addLabel(
+    $self->{_sb}{md} = $sb->addLabel(
         -width      => 6,
         -anchor     => 'center',
         -side       => 'right',
@@ -382,10 +387,6 @@ Set message to status bar
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
-    # my ( $self, $msg, $color ) = @_;
-
-    # my ( $text, $sb_id ) = split ':', $msg;    # Work around until I learn how
-    #                                            # to pass other parameters ;)
 
     my $sb = $self->get_statusbar($sb_id);
 
@@ -677,9 +678,11 @@ sub toggle_status_cn {
 
     if ($status) {
         $self->set_status('connectyes16','cn');
+        $self->set_status($self->{_cfg}->connection->{dbname},'db','darkgreen');
     }
     else {
         $self->set_status('connectno16','cn');
+        $self->set_status('','db');
     }
 
     return;
