@@ -2,8 +2,6 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Log::Log4perl qw(get_logger);
@@ -103,16 +101,48 @@ sub _set_model_callbacks {
         }
     );
 
-    # my $am = $self->_model->get_appmode_observable;
-    # $am->add_callback( sub { $self->do_something( $_[0] ) } );
-
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub { $self->log_msg( $_[0] ) } );
 
-    # When te status changes, update the status bar
+    # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
     $apm->add_callback(
-        sub { $self->set_status($self->_model->get_appmode, 'lr') } );
+        sub { $self->update_gui_components(); } );
+
+    return;
+}
+
+=head2 update_gui_components
+
+When the application status (mode) changes, update gui components.
+Screen controls are not handled here, but in controller module.
+
+=cut
+
+sub update_gui_components {
+    my $self = shift;
+
+    my $mode = $self->_model->get_appmode();
+
+    $self->set_status($mode, 'lr');
+
+    SWITCH: {
+          $mode eq 'find' && do {
+              $self->toggle_tool_check( 'tb_ad', 0 );
+              $self->toggle_tool_check( 'tb_fm', 1 );
+              last SWITCH;
+          };
+          $mode eq 'add' && do {
+              $self->toggle_tool_check( 'tb_ad', 1 );
+              $self->toggle_tool_check( 'tb_fm', 0 );
+              last SWITCH; };
+          $mode eq 'idle' && do {
+              $self->toggle_tool_check( 'tb_ad', 0 );
+              $self->toggle_tool_check( 'tb_fm', 0 );
+              last SWITCH;
+          };
+          print "\$mode is not in (find add idle)!\n";
+      }
 
     return;
 }

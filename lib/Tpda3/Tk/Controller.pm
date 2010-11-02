@@ -20,11 +20,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.01
+Version 0.05
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -137,11 +137,7 @@ sub _set_event_handlers {
     #-- Find mode
     $self->_view->get_toolbar_btn('tb_fm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->_model->is_mode('find')
-                ? $self->_model->set_idlemode
-                : $self->_model->set_findmode;
-            $self->toggle_interface_controls;
-            $self->toggle_screen_controls;
+            $self->toggle_mode_find();
         }
     );
 
@@ -177,11 +173,7 @@ sub _set_event_handlers {
     #-- Add mode
     $self->_view->get_toolbar_btn('tb_ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->_model->is_mode('add')
-                ? $self->_model->set_idlemode
-                : $self->_model->set_addmode;
-            $self->toggle_interface_controls;
-            $self->toggle_screen_controls;
+            $self->toggle_mode_add();
         }
     );
 
@@ -212,7 +204,7 @@ sub _set_event_handler_nb {
         $page,
         -raisecmd => sub {
 
-            # print "$page tab activated\n";
+            print "$page tab activated\n";
         },
     );
 
@@ -332,6 +324,8 @@ Load screen chosen from the menu.
 sub screen_load {
     my ( $self, $module ) = @_;
 
+    $self->_model->set_idlemode();
+
     $self->{_scr_id} = lc $module;           # for instance config filename
 
     my $loglevel_old = $self->_log->level();
@@ -391,7 +385,8 @@ sub screen_load {
 
     # my $ctrls = $self->{_screen}->get_controls();
 
-    $self->screen_controls_state_to('off');
+    # $self->screen_controls_state_to('off');
+    # $self->_model->set_idlemode();            ???
 
     # Restore default log level
     $self->_log->level($loglevel_old);
@@ -415,8 +410,6 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-
-        # print "$name : $status\n";
         $self->_view->toggle_tool( $name, $status );
     }
 
@@ -486,7 +479,7 @@ content in the I<Screen> than set status of controls to I<disabled>.
 =cut
 
 sub application_idle {
-    my ($self, ) = @_;
+    my $self = shift;
 
     print " i am in idle mode\n";
     $self->screen_controls_state_to('on');
@@ -749,6 +742,42 @@ sub screen_write {
             print "WARN: New ctrl type '$ctrltype' for writing '$field'?\n";
         }
     }
+
+    return;
+}
+
+=head2 toggle_mode_find
+
+Toggle find mode
+
+=cut
+
+sub toggle_mode_find {
+    my $self = shift;
+
+    $self->_model->is_mode('find')
+        ? $self->_model->set_idlemode
+        : $self->_model->set_findmode;
+    $self->toggle_interface_controls;
+    $self->toggle_screen_controls;
+
+    return;
+}
+
+=head2 toggle_mode_add
+
+Toggle add mode
+
+=cut
+
+sub toggle_mode_add {
+    my $self = shift;
+
+    $self->_model->is_mode('add')
+        ? $self->_model->set_idlemode
+        : $self->_model->set_addmode;
+    $self->toggle_interface_controls;
+    $self->toggle_screen_controls;
 
     return;
 }

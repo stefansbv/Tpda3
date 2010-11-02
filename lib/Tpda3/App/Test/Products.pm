@@ -64,7 +64,11 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $eproductcode = $frame1->Entry( -width => 15 );
+    my $eproductcode = $frame1->Entry(
+        -width => 15,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $eproductcode->form(
         -top  => [ '&', $lproductcode, 0 ],
         -left => [ %0,  80 ],
@@ -79,7 +83,11 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $eproductname = $frame1->Entry( -width => 35 );
+    my $eproductname = $frame1->Entry(
+        -width => 35,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $eproductname->form(
         -top  => [ '&', $lproductname, 0 ],
         -left => [ %0,  80 ],
@@ -94,7 +102,11 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $eproductline = $frame1->Entry( -width => 28 );
+    my $eproductline = $frame1->Entry(
+        -width => 28,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $eproductline->form(
         -top  => [ '&', $lproductline, 0 ],
         -left => [ %0,  80 ],
@@ -125,7 +137,11 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $eproductscale = $frame1->Entry( -width => 10 );
+    my $eproductscale = $frame1->Entry(
+        -width => 10,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $eproductscale->form(
         -top  => [ '&', $lproductscale, 0 ],
         -left => [ %0,  80 ],
@@ -140,10 +156,14 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $eproductvendor = $frame1->Entry( -width => 35 );
+    my $eproductvendor = $frame1->Entry(
+        -width => 35,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $eproductvendor->form(
         -top  => [ '&', $lproductvendor, 0 ],
-        -left => [ %0,  80 ]
+        -left => [ %0,  80 ],
     );
 
     # Stock (quantityinstock)
@@ -155,7 +175,11 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $equantityinstock = $frame1->Entry( -width => 5 );
+    my $equantityinstock = $frame1->Entry(
+        -width => 5,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
     $equantityinstock->form(
         -top  => [ '&', $lquantityinstock, 0 ],
         -left => [ %0,  80 ],
@@ -170,8 +194,15 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $ebuyprice = $frame1->Entry( -width => 8 );
-    $ebuyprice->form( -top => [ '&', $lbuyprice, 0 ], -left => [ %0, 80 ] );
+    my $ebuyprice = $frame1->Entry(
+        -width => 8,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
+    $ebuyprice->form(
+        -top => [ '&', $lbuyprice, 0 ],
+        -left => [ %0, 80 ],
+    );
 
     # MSRP (msrp)
     my $lmsrp = $frame1->Label( -text => 'MSRP' );
@@ -182,8 +213,15 @@ sub run_screen {
         -pady => 5,
     );
 
-    my $emsrp = $frame1->Entry( -width => 8 );
-    $emsrp->form( -top => [ '&', $lmsrp, 0 ], -left => [ %0, 80 ] );
+    my $emsrp = $frame1->Entry(
+        -width => 8,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
+    $emsrp->form(
+        -top => [ '&', $lmsrp, 0 ],
+        -left => [ %0, 80 ],
+    );
 
     # Frame 2
 

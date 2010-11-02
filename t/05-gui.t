@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 10;
 
 use lib qw( lib ../lib );
 
@@ -38,6 +38,8 @@ ok( $a->{gui}{_view}->after(
     sub { $a->{gui}->screen_load('Products'); } )
 );
 
+# Test screen states
+
 foreach my $state (qw{on off find off edit off}) {
     ok( $a->{gui}{_view}->after(
         $delay * 1000,
@@ -47,25 +49,49 @@ foreach my $state (qw{on off find off edit off}) {
     ) );
     $delay++;
 }
+
+#- Test application states
+
+# find
+
+$delay++;
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub {
+        $a->{gui}->toggle_mode_find();
+    }
+) );
+
+# add
+
+$delay++;
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub {
+        $a->{gui}->toggle_mode_add();
+    }
+) );
 
 $delay++;
 
 # Products2
 
-ok( $a->{gui}{_view}->after(
-    $delay * 1000,
-    sub { $a->{gui}->screen_load('Products2'); } )
-);
+# ok( $a->{gui}{_view}->after(
+#     $delay * 1000,
+#     sub { $a->{gui}->screen_load('Products2'); } )
+# );
 
-foreach my $state (qw{on off find off edit off}) {
-    ok( $a->{gui}{_view}->after(
-        $delay * 1000,
-        sub {
-            $a->{gui}->screen_controls_state_to($state);
-        }
-    ) );
-    $delay++;
-}
+# foreach my $state (qw{on off find off edit off}) {
+#     ok( $a->{gui}{_view}->after(
+#         $delay * 1000,
+#         sub {
+#             $a->{gui}->screen_controls_state_to($state);
+#         }
+#     ) );
+#     $delay++;
+# }
 
 $delay++;
 
