@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -158,8 +160,7 @@ sub _set_event_handlers {
         '<ButtonRelease-1>' => sub {
             my $records = 0;
             if ( $self->_model->is_mode('find') ) {
-                $records = $self->record_find_count;
-                print " $records records found\n";
+                $self->record_find_count;
             }
             else {
                 print "WARN: Not in find mode\n";
@@ -548,15 +549,17 @@ Execute find: count
 sub record_find_count {
     my ($self, ) = @_;
 
-    print " i run find count\n";
-
     $self->screen_read();
+
+    my $table_hr = $self->{_scrcfg}->table;
+
+    # Add table name and primary key data ???
+    $self->{scrdata}{table}  = $table_hr->{name};
+    $self->{scrdata}{pk_col} = $table_hr->{pk_col}{name};
 
     $self->_model->count_records( $self->{scrdata} );
 
-    # $self->screen_controls_state_to('idle');
-
-    return 1;
+    return;
 }
 
 =head2 screen_read
@@ -581,7 +584,7 @@ sub screen_read {
          my $ctrltype = $field_cfg_hr->{ctrltype};
          my $ctrlrw   = $field_cfg_hr->{rw};
 
-         print " Field: $field \[$ctrltype\]\n";
+         # print " Field: $field \[$ctrltype\]\n";
 
          # Skip READ ONLY fields if not FIND status
          # Read ALL if $all == true (don't skip)

@@ -2,9 +2,9 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+use Carp;
 
-use Data::Dumper;
-
+use Try::Tiny;
 use SQL::Abstract;
 
 use Tpda3::Config;
@@ -271,26 +271,37 @@ sub count_records {
 
     my $where = {};
 
+    my $table  = $data_hr->{table};
+    my $pk_col = $data_hr->{pk_col};
+
     while ( my ( $field, $value ) = each( %{$data_hr} ) ) {
-        print "$field: $value\n";
+        next if $field eq 'table';           # just experimantal ???
+        next if $field eq 'pk_col';
+
         $where->{ $field } = { -like => $self->quote4like($value) };
     }
 
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) =
-        $sql->select( 'products', ['COUNT(productcode) AS recnum'], $where );
+    my ( $stmt, @bind ) = $sql->select(
+        $table, ["COUNT($pk_col) AS recs"], $where );
 
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
 
-    my $sth = $self->{_dbh}->prepare($stmt);
+    my $record_count;
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
 
-    $sth->execute(@bind);
+        $sth->execute(@bind);
 
-    while ( my $rezultat = $sth->fetchrow_hashref() ) {
-        print Dumper($rezultat);
+        ($record_count) = $sth->fetchrow_array();
     }
+    catch {
+        carp("Transaction aborted because $_");
+    };
+
+    $self->_print("$record_count records found") ;
 
     return;
 }
