@@ -15,6 +15,7 @@ toolbar:
       add:  disabled
       edit: disabled
       find: normal
+      sele: disabled
   tb_fe:
     id:      1002
     type:    _item_normal
@@ -27,6 +28,7 @@ toolbar:
       add:  disabled
       edit: disabled
       find: normal
+      sele: disabled
   tb_fc:
     id:      1003
     type:    _item_normal
@@ -39,6 +41,7 @@ toolbar:
       add:  disabled
       edit: disabled
       find: normal
+      sele: disabled
   tb_pr:
     id:      1004
     type:    _item_normal
@@ -51,6 +54,7 @@ toolbar:
       add:  disabled
       edit: normal
       find: disabled
+      sele: disabled
   tb_tn:
     id:      1005
     type:    _item_normal
@@ -63,6 +67,7 @@ toolbar:
       add:  normal
       edit: normal
       find: disabled
+      sele: disabled
   tb_tr:
     id:      1006
     type:    _item_normal
@@ -75,6 +80,7 @@ toolbar:
       add:  normal
       edit: normal
       find: disabled
+      sele: disabled
   tb_cl:
     id:      1007
     type:    _item_normal
@@ -87,6 +93,7 @@ toolbar:
       add:  normal
       edit: normal
       find: disabled
+      sele: disabled
   tb_rr:
     id:      1008
     type:    _item_normal
@@ -99,6 +106,7 @@ toolbar:
       add:  disabled
       edit: normal
       find: disabled
+      sele: disabled
   tb_ad:
     id:      1009
     type:    _item_check
@@ -111,6 +119,7 @@ toolbar:
       add:  normal
       edit: normal
       find: disabled
+      sele: disabled
   tb_rm:
     id:      1010
     type:    _item_normal
@@ -123,6 +132,7 @@ toolbar:
       add:  disabled
       edit: normal
       find: disabled
+      sele: disabled
   tb_sv:
     id:      1011
     type:    _item_normal
@@ -135,6 +145,7 @@ toolbar:
       add:  normal
       edit: normal
       find: disabled
+      sele: disabled
   tb_at:
     id:      1012
     type:    _item_normal
@@ -147,6 +158,7 @@ toolbar:
       add:  disabled
       edit: disabled
       find: disabled
+      sele: disabled
   tb_qt:
     id:      1013
     type:    _item_normal
@@ -159,4 +171,4 @@ toolbar:
       add:  disabled
       edit: disabled
       find: disabled
-
+      sele: normal

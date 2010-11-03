@@ -153,18 +153,10 @@ sub update_gui_components {
               $self->toggle_tool_check( 'tb_fm', 0 );
               last SWITCH;
           };
-          $mode eq 'idle' && do {
-              $self->toggle_tool_check( 'tb_ad', 0 );
-              $self->toggle_tool_check( 'tb_fm', 0 );
-              last SWITCH;
-          };
-          $mode eq 'edit' && do {
-              $self->toggle_tool_check( 'tb_ad', 0 );
-              $self->toggle_tool_check( 'tb_fm', 0 );
-              last SWITCH;
-          };
 
-          warn "$mode is not in (find add idle edit)!\n";
+          # Else
+          $self->toggle_tool_check( 'tb_ad', 0 );
+          $self->toggle_tool_check( 'tb_fm', 0 );
       }
 
     return;
@@ -472,8 +464,10 @@ sub _create_toolbar {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
 
-        # Initial state disabled, except quit button
+        # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
+        next if $name eq 'tb_at';
+
         $self->toggle_tool( $name, 'disabled' );
     }
 

@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -209,8 +211,13 @@ sub _set_event_handler_nb {
     $nb->pageconfigure(
         $page,
         -raisecmd => sub {
-
-            print "$page tab activated\n";
+            # print "$page tab activated\n";
+            if ($page eq 'lst') {
+                $self->set_app_mode('sele');
+            }
+            else {
+                $self->restore_app_mode();
+            }
         },
     );
 
@@ -233,6 +240,7 @@ sub set_app_mode {
         find => 'on_screen_mode_find',
         idle => 'on_screen_mode_idle',
         edit => 'on_screen_mode_edit',
+        sele => 'on_screen_mode_sele',
     );
 
     $self->toggle_interface_controls;
@@ -242,6 +250,18 @@ sub set_app_mode {
     if ( my $method_name = $method_for{$mode} ) {
         $self->$method_name();
     }
+
+    return;
+}
+
+=head2 restore_app_mode
+
+Restore previous app mode before 'sele'.
+
+=cut
+
+sub restore_app_mode {
+    my ($self, ) = @_;
 
     return;
 }
@@ -323,11 +343,25 @@ to the default color as specified in the configuration.
 =cut
 
 sub on_screen_mode_edit {
-    my ($self, ) = @_;
+    my $self = shift;
 
     print " i am in edit mode\n";
 
     $self->set_screen_controls_state_to('on');
+
+    return;
+}
+
+=head2 on_screen_mode_sele
+
+Noting to do here.
+
+=cut
+
+sub on_screen_mode_sele {
+    my $self = shift;
+
+    print " i am in sele mode\n";
 
     return;
 }
@@ -582,9 +616,9 @@ sub record_find_execute {
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($paramdata);
 
-    # Set mode to idle if found
+    # Set mode to sele if found
     if ($record_count > 0) {
-        $self->set_app_mode('idle');
+        $self->set_app_mode('sele');
     }
 
     return;
