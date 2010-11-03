@@ -184,6 +184,12 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Make some key bindings
+
+    $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
+    $self->_view->bind( '<F7>'    => sub { $self->toggle_mode_find } );
+    $self->_view->bind( '<F8>'    => sub { $self->record_find_execute } );
+
     return;
 }
 
@@ -573,6 +579,7 @@ sub record_find_execute {
     $paramdata->{table}  = $table_hr->{view};   # use view instead of table
     $paramdata->{pk_col} = $table_hr->{pk_col}{name};
 
+    $self->_view->list_init();
     my $record_count = $self->_view->list_populate($paramdata);
 
     # Set mode to idle if found

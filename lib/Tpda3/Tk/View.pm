@@ -247,8 +247,6 @@ sub _create_menu {
 
     $self->configure( -menu => $self->{_menu} );
 
-    $self->bind( '<Alt-x>' => sub { $self->on_quit } );
-
     return;
 }
 
@@ -855,6 +853,21 @@ sub make_list_header {
     return;
 }
 
+=head2 list_init
+
+Empty the list.
+
+=cut
+
+sub list_init {
+    my $self = shift;
+
+    $self->{_rc}->selectionClear( 0, 'end' );
+    $self->{_rc}->delete( 0, 'end' );
+
+    return;
+}
+
 =head2 list_populate
 
 Polulate list with data from query result.
@@ -909,6 +922,32 @@ sub list_populate {
     }
 
     return $record_count;
+}
+
+=head2 is_list_empty
+
+Return true if list control is empty.
+
+=cut
+
+sub is_list_empty {
+    my $self = shift;
+
+    my $row_count;
+
+    if ( Exists( $self->{_rc} ) ) {
+        eval { $row_count = $self->{_rc}->size(); };
+        if ($@) {
+            warn "Error: $@";
+            $row_count = 0;
+        }
+    }
+    else {
+        warn "Error, List doesn't exists?\n";
+        $row_count = 0;
+    }
+
+    return !$row_count;
 }
 
 # sub Tk::Error {
