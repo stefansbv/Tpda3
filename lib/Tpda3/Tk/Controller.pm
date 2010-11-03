@@ -80,7 +80,7 @@ sub start {
     # Connect to database at start
     $self->_model->toggle_db_connect();
 
-    $self->set_app_mode('idle');
+    return;
 }
 
 =head2 _set_event_handlers

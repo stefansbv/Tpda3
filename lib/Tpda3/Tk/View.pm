@@ -474,7 +474,8 @@ sub _create_toolbar {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
 
-        # initial state disabled
+        # Initial state disabled, except quit button
+        next if $name eq 'tb_qt';
         $self->toggle_tool( $name, 'disabled' );
     }
 
