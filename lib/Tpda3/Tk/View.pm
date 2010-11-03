@@ -12,6 +12,8 @@ use Tk;
 use Tk::widgets qw(ToolBar NoteBook StatusBar Dialog
   Checkbutton LabFrame MListbox JComboBox Font);
 
+require Tk::ErrorDialog;
+
 use base 'Tk::MainWindow';
 
 use Tpda3::Config;
@@ -802,12 +804,6 @@ sub w_geometry {
     return $geom;
 }
 
-sub Tk::Error {
-    my ($widget, $error, @where) = @_;
-
-    croak("$widget, $error"); # , @where
-}
-
 =head2 get_recordlist
 
 Return the record list handler
@@ -914,6 +910,12 @@ sub list_populate {
 
     return $record_count;
 }
+
+# sub Tk::Error {
+#     my ($widget, $error, @where) = @_;
+
+#     croak("$widget, $error"); # , @where
+# }
 
 =head1 AUTHOR
 

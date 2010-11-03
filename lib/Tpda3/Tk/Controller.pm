@@ -62,8 +62,8 @@ sub new {
 
     bless $self, $class;
 
-    $self->_set_event_handlers;
     $self->_control_states_data;
+    $self->_set_event_handlers;
 
     return $self;
 }
@@ -105,8 +105,8 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
             my $scr_name = $self->{_scr_id} || 'main';
-            $self->_cfg
-              ->config_save_instance( $scr_name, $self->_view->w_geometry() );
+            $self->_cfg->config_save_instance(
+                $scr_name, $self->_view->w_geometry() );
         }
     );
 
@@ -130,7 +130,7 @@ sub _set_event_handlers {
 
     #- Toolbar
 
-    #-- Attach to desktop (pin)
+    #-- Attach to desktop - pin (save geometry to config file)
     $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
             my $scr_name = $self->{_scr_id} || 'main';
@@ -534,22 +534,6 @@ sub toggle_interface_controls {
         my $status = $attribs->{$name}{state}{$mode};
         $self->_view->toggle_tool( $name, $status );
     }
-
-    return;
-}
-
-=head2 set_controls_tb
-
-Toggle the toolbar buttons state.
-
-=cut
-
-sub set_controls_tb {
-    my ( $self, $btn_name, $status ) = @_;
-
-    my $state = $status ? 'normal' : 'disabled';
-
-    $self->_view->toggle_tool($btn_name, $state);
 
     return;
 }
