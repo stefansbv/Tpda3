@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -87,7 +85,6 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
-        $self->_print('Connected.');
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
@@ -253,8 +250,8 @@ sub count_records {
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pk_col)"], $where );
 
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
 
     my $record_count;
     try {
@@ -265,7 +262,8 @@ sub count_records {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        carp("Transaction aborted because $_");
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
     };
 
     $self->_print("$record_count records found") ;
@@ -307,22 +305,21 @@ sub query_records {
 
     my ( $stmt, @bind ) = $sql->select( $table, $data_hr->{columns}, $where );
 
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
 
+    my $args = { MaxRows => 100 }; # Limit search result to max 100 rows
     my $ary_ref;
     try {
-        # Limit search result to max 100 rows
-        $ary_ref =
-          $self->{_dbh}->selectall_arrayref( $stmt, { MaxRows => 100 }, @bind );
+        $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
         $self->_print("Database error!") ;
-        carp("Transaction aborted: $_");
+        croak("Transaction aborted: $_");
     };
 
     my $record_count = scalar @{$ary_ref};
-    $self->_print("$record_count records found") ;
+    $self->_print("$record_count records listed") ;
 
     return $ary_ref;
 }

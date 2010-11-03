@@ -276,6 +276,27 @@ sub config_save_instance {
     return;
 }
 
+=head2 config_load_instance
+
+Load instance configuarations.  Only window geometry configuration for
+now.
+
+=cut
+
+sub config_load_instance {
+    my $self = shift;
+
+    my $inst = $self->cfrun->{instance};
+
+    my $inst_qfn = catfile($self->cfapps, $self->cfname, $inst );
+
+    my $cfg_hr = Tpda3::Config::Utils->config_file_load( $inst_qfn );
+
+    $self->make_accessors($cfg_hr);
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>

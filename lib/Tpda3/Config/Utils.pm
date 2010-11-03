@@ -2,8 +2,6 @@ package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use File::Basename;
@@ -51,7 +49,13 @@ sub config_file_load {
     my ($self, $conf_file, $message) = @_;
 
     if (! -f $conf_file) {
-        croak("$message");
+        if ($message) {
+            croak("$message")
+        }
+        else {
+            carp("WARN: Can't load $conf_file");
+            return;
+        }
     }
 
     my $suf = ( fileparse($conf_file, qr/\.[^.]*/x) )[2];

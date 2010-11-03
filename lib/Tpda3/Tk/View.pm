@@ -2,9 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
+use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
 
@@ -52,12 +51,11 @@ sub new {
 
     my $self = __PACKAGE__->SUPER::new(@_);
 
+    $self->{_model} = $model;
+
     $self->{_cfg} = Tpda3::Config->instance();
 
-    $self->geometry('490x80+672+320');
     $self->title(" Tpda ");
-
-    $self->{_model} = $model;
 
     #-- Menu
     $self->_create_menu();
@@ -70,6 +68,8 @@ sub new {
     $self->_create_statusbar();
 
     $self->_set_model_callbacks();
+
+    $self->set_geometry_main();
 
     return $self;
 }
@@ -86,6 +86,18 @@ sub _model {
     return $self->{_model};
 }
 
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{_cfg};
+}
+
 =head2 _set_model_callbacks
 
 Define the model callbacks
@@ -98,7 +110,7 @@ sub _set_model_callbacks {
     my $co = $self->_model->get_connection_observable;
     $co->add_callback(
         sub {
-            $self->toggle_tool_check( 'tb_cn', $_[0] );
+            # $self->toggle_tool_check( 'tb_cn', $_[0] );
             $self->toggle_status_cn( $_[0] );
         }
     );
@@ -141,14 +153,47 @@ sub update_gui_components {
           $mode eq 'add' && do {
               $self->toggle_tool_check( 'tb_ad', 1 );
               $self->toggle_tool_check( 'tb_fm', 0 );
-              last SWITCH; };
+              last SWITCH;
+          };
           $mode eq 'idle' && do {
               $self->toggle_tool_check( 'tb_ad', 0 );
               $self->toggle_tool_check( 'tb_fm', 0 );
               last SWITCH;
           };
-          warn "\$mode is not in (find add idle)!\n";
+          $mode eq 'edit' && do {
+              $self->toggle_tool_check( 'tb_ad', 0 );
+              $self->toggle_tool_check( 'tb_fm', 0 );
+              last SWITCH;
+          };
+
+          warn "$mode is not in (find add idle edit)!\n";
       }
+
+    return;
+}
+
+=head2 set_geometry_main
+
+Set main window geometry.  Load instance config, than set geometry for
+the window.  Fall back to a hardwired default if no instance config
+yet.
+
+=cut
+
+sub set_geometry_main {
+    my $self = shift;
+
+    $self->_cfg->config_load_instance();
+
+    my $geom;
+    if ( $self->_cfg->can('geometry') ) {
+        $geom = $self->_cfg->geometry->{'main'};
+    }
+    else {
+        $geom = '492x80+100+100';            # default
+    }
+
+    $self->geometry($geom);
 
     return;
 }
@@ -198,7 +243,7 @@ sub _create_menu {
 
     # Get MenuBar atributes
 
-    my $attribs = $self->{_cfg}->menubar;
+    my $attribs = $self->_cfg->menubar;
 
     $self->make_menus($attribs);
 
@@ -212,7 +257,7 @@ sub _create_menu {
 sub _create_app_menu {
     my $self = shift;
 
-    my $attribs = $self->{_cfg}->appmenubar;
+    my $attribs = $self->_cfg->appmenubar;
 
     $self->make_menus($attribs, 2);   # Add starting with position = 2
 
@@ -269,7 +314,7 @@ the screen (and also the name of the module).
 sub get_app_menus_list {
     my $self = shift;
 
-    my $attribs = $self->{_cfg}->appmenubar;
+    my $attribs = $self->_cfg->appmenubar;
     my $menus = $self->sort_hash_by_id($attribs);
 
     my @menulist;
@@ -354,6 +399,7 @@ sub _create_statusbar {
     );
 
     # Progress
+    $self->{progres} = 0;
     $self->{_sb}{pr} = $sb->addProgressBar(
         -length     => 100,
         -from       => 0,
@@ -444,7 +490,7 @@ sub toolbar_names {
     my $self = shift;
 
     # Get ToolBar button atributes
-    my $attribs = $self->{_cfg}->toolbar;
+    my $attribs = $self->_cfg->toolbar;
 
     # TODO: Change the config file so we don't need this sorting anymore
     my $toolbars = $self->sort_hash_by_id($attribs);
@@ -685,7 +731,7 @@ sub toggle_status_cn {
 
     if ($status) {
         $self->set_status('connectyes16','cn');
-        $self->set_status($self->{_cfg}->connection->{dbname},'db','darkgreen');
+        $self->set_status($self->_cfg->connection->{dbname},'db','darkgreen');
     }
     else {
         $self->set_status('connectno16','cn');
@@ -822,22 +868,51 @@ Polulate list with data from query result.
 sub list_populate {
     my ( $self, $paramdata ) = @_;
 
+    my $row_count;
+
+    if ( Exists( $self->{_rc} ) ) {
+        eval { $row_count = $self->{_rc}->size(); };
+        if ($@) {
+            warn "Error: $@";
+            $row_count = 0;
+        }
+    }
+    else {
+        warn "No MList!\n";
+        return;
+    }
+
     my $ary_ref = $self->_model->query_records($paramdata);
+    my $record_count = scalar @{$ary_ref};
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
         $self->{_rc}->insert( 'end', $record );
         $self->{_rc}->see('end');
+        $row_count++;
+        $self->set_status("$row_count records fetched", 'ms');
         $self->{_rc}->update;
+
+        # Progress bar
+        my $p = floor( $row_count * 10 / $record_count ) * 10;
+        if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
+
+    $self->set_status("$row_count records listed", 'ms');
 
     # Activate and select last
     $self->{_rc}->selectionClear( 0, 'end' );
     $self->{_rc}->activate('end');
     $self->{_rc}->selectionSet('end');
     $self->{_rc}->see('active');
+    $self->{progres} = 0;
 
-    return;
+    # Raise List tab if found
+    if ($record_count > 0) {
+        $self->{_nb}->raise('lst');
+    }
+
+    return $record_count;
 }
 
 =head1 AUTHOR

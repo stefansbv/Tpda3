@@ -3,20 +3,8 @@
 # Don't touch!, not for users ;)
 ---
 toolbar:
-  tb_cn:
-    id:      1001
-    type:    _item_check
-    icon:    connectyes16
-    tooltip: Connect/disconnect
-    help:    Connect/disconnect from the database
-    sep:     after
-    state:
-      idle: normal
-      add:  disabled
-      edit: disabled
-      find: disabled
   tb_fm:
-    id:      1002
+    id:      1001
     type:    _item_check
     icon:    filefind16
     tooltip: Toggle find mode
@@ -28,7 +16,7 @@ toolbar:
       edit: disabled
       find: normal
   tb_fe:
-    id:      1003
+    id:      1002
     type:    _item_normal
     icon:    actcheck16
     tooltip: Execute found
@@ -40,7 +28,7 @@ toolbar:
       edit: disabled
       find: normal
   tb_fc:
-    id:      1004
+    id:      1003
     type:    _item_normal
     icon:    acthelp16
     tooltip: Execute count
@@ -52,7 +40,7 @@ toolbar:
       edit: disabled
       find: normal
   tb_pr:
-    id:      1005
+    id:      1004
     type:    _item_normal
     icon:    fileprint16
     tooltip: Print (preview)
@@ -64,7 +52,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_tn:
-    id:      1006
+    id:      1005
     type:    _item_normal
     icon:    apppencil16
     tooltip: Take note
@@ -76,7 +64,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_tr:
-    id:      1007
+    id:      1006
     type:    _item_normal
     icon:    actredo16
     tooltip: Restore note
@@ -88,7 +76,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_cl:
-    id:      1008
+    id:      1007
     type:    _item_normal
     icon:    filenew16
     tooltip: Clear
@@ -100,7 +88,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_rr:
-    id:      1009
+    id:      1008
     type:    _item_normal
     icon:    actreload16
     tooltip: Refresh
@@ -112,7 +100,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_ad:
-    id:      1010
+    id:      1009
     type:    _item_check
     icon:    actitemadd16
     tooltip: Add record
@@ -124,7 +112,7 @@ toolbar:
       edit: normal
       find: disabled
   tb_rm:
-    id:      1011
+    id:      1010
     type:    _item_normal
     icon:    actitemdelete16
     tooltip: Remove record
@@ -136,16 +124,28 @@ toolbar:
       edit: normal
       find: disabled
   tb_sv:
-    id:      1012
+    id:      1011
     type:    _item_normal
     icon:    filesave16
     tooltip: Save record
     help:    Save record
-    sep:     none
+    sep:     after
     state:
       idle: disabled
       add:  normal
       edit: normal
+      find: disabled
+  tb_at:
+    id:      1012
+    type:    _item_normal
+    icon:    actattach16
+    tooltip: Attach to desktop, here
+    help:    Attach to desktop, here
+    sep:     after
+    state:
+      idle: normal
+      add:  disabled
+      edit: disabled
       find: disabled
   tb_qt:
     id:      1013

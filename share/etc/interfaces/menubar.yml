@@ -31,6 +31,12 @@ menubar:
         underline: 0
         sep: none
         key: Alt-g
+      2:
+        name: mn_cn
+        label: Connect/disconnect
+        underline: 0
+        sep: none
+        key: Alt-c
   menu_help:
     id:    1003
     label: Help

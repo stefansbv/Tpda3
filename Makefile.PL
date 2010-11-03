@@ -17,6 +17,8 @@ all_from 'lib/Tpda3.pm';
 requires 'perl'                       => '5.008005';
 requires 'Class::Singleton'           => '1.4';
 requires 'Class::Accessor'            => '0';
+requires 'Try::Tiny'                  => '0.07';
+requires 'SQL::Abstract'              => '1.68';
 requires 'Number::Compare'            => '0';
 requires 'File::UserConfig'           => '0';
 requires 'File::Find::Rule'           => '0.30';

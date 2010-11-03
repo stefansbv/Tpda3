@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -65,7 +63,7 @@ sub new {
     bless $self, $class;
 
     $self->_set_event_handlers;
-    $self->_control_states_set;
+    $self->_control_states_data;
 
     return $self;
 }
@@ -82,9 +80,7 @@ sub start {
     # Connect to database at start
     $self->_model->toggle_db_connect();
 
-    $self->_model->set_mode('idle');
-
-    $self->toggle_interface_controls;
+    $self->set_app_mode('idle');
 }
 
 =head2 _set_event_handlers
@@ -114,6 +110,13 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Connect / disconnect
+    $self->_view->get_menu_popup_item('mn_cn')->configure(
+        -command => sub {
+            $self->_model->toggle_db_connect;
+        }
+    );
+
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -127,10 +130,12 @@ sub _set_event_handlers {
 
     #- Toolbar
 
-    #-- Connect
-    $self->_view->get_toolbar_btn('tb_cn')->bind(
+    #-- Attach to desktop (pin)
+    $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->_model->toggle_db_connect;
+            my $scr_name = $self->{_scr_id} || 'main';
+            $self->_cfg
+                ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
     );
 
@@ -144,28 +149,24 @@ sub _set_event_handlers {
     #-- Find execute
     $self->_view->get_toolbar_btn('tb_fe')->bind(
         '<ButtonRelease-1>' => sub {
-            my $success = 0;
             if ( $self->_model->is_mode('find') ) {
-                $success = $self->record_find_execute;
+                $self->record_find_execute;
             }
             else {
                 print "WARN: Not in find mode\n";
             }
-            # $self->toggle_interface_controls if $success;
         }
     );
 
     #-- Find count
     $self->_view->get_toolbar_btn('tb_fc')->bind(
         '<ButtonRelease-1>' => sub {
-            my $records = 0;
             if ( $self->_model->is_mode('find') ) {
                 $self->record_find_count;
             }
             else {
                 print "WARN: Not in find mode\n";
             }
-            $self->toggle_interface_controls if $records;
         }
     );
 
@@ -210,29 +211,144 @@ sub _set_event_handler_nb {
     return;
 }
 
-=head2 control_states_set
+=head2 set_app_mode
+
+Set application mode
+
+=cut
+
+sub set_app_mode {
+    my ($self, $mode) = @_;
+
+    $self->_model->set_mode($mode);
+
+    my %method_for = (
+        add  => 'on_screen_mode_add',
+        find => 'on_screen_mode_find',
+        idle => 'on_screen_mode_idle',
+        edit => 'on_screen_mode_edit',
+    );
+
+    $self->toggle_interface_controls;
+
+    return unless ref $self->{_screen};
+
+    if ( my $method_name = $method_for{$mode} ) {
+        $self->$method_name();
+    }
+
+    return;
+}
+
+=head2 on_screen_mode_idle
+
+when in I<idle> mode set status to I<normal> and clear all controls
+content in the I<Screen> than set status of controls to I<disabled>.
+
+=cut
+
+sub on_screen_mode_idle {
+    my $self = shift;
+
+    print " i am in idle mode\n";
+    $self->set_screen_controls_state_to('on');
+    $self->screen_write();                   # Empty the controls
+    $self->set_screen_controls_state_to('off');
+
+    return;
+}
+
+=head2 on_screen_mode_add
+
+When in I<add> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to the default
+color as specified in the configuration.
+
+=cut
+
+sub on_screen_mode_add {
+    my ($self, ) = @_;
+
+    print " i am in add mode\n";
+
+    # Test record data
+    my $record_ref = {
+        productcode        => 'S700_2047',
+        productname        => 'HMS Bounty',
+        buyprice           => '39.83',
+        msrp               => '90.52',
+        productvendor      => 'Unimax Art Galleries',
+        productscale       => '1:700',
+        quantityinstock    => '3501',
+        productline        => 'Ships',
+        productlinecode    => '2',
+        productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
+    };
+
+    $self->set_screen_controls_state_to('edit');
+    $self->screen_write($record_ref);
+
+    return;
+}
+
+=head2 on_screen_mode_find
+
+When in I<find> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to light green.
+
+=cut
+
+sub on_screen_mode_find {
+    my ($self, ) = @_;
+
+    print " i am in find mode\n";
+    $self->set_screen_controls_state_to('on');
+    $self->screen_write();                   # Empty the controls
+    $self->set_screen_controls_state_to('find');
+
+    return;
+}
+
+=head2 on_screen_mode_edit
+
+When in I<edit> mode set status to I<normal> and change the background
+to the default color as specified in the configuration.
+
+=cut
+
+sub on_screen_mode_edit {
+    my ($self, ) = @_;
+
+    print " i am in edit mode\n";
+
+    $self->set_screen_controls_state_to('on');
+
+    return;
+}
+
+=head2 _control_states_data
 
 Data structure with setting for the different modes of the controls.
 
 =cut
 
-sub _control_states_set {
+sub _control_states_data {
     my $self = shift;
 
     $self->{control_states} = {
-        off    => {
+        off  => {
             state      => 'disabled',
             background => 'disabled_bgcolor',
         },
-        on     => {
+        on   => {
             state      => 'normal',
             background => 'from_config',
         },
-        find   => {
+        find => {
             state      => 'normal',
             background => 'lightgreen',
         },
-        edit   => {
+        edit => {
             state      => 'from_config',
             background => 'from_config',
         },
@@ -276,7 +392,6 @@ sub _cfg {
 
     return $self->{_cfg};
 }
-
 
 =head2 _log
 
@@ -323,14 +438,12 @@ Load screen chosen from the menu.
 sub screen_load {
     my ( $self, $module ) = @_;
 
-    $self->_model->set_mode('idle');
-
     $self->{_scr_id} = lc $module;           # for instance config filename
 
     my $loglevel_old = $self->_log->level();
 
     # Set log level to trace in this sub
-    $self->_log->level($Log::Log4Perl::TRACE);
+    $self->_log->level($TRACE);
 
     # Unload current screen
     if ( $self->{_curent} ) {
@@ -376,17 +489,24 @@ sub screen_load {
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
     $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
 
-    # Update window geometry
-    my $geom = $self->_scrcfg->geom;
+    # Load instance config
+    $self->_cfg->config_load_instance();
+
+    # Update window geometry form instance config fi exists or from
+    # defaults
+    my $geom;
+    if ( $self->_cfg->can('geometry') ) {
+        $geom = $self->_cfg->geometry->{ $self->{_scr_id} };
+    }
+    else {
+        $geom = $self->_scrcfg->geom;
+    }
     $self->_view->set_geometry($geom);
 
     # Store currently loaded screen class
     $self->{_curent} = $class;
 
-    # my $ctrls = $self->{_screen}->get_controls();
-
-    # $self->screen_controls_state_to('off');
-    # $self->_model->set_mode('idle');            ???
+    $self->set_app_mode('idle');
 
     $self->_view->make_list_header( $self->_scrcfg->columns );
 
@@ -434,99 +554,6 @@ sub set_controls_tb {
     return;
 }
 
-=head2 toggle_screen_controls
-
-Screen methods according to mode
-
-=cut
-
-sub toggle_screen_controls {
-    my $self = shift;
-
-    my $mode = $self->_model->get_appmode();
-
-    my %method_for = (
-        add  => 'on_screen_mode_add',
-        find => 'on_screen_mode_find',
-        idle => 'on_screen_mode_idle',
-    );
-
-    if ( my $method_name = $method_for{$mode} ) {
-        $self->$method_name();
-    }
-
-    return;
-}
-
-=head2 on_screen_mode_idle
-
-when in I<idle> mode set status to I<normal> and clear all controls
-content in the I<Screen> than set status of controls to I<disabled>.
-
-=cut
-
-sub on_screen_mode_idle {
-    my $self = shift;
-
-    print " i am in idle mode\n";
-    $self->screen_controls_state_to('on');
-    $self->screen_write();                   # Empty the controls
-    $self->screen_controls_state_to('off');
-
-    return;
-}
-
-=head2 on_screen_mode_add
-
-When in I<add> mode set status to I<normal> and clear all controls
-content in the I<Screen> and change the background to the default
-color as specified in the configuration.
-
-=cut
-
-sub on_screen_mode_add {
-    my ($self, ) = @_;
-
-    print " i am in add mode\n";
-
-    # Test record data
-    my $record_ref = {
-        productcode        => 'S700_2047',
-        productname        => 'HMS Bounty',
-        buyprice           => '39.83',
-        msrp               => '90.52',
-        productvendor      => 'Unimax Art Galleries',
-        productscale       => '1:700',
-        quantityinstock    => '3501',
-        productline        => 'Ships',
-        productlinecode    => '2',
-        productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
-    };
-
-    $self->screen_controls_state_to('edit');
-    $self->screen_write($record_ref);
-
-    return;
-}
-
-=head2 on_screen_mode_find
-
-When in I<find> mode set status to I<normal> and clear all controls
-content in the I<Screen> and change the background to light green.
-
-=cut
-
-sub on_screen_mode_find {
-    my ($self, ) = @_;
-
-    print " i am in find mode\n";
-    $self->screen_controls_state_to('on');
-    $self->screen_write();                   # Empty the controls
-    $self->screen_controls_state_to('find');
-
-    return;
-}
-
 =head2 record_find_execute
 
 Execute find
@@ -534,7 +561,7 @@ Execute find
 =cut
 
 sub record_find_execute {
-     my $self = shift;
+    my $self = shift;
 
     $self->screen_read();
 
@@ -562,7 +589,12 @@ sub record_find_execute {
     $paramdata->{table}  = $table_hr->{view};   # use view instead of table
     $paramdata->{pk_col} = $table_hr->{pk_col}{name};
 
-    $self->_view->list_populate($paramdata);
+    my $record_count = $self->_view->list_populate($paramdata);
+
+    # Set mode to idle if found
+    if ($record_count > 0) {
+        $self->set_app_mode('idle');
+    }
 
     return;
 }
@@ -779,10 +811,8 @@ sub toggle_mode_find {
     my $self = shift;
 
     $self->_model->is_mode('find')
-        ? $self->_model->set_mode('idle')
-        : $self->_model->set_mode('find');
-    $self->toggle_interface_controls;
-    $self->toggle_screen_controls;
+        ? $self->set_app_mode('idle')
+        : $self->set_app_mode('find');
 
     return;
 }
@@ -797,21 +827,19 @@ sub toggle_mode_add {
     my $self = shift;
 
     $self->_model->is_mode('add')
-        ? $self->_model->set_mode('idle')
-        : $self->_model->set_mode('add');
-    $self->toggle_interface_controls;
-    $self->toggle_screen_controls;
+        ? $self->set_app_mode('idle')
+        : $self->set_app_mode('add');
 
     return;
 }
 
-=head2 screen_controls_state_to
+=head2 set_screen_controls_state_to
 
 Toggle all controls state from I<Screen>.
 
 =cut
 
-sub screen_controls_state_to {
+sub set_screen_controls_state_to {
     my ( $self, $state ) = @_;
 
     my $ctrl_ref       = $self->{_screen}->get_controls();

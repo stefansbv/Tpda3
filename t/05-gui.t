@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 8;
 
 use lib qw( lib ../lib );
 
@@ -38,64 +38,21 @@ ok( $a->{gui}{_view}->after(
     sub { $a->{gui}->screen_load('Products'); } )
 );
 
-# Test screen states
+#-- Test application states
 
-foreach my $state (qw{on off find off edit off}) {
+foreach my $state (qw{find idle add idle edit idle}) {
     ok( $a->{gui}{_view}->after(
         $delay * 1000,
         sub {
-            $a->{gui}->screen_controls_state_to($state);
+            $a->{gui}->set_app_mode($state);
         }
     ) );
     $delay++;
 }
 
-#- Test application states
-
-# find
+#-- Quit
 
 $delay++;
-
-ok( $a->{gui}{_view}->after(
-    $delay * 1000,
-    sub {
-        $a->{gui}->toggle_mode_find();
-    }
-) );
-
-# add
-
-$delay++;
-
-ok( $a->{gui}{_view}->after(
-    $delay * 1000,
-    sub {
-        $a->{gui}->toggle_mode_add();
-    }
-) );
-
-$delay++;
-
-# Products2
-
-# ok( $a->{gui}{_view}->after(
-#     $delay * 1000,
-#     sub { $a->{gui}->screen_load('Products2'); } )
-# );
-
-# foreach my $state (qw{on off find off edit off}) {
-#     ok( $a->{gui}{_view}->after(
-#         $delay * 1000,
-#         sub {
-#             $a->{gui}->screen_controls_state_to($state);
-#         }
-#     ) );
-#     $delay++;
-# }
-
-$delay++;
-
-# Quit
 
 ok( $a->{gui}{_view}->after(
     $delay * 1000,
@@ -105,3 +62,5 @@ ok( $a->{gui}{_view}->after(
 ) );
 
 $a->run;
+
+#-- End test

@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Tpda3::Tk::Screen
+Tpda3::Tk::Screen - Tpda Screen base class.
 
 =head1 VERSION
 
