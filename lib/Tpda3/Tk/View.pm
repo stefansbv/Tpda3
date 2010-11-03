@@ -112,16 +112,12 @@ sub _set_model_callbacks {
     my $co = $self->_model->get_connection_observable;
     $co->add_callback(
         sub {
-            # $self->toggle_tool_check( 'tb_cn', $_[0] );
             $self->toggle_status_cn( $_[0] );
         }
     );
 
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
-
-    # my $ls = $self->_model->get_db_data_observable;
-    # $ls->add_callback( sub { $self->load_list() } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
@@ -477,6 +473,9 @@ sub _create_toolbar {
     foreach my $name (@{$toolbars}) {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
+
+        # initial state disabled
+        $self->toggle_tool( $name, 'disabled' );
     }
 
     return;
