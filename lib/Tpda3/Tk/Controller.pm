@@ -534,15 +534,15 @@ Execute find
 =cut
 
 sub record_find_execute {
-    my ($self, ) = @_;
+     my $self = shift;
 
     $self->screen_read();
 
     # Table configs
-    my $table_hr = $self->{_scrcfg}->table;
+    my $table_hr  = $self->{_scrcfg}->table;
     my $fields_hr = $self->{_scrcfg}->fields;
     # Columns configs
-    my $cols_ref = $self->_scrcfg->columns;
+    my $cols_ref  = $self->_scrcfg->columns;
 
     my $paramdata = {};
 
@@ -559,7 +559,7 @@ sub record_find_execute {
     }
 
     # Table data
-    $paramdata->{table} = $table_hr->{view};   # use view instead of table
+    $paramdata->{table}  = $table_hr->{view};   # use view instead of table
     $paramdata->{pk_col} = $table_hr->{pk_col}{name};
 
     $self->_view->list_populate($paramdata);
@@ -574,17 +574,26 @@ Execute find: count
 =cut
 
 sub record_find_count {
-    my ($self, ) = @_;
+    my $self = shift;
 
     $self->screen_read();
 
-    my $table_hr = $self->{_scrcfg}->table;
+    # Table configs
+    my $table_hr  = $self->{_scrcfg}->table;
+    my $fields_hr = $self->{_scrcfg}->fields;
 
-    # Add table name and primary key data ???
-    $self->{scrdata}{table}  = $table_hr->{name};
-    $self->{scrdata}{pk_col} = $table_hr->{pk_col}{name};
+    my $paramdata = {};
 
-    $self->_model->count_records( $self->{scrdata} );
+    # Add findtype info to screen data
+    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+        $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+    }
+
+    # Table data
+    $paramdata->{table}  = $table_hr->{view};   # use view instead of table
+    $paramdata->{pk_col} = $table_hr->{pk_col}{name};
+
+    $self->_model->count_records($paramdata);
 
     return;
 }
