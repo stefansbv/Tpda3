@@ -40,6 +40,18 @@ our $VERSION = '0.05';
 
 Constructor method.
 
+=over
+
+=item _scrcls  - class name of the current screen
+
+=item _scrobj  - current screen object
+
+=item _scrcfg  - screen configs object
+
+=item _scrstr  - module file name in lower case
+
+=back
+
 =cut
 
 sub new {
@@ -54,10 +66,10 @@ sub new {
     my $self = {
         _model   => $model,
         _view    => $view,
-        _curent  => undef,
-        _screen  => undef,
+        _scrcls  => undef,
+        _scrobj  => undef,
         _scrcfg  => undef,
-        _scr_id  => undef,
+        _scrstr  => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -106,7 +118,7 @@ sub _set_event_handlers {
     #-- Save geometry
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
-            my $scr_name = $self->{_scr_id} || 'main';
+            my $scr_name = $self->{_scrstr} || 'main';
             $self->_cfg->config_save_instance(
                 $scr_name, $self->_view->w_geometry() );
         }
@@ -135,7 +147,7 @@ sub _set_event_handlers {
     #-- Attach to desktop - pin (save geometry to config file)
     $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
-            my $scr_name = $self->{_scr_id} || 'main';
+            my $scr_name = $self->{_scrstr} || 'main';
             $self->_cfg
                 ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
@@ -216,7 +228,12 @@ sub _set_event_handler_nb {
                 $self->set_app_mode('sele');
             }
             else {
-                $self->restore_app_mode();
+                if ( $self->is_record ) {
+                    $self->set_app_mode('edit');
+                }
+                else {
+                    $self->set_app_mode('idle');
+                }
             }
         },
     );
@@ -245,7 +262,7 @@ sub set_app_mode {
 
     $self->toggle_interface_controls;
 
-    return unless ref $self->{_screen};
+    return unless ref $self->{_scrobj};
 
     if ( my $method_name = $method_for{$mode} ) {
         $self->$method_name();
@@ -254,14 +271,14 @@ sub set_app_mode {
     return;
 }
 
-=head2 restore_app_mode
+=head2 is_record
 
-Restore previous app mode before 'sele'.
+Return true if a record is loaded in screen.
 
 =cut
 
-sub restore_app_mode {
-    my ($self, ) = @_;
+sub is_record {
+    my $self = shift;
 
     return;
 }
@@ -454,7 +471,7 @@ Return current screen instance variable.
 sub _screen {
     my $self = shift;
 
-    return $self->{_screen};
+    return $self->{_scrobj};
 }
 
 =head2 _scrcfg
@@ -478,7 +495,7 @@ Load screen chosen from the menu.
 sub screen_load {
     my ( $self, $module ) = @_;
 
-    $self->{_scr_id} = lc $module;           # for instance config filename
+    $self->{_scrstr} = lc $module;
 
     my $loglevel_old = $self->_log->level();
 
@@ -486,14 +503,14 @@ sub screen_load {
     $self->_log->level($TRACE);
 
     # Unload current screen
-    if ( $self->{_curent} ) {
-        Class::Unload->unload( $self->{_curent} );
+    if ( $self->{_scrcls} ) {
+        Class::Unload->unload( $self->{_scrcls} );
 
-        if ( ! Class::Inspector->loaded( $self->{_curent} ) ) {
-            $self->_log->trace("Unloaded '$self->{_curent}' screen");
+        if ( ! Class::Inspector->loaded( $self->{_scrcls} ) ) {
+            $self->_log->trace("Unloaded '$self->{_scrcls}' screen");
         }
         else {
-            $self->_log->trace("Error unloading '$self->{_curent}' screen");
+            $self->_log->trace("Error unloading '$self->{_scrcls}' screen");
         }
     }
 
@@ -519,15 +536,15 @@ sub screen_load {
     }
 
     # New screen instance
-    $self->{_screen} = $class->new();
+    $self->{_scrobj} = $class->new();
 
     # Show screen
     my $nb = $self->_view->get_notebook('rec');
-    $self->{idobj} = $self->{_screen}->run_screen($nb);
+    $self->{idobj} = $self->{_scrobj}->run_screen($nb);
 
     # Load the new screen configuration
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
-    $self->_scrcfg->config_screen_load($self->{_scr_id} . '.conf');
+    $self->_scrcfg->config_screen_load($self->{_scrstr} . '.conf');
 
     # Load instance config
     $self->_cfg->config_load_instance();
@@ -536,7 +553,7 @@ sub screen_load {
     # defaults
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->{_scr_id} };
+        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
     }
     else {
         $geom = $self->_scrcfg->geom;
@@ -544,7 +561,7 @@ sub screen_load {
     $self->_view->set_geometry($geom);
 
     # Store currently loaded screen class
-    $self->{_curent} = $class;
+    $self->{_scrcls} = $class;
 
     $self->set_app_mode('idle');
 
@@ -671,7 +688,7 @@ sub screen_read {
      foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
          my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
-         my $ctrl_ref     = $self->{_screen}->get_controls();
+         my $ctrl_ref     = $self->{_scrobj}->get_controls();
 
          # Control type?
          my $ctrltype = $field_cfg_hr->{ctrltype};
@@ -790,7 +807,7 @@ sub screen_write {
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
-        my $ctrl_ref     = $self->{_screen}->get_controls();
+        my $ctrl_ref     = $self->{_scrobj}->get_controls();
 
         # Control type?
         my $ctrltype = $field_cfg_hr->{ctrltype};
@@ -867,7 +884,7 @@ Toggle all controls state from I<Screen>.
 sub set_screen_controls_state_to {
     my ( $self, $state ) = @_;
 
-    my $ctrl_ref       = $self->{_screen}->get_controls();
+    my $ctrl_ref       = $self->{_scrobj}->get_controls();
     my $control_states = $self->control_states($state);
 
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
@@ -884,14 +901,14 @@ sub set_screen_controls_state_to {
         my $bg_color = $bkground;
         $bg_color = $field_cfg_hr->{bgcolor}
             if $bkground eq 'from_config';
-        $bg_color = $self->{_screen}->get_bgcolor()
+        $bg_color = $self->{_scrobj}->get_bgcolor()
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $field_cfg_hr->{findtype} eq 'none' ) {
                 $ctrl_state = 'disabled';
-                $bg_color   = $self->{_screen}->get_bgcolor();
+                $bg_color   = $self->{_scrobj}->get_bgcolor();
             }
         }
 
