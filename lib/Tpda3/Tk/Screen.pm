@@ -26,9 +26,9 @@ Constructor method
 =cut
 
 sub new {
-    my $type = shift;
+    my $class = shift;
 
-    return bless {}, $type;
+    return bless {}, $class;
 }
 
 =head2 run_screen

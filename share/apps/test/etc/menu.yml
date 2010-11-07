@@ -20,3 +20,9 @@ appmenubar:
         underline: 0
         sep: none
         key: ~
+      3:
+        name: Orders
+        label: Orders
+        underline: 0
+        sep: none
+        key: ~

@@ -4,7 +4,7 @@
 # From Class::Singleton test script
 #   by Andy Wardley <abw@wardley.org>
 
-use Test::More tests => 12;
+use Test::More tests => 14;
 
 diag( "Testing with Perl $], $^X" );
 
