@@ -20,3 +20,5 @@ use_ok('Tpda3::Observable');
 use_ok('Tpda3::Tk::Controller');
 use_ok('Tpda3::Tk::View');
 use_ok('Tpda3::Tk::Dialog::Configs');
+use_ok('Tpda3::App::Test::Customers');
+use_ok('Tpda3::App::Test::Products');

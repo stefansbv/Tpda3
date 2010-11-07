@@ -50,6 +50,27 @@ foreach my $state (qw{find idle add idle edit idle}) {
     $delay++;
 }
 
+# Customers
+
+$delay++;
+
+ok( $a->{gui}{_view}->after(
+    $delay * 1000,
+    sub { $a->{gui}->screen_load('Customers'); } )
+);
+
+#-- Test application states
+
+foreach my $state (qw{find idle add idle edit idle}) {
+    ok( $a->{gui}{_view}->after(
+        $delay * 1000,
+        sub {
+            $a->{gui}->set_app_mode($state);
+        }
+    ) );
+    $delay++;
+}
+
 #-- Quit
 
 $delay++;

@@ -10,7 +10,7 @@ use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel);
 use Tk;
 use Tk::widgets qw(ToolBar NoteBook StatusBar Dialog
-  Checkbutton LabFrame MListbox JComboBox Font);
+                   Checkbutton LabFrame MListbox JComboBox Font);
 
 require Tk::ErrorDialog;
 

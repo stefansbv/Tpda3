@@ -109,7 +109,7 @@ sub run_dialog {
         -left => [ %0, 10 ],
     );
 
-    # Font button
+    #- Font button
     my $fontb1 = $frame1->Button(
         -text    => 'Sele',
         -width   => 4,

@@ -40,7 +40,7 @@ sub run_screen {
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
-    #- Products
+    #- Frame1 - Products
 
     my $frame1 = $inreg_p->LabFrame(
         -foreground => 'blue',
