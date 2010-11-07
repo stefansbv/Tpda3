@@ -133,10 +133,10 @@ sub _set_event_handlers {
         }
     );
 
-    # Font dialog
+    # Config dialog
     $self->_view->get_menu_popup_item('mn_fn')->configure(
         -command => sub {
-            $self->_view->show_font_dialog;
+            $self->_view->show_config_dialog;
         }
     );
 

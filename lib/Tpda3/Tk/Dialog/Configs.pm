@@ -1,4 +1,4 @@
-package Tpda3::Tk::Dialog::SetFont;
+package Tpda3::Tk::Dialog::Configs;
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use Tk::FontDialog;
 
 =head1 NAME
 
-Tpda3::Tk::Dialog::SetFont - The great new Tpda3::Tk::Dialog::SetFont!
+Tpda3::Tk::Dialog::Configs - Dialog for user configuration options
 
 =head1 VERSION
 
@@ -20,19 +20,13 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+Set and save configuaration options.
 
-Perhaps a little code snippet.
+    use Tpda3::Tk::Dialog::Configs;
 
-    use Tpda3::Tk::Dialog::SetFont;
+    my $fd = Tpda3::Tk::Dialog::Config->new;
 
-    my $foo = Tpda3::Tk::Dialog::SetFont->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+    $fd->run_dialog($self);
 
 =head1 METHODS
 
@@ -58,7 +52,7 @@ sub run_dialog {
     my ( $self, $mw ) = @_;
 
     $self->{tlw} = $mw->Toplevel();
-    $self->{tlw}->title('Set Font');
+    $self->{tlw}->title('Configs');
     $self->{bg} = $mw->cget('-background');
 
     # Frame
@@ -69,36 +63,56 @@ sub run_dialog {
     );
     $frame1->grid(
         $frame1,
-        -row    => 0,
-        -column => 0,
-        -ipadx  => 3,
-        -ipady  => 3,
+        -row    => 0, -column => 0,
+        -ipadx  => 3, -ipady  => 3,
         -sticky => 'nsew',
     );
 
-    # Font
-    my $lfont = $frame1->Label( -text => 'Font' );
+    #- Font
+
+    my $lfont = $frame1->Label( -text => 'Current font name' );
     $lfont->form(
         -left => [ %0, 0 ],
         -top  => [ %0, 0 ],
-        -padx => 5,
-        -pady => 5,
+        -padx => 5, -pady => 5,
     );
 
     my $efont = $frame1->Entry(
-        -width => 25,
+        -width              => 25,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
     $efont->form(
-        -top  => [ '&', $lfont, 0 ],
-        -left => [ %0,  80 ],
+        -top  => [ $lfont, 0 ],
+        -left => [ %0, 10 ],
+    );
+
+    #- Limit
+
+    my $llimit = $frame1->Label(
+        -text => 'Limit number of records in list to',
+    );
+    $llimit->form(
+        -left => [ %0, 0 ],
+        -top  => [ $efont, 0 ],
+        -padx => 5, -pady => 5,
+    );
+
+    my $elimit = $frame1->Entry(
+        -width              => 8,
+        -justify            => 'right',
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
+    $elimit->form(
+        -top  => [ $llimit, 0 ],
+        -left => [ %0, 10 ],
     );
 
     # Font button
     my $fontb1 = $frame1->Button(
-        -text => 'Select',
-        -width => 10,
+        -text    => 'Sele',
+        -width   => 4,
         -command => sub {
             $self->dialog_show($mw);
         },
@@ -109,17 +123,12 @@ sub run_dialog {
         -left => [ $efont,  10 ],
     );
 
-    # Quit button
-    my $qb = $self->{tlw}->Button(
-        -text => 'Close',
-        -width => 10,
-        -command => sub {
-            $self->dialog_quit;
-        },
-    );
+    #-- Quit button frame
 
-    $qb->grid(
-        $qb,
+    # Frame
+    my $frame2 = $self->{tlw}->Frame();
+    $frame2->grid(
+        $frame2,
         -row    => 1,
         -column => 0,
         -ipadx  => 3,
@@ -127,8 +136,22 @@ sub run_dialog {
         -sticky => 'nsew',
     );
 
+    my $qb = $frame2->Button(
+        -text => 'Close',
+        -width => 8,
+        -command => sub {
+            $self->dialog_quit;
+        },
+    )->pack(-side => 'top');
+
     return;
 }
+
+=head2 dialog_show
+
+Show font dialog
+
+=cut
 
 sub dialog_show {
     my ($self, $mw) = @_;
@@ -153,6 +176,12 @@ sub dialog_show {
     return;
 }
 
+=head2 dialog_quit
+
+Close dialog
+
+=cut
+
 sub dialog_quit {
     my $self = shift;
 
@@ -167,45 +196,17 @@ Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-tpda3-tk-dialog-setfont at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Tpda3-Tk-Dialog-SetFont>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+None known.
 
-
-
+Please report any bugs or feature requests to the author.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Tpda3::Tk::Dialog::SetFont
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Tpda3-Tk-Dialog-SetFont>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Tpda3-Tk-Dialog-SetFont>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Tpda3-Tk-Dialog-SetFont>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Tpda3-Tk-Dialog-SetFont/>
-
-=back
-
+    perldoc Tpda3::Tk::Dialog::Configs
 
 =head1 ACKNOWLEDGEMENTS
-
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -225,7 +226,6 @@ A copy of the GNU General Public License is available in the source tree;
 if not, write to the Free Software Foundation, Inc.,
 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
 =cut
 
-1; # End of Tpda3::Tk::Dialog::SetFont
+1; # End of Tpda3::Tk::Dialog::Configs

@@ -17,7 +17,7 @@ require Tk::ErrorDialog;
 use base 'Tk::MainWindow';
 
 use Tpda3::Config;
-use Tpda3::Tk::Dialog::SetFont;
+use Tpda3::Tk::Dialog::Configs;
 
 =head1 NAME
 
@@ -203,16 +203,16 @@ sub set_geometry {
     return;
 }
 
-=head2 show_font_dialog
+=head2 show_config_dialog
 
-Show font dialog
+Show config dialog
 
 =cut
 
-sub show_font_dialog {
-    my ($self, ) = @_;
+sub show_config_dialog {
+    my $self = shift;
 
-    my $fd = Tpda3::Tk::Dialog::SetFont->new;
+    my $fd = Tpda3::Tk::Dialog::Configs->new;
 
     $fd->run_dialog($self);
 
