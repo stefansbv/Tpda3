@@ -9,6 +9,7 @@ use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 
+use Tpda3::Utils;
 use Tpda3::Config;
 use Tpda3::Config::Screen;
 use Tpda3::Model;
@@ -76,7 +77,8 @@ sub new {
 
     bless $self, $class;
 
-    $self->_control_states_data;
+    $self->_control_states_init;
+
     $self->_set_event_handlers;
 
     return $self;
@@ -128,6 +130,13 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_cn')->configure(
         -command => sub {
             $self->_model->toggle_db_connect;
+        }
+    );
+
+    # Font dialog
+    $self->_view->get_menu_popup_item('mn_fn')->configure(
+        -command => sub {
+            $self->_view->show_font_dialog;
         }
     );
 
@@ -228,7 +237,8 @@ sub _set_event_handler_nb {
                 $self->set_app_mode('sele');
             }
             else {
-                if ( $self->is_record ) {
+                if ( $self->record_load ) {
+                    print " loaded\n";
                     $self->set_app_mode('edit');
                 }
                 else {
@@ -364,7 +374,7 @@ sub on_screen_mode_edit {
 
     print " i am in edit mode\n";
 
-    $self->set_screen_controls_state_to('on');
+    $self->set_screen_controls_state_to('edit');
 
     return;
 }
@@ -383,13 +393,13 @@ sub on_screen_mode_sele {
     return;
 }
 
-=head2 _control_states_data
+=head2 _control_states_init
 
 Data structure with setting for the different modes of the controls.
 
 =cut
 
-sub _control_states_data {
+sub _control_states_init {
     my $self = shift;
 
     $self->{control_states} = {
@@ -595,6 +605,44 @@ sub toggle_interface_controls {
     return;
 }
 
+=head2 record_load
+
+Load the selected record in screen
+
+=cut
+
+sub record_load {
+    my $self = shift;
+
+    my $value = $self->_view->list_read_selected();
+
+    if ( !$value ) {
+        warn "No list selected value";
+        return;
+    }
+
+    # Table configs
+    my $table_hr  = $self->{_scrcfg}->table;
+    my $fields_hr = $self->{_scrcfg}->fields;
+
+    my $paramdata = {};
+
+    # Table data
+    $paramdata->{table} = $table_hr->{view};   # use view instead of table
+    my $field = $table_hr->{pkfld}{name};
+
+    # Construct where, add findtype info
+    $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+    $paramdata->{pkfld} = $field;
+
+    my $record = $self->_model->query_record($paramdata);
+
+    $self->set_screen_controls_state_to('on');
+    $self->screen_write($record);
+
+    return 1;
+}
+
 =head2 record_find_execute
 
 Execute find
@@ -628,7 +676,7 @@ sub record_find_execute {
 
     # Table data
     $paramdata->{table}  = $table_hr->{view};   # use view instead of table
-    $paramdata->{pk_col} = $table_hr->{pk_col}{name};
+    $paramdata->{pkfld} = $table_hr->{pkfld}{name};
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($paramdata);
@@ -664,8 +712,8 @@ sub record_find_count {
     }
 
     # Table data
-    $paramdata->{table}  = $table_hr->{view};   # use view instead of table
-    $paramdata->{pk_col} = $table_hr->{pk_col}{name};
+    $paramdata->{table} = $table_hr->{view};   # use view instead of table
+    $paramdata->{pkfld} = $table_hr->{pkfld}{name};
 
     $self->_model->count_records($paramdata);
 
@@ -794,6 +842,10 @@ sub control_read_t {
 
 Write record to screen.  Controls must be I<on> to allow write.
 
+No need to empty the screen before calling I<screen_write>, the methods
+defined for each control (widget) type should handle the case when
+the value parameter is undef.
+
 =cut
 
 sub screen_write {
@@ -815,10 +867,8 @@ sub screen_write {
         my $value = $record_ref->{ lc $field };
         if ( defined $value ) {
 
-            # Trim spaces and \n
-            $value =~ s/^\s+//;
-            $value =~ s/\s+$//;
-            $value =~ s/\n$//mg;    # m=multiline
+            # Trim spaces and '\n' from the end
+            $value = Tpda3::Utils->trim($value);
 
             my $decimals = $field_cfg_hr->{decimals};
             if ( $decimals ) {
@@ -836,7 +886,7 @@ sub screen_write {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
         else {
-            print "WARN: New ctrl type '$ctrltype' for writing '$field'?\n";
+            print "WARN: '$ctrltype' not defined for writing '$field'!\n";
         }
     }
 
@@ -929,6 +979,8 @@ Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
 sub control_write_e {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
+    $value = q{} unless defined $value; # Empty
+
     # Tip Entry 'e'
     $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
     $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
@@ -944,6 +996,8 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 
 sub control_write_t {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    $value = q{} unless defined $value; # Empty
 
     # Tip TextEntry 't'
     $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );

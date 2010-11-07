@@ -28,7 +28,7 @@ menubar:
       1:
         name: mn_sg
         label: Save window geometry
-        underline: 0
+        underline: 12
         sep: none
         key: Alt-g
       2:
@@ -37,6 +37,12 @@ menubar:
         underline: 0
         sep: none
         key: Alt-c
+      3:
+        name: mn_fn
+        label: Set font
+        underline: 4
+        sep: none
+        key: Alt-f
   menu_help:
     id:    1003
     label: Help

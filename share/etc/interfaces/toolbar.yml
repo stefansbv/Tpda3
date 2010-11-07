@@ -13,7 +13,7 @@ toolbar:
     state:
       idle: normal
       add:  disabled
-      edit: disabled
+      edit: normal
       find: normal
       sele: disabled
   tb_fe:
@@ -155,8 +155,8 @@ toolbar:
     sep:     after
     state:
       idle: normal
-      add:  disabled
-      edit: disabled
+      add:  normal
+      edit: normal
       find: disabled
       sele: disabled
   tb_qt:
@@ -169,6 +169,6 @@ toolbar:
     state:
       idle: normal
       add:  disabled
-      edit: disabled
+      edit: normal
       find: disabled
-      sele: normal
+      sele: disabled

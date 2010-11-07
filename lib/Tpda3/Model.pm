@@ -2,6 +2,8 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -226,8 +228,8 @@ Count records in table
 sub count_records {
     my ( $self, $data_hr ) = @_;
 
-    my $table  = $data_hr->{table};
-    my $pk_col = $data_hr->{pk_col};
+    my $table = $data_hr->{table};
+    my $pkfld = $data_hr->{pkfld};
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
@@ -248,7 +250,7 @@ sub count_records {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select(
-        $table, ["COUNT($pk_col)"], $where );
+        $table, ["COUNT($pkfld)"], $where );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
@@ -271,7 +273,7 @@ sub count_records {
     return;
 }
 
-=head2 query_records
+=head2 query_records_find
 
 Count records in table.  Here we need the contents of the screen to
 build an sql where clause and also the column names from the
@@ -279,11 +281,11 @@ I<columns> configuration.
 
 =cut
 
-sub query_records {
+sub query_records_find {
     my ( $self, $data_hr ) = @_;
 
-    my $table  = $data_hr->{table};
-    my $pk_col = $data_hr->{pk_col};
+    my $table = $data_hr->{table};
+    my $pkfld = $data_hr->{pkfld};
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
@@ -322,6 +324,53 @@ sub query_records {
     $self->_print("$record_count records listed") ;
 
     return $ary_ref;
+}
+
+=head2 query_record
+
+Return a record as hash reference
+
+=cut
+
+sub query_record {
+    my ( $self, $data_hr ) = @_;
+
+    my $table = $data_hr->{table};
+    my $pkfld = $data_hr->{pkfld};
+
+    my $where = {};
+    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+        if    ( $attrib->[1] eq 'contains' ) {
+            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
+        }
+        elsif ( $attrib->[1] eq 'allstr' ) {
+            $where->{ $field } = $attrib->[0];
+        }
+        elsif ( $attrib->[1] eq 'none' ) {
+            # just skip
+        }
+        else {
+            warn "No find type defined for '$field'";
+        }
+    }
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, $data_hr->{columns}, $where );
+
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
+
+    my $hash_ref;
+    try {
+        $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $hash_ref;
 }
 
 =head2 quote4like

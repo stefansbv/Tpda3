@@ -4,11 +4,12 @@
 # From Class::Singleton test script
 #   by Andy Wardley <abw@wardley.org>
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 diag( "Testing with Perl $], $^X" );
 
 use_ok('Tpda3');
+use_ok('Tpda3::Utils');
 use_ok('Tpda3::Config');
 use_ok('Tpda3::Config::Utils');
 use_ok('Tpda3::Db');

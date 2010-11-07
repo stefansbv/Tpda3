@@ -17,6 +17,7 @@ require Tk::ErrorDialog;
 use base 'Tk::MainWindow';
 
 use Tpda3::Config;
+use Tpda3::Tk::Dialog::SetFont;
 
 =head1 NAME
 
@@ -198,6 +199,22 @@ sub set_geometry {
     my ($self, $geom) = @_;
 
     $self->geometry($geom);
+
+    return;
+}
+
+=head2 show_font_dialog
+
+Show font dialog
+
+=cut
+
+sub show_font_dialog {
+    my ($self, ) = @_;
+
+    my $fd = Tpda3::Tk::Dialog::SetFont->new;
+
+    $fd->run_dialog($self);
 
     return;
 }
@@ -885,7 +902,7 @@ sub list_populate {
         return;
     }
 
-    my $ary_ref = $self->_model->query_records($paramdata);
+    my $ary_ref = $self->_model->query_records_find($paramdata);
     my $record_count = scalar @{$ary_ref};
 
     # Data
@@ -918,13 +935,13 @@ sub list_populate {
     return $record_count;
 }
 
-=head2 is_list_empty
+=head2 has_list_records
 
-Return true if list control is empty.
+Return number of records from list.
 
 =cut
 
-sub is_list_empty {
+sub has_list_records {
     my $self = shift;
 
     my $row_count;
@@ -941,7 +958,66 @@ sub is_list_empty {
         $row_count = 0;
     }
 
-    return !$row_count;
+    return $row_count;
+}
+
+=head2 list_read_selected
+
+Read and return selected row (column 0) from list
+
+=cut
+
+sub list_read_selected {
+    my $self = shift;
+
+    if ( !$self->has_list_records ) {
+        warn "No records!\n";
+        return;
+    }
+
+    my (@selected, $sel);
+    eval { @selected = $self->{_rc}->curselection(); };
+    if ($@) {
+        warn "Error: $@";
+        # $self->refresh_sb( 'll', 'No record selected' );
+        return;
+    }
+    else {
+
+        # Default to the first row
+        $sel = pop @selected;
+        if ($sel) {
+            unless ( $sel > 0 ) {
+
+                # print "Prima inregistrare\n";
+                $sel = 0;
+
+                # Selecteaza si activeaza
+                $self->{_rc}->selectionClear( 0, 'end' );
+                $self->{_rc}->activate(0);
+                $self->{_rc}->selectionSet(0);
+                $self->{_rc}->see('active');
+            }
+        }
+    }
+
+    my $selected_value;
+    eval { $selected_value = $self->{_rc}->getRow($sel); };
+    if ($@) {
+        warn "Error: $@";
+        # $self->refresh_sb( 'll', 'No record selected!' );
+        return '';
+    }
+    else {
+
+        # Trim spaces
+        if ( defined($selected_value) ) {
+            $selected_value =~ s/^\s+//;
+            $selected_value =~ s/\s+$//;
+        }
+    }
+
+    return $selected_value;
 }
 
 # sub Tk::Error {
