@@ -3,6 +3,8 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;
@@ -189,6 +191,7 @@ sub config_application_load {
     my ( $self, $args ) = @_;
 
     foreach my $section ( keys %{ $self->cfapp } ) {
+        print "section $section\n";
         my $cfg_file = $self->config_app_file_name($section);
 
         $self->{_log}->info("Loading $section config file: $cfg_file");
@@ -232,6 +235,18 @@ sub config_app_file_name {
     return catfile( $self->cfapps, $self->cfname,  $self->cfapp->{$section} );
 }
 
+=head2 config_file_name
+
+Return full path to connection file.
+
+=cut
+
+sub config_file_name {
+    my ( $self, $cfg_name ) = @_;
+
+    return catfile( $self->cfapps, $cfg_name, $self->cfapp->{conninfo} );
+}
+
 =head2 list_configs
 
 List all existing connection configurations.
@@ -241,18 +256,18 @@ List all existing connection configurations.
 sub list_configs {
     my $self = shift;
 
-    my $conpath = $self->conpath;
-    my $conn_list = Tpda3::Config::Utils->find_subdirs($conpath);
+    my $cfpath = $self->cfapps;
+    my $conlst = Tpda3::Config::Utils->find_subdirs($cfpath);
 
     print "Connection configurations:\n";
-    foreach my $cfg_name ( @{$conn_list} ) {
-        my $ccfn = Tpda3::Config::Utils->config_file_name($cfg_name);
+    foreach my $cfg_name ( @{$conlst} ) {
+        my $cfg_file = $self->config_file_name($cfg_name);
         # If connection file exist than list as connection name
-        if (-f $ccfn) {
+        if (-f $cfg_file) {
             print "  > $cfg_name\n";
         }
     }
-    print " in '$conpath'\n";
+    print " in '$cfpath'\n";
 
     return;
 }
