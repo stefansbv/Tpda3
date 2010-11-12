@@ -48,6 +48,68 @@ sub trim {
     return wantarray ? @text : "@text";
 }
 
+#--- Date and Tk::DateEntry subs
+
+sub dateentry_parse_date {
+
+    my ($self, $format, $date) = @_;
+
+    my ($y, $m, $d);
+
+    # Default date style format
+    $format = 'iso' unless $format;
+
+  SWITCH: for ($format) {
+        /^$/ && warn "Error in 'dateentry_parse_date'\n";
+        /german/i && do {
+            ($d, $m, $y ) = ( $date =~ m{([0-9]{2})\.([0-9]{2})\.([0-9]{4})} );
+            last SWITCH;
+        };
+        /iso/i && do {
+            ($y, $m, $d ) = ( $date =~ m{([0-9]{4})\-([0-9]{2})\-([0-9]{2})} );
+            last SWITCH;
+        };
+        /usa/i && do {
+            ($m, $d, $y ) = ( $date =~ m{([0-9]{4})\/([0-9]{2})\/([0-9]{4})} );
+            last SWITCH;
+        };
+        # DEFAULT
+        warn "Wrong date format: $format\n";
+    }
+
+    return ($y, $m, $d);
+}
+
+sub dateentry_format_date {
+
+    my ( $self, $format, $y, $m, $d ) = @_;
+
+    my $date;
+
+    # Default date style format
+    $format = 'iso' unless $format;
+
+  SWITCH: for ($format) {
+        /^$/ && warn "Error in 'dateentry_format_date'\n";
+        /german/i && do {
+            $date = sprintf( "%02d.%02d.%4d", $d, $m, $y );
+            last SWITCH;
+        };
+        /iso/i && do {
+            $date = sprintf( "%4d-%02d-%02d", $y, $m, $d );
+            last SWITCH;
+        };
+        /usa/i && do {
+            $date = sprintf( "%02d/%02d/%4d", $m, $d, $y );
+            last SWITCH;
+        };
+        # DEFAULT
+        warn "Wrong date format: $format\n";
+    }
+
+    return $date;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>

@@ -577,8 +577,84 @@ sub screen_load {
 
     $self->_view->make_list_header( $self->_scrcfg->columns );
 
+    # Load lists into JBrowseEntry or JComboBox widgets
+    $self->screen_init();
+
     # Restore default log level
     $self->_log->level($loglevel_old);
+
+    return;
+}
+
+=head2 screen_init
+
+Load options in Listbox like widgets - JCombobox support only.
+
+All JBrowseEntry or JComboBox widgets must have a <lists> record in
+config to define where the data for the list come from:
+
+ <lists>
+     <statuscode>
+         table   = status
+         code    = code
+         name    = description
+         default = none
+     </statuscode>
+ </lists>
+
+=cut
+
+sub screen_init {
+    my $self = shift;
+
+    # Entry objects hash
+    my $ctrl_ref = $self->{_scrobj}->get_controls();
+
+    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+
+        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+
+        # Control config attributes
+        my $ctrltype = $field_cfg_hr->{ctrltype};
+        my $ctrlrw   = $field_cfg_hr->{rw};
+
+        next unless $ctrl_ref->{$field}[0]; # Undefined widget variable
+
+        my $para = $self->{_scrcfg}{lists}{$field};
+
+        next unless ref $para eq 'HASH';   # Undefined, skip
+
+        # Query table and return data to fill the lists
+        my $cod_h_ref = $self->{_model}->get_codes($field, $para);
+
+        if ( $ctrltype eq 'm' ) {
+
+            # JComboBox
+            if ( $ctrl_ref->{$field}[1] ) {
+                $ctrl_ref->{$field}[1]->removeAllItems();
+                while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
+                    $ctrl_ref->{$field}[1]
+                        ->insertItemAt( 'end', $label, -value => $code );
+                }
+            }
+        }
+        elsif ( $ctrltype eq 'l' ) {
+
+            my @lvpairs;
+            while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
+                push( @lvpairs,{ value => $code, label => $label });
+            }
+
+            # MatchingBE
+            if ( $ctrl_ref->{$field}[1] ) {
+                $ctrl_ref->{$field}[1]->configure(
+                    -labels_and_values => \@lvpairs,
+                );
+            }
+        }
+    }
+
+    return;
 }
 
 =head2 toggle_interface_controls
@@ -732,13 +808,14 @@ sub screen_read {
      # Initialize
      $self->{scrdata} = {};
 
+     my $ctrl_ref = $self->{_scrobj}->get_controls();
+
      # Scan and write to controls
      foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
          my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
-         my $ctrl_ref     = $self->{_scrobj}->get_controls();
 
-         # Control type?
+         # Control config attributes
          my $ctrltype = $field_cfg_hr->{ctrltype};
          my $ctrlrw   = $field_cfg_hr->{rw};
 
@@ -759,7 +836,7 @@ sub screen_read {
              $self->$sub_name( $ctrl_ref, $field );
          }
          else {
-             print "WARN: New ctrl type '$ctrltype' for reading '$field'?\n";
+             print "WARN: No '$ctrltype' ctrl type for reading '$field'!\n";
          }
      }
 
@@ -838,6 +915,91 @@ sub control_read_t {
     return;
 }
 
+=head2 control_read_d
+
+Read contents of a Tk::DateEntry control.
+
+=cut
+
+sub control_read_d {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [t] $field\n";
+        return;
+    }
+
+    my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
+
+    # Delete '\n' from end
+    $value =~ s/\n$//mg;        # m=multiline
+
+    # # Get configured date style and format accordingly
+    # my $dstyle = $self->{conf}->get_misc_config('datestyle');
+    # if ($dstyle and $value) {
+
+    #     # Date should go to database in ISO format
+    #     my ($y,$m,$d) = $self->{utils}->dateentry_parse_date($dstyle, $value);
+
+    #     $value = $self->{utils}->dateentry_format_date('iso', $y, $m, $d);
+    # }
+    # else {
+    #     # default to ISO
+    # }
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (d): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = undef;
+            print "Screen (t): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
+=head2 control_read_m
+
+Read contents of a Tk::JComboBox control.
+
+=cut
+
+sub control_read_m {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [t] $field\n";
+        return;
+    }
+
+    my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
+
+    # Delete '\n' from end
+    $value =~ s/\n$//mg;        # m=multiline
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (d): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = undef;
+            print "Screen (t): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
 =head2 screen_write
 
 Write record to screen.  Controls must be I<on> to allow write.
@@ -855,13 +1017,14 @@ sub screen_write {
         $self->_log->trace("No record data, emptying the screen");
     }
 
+    my $ctrl_ref = $self->{_scrobj}->get_controls();
+
     # Scan and write to controls
     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
 
         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
-        my $ctrl_ref     = $self->{_scrobj}->get_controls();
 
-        # Control type?
+        # Control config attributes
         my $ctrltype = $field_cfg_hr->{ctrltype};
 
         my $value = $record_ref->{ lc $field };
@@ -886,7 +1049,7 @@ sub screen_write {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
         else {
-            print "WARN: '$ctrltype' not defined for writing '$field'!\n";
+            print "WARN: No '$ctrltype' ctrl type for writing '$field'!\n";
         }
     }
 
@@ -1005,6 +1168,72 @@ sub control_write_t {
 
     return;
 }
+
+=head2 control_write_d
+
+Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_d {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    $value = q{} unless defined $value; # Empty
+
+    # Date should come from database in ISO format
+    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date('iso', $value);
+
+    # Get configured date style and format accordingly
+    my $dstyle = 'iso'; #$self->{conf}->get_misc_config('datestyle');
+    if ($dstyle and $value) {
+        $value = Tpda3::Utils->dateentry_format_date($dstyle, $y, $m, $d);
+    }
+    else {
+        # default to ISO
+    }
+
+    ${ $ctrl_ref->{$field}[0] } = $value;
+
+    return;
+}
+
+=head2 control_write_m
+
+Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_m {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    $value = q{} unless defined $value; # Empty
+
+    $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
+
+    return;
+}
+
+sub control_write_l {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    return unless defined $value; # Empty
+
+    $ctrl_ref->{$field}[1]->set_selected_value($value);
+
+    return;
+}
+
+
+
+# sub control_write_l {
+#     my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+#     $value = q{} unless defined $value; # Empty
+
+#     ${ $ctrl_ref->{$field}[0] } = $value;
+
+#     return;
+# }
 
 =head2 control_states
 

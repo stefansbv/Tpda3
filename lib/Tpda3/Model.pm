@@ -12,6 +12,7 @@ use SQL::Abstract;
 use Tpda3::Config;
 use Tpda3::Observable;
 use Tpda3::Db;
+use Tpda3::Codings;
 
 =head1 NAME
 
@@ -47,6 +48,8 @@ sub new {
         _stdout    => Tpda3::Observable->new(),
         _appmode   => Tpda3::Observable->new(),
     };
+
+    $self->{codes} = Tpda3::Codings->new();
 
     bless $self, $class;
 
@@ -340,6 +343,7 @@ sub query_record {
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+
         if    ( $attrib->[1] eq 'contains' ) {
             $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
         }
@@ -388,6 +392,14 @@ sub quote4like {
     else {
         return qq{%$text%};
     }
+}
+
+sub get_codes {
+    my ($self, $field, $para) = @_;
+
+    my $codes = $self->{codes}->get_coding_init($field, $para);
+
+    return $codes;
 }
 
 =head1 AUTHOR

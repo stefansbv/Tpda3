@@ -3,8 +3,6 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;
@@ -191,7 +189,6 @@ sub config_application_load {
     my ( $self, $args ) = @_;
 
     foreach my $section ( keys %{ $self->cfapp } ) {
-        print "section $section\n";
         my $cfg_file = $self->config_app_file_name($section);
 
         $self->{_log}->info("Loading $section config file: $cfg_file");

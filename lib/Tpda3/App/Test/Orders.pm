@@ -3,8 +3,7 @@ package Tpda3::App::Test::Orders;
 use strict;
 use warnings;
 
-use Tk::widgets qw(DateEntry JComboBox TableMatrix);
-
+use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
 use base 'Tpda3::Tk::Screen';
 
 =head1 NAME
@@ -213,13 +212,29 @@ sub run_screen {
         -padx => 5,
     );
 
+    # my $vstatuscode;
+    # my $bstatuscode = $frame1->JComboBox(
+    #     #-entrywidth         => 15,
+    #     -relief             => 'sunken',
+    #     -disabledbackground => $self->{bg},
+    #     -disabledforeground => 'black',
+    #     -textvariable       => \$vstatuscode,
+    # );
+
+    # $bstatuscode->form(
+    #     -top  => [ '&', $lstatuscode, 0 ],
+    #     -left => [ %0,  90 ],
+    # );
+
     my $vstatuscode;
-    my $bstatuscode = $frame1->JComboBox(
-        -entrywidth         => 15,
+    my $lvstatuscode = [ { value => 'no value', label => 'not set' } ];
+    my $bstatuscode = $frame1->MatchingBE(
+        # -entrywidth         => 15,         # can't set :(
         -relief             => 'sunken',
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
-        -textvariable       => \$vstatuscode,
+        -labels_and_values  => $lvstatuscode,
+        -value_variable     => \$vstatuscode,
     );
 
     $bstatuscode->form(
@@ -390,9 +405,8 @@ sub run_screen {
 
     #---
 
-    # Entry objects fld_name => [0-tip_entry, 1-w|r-updatable? 2-var_asoc,
-    #               3-var_obiect, 4-state, 5-color, 6-decimals, 7-type_of_find]
-    # Type_of_find: 0=none, 1=all number, 2=contains_str, 3=all_str
+    # Entry objects: var_asoc, var_obiect
+    # Other configurations in 'products.conf'
     $self->{controls} = {
         customername   => [ undef,           $ecustomername ],
         customernumber => [ undef,           $ecustomernumber ],
