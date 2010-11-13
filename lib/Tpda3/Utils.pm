@@ -48,7 +48,11 @@ sub trim {
     return wantarray ? @text : "@text";
 }
 
-#--- Date and Tk::DateEntry subs
+=head2 dateentry_parse_date
+
+Parse date for Tk::DateEntry.
+
+=cut
 
 sub dateentry_parse_date {
 
@@ -79,6 +83,12 @@ sub dateentry_parse_date {
 
     return ($y, $m, $d);
 }
+
+=head2 dateentry_format_date
+
+Format date for Tk::DateEntry.
+
+=cut
 
 sub dateentry_format_date {
 

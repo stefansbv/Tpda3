@@ -154,58 +154,58 @@ sub _set_event_handlers {
     #- Toolbar
 
     #-- Attach to desktop - pin (save geometry to config file)
-    $self->_view->get_toolbar_btn('tb_at')->bind(
-        '<ButtonRelease-1>' => sub {
-            my $scr_name = $self->{_scrstr} || 'main';
-            $self->_cfg
-                ->config_save_instance( $scr_name, $self->_view->w_geometry() );
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_at')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         my $scr_name = $self->{_scrstr} || 'main';
+    #         $self->_cfg
+    #             ->config_save_instance( $scr_name, $self->_view->w_geometry() );
+    #     }
+    # );
 
     #-- Find mode
-    $self->_view->get_toolbar_btn('tb_fm')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->toggle_mode_find();
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_fm')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->toggle_mode_find();
+    #     }
+    # );
 
     #-- Find execute
-    $self->_view->get_toolbar_btn('tb_fe')->bind(
-        '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_execute;
-            }
-            else {
-                print "WARN: Not in find mode\n";
-            }
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_fe')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         if ( $self->_model->is_mode('find') ) {
+    #             $self->record_find_execute;
+    #         }
+    #         else {
+    #             print "WARN: Not in find mode\n";
+    #         }
+    #     }
+    # );
 
     #-- Find count
-    $self->_view->get_toolbar_btn('tb_fc')->bind(
-        '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_count;
-            }
-            else {
-                print "WARN: Not in find mode\n";
-            }
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_fc')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         if ( $self->_model->is_mode('find') ) {
+    #             $self->record_find_count;
+    #         }
+    #         else {
+    #             print "WARN: Not in find mode\n";
+    #         }
+    #     }
+    # );
 
     #-- Add mode
-    $self->_view->get_toolbar_btn('tb_ad')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->toggle_mode_add();
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_ad')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->toggle_mode_add();
+    #     }
+    # );
 
     #-- Quit
-    $self->_view->get_toolbar_btn('tb_qt')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->_view->on_quit;
-        }
-    );
+    # $self->_view->get_toolbar_btn('tb_qt')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->_view->on_quit;
+    #     }
+    # );
 
     #-- Make some key bindings
 
@@ -270,7 +270,7 @@ sub set_app_mode {
         sele => 'on_screen_mode_sele',
     );
 
-    $self->toggle_interface_controls;
+    # $self->toggle_interface_controls;
 
     return unless ref $self->{_scrobj};
 
@@ -675,7 +675,7 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        $self->_view->toggle_tool( $name, $status );
+        # $self->_view->toggle_tool( $name, $status );
     }
 
     return;
@@ -925,7 +925,7 @@ sub control_read_d {
     my ( $self, $ctrl_ref, $field ) = @_;
 
     unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [t] $field\n";
+        warn "Undefined: [d] $field\n";
         return;
     }
 
@@ -957,7 +957,7 @@ sub control_read_d {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (t): $field = undef\n";
+            print "Screen (d): $field = undef\n";
         }
     }
 
@@ -974,7 +974,7 @@ sub control_read_m {
     my ( $self, $ctrl_ref, $field ) = @_;
 
     unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [t] $field\n";
+        warn "Undefined: [m] $field\n";
         return;
     }
 
@@ -986,14 +986,50 @@ sub control_read_m {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
         $self->{scrdata}{$field} = $value;
-        print "Screen (d): $field = $value\n";
+        print "Screen (m): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (t): $field = undef\n";
+            print "Screen (m): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
+=head2 control_read_l
+
+Read contents of a Tk::MatchingBE control.
+
+=cut
+
+sub control_read_l {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [l] $field\n";
+        return;
+    }
+
+    my $value = $ctrl_ref->{$field}[1]->get_selected_value();
+
+    # Delete '\n' from end
+    $value =~ s/\n$//mg;        # m=multiline
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (l): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = undef;
+            print "Screen (l): $field = undef\n";
         }
     }
 
@@ -1213,6 +1249,12 @@ sub control_write_m {
     return;
 }
 
+=head2 control_write_l
+
+Write to a Tk::MatchingBE widget.
+
+=cut
+
 sub control_write_l {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
@@ -1222,18 +1264,6 @@ sub control_write_l {
 
     return;
 }
-
-
-
-# sub control_write_l {
-#     my ( $self, $ctrl_ref, $field, $value ) = @_;
-
-#     $value = q{} unless defined $value; # Empty
-
-#     ${ $ctrl_ref->{$field}[0] } = $value;
-
-#     return;
-# }
 
 =head2 control_states
 

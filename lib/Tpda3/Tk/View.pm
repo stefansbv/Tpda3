@@ -9,7 +9,7 @@ use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Tk;
-use Tk::widgets qw(ToolBar NoteBook StatusBar Dialog
+use Tk::widgets qw(NoteBook StatusBar Dialog
                    Checkbutton LabFrame MListbox JComboBox Font);
 
 require Tk::ErrorDialog;
@@ -18,6 +18,7 @@ use base 'Tk::MainWindow';
 
 use Tpda3::Config;
 use Tpda3::Tk::Dialog::Configs;
+use Tpda3::Tk::ToolBar;
 
 =head1 NAME
 
@@ -145,19 +146,19 @@ sub update_gui_components {
 
     SWITCH: {
           $mode eq 'find' && do {
-              $self->toggle_tool_check( 'tb_ad', 0 );
-              $self->toggle_tool_check( 'tb_fm', 1 );
+              # $self->toggle_tool_check( 'tb_ad', 0 );
+              # $self->toggle_tool_check( 'tb_fm', 1 );
               last SWITCH;
           };
           $mode eq 'add' && do {
-              $self->toggle_tool_check( 'tb_ad', 1 );
-              $self->toggle_tool_check( 'tb_fm', 0 );
+              # $self->toggle_tool_check( 'tb_ad', 1 );
+              # $self->toggle_tool_check( 'tb_fm', 0 );
               last SWITCH;
           };
 
           # Else
-          $self->toggle_tool_check( 'tb_ad', 0 );
-          $self->toggle_tool_check( 'tb_fm', 0 );
+          # $self->toggle_tool_check( 'tb_ad', 0 );
+          # $self->toggle_tool_check( 'tb_fm', 0 );
       }
 
     return;
@@ -449,7 +450,7 @@ sub set_status {
     my $sb = $self->get_statusbar($sb_id);
 
     if ( $sb_id eq 'cn' ) {
-        $sb->configure( -image => $text ) if defined $text;
+        # $sb->configure( -image => $text ) if defined $text;
     }
     else {
         $sb->configure( -textvariable => \$text ) if defined $text;
@@ -468,25 +469,31 @@ Create toolbar
 sub _create_toolbar {
     my $self = shift;
 
-    # Frame for toolbar
-    my $tbf = $self->Frame();
-    $tbf->pack( -side => 'top', -anchor => 'nw', -fill => 'x' );
-
-    $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
+    $self->{_tb} = Tpda3::Tk::ToolBar->new($self);
 
     my ($toolbars, $attribs) = $self->toolbar_names();
 
-    # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name (@{$toolbars}) {
-        my $type = $attribs->{$name}{type};
-        $self->$type( $name, $attribs->{$name} );
+    $self->{_tb}->make_toolbar_buttons($toolbars, $attribs);
 
-        # Initial state disabled, except quit and attach button
-        next if $name eq 'tb_qt';
-        next if $name eq 'tb_at';
+    # Frame for toolbar
+    # my $tbf = $self->Frame();
+    # $tbf->pack( -side => 'top', -anchor => 'nw', -fill => 'x' );
 
-        $self->toggle_tool( $name, 'disabled' );
-    }
+    # $self->{_tb} = $tbf->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
+
+
+
+    # # Create buttons in ID order; use sub defined by 'type'
+    # foreach my $name (@{$toolbars}) {
+    #     my $type = $attribs->{$name}{type};
+    #     $self->$type( $name, $attribs->{$name} );
+
+    #     # Initial state disabled, except quit and attach button
+    #     next if $name eq 'tb_qt';
+    #     next if $name eq 'tb_at';
+
+    #     $self->toggle_tool( $name, 'disabled' );
+    # }
 
     return;
 }
@@ -515,20 +522,20 @@ Create a normal toolbar button
 
 =cut
 
-sub _item_normal {
-    my ( $self, $name, $attribs ) = @_;
+# sub _item_normal {
+#     my ( $self, $name, $attribs ) = @_;
 
-    $self->{_tb}->separator if $attribs->{sep} =~ m{before};
+#     $self->{_tb}->separator if $attribs->{sep} =~ m{before};
 
-    $self->{_tb}{$name} = $self->{_tb}->ToolButton(
-        -image => $attribs->{icon},
-        -tip   => $attribs->{tooltip},
-    );
+#     $self->{_tb}{$name} = $self->{_tb}->ToolButton(
+#         -image => $attribs->{icon},
+#         -tip   => $attribs->{tooltip},
+#     );
 
-    $self->{_tb}->separator if $attribs->{sep} =~ m{after};
+#     $self->{_tb}->separator if $attribs->{sep} =~ m{after};
 
-    return;
-}
+#     return;
+# }
 
 =head2 item_check
 
@@ -536,22 +543,22 @@ Create a check toolbar button
 
 =cut
 
-sub _item_check {
-    my ( $self, $name, $attribs ) = @_;
+# sub _item_check {
+#     my ( $self, $name, $attribs ) = @_;
 
-    $self->{_tb}->separator if $attribs->{sep} =~ m{before};
+#     $self->{_tb}->separator if $attribs->{sep} =~ m{before};
 
-    $self->{_tb}{$name} = $self->{_tb}->ToolButton(
-        -image       => $attribs->{icon},
-        -type        => 'Checkbutton',
-        -indicatoron => 0,
-        -tip         => $attribs->{tooltip},
-    );
+#     $self->{_tb}{$name} = $self->{_tb}->ToolButton(
+#         -image       => $attribs->{icon},
+#         -type        => 'Checkbutton',
+#         -indicatoron => 0,
+#         -tip         => $attribs->{tooltip},
+#     );
 
-    $self->{_tb}->separator if $attribs->{sep} =~ m{after};
+#     $self->{_tb}->separator if $attribs->{sep} =~ m{after};
 
-    return;
-}
+#     return;
+# }
 
 =head2 create_notebook
 
@@ -671,11 +678,11 @@ Return a toolbar button when we know the its name
 
 =cut
 
-sub get_toolbar_btn {
-    my ( $self, $name ) = @_;
+# sub get_toolbar_btn {
+#     my ( $self, $name ) = @_;
 
-    return $self->{_tb}{$name};
-}
+#     return $self->{_tb}{$name};
+# }
 
 =head2 toggle_tool
 
@@ -686,50 +693,50 @@ State can come as 0 | 1 and normal | disabled.
 
 =cut
 
-sub toggle_tool {
-    my ($self, $btn_name, $state) = @_;
+# sub toggle_tool {
+#     my ($self, $btn_name, $state) = @_;
 
-    my $tb_btn = $self->get_toolbar_btn($btn_name);
+#     my $tb_btn = $self->get_toolbar_btn($btn_name);
 
-    my $other;
-    if ($state) {
-        if ( $state =~ m{norma|disabled}x ) {
-            $other = $state;
-        }
-        else {
-            $other = $state ? 'normal' : 'disabled';
-        }
-    }
-    else {
-        $state = $tb_btn->cget(-state);
-        $other = $state eq 'normal' ? 'disabled' : 'normal';
-    }
+#     my $other;
+#     if ($state) {
+#         if ( $state =~ m{norma|disabled}x ) {
+#             $other = $state;
+#         }
+#         else {
+#             $other = $state ? 'normal' : 'disabled';
+#         }
+#     }
+#     else {
+#         $state = $tb_btn->cget(-state);
+#         $other = $state eq 'normal' ? 'disabled' : 'normal';
+#     }
 
-    $tb_btn->configure( -state => $other );
+#     $tb_btn->configure( -state => $other );
 
-    return;
-}
+#     return;
+# }
 
-=head2 toggle_tool_check
+# =head2 toggle_tool_check
 
-Toggle a toolbar checkbutton.
+# Toggle a toolbar checkbutton.
 
-=cut
+# =cut
 
-sub toggle_tool_check {
-    my ($self, $btn_name, $state) = @_;
+# sub toggle_tool_check {
+#     my ($self, $btn_name, $state) = @_;
 
-    my $tb_btn = $self->get_toolbar_btn($btn_name);
+#     my $tb_btn = $self->get_toolbar_btn($btn_name);
 
-    if ($state) {
-        $tb_btn->select;
-    }
-    else {
-        $tb_btn->deselect;
-    }
+#     if ($state) {
+#         $tb_btn->select;
+#     }
+#     else {
+#         $tb_btn->deselect;
+#     }
 
-    return;
-}
+#     return;
+# }
 
 =head2 toggle_status_cn
 

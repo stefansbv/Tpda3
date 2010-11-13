@@ -24,9 +24,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Codings;
+   use Tpda3::Codings;
 
-    my $model = Tpda3::Codings->new();
+   my $codes = Tpda3::Codings->new();
 
 =head1 METHODS
 
@@ -50,21 +50,28 @@ sub new {
     return $self;
 }
 
+=head2 get_coding_init
+
+Return the data structure used to fill the list of choices (options)
+of widgets like Tk::JComboBox and experimental for Tk::MatchingBE.
+
+Initialize the datastructure from the database when needed.  The
+procedure is: check key, if exists return a hash ref else query the
+database.
+
+Add the default value defined in configuration, if not exists in table.
+
+=cut
+
 sub get_coding_init {
     my ($self, $field, $para) = @_;
-
-    # check key
-    # if exists return hash_ref
-    # else query database
-
-    my $cod_ref;
 
     if ( ! exists $self->{_code}{ $field } ) {
         # Query database table
         $self->{_code}{ $field } = $self->tbl_dict_query($para);
     }
 
-    # Add the default value defined in config xml if not exists in table
+    # Add the default
     if ( ! exists $self->{_code}{ $field }{ $para->{default} } ) {
         $self->{_code}{ $field }{ $para->{default} } = $para->{default};
     }
@@ -72,11 +79,44 @@ sub get_coding_init {
     return $self->{_code}{ $field };
 }
 
+=head2 get_coding
+
+Return codes.
+
+=cut
+
 sub get_coding {
     my ($self, $field, $val) = @_;
 
     return $self->{_code}{$field}{$val};
 }
+
+=head2 tbl_dict_query
+
+Query a table for codes.  Return key -> value, pairs used as the
+'choices' of widgets like Tk::JComboBox.
+
+There is a default table for codes named 'codificari' (named so, in
+the first version of TPDA).
+
+The 'codificari' table has the following structure:
+
+   id_ord    INTEGER NOT NULL
+   variabila VARCHAR(15)
+   filtru    VARCHAR(5)
+   cod       VARCHAR(5)
+   denumire  VARCHAR(25) NOT NULL
+
+The 'variabila' columns contains the name of the field, because this
+is a table used for many different codings.  When this table is used,
+a where clause is constructed to filter only the values coresponding
+to 'variabila'.
+
+There is another column named 'filtru' than can be used to restrict
+the values listed when they depend on the value of another widget in
+the current screen (not yet used!).
+
+=cut
 
 sub tbl_dict_query {
     my ($self, $para) = @_;

@@ -462,8 +462,13 @@ sub run_screen {
     return $eordernumber;
 }
 
-sub callback {
+=head2 callback
 
+Callback for table matrix.
+
+=cut
+
+sub callback {
     my ( $w1, $self, $p2 ) = @_;
 
     my $r = $w1->index( 'active', 'row' );
@@ -499,24 +504,21 @@ sub callback {
     $w1->see('active');
 }
 
+=head2 calculate_order_line
+
+Calculate order line.
+
+=cut
+
 sub calculate_order_line {
-
- # +-------------------------------------------------------------------------+
- # | Description: Calculate value                                            |
- # | Parameters :                                                            |
- # +-------------------------------------------------------------------------+
-
-    my $self = $_[0];
-    my $xt   = $_[1];
-    my $rand = $_[2];
+    my ($self, $xt, $rand) = @_;
 
     # print "Row = $rand\n";
     my $cant = $xt->get("$rand,3");    # print "Cant = $cant\n";
     my $pret = $xt->get("$rand,4");    # print "Pret = $pret\n";
 
     eval {
-        if ( defined($cant) and defined($pret) )
-        {
+        if ( defined($cant) and defined($pret) ) {
             my $valoare = sprintf( "%.2f", ( $cant * $pret ) );
             $xt->set( "$rand,5", $valoare );
             print "Valoare = $valoare\n";
@@ -535,50 +537,47 @@ sub calculate_order_line {
     $xt->configure( -padx => $xt->cget( -padx ) );
 }
 
+=head2 calculate_order
+
+Calculate order values.
+
+=cut
+
 sub calculate_order {
-
- # +-------------------------------------------------------------------------+
- # | Description: Calculate order value                                      |
- # | Parameters :                                                            |
- # +-------------------------------------------------------------------------+
-
-    my $self = $_[0];
-    my $xt   = $_[1];
-
-    my $valoare = 0;
-    my ( $c, $v );
+    my ($self, $xt) = @_;
 
     my $rows_no  = $xt->cget( -rows );
     my $rows_idx = --$rows_no;
 
-    my $rand = 1;
-    for ( $rand = 1; $rand <= $rows_idx; $rand++ ) {
+    my $row   = 1;
+    my $value = 0;
+    for ( $row = 1; $row <= $rows_idx; $row++ ) {
 
-        my $val = $xt->get("$rand,5");    # print "Val = $val\n";
+        my $val = $xt->get("$row,5");    # print "Val = $val\n";
 
         if ( defined $val ) {
-            $valoare += $val;             # print "Valoare = $valoare\n";
+            $value += $val;              # print "Value = $value\n";
         }
         else {
             print "No values!\n";
         }
     }
 
-    # Rotunjiri
-    $valoare = sprintf( "%.2f", $valoare );
+    # Rounding to 2 decimals
+    $value = sprintf( "%.2f", $value );
 
-    # Update screen
+    # Add more pairs if needed
+    my %fields = ( ordertotal => $value );
 
-    # More than one value can be calculated
-    my %campuri = ( ordertotal => $valoare );
-    while ( ( $c, $v ) = each(%campuri) ) {
-        $self->{eobj_rec}->{$c}[3]->delete( 0, 'end' );
-        $self->{eobj_rec}->{$c}[3]->insert( 0, $v );
-        $self->{eobj_rec}->{$c}[3]->xview('end');
+    # Update controls
+    while ( my ( $c, $v ) = each(%fields) ) {
+        $self->{controls}->{$c}[3]->delete( 0, 'end' );
+        $self->{controls}->{$c}[3]->insert( 0, $v );
+        $self->{controls}->{$c}[3]->xview('end');
     }
-}
 
-sub get_eobj_rec { return $_[0]->{eobj_rec}; }
+    return;
+}
 
 =head1 AUTHOR
 

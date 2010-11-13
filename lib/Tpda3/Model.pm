@@ -394,6 +394,12 @@ sub quote4like {
     }
 }
 
+=head2 get_codes
+
+Return the data structure used to fill the list of choices.
+
+=cut
+
 sub get_codes {
     my ($self, $field, $para) = @_;
 
