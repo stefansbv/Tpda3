@@ -3,8 +3,12 @@ package Tpda3::App::Test::Orders;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
 use base 'Tpda3::Tk::Screen';
+
+use Tpda3::Tk::ToolBar;
 
 =head1 NAME
 
@@ -43,9 +47,6 @@ sub run_screen {
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
-    # Toolbar buttons
-    my ( $add_button, $del_button );
-
     my $eordernumber;
 
     #-- Frame 1 - Order
@@ -71,13 +72,13 @@ sub run_screen {
     $lcustomername->form(
         -top  => [ %0, 0 ],
         -left => [ %0, 0 ],
-        -padx => 5, -pady => 5,
+        -padleft => 5,
     );
 
     my $ecustomername = $frame1->Entry( -width => 35 );
     $ecustomername->form(
         -top  => [ '&', $lcustomername, 0 ],
-        -left => [ %0,  90 ],
+        -left => [ %0,  110 ],
     );
     $ecustomername->bind(
         '<KeyPress-Return>' => sub {
@@ -101,9 +102,9 @@ sub run_screen {
 
     my $lordernumber = $frame1->Label( -text => 'Order ID' );
     $lordernumber->form(
-        -top  => [ $lcustomername, 0 ],
+        -top  => [ $lcustomername, 8 ],
         -left => [ %0,             0 ],
-        -padx => 5, -pady => 5,
+        -padleft => 5,
     );
 
     $eordernumber = $frame1->Entry(
@@ -113,7 +114,7 @@ sub run_screen {
     );
     $eordernumber->form(
         -top  => [ '&', $lordernumber, 0 ],
-        -left => [ %0,  90 ],
+        -left => [ %0,  110 ],
     );
 
     #-+ Orderdate (orderdate)
@@ -134,7 +135,7 @@ sub run_screen {
     );
 
     $dorderdate->form(
-        -top   => [ '&', $lordernumber,    0 ],
+        -top   => [ '&', $eordernumber,   -2 ],
         -right => [ '&', $ecustomernumber, 0 ],
     );
 
@@ -142,16 +143,16 @@ sub run_screen {
     $lorderdate->form(
         -top   => [ '&',         $lordernumber, 0 ],
         -right => [ $dorderdate, -20 ],
-        -pady  => 5,
+        -padleft => 5,
     );
 
     #- Requireddate (requireddate)
 
     my $lrequireddate = $frame1->Label( -text => 'Required date' );
     $lrequireddate->form(
-        -top  => [ $lordernumber, 0 ],
+        -top  => [ $lordernumber, 8 ],
         -left => [ %0,            0 ],
-        -padx => 5, -pady => 5,
+        -padleft => 5,
     );
 
     my $vrequireddate;
@@ -170,17 +171,17 @@ sub run_screen {
     );
 
     $drequireddate->form(
-        -top  => [ '&', $lrequireddate, 0 ],
-        -left => [ %0,  90 ],
+        -top  => [ '&', $lrequireddate, -2 ],
+        -left => [ %0,  110 ],
     );
 
     #-+ Shippeddate (shippeddate)
 
     my $lshippeddate = $frame1->Label( -text => 'Shipped date' );
     $lshippeddate->form(
-        -top  => [ '&', $lrequireddate, 0 ],
-        -left => [ '&', $lorderdate,    0 ],
-        -pady => 5,
+        -top  => [ '&', $lrequireddate, -2 ],
+        -left => [ '&', $lorderdate,     0 ],
+        -padleft => 5,
     );
 
     my $vshippeddate;
@@ -207,9 +208,9 @@ sub run_screen {
 
     my $lstatuscode = $frame1->Label( -text => 'Status' );
     $lstatuscode->form(
+        -top  => [ $lrequireddate, 8 ],
         -left => [ %0,             0 ],
-        -top  => [ $lrequireddate, 0 ],
-        -padx => 5,
+        -padleft => 5,
     );
 
     # my $vstatuscode;
@@ -223,7 +224,7 @@ sub run_screen {
 
     # $bstatuscode->form(
     #     -top  => [ '&', $lstatuscode, 0 ],
-    #     -left => [ %0,  90 ],
+    #     -left => [ %0,  110 ],
     # );
 
     my $vstatuscode;
@@ -239,7 +240,7 @@ sub run_screen {
 
     $bstatuscode->form(
         -top  => [ '&', $lstatuscode, 0 ],
-        -left => [ %0,  90 ],
+        -left => [ %0,  110 ],
     );
 
     #-- Frame2 - Comments
@@ -264,7 +265,7 @@ sub run_screen {
     my $tcomments = $frame2->Scrolled(
         'Text',
         -width      => 30,
-        -height     => 7,
+        -height     => 8,
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
@@ -273,14 +274,14 @@ sub run_screen {
     $tcomments->form(
         -left => [ %0, 0 ],
         -top  => [ %0, 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
     );
 
     #--- Details
     #-
     #
 
-    #-- Frame t => Tabel
+    #-- Frame t => Table
 
     my $frm_t = $inreg_p->LabFrame(
         -foreground => 'blue',
@@ -303,7 +304,16 @@ sub run_screen {
         -fill   => 'x',
     );
 
-    my $xtabel = $frm_t->Scrolled(
+    my $tb1 = Tpda3::Tk::ToolBar->new($tbf1);
+
+    # my ($toolbars, $attribs) = $self->toolbar_names();
+    # my $toolbars = [qw(tb2ad tb2rm)];
+
+    # $tb1->make_toolbar_buttons($toolbars, $attribs);
+
+    #- TableMatrix
+
+    my $xtable = $frm_t->Scrolled(
         'TableMatrix',
         -rows          => 5,
         -cols          => 5,
@@ -319,52 +329,24 @@ sub run_screen {
         -scrollbars    => 'osw',
     );
 
-    # Bindings:
-    # Make enter do the same thing as return?:
-    $xtabel->bind( '<KP_Enter>', $xtabel->bind('<Return>') );
-    $xtabel->pack( -expand => 1, -fill => 'both' );
+    #- Bindings
 
-    # Add toolbar buttons
-    my $mw1 = $tbf1->Frame();
-    $mw1->pack(
-        -anchor => 'n',
-        -expand => 'n',
-        -fill   => 'x',
-    );
+    # Make enter do the same thing as return (doesn't work on GNU/Linux)
+    $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
+    $xtable->pack( -expand => 1, -fill => 'both' );
 
-    my $tb1 = $mw1->ToolBar(qw/-movable 0 -side top -cursorcontrol 0/);
-
-    # $add_button = $self->{tpda}->{gui}->gui_build_tb_button(
-    #     $tb1,
-    #     'Adaug rand',
-    #     sub {
-    #         $self->{tpda}->{gui}->insert_tmatrix_row($xtabel);
-    #     },
-    #     'actitemadd16',
-    # );
-    # $del_button = $self->{tpda}->{gui}->gui_build_tb_button(
-    #     $tb1,
-    #     'Sterg rand',
-    #     sub {
-    #         $self->{tpda}->{gui}->delete_tmatrix_row($xtabel);
-    #     },
-    #     'actitemdelete16',
-    # );
-    ### end Toolbar
-
-    # Bindings:
     # Make the active area move after we press return:
     # We Have to use class binding here so that we override
-    #  the default return binding
-    my $t1     = $xtabel->Subwidget('scrolled');
+    # the default return binding
+    my $t1     = $xtable->Subwidget('scrolled');
     my $params = {
         $t1    => 'T1',
         'conn' => $conn,
         'gui'  => $gui,
-        'add1' => $add_button,
+        # 'add1' => $add_button,
     };
 
-    $xtabel->bind( 'Tk::TableMatrix',
+    $xtable->bind( 'Tk::TableMatrix',
         '<Return>' => [ \&callback, $self, $params ] );
 
     #-- Frame Bottom Right
@@ -401,7 +383,7 @@ sub run_screen {
     );
 
     # This makes TableMatrix expand !!!
-    $xtabel->update;
+    $xtable->update;
 
     #---
 
@@ -420,12 +402,12 @@ sub run_screen {
     };
 
     # TableMatrix objects
-    # Campuri tabel
+    # Campuri table
     # nume_camp => [#,Header,order_by,ro|rw,size,align,type:size:dec]
     $self->{tmxobj} = {
         rec => {
             tm1 => {
-                defs => [ \$xtabel, 'orderdetails', 'v_orderdetails' ],
+                defs => [ \$xtable, 'orderdetails', 'v_orderdetails' ],
                 cols => {
                     orderlinenumber =>
                         [ 0, 'Art', 1, 'rw', 5, 'ro_center', '_digit:5' ],
