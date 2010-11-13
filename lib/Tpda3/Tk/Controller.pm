@@ -154,58 +154,58 @@ sub _set_event_handlers {
     #- Toolbar
 
     #-- Attach to desktop - pin (save geometry to config file)
-    # $self->_view->get_toolbar_btn('tb_at')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         my $scr_name = $self->{_scrstr} || 'main';
-    #         $self->_cfg
-    #             ->config_save_instance( $scr_name, $self->_view->w_geometry() );
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_at')->bind(
+        '<ButtonRelease-1>' => sub {
+            my $scr_name = $self->{_scrstr} || 'main';
+            $self->_cfg
+                ->config_save_instance( $scr_name, $self->_view->w_geometry() );
+        }
+    );
 
     #-- Find mode
-    # $self->_view->get_toolbar_btn('tb_fm')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->toggle_mode_find();
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_fm')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->toggle_mode_find();
+        }
+    );
 
     #-- Find execute
-    # $self->_view->get_toolbar_btn('tb_fe')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         if ( $self->_model->is_mode('find') ) {
-    #             $self->record_find_execute;
-    #         }
-    #         else {
-    #             print "WARN: Not in find mode\n";
-    #         }
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_fe')->bind(
+        '<ButtonRelease-1>' => sub {
+            if ( $self->_model->is_mode('find') ) {
+                $self->record_find_execute;
+            }
+            else {
+                print "WARN: Not in find mode\n";
+            }
+        }
+    );
 
     #-- Find count
-    # $self->_view->get_toolbar_btn('tb_fc')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         if ( $self->_model->is_mode('find') ) {
-    #             $self->record_find_count;
-    #         }
-    #         else {
-    #             print "WARN: Not in find mode\n";
-    #         }
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_fc')->bind(
+        '<ButtonRelease-1>' => sub {
+            if ( $self->_model->is_mode('find') ) {
+                $self->record_find_count;
+            }
+            else {
+                print "WARN: Not in find mode\n";
+            }
+        }
+    );
 
     #-- Add mode
-    # $self->_view->get_toolbar_btn('tb_ad')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->toggle_mode_add();
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_ad')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->toggle_mode_add();
+        }
+    );
 
     #-- Quit
-    # $self->_view->get_toolbar_btn('tb_qt')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_view->on_quit;
-    #     }
-    # );
+    $self->_view->get_toolbar_btn('tb_qt')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->_view->on_quit;
+        }
+    );
 
     #-- Make some key bindings
 
@@ -270,7 +270,7 @@ sub set_app_mode {
         sele => 'on_screen_mode_sele',
     );
 
-    # $self->toggle_interface_controls;
+    $self->toggle_interface_controls;
 
     return unless ref $self->{_scrobj};
 
@@ -675,7 +675,7 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        # $self->_view->toggle_tool( $name, $status );
+        $self->_view->toggle_tool( $name, $status );
     }
 
     return;

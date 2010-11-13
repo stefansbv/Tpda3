@@ -51,6 +51,12 @@ sub new {
     return $self;
 }
 
+=head2 make_toolbar_buttons
+
+Make main toolbar buttons.
+
+=cut
+
 sub make_toolbar_buttons {
     my ($self, $toolbars, $attribs) = @_;
 
@@ -62,30 +68,11 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-
-        # $self->toggle_tool( $name, 'disabled' );
+        $self->toggle_tool( $name, 'disabled' );
     }
 
     return;
 }
-
-=head2 toolbar_names
-
-Toolbar names array reference
-
-=cut
-
-# sub toolbar_names {
-#     my $self = shift;
-
-#     # Get ToolBar button atributes
-#     my $attribs = $self->_cfg->toolbar;
-
-#     # TODO: Change the config file so we don't need this sorting anymore
-#     my $toolbars = $self->sort_hash_by_id($attribs);
-
-#     return ($toolbars, $attribs);
-# }
 
 =head2 item_normal
 
@@ -140,7 +127,7 @@ Return a toolbar button when we know the its name
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
-    return $self->{_tb}{$name};
+    return $self->{$name};
 }
 
 =head2 toggle_tool
