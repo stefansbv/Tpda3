@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger);
-
 use File::Spec::Functions;
 
 use Tpda3::Config;
@@ -48,7 +47,6 @@ sub new {
 
     my $self = {
         _cfg => Tpda3::Config->instance(),
-        _log => get_logger(),
     };
 
     bless $self, $class;
@@ -66,18 +64,6 @@ sub _cfg {
     my $self = shift;
 
     return $self->{_cfg};
-}
-
-=head2 log
-
-Accessor for config object
-
-=cut
-
-sub _log {
-    my $self = shift;
-
-    return $self->{_log};
 }
 
 =head2 _make_accessors
@@ -108,18 +94,45 @@ Load a config files at request
 sub config_screen_load {
     my ($self, $file_name) = @_;
 
+    my $log = get_logger();
+
     my $cfg_file = $self->config_scr_file_name($file_name);
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
-    $self->_log->info("Loading '$file_name' config file: $cfg_file");
+    $log->info("Loading '$file_name' config file: $cfg_file");
 
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
     my @accessor = keys %{ $cfg_data->{screen} };
-    $self->_log->info("Making accessors for @accessor");
+    $log->info("Making accessors for @accessor");
 
     $self->_make_accessors( $cfg_data->{screen} );
+
+    return;
+}
+
+=head2 config_screen_toolbar_load
+
+Load a supplementary config for a screen toolbar.
+
+=cut
+
+sub config_screen_toolbar_load {
+    my ($self, $file_name) = @_;
+
+    my $log = get_logger();
+
+    my $cfg_file = $self->config_scr_file_name($file_name);
+
+    $log->info("Loading '$file_name' config file: $cfg_file");
+
+    my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file);
+
+    my @accessor = keys %{ $cfg_data };
+    $log->info("Making accessors for @accessor");
+
+    $self->_make_accessors( $cfg_data );
 
     return;
 }

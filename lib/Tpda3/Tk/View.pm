@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 use POSIX qw (floor);
 

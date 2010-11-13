@@ -38,7 +38,7 @@ sub new {
     my $tbf = $gui->Frame->pack(
         -side   => 'top',
         -anchor => 'nw',
-        -fill => 'x',
+        -fill   => 'x',
     );
 
     $self = $self->SUPER::new(
