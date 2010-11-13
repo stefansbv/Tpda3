@@ -112,31 +112,6 @@ sub config_screen_load {
     return;
 }
 
-=head2 config_screen_toolbar_load
-
-Load a supplementary config for a screen toolbar.
-
-=cut
-
-sub config_screen_toolbar_load {
-    my ($self, $file_name) = @_;
-
-    my $log = get_logger();
-
-    my $cfg_file = $self->config_scr_file_name($file_name);
-
-    $log->info("Loading '$file_name' config file: $cfg_file");
-
-    my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file);
-
-    my @accessor = keys %{ $cfg_data };
-    $log->info("Making accessors for @accessor");
-
-    $self->_make_accessors( $cfg_data );
-
-    return;
-}
-
 =head2 config_scr_file_name
 
 Return fully qualified screen configuration file name.

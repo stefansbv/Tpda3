@@ -8,6 +8,7 @@ use Data::Dumper;
 use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
 use base 'Tpda3::Tk::Screen';
 
+use Tpda3::Config;
 use Tpda3::Tk::ToolBar;
 
 =head1 NAME
@@ -304,12 +305,15 @@ sub run_screen {
         -fill   => 'x',
     );
 
+    # TODO: move this from here
     my $tb1 = Tpda3::Tk::ToolBar->new($tbf1);
 
-    # my ($toolbars, $attribs) = $self->toolbar_names();
-    # my $toolbars = [qw(tb2ad tb2rm)];
+    my $cfg = Tpda3::Config->instance();
 
-    # $tb1->make_toolbar_buttons($toolbars, $attribs);
+    my $toolbar = [ qw(tb2ad tb2rm) ];       # Order of creation
+    my $attribs = $cfg->toolbar2;
+
+    $tb1->make_toolbar_buttons($toolbar, $attribs);
 
     #- TableMatrix
 

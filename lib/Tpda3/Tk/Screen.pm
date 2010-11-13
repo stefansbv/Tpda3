@@ -2,6 +2,7 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
+use Carp;
 
 =head1 NAME
 
@@ -55,7 +56,7 @@ Get a data structure containing references to the widgets.
 sub get_controls {
     my $self = shift;
 
-    print "'get_controls' not implemented.\n"
+    croak "'get_controls' not implemented.\n"
         unless exists $self->{controls}
             and scalar %{ $self->{controls} };
 

@@ -172,3 +172,30 @@ toolbar:
       edit: normal
       find: disabled
       sele: disabled
+toolbar2:
+  tb2ad:
+    id:      2001
+    type:    _item_normal
+    icon:    actitemadd16
+    tooltip: Add row
+    help:    Add new row in table
+    sep:     none
+    state:
+      idle: disabled
+      add:  normal
+      edit: normal
+      find: disabled
+      sele: disabled
+  tb2rm:
+    id:      2002
+    type:    _item_normal
+    icon:    actitemdelete16
+    tooltip: Remove row
+    help:    Remove row from table
+    sep:     none
+    state:
+      idle: disabled
+      add:  normal
+      edit: normal
+      find: disabled
+      sele: disabled
