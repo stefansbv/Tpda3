@@ -3,6 +3,8 @@ package Tpda3::Tk::ToolBar;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use base qw{Tk::ToolBar};
 

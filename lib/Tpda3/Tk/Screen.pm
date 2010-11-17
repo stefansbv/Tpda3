@@ -72,11 +72,36 @@ Get a data structure containing references to table matrix widgets.
 sub get_tm_controls {
     my $self = shift;
 
-    croak "'get_tm_controls' not implemented.\n"
-        unless exists $self->{tm_controls}
-            and scalar %{ $self->{tm_controls} };
-
     return $self->{tm_controls};
+}
+
+=head2 get_toolbar_btn
+
+Return a toolbar button when we know the its name
+
+=cut
+
+sub get_toolbar_btn {
+    my ( $self, $name ) = @_;
+
+    return $self->{tb}->get_toolbar_btn($name);
+}
+
+=head2 toggle_tool
+
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
+
+=cut
+
+sub toggle_tool {
+    my ($self, $btn_name, $state) = @_;
+
+    $self->{tb}->toggle_tool($btn_name, $state);
+
+    return;
 }
 
 =head2 get_bgcolor

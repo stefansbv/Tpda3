@@ -69,6 +69,7 @@ sub new {
         _scrobj  => undef,
         _scrcfg  => undef,
         _scrstr  => undef,
+        # _scrtlb  => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -99,7 +100,7 @@ sub start {
 
 =head2 _set_event_handlers
 
-Setup event handlers
+Setup event handlers for the interface.
 
 =cut
 
@@ -144,7 +145,7 @@ sub _set_event_handlers {
     foreach my $item ( @{$appmenus} ) {
         $self->_view->get_menu_popup_item($item)->configure(
             -command => sub {
-                $self->screen_load($item);
+                $self->screen_module_load($item);
             }
         );
     }
@@ -225,6 +226,8 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
+    #- NoteBook events
+
     my $nb = $self->_view->get_notebook();
 
     $nb->pageconfigure(
@@ -244,6 +247,34 @@ sub _set_event_handler_nb {
                 }
             }
         },
+    );
+
+    return;
+}
+
+=head2 _set_event_handler_screen
+
+Setup event handlers for screen controls.
+
+=cut
+
+sub _set_event_handler_screen {
+    my $self = shift;
+
+    #- screen ToolBar
+
+    #-- Add row button
+    $self->{_scrobj}->get_toolbar_btn('tb2ad')->bind(
+        '<ButtonRelease-1>' => sub {
+            print " add row\n";
+        }
+    );
+
+    #-- Remove row button
+    $self->{_scrobj}->get_toolbar_btn('tb2rm')->bind(
+        '<ButtonRelease-1>' => sub {
+            print " remove row\n";
+        }
     );
 
     return;
@@ -271,6 +302,8 @@ sub set_app_mode {
     $self->toggle_interface_controls;
 
     return unless ref $self->{_scrobj};
+
+    $self->toggle_screen_interface_controls;
 
     if ( my $method_name = $method_for{$mode} ) {
         $self->$method_name();
@@ -494,13 +527,13 @@ sub _scrcfg {
     return $self->{_scrcfg};
 }
 
-=head2 screen_load
+=head2 screen_module_load
 
 Load screen chosen from the menu.
 
 =cut
 
-sub screen_load {
+sub screen_module_load {
     my ( $self, $module ) = @_;
 
     $self->{_scrstr} = lc $module;
@@ -568,8 +601,13 @@ sub screen_load {
     }
     $self->_view->set_geometry($geom);
 
+    $self->_set_event_handler_screen();
+
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
+
+    # Get screen toolbar object
+    # $self->{_scrtlb} = $self->{_scrobj}->get_screen_toolbar();
 
     $self->set_app_mode('idle');
 
@@ -673,10 +711,8 @@ sub screen_init {
 
 =head2 toggle_interface_controls
 
-Toggle controls appropriate for different states of the application.
-
-TODO: There is a distinct state at the beginning when no screen is
-loaded yet.
+Toggle controls (tool bar buttons) appropriate for different states of
+the application.
 
 =cut
 
@@ -690,6 +726,33 @@ sub toggle_interface_controls {
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
         $self->_view->toggle_tool( $name, $status );
+    }
+
+    return;
+}
+
+=head2 toggle_screen_interface_controls
+
+Toggle screen controls (toolbar buttons) appropriate for different
+states of the application.
+
+Curently used by the toolbar buttons attached to the TableMatrix
+widget in some screens.
+
+=cut
+
+sub toggle_screen_interface_controls {
+    my $self = shift;
+
+    # Get ToolBar button atributes
+    my $attribs  = $self->_cfg->toolbar2;
+    my $toolbars = $self->_view->sort_hash_by_id($attribs);
+
+    my $mode = $self->_model->get_appmode;
+
+    foreach my $name ( @{$toolbars} ) {
+        my $state = $attribs->{$name}{state}{$mode};
+        $self->{_scrobj}->toggle_tool($name, $state);
     }
 
     return;

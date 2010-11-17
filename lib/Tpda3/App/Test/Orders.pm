@@ -302,14 +302,14 @@ sub run_screen {
     );
 
     # TODO: move this from here
-    my $tb1 = Tpda3::Tk::ToolBar->new($tbf1);
+    $self->{tb} = Tpda3::Tk::ToolBar->new($tbf1);
 
     my $cfg = Tpda3::Config->instance();
 
     my $toolbar = [ qw(tb2ad tb2rm) ];       # Order of creation
     my $attribs = $cfg->toolbar2;
 
-    $tb1->make_toolbar_buttons($toolbar, $attribs);
+    $self->{tb}->make_toolbar_buttons($toolbar, $attribs);
 
     #- TableMatrix
     my $xtvar;
@@ -323,15 +323,18 @@ sub run_screen {
         -variable      => $xtvar,
         -selectmode    => 'single',
         -resizeborders => 'none',
-        # -bg            => 'white',
+        -bg            => 'white',
         -scrollbars    => 'osw',
     );
+    $xtable->pack( -expand => 1, -fill => 'both' );
+
+    # This makes TableMatrix expand !!! or not :(
+    $xtable->update;
 
     #- Bindings
 
     # Make enter do the same thing as return (doesn't work on GNU/Linux)
     $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
-    $xtable->pack( -expand => 1, -fill => 'both' );
 
     # Make the active area move after we press return:
     # We Have to use class binding here so that we override
@@ -380,7 +383,7 @@ sub run_screen {
     );
 
     # This makes TableMatrix expand !!!
-    $xtable->update;
+#    $xtable->update;
 
     #---
 

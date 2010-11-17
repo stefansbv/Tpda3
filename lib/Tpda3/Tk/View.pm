@@ -494,6 +494,7 @@ sub toolbar_names {
     my $attribs = $self->_cfg->toolbar;
 
     # TODO: Change the config file so we don't need this sorting anymore
+    # or better keep them sorted and ready to use in config
     my $toolbars = $self->sort_hash_by_id($attribs);
 
     return ($toolbars, $attribs);
@@ -986,7 +987,7 @@ sub set_tablematrix_tags {
 
     if ($cols) {
         $xtable->configure( -cols => $cols );
-        $xtable->configure( -rows => 2 ); # Keep table dim in grid
+        $xtable->configure( -rows => 1 ); # Keep table dim in grid
     }
     $xtable->tagConfigure(
         'active',
@@ -1020,11 +1021,6 @@ sub set_tablematrix_tags {
         'enter_center_blue',
         -anchor => 'n',
         -bg     => 'lightblue',
-    );
-    $xtable->tagConfigure(
-        'enter_center_brown',
-        -anchor => 'n',
-        -bg     => 'bisque',
     );
     $xtable->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
     $xtable->tagConfigure( 'find_row', -bg => 'lightgreen' );
