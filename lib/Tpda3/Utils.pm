@@ -120,6 +120,28 @@ sub dateentry_format_date {
     return $date;
 }
 
+=head2 sort_hash_by_id
+
+Use ST to sort hash by value (Id)
+
+=cut
+
+sub sort_hash_by_id {
+    my ($self, $attribs) = @_;
+
+    #-- Sort by id
+    #- Keep only key and id for sorting
+    my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
+
+    #- Sort with  ST
+    my @attribs = map { $_->[0] }
+      sort { $a->[1] <=> $b->[1] }
+      map { [ $_ => $temp{$_} ] }
+      keys %temp;
+
+    return \@attribs;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>

@@ -746,7 +746,7 @@ sub toggle_screen_interface_controls {
 
     # Get ToolBar button atributes
     my $attribs  = $self->_cfg->toolbar2;
-    my $toolbars = $self->_view->sort_hash_by_id($attribs);
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my $mode = $self->_model->get_appmode;
 

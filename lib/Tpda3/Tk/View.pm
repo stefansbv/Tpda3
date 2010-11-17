@@ -20,6 +20,7 @@ require Tk::ErrorDialog;
 use base 'Tk::MainWindow';
 
 use Tpda3::Config;
+use Tpda3::Utils;
 use Tpda3::Tk::Dialog::Configs;
 use Tpda3::Tk::ToolBar;
 
@@ -283,7 +284,7 @@ sub make_menus {
     my ($self, $attribs, $position) = @_;
 
     $position = 1 if ! $position;
-    my $menus = $self->sort_hash_by_id($attribs);
+    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
 
     #- Create menus
     foreach my $menu_name ( @{$menus} ) {
@@ -324,7 +325,7 @@ sub get_app_menus_list {
     my $self = shift;
 
     my $attribs = $self->_cfg->appmenubar;
-    my $menus = $self->sort_hash_by_id($attribs);
+    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my @menulist;
     foreach my $menu_name ( @{$menus} ) {
@@ -495,7 +496,7 @@ sub toolbar_names {
 
     # TODO: Change the config file so we don't need this sorting anymore
     # or better keep them sorted and ready to use in config
-    my $toolbars = $self->sort_hash_by_id($attribs);
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
     return ($toolbars, $attribs);
 }
@@ -674,28 +675,6 @@ sub on_quit {
     $self->destroy();
 
     return;
-}
-
-=head2 sort_hash_by_id
-
-Use ST to sort hash by value (Id)
-
-=cut
-
-sub sort_hash_by_id {
-    my ($self, $attribs) = @_;
-
-    #-- Sort by id
-    #- Keep only key and id for sorting
-    my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
-
-    #- Sort with  ST
-    my @attribs = map { $_->[0] }
-      sort { $a->[1] <=> $b->[1] }
-      map { [ $_ => $temp{$_} ] }
-      keys %temp;
-
-    return \@attribs;
 }
 
 =head2 w_geometry
