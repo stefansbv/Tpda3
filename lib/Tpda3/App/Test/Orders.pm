@@ -319,10 +319,8 @@ sub run_screen {
 
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
-        -rows          => 5,
-        -cols          => 5,
-        -width         => -1,
-        -height        => -1,
+        -rows          => 5,  -cols          => 5,
+        -width         => -1, -height        => -1,
         -ipadx         => 3,
         -titlerows     => 1,
         -validate      => 1,

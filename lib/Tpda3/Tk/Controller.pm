@@ -859,11 +859,12 @@ sub control_read_e {
 
     my $value = $ctrl_ref->{$field}[1]->get;
 
-    # Clean '\n' from end
-    $value =~ s/\n$//mg;    # m=multiline
-
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
+
+        # Clean '\n' from end
+        $value =~ s/\n$//mg;    # m=multiline
+
         $self->{scrdata}{$field} = $value;
         print "Screen (e): $field = $value\n";
     }
@@ -895,11 +896,12 @@ sub control_read_t {
 
     my $value = $ctrl_ref->{$field}[1]->get( '0.0', 'end' );
 
-    # Clean '\n' from end
-    $value =~ s/\n$//mg;    # m=multiline
-
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
+
+        # Clean '\n' from end
+        $value =~ s/\n$//mg;    # m=multiline
+
         $self->{scrdata}{$field} = $value;
         print "Screen (t): $field = $value\n";
     }
@@ -931,9 +933,6 @@ sub control_read_d {
 
     my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
 
-    # Delete '\n' from end
-    $value =~ s/\n$//mg;        # m=multiline
-
     # # Get configured date style and format accordingly
     # my $dstyle = $self->{conf}->get_misc_config('datestyle');
     # if ($dstyle and $value) {
@@ -949,6 +948,10 @@ sub control_read_d {
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
+
+        # Delete '\n' from end
+        $value =~ s/\n$//mg;        # m=multiline
+
         $self->{scrdata}{$field} = $value;
         print "Screen (d): $field = $value\n";
     }
@@ -980,11 +983,12 @@ sub control_read_m {
 
     my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
 
-    # Delete '\n' from end
-    $value =~ s/\n$//mg;        # m=multiline
-
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
+
+        # Delete '\n' from end
+        $value =~ s/\n$//mg;        # m=multiline
+
         $self->{scrdata}{$field} = $value;
         print "Screen (m): $field = $value\n";
     }
@@ -1014,13 +1018,14 @@ sub control_read_l {
         return;
     }
 
-    my $value = $ctrl_ref->{$field}[1]->get_selected_value();
-
-    # Delete '\n' from end
-    $value =~ s/\n$//mg;        # m=multiline
+    my $value = $ctrl_ref->{$field}[1]->get_selected_value() || q{};
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
+
+        # Delete '\n' from end
+        $value =~ s/\n$//mg;        # m=multiline
+
         $self->{scrdata}{$field} = $value;
         print "Screen (l): $field = $value\n";
     }
