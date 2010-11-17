@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+
 use Carp;
 use POSIX qw (floor);
 
@@ -740,30 +741,32 @@ Make header for list
 =cut
 
 sub make_list_header {
-    my ($self, $cols_ref) = @_;
+    my ($self, $header_cols, $header_attr) = @_;
 
-    # Empty list
+    # Delete existing columns
     $self->{_rc}->selectionClear( 0, 'end' );
     $self->{_rc}->columnDelete( 0, 'end' );
 
     # Header
     my $colcnt = 0;
-    foreach my $col (@{ $cols_ref->{column} } ) {
-        $self->{_rc}->columnInsert( 'end', -text => $col->{label} );
+    foreach my $col ( @{$header_cols} ) {
+        my $attr = $header_attr->{$col};
+
+        $self->{_rc}->columnInsert( 'end', -text => $attr->{label} );
         $self->{_rc}->columnGet($colcnt)
             ->Subwidget('heading')
             ->configure( -background => 'tan' );
         $self->{_rc}->columnGet($colcnt)
             ->Subwidget('heading')
-            ->configure( -width => $col->{width} );
-        if ( defined $col->{sort} ) {
-            if ($col->{sort} eq 'N') {
+            ->configure( -width => $attr->{width} );
+        if ( defined $attr->{order} ) {
+            if ($attr->{order} eq 'N') {
                 $self->{_rc}->columnGet($colcnt)
                     ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
             }
         }
         else {
-            warn " Warning: no sort option for $col->{name}\n";
+            warn " Warning: no sort option for '$col'\n";
         }
 
         $colcnt++;
@@ -774,7 +777,7 @@ sub make_list_header {
 
 =head2 list_init
 
-Empty the list.
+Delete the rows of the list.
 
 =cut
 
@@ -926,6 +929,125 @@ sub list_read_selected {
     }
 
     return $selected_value;
+}
+
+=head2 make_tablematrix_header
+
+Write header on row 0 of TableMatrix
+
+=cut
+
+sub make_tablematrix_header {
+    my ($self, $tmx_ref, $tm_fields) = @_;
+
+    my $xtable = ${$tmx_ref}->Subwidget('scrolled');
+
+    # Set TableMatrix tags
+    my $cols = scalar keys %{$tm_fields};
+    $self->set_tablematrix_tags( $xtable, $cols, $tm_fields );
+
+    return;
+}
+
+sub set_tablematrix_tags {
+    my ($self, $xtable, $cols, $tm_fields) = @_;
+
+    # TM is SpreadsheetHideRows type increase cols number with 1
+    if ($xtable =~ /SpreadsheetHideRows/) {
+        $cols += 1;
+    }
+
+    # Tags for the detail data:
+    $xtable->tagConfigure(
+        'detail',
+        -bg     => 'darkseagreen2',
+        -relief => 'sunken',
+    );
+    $xtable->tagConfigure(
+        'detail2',
+        -bg     => 'burlywood2',
+        -relief => 'sunken',
+    );
+    $xtable->tagConfigure(
+        'detail3',
+        -bg     => 'lightyellow',
+        -relief => 'sunken',
+    );
+
+    $xtable->tagConfigure(
+        'expnd',
+        -bg     => 'grey85',
+        -relief => 'raised',
+    );
+    $xtable->tagCol( 'expnd', 0 );
+
+    # Make enter do the same thing as return:
+    $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
+
+    if ($cols) {
+        $xtable->configure( -cols => $cols );
+        $xtable->configure( -rows => 2 ); # Keep table dim in grid
+    }
+    $xtable->tagConfigure(
+        'active',
+        -bg     => 'lightyellow',
+        -relief => 'sunken',
+    );
+    $xtable->tagConfigure(
+        'title',
+        -bg     => 'tan',
+        -fg     => 'black',
+        -relief => 'raised',
+        -anchor => 'n',
+    );
+    $xtable->tagConfigure( 'find_left', -anchor => 'w', -bg => 'lightgreen' );
+    $xtable->tagConfigure(
+        'find_center',
+        -anchor => 'n',
+        -bg     => 'lightgreen',
+    );
+    $xtable->tagConfigure(
+        'find_right',
+        -anchor => 'e',
+        -bg     => 'lightgreen',
+    );
+    $xtable->tagConfigure('ro_left'     , -anchor => 'w', -bg => 'lightgrey');
+    $xtable->tagConfigure('ro_center'   , -anchor => 'n', -bg => 'lightgrey');
+    $xtable->tagConfigure('ro_right'    , -anchor => 'e', -bg => 'lightgrey');
+    $xtable->tagConfigure('enter_left'  , -anchor => 'w', -bg => 'white');
+    $xtable->tagConfigure('enter_center', -anchor => 'n', -bg => 'white');
+    $xtable->tagConfigure(
+        'enter_center_blue',
+        -anchor => 'n',
+        -bg     => 'lightblue',
+    );
+    $xtable->tagConfigure(
+        'enter_center_brown',
+        -anchor => 'n',
+        -bg     => 'bisque',
+    );
+    $xtable->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
+    $xtable->tagConfigure( 'find_row', -bg => 'lightgreen' );
+
+    # TableMatrix header, Set Name, Align, Width
+    foreach my $field ( keys %{$tm_fields} ) {
+        my $col = $tm_fields->{$field}{id};
+
+        print " Camp = [$col] $field -> $tm_fields->{$field}{label}\n";
+        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
+        $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
+        $xtable->colWidth( $col, $tm_fields->{$field}{width} );
+    }
+
+    $xtable->tagRow( 'title', 0 );
+
+    if ( $xtable->tagExists('expnd') ) {
+
+        # Change the tag priority
+        $xtable->tagRaise( 'expnd', 'title' );
+    }
+
+    return;
 }
 
 # sub Tk::Error {

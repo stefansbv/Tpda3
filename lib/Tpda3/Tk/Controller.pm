@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -575,7 +573,24 @@ sub screen_load {
 
     $self->set_app_mode('idle');
 
-    $self->_view->make_list_header( $self->_scrcfg->columns );
+    # List header
+    my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
+    my $fields = $self->_scrcfg->maintable->{columns};
+    my $header_attr = {};
+    foreach my $col ( @header_cols ) {
+        $header_attr->{$col} = {
+            label =>  $fields->{$col}{label},
+            width =>  $fields->{$col}{width},
+            order =>  $fields->{$col}{order},
+        };
+    }
+
+    $self->_view->make_list_header( \@header_cols, $header_attr );
+
+    # TableMatrix header
+    my $tm_fields = $self->_scrcfg->table->{columns};
+    my $tmctrl_ref = $self->{_scrobj}->get_tm_controls();
+    $self->_view->make_tablematrix_header( $tmctrl_ref->{rec}{tm1}, $tm_fields );
 
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
@@ -610,17 +625,16 @@ sub screen_init {
     # Entry objects hash
     my $ctrl_ref = $self->{_scrobj}->get_controls();
 
-    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
-
-        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
         # Control config attributes
-        my $ctrltype = $field_cfg_hr->{ctrltype};
-        my $ctrlrw   = $field_cfg_hr->{rw};
+        my $fld_cfg  = $self->_scrcfg->maintable->{columns}{$field};
+        my $ctrltype = $fld_cfg->{ctrltype};
+        my $ctrlrw   = $fld_cfg->{rw};
 
         next unless $ctrl_ref->{$field}[0]; # Undefined widget variable
 
-        my $para = $self->{_scrcfg}{lists}{$field};
+        my $para = $self->_scrcfg->{lists}{$field};
 
         next unless ref $para eq 'HASH';   # Undefined, skip
 
@@ -692,24 +706,24 @@ sub record_load {
 
     my $value = $self->_view->list_read_selected();
 
-    if ( !$value ) {
-        warn "No list selected value";
+    if ( ! defined $value ) {
+        print "No value selected in list";
         return;
     }
 
     # Table configs
-    my $table_hr  = $self->{_scrcfg}->table;
-    my $fields_hr = $self->{_scrcfg}->fields;
+    my $table_hr  = $self->_scrcfg->maintable;
+    my $fields_hr = $self->_scrcfg->maintable->{columns};
 
     my $paramdata = {};
 
     # Table data
     $paramdata->{table} = $table_hr->{view};   # use view instead of table
-    my $field = $table_hr->{pkfld}{name};
+    my $field = $table_hr->{pkcol}{name};
 
     # Construct where, add findtype info
     $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
-    $paramdata->{pkfld} = $field;
+    $paramdata->{pkcol} = $field;
 
     my $record = $self->_model->query_record($paramdata);
 
@@ -731,19 +745,13 @@ sub record_find_execute {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->{_scrcfg}->table;
-    my $fields_hr = $self->{_scrcfg}->fields;
-    # Columns configs
-    my $cols_ref  = $self->_scrcfg->columns;
+    my $table_hr  = $self->_scrcfg->maintable;
+    my $fields_hr = $self->_scrcfg->maintable->{columns};
 
     my $paramdata = {};
 
     # Columns data (for found list)
-    my @cols;
-    foreach my $col (@{ $cols_ref->{column} } ) {
-        push(@cols,  $col->{name} );
-    }
-    $paramdata->{columns} = \@cols;
+    $paramdata->{columns} = $self->_scrcfg->found_cols->{col};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
@@ -751,8 +759,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $paramdata->{table}  = $table_hr->{view};   # use view instead of table
-    $paramdata->{pkfld} = $table_hr->{pkfld}{name};
+    $paramdata->{table} = $table_hr->{view};   # use view instead of table
+    $paramdata->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($paramdata);
@@ -777,8 +785,8 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->{_scrcfg}->table;
-    my $fields_hr = $self->{_scrcfg}->fields;
+    my $table_hr  = $self->_scrcfg->maintable;
+    my $fields_hr = $self->_scrcfg->maintable->{columns};
 
     my $paramdata = {};
 
@@ -789,7 +797,7 @@ sub record_find_count {
 
     # Table data
     $paramdata->{table} = $table_hr->{view};   # use view instead of table
-    $paramdata->{pkfld} = $table_hr->{pkfld}{name};
+    $paramdata->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_model->count_records($paramdata);
 
@@ -811,13 +819,13 @@ sub screen_read {
      my $ctrl_ref = $self->{_scrobj}->get_controls();
 
      # Scan and write to controls
-     foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
-         my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
          # Control config attributes
-         my $ctrltype = $field_cfg_hr->{ctrltype};
-         my $ctrlrw   = $field_cfg_hr->{rw};
+         my $ctrltype = $fld_cfg->{ctrltype};
+         my $ctrlrw   = $fld_cfg->{rw};
 
          # print " Field: $field \[$ctrltype\]\n";
 
@@ -1061,12 +1069,12 @@ sub screen_write {
     my $ctrl_ref = $self->{_scrobj}->get_controls();
 
     # Scan and write to controls
-    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
+    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
-        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
         # Control config attributes
-        my $ctrltype = $field_cfg_hr->{ctrltype};
+        my $ctrltype = $fld_cfg->{ctrltype};
 
         my $value = $record_ref->{ lc $field };
         if ( defined $value ) {
@@ -1074,7 +1082,7 @@ sub screen_write {
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
 
-            my $decimals = $field_cfg_hr->{decimals};
+            my $decimals = $fld_cfg->{decimals};
             if ( $decimals ) {
                 if ( $decimals > 0 ) {
 
@@ -1141,26 +1149,26 @@ sub set_screen_controls_state_to {
     my $ctrl_ref       = $self->{_scrobj}->get_controls();
     my $control_states = $self->control_states($state);
 
-    foreach my $field ( keys %{ $self->{_scrcfg}{fields} } ) {
-        my $field_cfg_hr = $self->{_scrcfg}{fields}{$field};
+    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
+        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
         # Skip for some control types
-        # next if $field_cfg_hr->{ctrltype} = '';
+        # next if $fld_cfg->{ctrltype} = '';
 
         my $ctrl_state = $control_states->{state};
-        $ctrl_state = $field_cfg_hr->{state}
+        $ctrl_state = $fld_cfg->{state}
             if $ctrl_state eq 'from_config';
 
         my $bkground = $control_states->{background};
         my $bg_color = $bkground;
-        $bg_color = $field_cfg_hr->{bgcolor}
+        $bg_color = $fld_cfg->{bgcolor}
             if $bkground eq 'from_config';
         $bg_color = $self->{_scrobj}->get_bgcolor()
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
-            if ( $field_cfg_hr->{findtype} eq 'none' ) {
+            if ( $fld_cfg->{findtype} eq 'none' ) {
                 $ctrl_state = 'disabled';
                 $bg_color   = $self->{_scrobj}->get_bgcolor();
             }

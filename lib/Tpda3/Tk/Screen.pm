@@ -63,6 +63,22 @@ sub get_controls {
     return $self->{controls};
 }
 
+=head2 get_tm_controls
+
+Get a data structure containing references to table matrix widgets.
+
+=cut
+
+sub get_tm_controls {
+    my $self = shift;
+
+    croak "'get_tm_controls' not implemented.\n"
+        unless exists $self->{tm_controls}
+            and scalar %{ $self->{tm_controls} };
+
+    return $self->{tm_controls};
+}
+
 =head2 get_bgcolor
 
 Return the background color of the main window.

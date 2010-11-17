@@ -104,10 +104,10 @@ sub config_screen_load {
 
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
-    my @accessor = keys %{ $cfg_data->{screen} };
+    my @accessor = keys %{ $cfg_data };
     $log->info("Making accessors for @accessor");
 
-    $self->_make_accessors( $cfg_data->{screen} );
+    $self->_make_accessors( $cfg_data );
 
     return;
 }

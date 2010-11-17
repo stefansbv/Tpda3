@@ -232,7 +232,7 @@ sub count_records {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkfld = $data_hr->{pkfld};
+    my $pkcol = $data_hr->{pkcol};
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
@@ -253,7 +253,7 @@ sub count_records {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select(
-        $table, ["COUNT($pkfld)"], $where );
+        $table, ["COUNT($pkcol)"], $where );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
@@ -288,7 +288,7 @@ sub query_records_find {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkfld = $data_hr->{pkfld};
+    my $pkcol = $data_hr->{pkcol};
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
@@ -339,7 +339,7 @@ sub query_record {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkfld = $data_hr->{pkfld};
+    my $pkcol = $data_hr->{pkcol};
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
@@ -360,7 +360,7 @@ sub query_record {
 
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) = $sql->select( $table, $data_hr->{columns}, $where );
+    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";

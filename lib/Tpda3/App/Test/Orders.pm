@@ -3,8 +3,6 @@ package Tpda3::App::Test::Orders;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
 use base 'Tpda3::Tk::Screen';
 
@@ -38,8 +36,6 @@ our $VERSION = '0.01';
 The screen layout
 
 =cut
-
-our (@daynames, $conn, $xtvar);
 
 sub run_screen {
     my ( $self, $inreg_p ) = @_;
@@ -122,7 +118,7 @@ sub run_screen {
 
     my $vorderdate;
     my $dorderdate = $frame1->DateEntry(
-        -daynames   => \@daynames,
+        # -daynames   => \@daynames,
         -variable   => \$vorderdate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
@@ -158,7 +154,7 @@ sub run_screen {
 
     my $vrequireddate;
     my $drequireddate = $frame1->DateEntry(
-        -daynames   => \@daynames,
+        # -daynames   => \@daynames,
         -variable   => \$vrequireddate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
@@ -187,7 +183,7 @@ sub run_screen {
 
     my $vshippeddate;
     my $dshippeddate = $frame1->DateEntry(
-        -daynames   => \@daynames,
+        # -daynames   => \@daynames,
         -variable   => \$vshippeddate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
@@ -316,18 +312,18 @@ sub run_screen {
     $tb1->make_toolbar_buttons($toolbar, $attribs);
 
     #- TableMatrix
-
+    my $xtvar;
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
-        -rows          => 5,  -cols          => 5,
-        -width         => -1, -height        => -1,
+        -rows  =>  5, -cols   =>  5,
+        -width => -1, -height => -1,
         -ipadx         => 3,
         -titlerows     => 1,
         -validate      => 1,
         -variable      => $xtvar,
         -selectmode    => 'single',
         -resizeborders => 'none',
-        -bg            => 'white',
+        # -bg            => 'white',
         -scrollbars    => 'osw',
     );
 
@@ -343,13 +339,12 @@ sub run_screen {
     my $t1     = $xtable->Subwidget('scrolled');
     my $params = {
         $t1    => 'T1',
-        'conn' => $conn,
         'gui'  => $gui,
         # 'add1' => $add_button,
     };
 
-    $xtable->bind( 'Tk::TableMatrix',
-        '<Return>' => [ \&callback, $self, $params ] );
+    # $xtable->bind( 'Tk::TableMatrix',
+    #     '<Return>' => [ \&callback, $self, $params ] );
 
     #-- Frame Bottom Right
 
@@ -403,35 +398,10 @@ sub run_screen {
         ordertotal     => [ undef,           $eordertotal ],
     };
 
-    # TableMatrix objects
-    # Campuri table
-    # nume_camp => [#,Header,order_by,ro|rw,size,align,type:size:dec]
-    $self->{tmxobj} = {
+    # TableMatrix objects; just one for now :)
+    $self->{tm_controls} = {
         rec => {
-            tm1 => {
-                defs => [ \$xtable, 'orderdetails', 'v_orderdetails' ],
-                cols => {
-                    orderlinenumber =>
-                        [ 0, 'Art', 1, 'rw', 5, 'ro_center', '_digit:5' ],
-                    productcode => [
-                        1, 'Code', 0, 'rw', 15, 'find_center', '_alpha_num:15'
-                    ],
-                    productname => [
-                        2, 'Product', 0, 'ro', 37, 'ro_left', '_alpha_num:37'
-                    ],
-                    quantityordered => [
-                        3, 'Quantity', 0, 'rw', 8, 'enter_right', '_digit:5'
-                    ],
-                    priceeach => [
-                        4, 'Price', 0, 'rw', 12, 'enter_right',
-                        '_digit_prec:10:2'
-                    ],
-                    ordervalue => [
-                        5, 'Value', 0, 'ro', 12, 'ro_right',
-                        '_digit_prec:10:2'
-                    ],
-                },
-            },
+            tm1 => \$xtable,
         },
     };
 
