@@ -927,13 +927,17 @@ sub make_tablematrix_header {
     return;
 }
 
+=head2 set_tablematrix_tags
+
+Set tags for the table matrix.
+
+=cut
+
 sub set_tablematrix_tags {
     my ($self, $xtable, $cols, $tm_fields) = @_;
 
     # TM is SpreadsheetHideRows type increase cols number with 1
-    if ($xtable =~ /SpreadsheetHideRows/) {
-        $cols += 1;
-    }
+    $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
 
     # Tags for the detail data:
     $xtable->tagConfigure(
@@ -1006,7 +1010,7 @@ sub set_tablematrix_tags {
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
 
-        print " Camp = [$col] $field -> $tm_fields->{$field}{label}\n";
+        # print " Camp = [$col] $field -> $tm_fields->{$field}{label}\n";
         $xtable->set( "0,$col", $tm_fields->{$field}{label} );
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
         $xtable->colWidth( $col, $tm_fields->{$field}{width} );

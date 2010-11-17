@@ -69,7 +69,6 @@ sub new {
         _scrobj  => undef,
         _scrcfg  => undef,
         _scrstr  => undef,
-        # _scrtlb  => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -605,9 +604,6 @@ sub screen_module_load {
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
-
-    # Get screen toolbar object
-    # $self->{_scrtlb} = $self->{_scrobj}->get_screen_toolbar();
 
     $self->set_app_mode('idle');
 
