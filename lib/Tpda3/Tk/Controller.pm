@@ -266,14 +266,14 @@ sub _set_event_handler_screen {
     #-- Add row button
     $self->{_scrobj}->get_toolbar_btn('tb2ad')->bind(
         '<ButtonRelease-1>' => sub {
-            print " add row\n";
+            $self->add_tmatrix_row();
         }
     );
 
     #-- Remove row button
     $self->{_scrobj}->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
-            print " remove row\n";
+            $self->remove_tmatrix_row();
         }
     );
 
@@ -627,8 +627,8 @@ sub screen_module_load {
 
     # TableMatrix header
     my $tm_fields = $self->_scrcfg->table->{columns};
-    my $tmctrl_ref = $self->{_scrobj}->get_tm_controls();
-    $self->_view->make_tablematrix_header( $tmctrl_ref->{rec}{tm1}, $tm_fields );
+    my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+    $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
 
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
@@ -1351,6 +1351,117 @@ sub control_states {
     my ($self, $state) = @_;
 
     return $self->{control_states}{$state};
+}
+
+=head2 add_tmatrix_row
+
+Table matrix methods.  Add TableMatrix row.
+
+=cut
+
+sub add_tmatrix_row {
+    my ($self, $valori_ref) = @_;
+
+    my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+
+    unless ( $self->_model->is_mode('add')
+                 || $self->_model->is_mode('edit') ) {
+        return;
+    }
+
+    $xt->configure( state => 'normal' );     # Stare normala
+
+    $xt->insertRows('end');
+    my $r = $xt->index( 'end', 'row' );
+
+    $xt->set( "$r,0", $r );     # Daca am parametru 2, introduc datele
+    my $c = 1;
+    if ( ref($valori_ref) eq 'ARRAY' ) {
+
+        # Inserez datele
+        foreach my $valoare ( @{$valori_ref} ) {
+            if ( defined $valoare ) {
+                $xt->set( "$r,$c", $valoare );
+            }
+            $c++;
+        }
+    }
+
+    # Focus la randul nou inserat, coloana 1
+    $xt->focus;
+    $xt->activate("$r,1");
+    $xt->see("$r,1");
+
+    return;
+}
+
+=head2 delete_tmatrix_row
+
+Delete TableMatrix row
+
+=cut
+
+sub remove_tmatrix_row {
+    my $self = shift;
+
+    my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+
+    unless ( $self->_model->is_mode('add')
+                 || $self->_model->is_mode('edit') ) {
+        return;
+    }
+
+    $xt->configure( state => 'normal' );     # Stare normala
+
+    my $r;
+    eval {
+        $r = $xt->index( 'active', 'row' );
+
+        if ( $r >= 1 ) {
+            $xt->deleteRows( $r, 1 );
+        }
+        else {
+            # my $textstr = "Select a row, first";
+            # $self->{mw}->{dialog1}->configure( -text => $textstr );
+            # $self->{mw}->{dialog1}->Show();
+        }
+    };
+    if ($@) {
+        warn "Warning: $@";
+    }
+
+    $self->renum_tmatrix_row($xt);           # renumerotare randuri
+
+    # Calcul total desfasurator; check if sub exists first
+    # if ( $self->{tpda}->{screen_curr}->can('calcul_total_des_tm2') ) {
+    #     $self->{tpda}->{screen_curr}->calcul_total_des_tm2;
+    # }
+
+    return $r;
+}
+
+=head2 renum_tmatrix_row
+
+Renumber TableMatrix rows
+
+=cut
+
+sub renum_tmatrix_row {
+    my ($self, $xt) = @_;
+
+    # print " renum\n";
+
+    my $r = $xt->index( 'end', 'row' );
+
+    # print "# randuri = $r\n";
+
+    if ( $r >= 1 ) {
+        foreach my $i ( 1 .. $r ) {
+            $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
+        }
+    }
+
+    return;
 }
 
 =head1 AUTHOR

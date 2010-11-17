@@ -918,13 +918,11 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub make_tablematrix_header {
-    my ($self, $tmx_ref, $tm_fields) = @_;
-
-    my $xtable = ${$tmx_ref}->Subwidget('scrolled');
+    my ($self, $tm_table, $tm_fields) = @_;
 
     # Set TableMatrix tags
     my $cols = scalar keys %{$tm_fields};
-    $self->set_tablematrix_tags( $xtable, $cols, $tm_fields );
+    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields );
 
     return;
 }
