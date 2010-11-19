@@ -75,7 +75,7 @@ sub new {
 
     bless $self, $class;
 
-    $self->_log->info("new");
+    $self->_log->trace("new");
 
     $self->_control_states_init;
 
@@ -93,7 +93,7 @@ Initialization of states
 sub start {
     my $self = shift;
 
-    $self->_log->info("start");
+    $self->_log->trace("start");
 
     # Connect to database at start
     $self->_model->toggle_db_connect();
@@ -110,7 +110,7 @@ Setup event handlers for the interface.
 sub _set_event_handlers {
     my $self = shift;
 
-    $self->_log->info("_set_event_handlers");
+    $self->_log->trace("_set_event_handlers");
 
     #- Base menu
 
@@ -231,7 +231,7 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
-    $self->_log->info("_set_event_handler_nb for '$page'");
+    $self->_log->trace("_set_event_handler_nb for '$page'");
 
     #- NoteBook events
 
@@ -271,7 +271,7 @@ in the screen, regardless of the screen type.
 sub _set_event_handler_screen {
     my $self = shift;
 
-    $self->_log->info("_set_event_handler_screen");
+    $self->_log->trace("_set_event_handler_screen");
     #- screen ToolBar
 
     #-- Add row button
@@ -346,11 +346,9 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->_log->info("i am in idle mode");
-
-    $self->set_screen_controls_state_to('on');
-    $self->screen_write();                   # Empty the controls
+    $self->screen_write();      # Empty the controls
     $self->set_screen_controls_state_to('off');
+    $self->_log->trace("Mode has changed to 'idle'");
 
     return;
 }
@@ -366,7 +364,7 @@ color as specified in the configuration.
 sub on_screen_mode_add {
     my ($self, ) = @_;
 
-    $self->_log->info("i am in add mode");
+    $self->_log->trace("Mode has changed to 'add'");
 
     # Test record data
     my $record_ref = {
@@ -382,8 +380,8 @@ sub on_screen_mode_add {
         productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
     };
 
-    $self->set_screen_controls_state_to('edit');
     $self->screen_write($record_ref);
+    $self->set_screen_controls_state_to('edit');
 
     return;
 }
@@ -398,11 +396,9 @@ content in the I<Screen> and change the background to light green.
 sub on_screen_mode_find {
     my ($self, ) = @_;
 
-    $self->_log->info("i am in find mode");
-
-    $self->set_screen_controls_state_to('on');
     $self->screen_write();                   # Empty the controls
     $self->set_screen_controls_state_to('find');
+    $self->_log->trace("Mode has changed to 'find'");
 
     return;
 }
@@ -417,9 +413,8 @@ to the default color as specified in the configuration.
 sub on_screen_mode_edit {
     my $self = shift;
 
-    $self->_log->info("i am in edit mode");
-
     $self->set_screen_controls_state_to('edit');
+    $self->_log->trace("Mode has changed to 'edit'");
 
     return;
 }
@@ -433,7 +428,7 @@ Noting to do here.
 sub on_screen_mode_sele {
     my $self = shift;
 
-    print " i am in sele mode\n";
+    $self->_log->trace("Mode has changed to 'sele'");
 
     return;
 }
@@ -602,18 +597,19 @@ sub screen_module_load {
 
     # New screen instance
     $self->{_scrobj} = $class->new();
-    $self->_log->info("new screen instance");
+    $self->_log->trace("New screen instance: $module");
 
     # Show screen
     my $nb = $self->_view->get_notebook('rec');
     $self->{_scrobj}->run_screen($nb);
+    $self->_log->trace("Show screen $module");
 
     my $screen_type = $self->_scrcfg->screen->{type};
 
     # Load instance config
     $self->_cfg->config_load_instance();
 
-    # Update window geometry form instance config fi exists or from
+    # Update window geometry from instance config if exists or from
     # defaults
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
@@ -813,7 +809,6 @@ sub record_load {
 
     my $record = $self->_model->query_record($paramdata);
 
-    $self->set_screen_controls_state_to('on');
     $self->screen_write($record);
 
     return 1;
@@ -1149,19 +1144,26 @@ the value parameter is undef.
 sub screen_write {
     my ($self, $record_ref) = @_;
 
-    $self->_log->info("screen_write");
+    $self->_log->trace("Write to screen controls");
 
     unless ( ref $record_ref ) {
-        $self->_log->info("No record data, emptying the screen");
+        $self->_log->trace(" No record data, emptying the screen");
     }
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
+
     return unless scalar keys %{$ctrl_ref};
 
-    # Scan and write to controls
+    #- Scan and write to controls, swich on before write
+
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
+
+        # Store value for state
+        my $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
+
+        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
@@ -1190,6 +1192,9 @@ sub screen_write {
         else {
             print "WARN: No '$ctrltype' ctrl type for writing '$field'!\n";
         }
+
+        # Restore state
+        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
     }
 
     return;
@@ -1236,8 +1241,7 @@ Toggle all controls state from I<Screen>.
 sub set_screen_controls_state_to {
     my ( $self, $state ) = @_;
 
-    $self->_log->info("set_screen_controls_state_to '$state'");
-    print "set_screen_controls_state_to '$state'\n";
+    $self->_log->trace(" Set screen controls state to '$state'");
 
     my $ctrl_ref       = $self->{_scrobj}->get_controls();
     return unless scalar keys %{$ctrl_ref};
