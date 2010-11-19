@@ -246,7 +246,6 @@ sub _set_event_handler_nb {
             }
             else {
                 if ( $self->record_load ) {
-                    print " loaded\n";
                     $self->set_app_mode('edit');
                 }
                 else {
@@ -1357,16 +1356,20 @@ Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
 sub control_write_m {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
-
-    $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
+    if ( $value ) {
+        $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
+    }
+    else {
+        ${ $ctrl_ref->{$field}[0] } = q{}; # Empty
+    }
 
     return;
 }
 
 =head2 control_write_l
 
-Write to a Tk::MatchingBE widget.
+Write to a Tk::MatchingBE widget.  Warning: cant write an empty value,
+must test with a key -> value pair like 'not set' => '?empty?'.
 
 =cut
 
