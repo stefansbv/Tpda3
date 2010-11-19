@@ -38,6 +38,8 @@ ok( $a->{gui}{_view}->after(
 
 #-- Test application states
 
+$delay++;
+
 foreach my $state (qw{find idle add idle edit idle}) {
     ok(
         $a->{gui}{_view}->after(

@@ -210,35 +210,35 @@ sub run_screen {
         -padleft => 5,
     );
 
-    # my $vstatuscode;
-    # my $bstatuscode = $frame1->JComboBox(
-    #     #-entrywidth         => 15,
-    #     -relief             => 'sunken',
-    #     -disabledbackground => $self->{bg},
-    #     -disabledforeground => 'black',
-    #     -textvariable       => \$vstatuscode,
-    # );
-
-    # $bstatuscode->form(
-    #     -top  => [ '&', $lstatuscode, 0 ],
-    #     -left => [ %0,  110 ],
-    # );
-
     my $vstatuscode;
-    my $lvstatuscode = [ { value => 'no value', label => 'not set' } ];
-    my $bstatuscode = $frame1->MatchingBE(
-        # -entrywidth         => 15,         # can't set :(
+    my $bstatuscode = $frame1->JComboBox(
+        -entrywidth         => 15,
         -relief             => 'sunken',
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
-        -labels_and_values  => $lvstatuscode,
-        -value_variable     => \$vstatuscode,
+        -textvariable       => \$vstatuscode,
     );
 
     $bstatuscode->form(
         -top  => [ '&', $lstatuscode, 0 ],
         -left => [ %0,  110 ],
     );
+
+    # my $vstatuscode;
+    # my $lvstatuscode = [ { value => 'no value', label => 'not set' } ];
+    # my $bstatuscode = $frame1->MatchingBE(
+    #     # -entrywidth         => 15,         # can't set :(
+    #     -relief             => 'sunken',
+    #     -disabledbackground => $self->{bg},
+    #     -disabledforeground => 'black',
+    #     -labels_and_values  => $lvstatuscode,
+    #     -value_variable     => \$vstatuscode,
+    # );
+
+    # $bstatuscode->form(
+    #     -top  => [ '&', $lstatuscode, 0 ],
+    #     -left => [ %0,  110 ],
+    # );
 
     #-- Frame2 - Comments
 
