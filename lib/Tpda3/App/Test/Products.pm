@@ -302,7 +302,7 @@ sub run_screen {
         productdescription => [ 8, '  Product description' ],
     };
 
-    return $eproductcode;
+    return;
 }
 
 =head1 AUTHOR

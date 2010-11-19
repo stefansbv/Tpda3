@@ -75,6 +75,8 @@ sub new {
 
     bless $self, $class;
 
+    $self->_log->info("new");
+
     $self->_control_states_init;
 
     $self->_set_event_handlers;
@@ -91,6 +93,8 @@ Initialization of states
 sub start {
     my $self = shift;
 
+    $self->_log->info("start");
+
     # Connect to database at start
     $self->_model->toggle_db_connect();
 
@@ -105,6 +109,8 @@ Setup event handlers for the interface.
 
 sub _set_event_handlers {
     my $self = shift;
+
+    $self->_log->info("_set_event_handlers");
 
     #- Base menu
 
@@ -225,6 +231,8 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
+    $self->_log->info("_set_event_handler_nb for '$page'");
+
     #- NoteBook events
 
     my $nb = $self->_view->get_notebook();
@@ -255,11 +263,15 @@ sub _set_event_handler_nb {
 
 Setup event handlers for screen controls.
 
+TODO: Should setup event handlers only for widgets that actually exists
+in the screen, regardless of the screen type.
+
 =cut
 
 sub _set_event_handler_screen {
     my $self = shift;
 
+    $self->_log->info("_set_event_handler_screen");
     #- screen ToolBar
 
     #-- Add row button
@@ -302,6 +314,7 @@ sub set_app_mode {
 
     return unless ref $self->{_scrobj};
 
+    # TODO: Should this be called on all screens?
     $self->toggle_screen_interface_controls;
 
     if ( my $method_name = $method_for{$mode} ) {
@@ -333,7 +346,8 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    print " i am in idle mode\n";
+    $self->_log->info("i am in idle mode");
+
     $self->set_screen_controls_state_to('on');
     $self->screen_write();                   # Empty the controls
     $self->set_screen_controls_state_to('off');
@@ -352,7 +366,7 @@ color as specified in the configuration.
 sub on_screen_mode_add {
     my ($self, ) = @_;
 
-    print " i am in add mode\n";
+    $self->_log->info("i am in add mode");
 
     # Test record data
     my $record_ref = {
@@ -384,7 +398,8 @@ content in the I<Screen> and change the background to light green.
 sub on_screen_mode_find {
     my ($self, ) = @_;
 
-    print " i am in find mode\n";
+    $self->_log->info("i am in find mode");
+
     $self->set_screen_controls_state_to('on');
     $self->screen_write();                   # Empty the controls
     $self->set_screen_controls_state_to('find');
@@ -402,7 +417,7 @@ to the default color as specified in the configuration.
 sub on_screen_mode_edit {
     my $self = shift;
 
-    print " i am in edit mode\n";
+    $self->_log->info("i am in edit mode");
 
     $self->set_screen_controls_state_to('edit');
 
@@ -542,9 +557,17 @@ sub screen_module_load {
     # Set log level to trace in this sub
     $self->_log->level($TRACE);
 
+    # Load the new screen configuration
+    $self->{_scrcfg} = Tpda3::Config::Screen->new();
+    $self->_scrcfg->config_screen_load($self->{_scrstr} . '.conf');
+
+    # Destroy existing NoteBook widget
+    $self->_view->destroy_notebook();
+
     # Unload current screen
     if ( $self->{_scrcls} ) {
         Class::Unload->unload( $self->{_scrcls} );
+        # Class::Unload->unload( 'Tpda3::Config::Screen' );
 
         if ( ! Class::Inspector->loaded( $self->{_scrcls} ) ) {
             $self->_log->trace("Unloaded '$self->{_scrcls}' screen");
@@ -554,15 +577,12 @@ sub screen_module_load {
         }
     }
 
-    # Destroy existing NoteBook widget
-    $self->_view->destroy_notebook();
-
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
 
-    # The application name
+    # The application and class names
     my $name  = ucfirst $self->_cfg->cfname;
     my $class = "Tpda3::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
@@ -572,19 +592,23 @@ sub screen_module_load {
         $self->_log->trace("Screen '$class' can 'run_screen'");
     }
     else {
-        $self->_log->error("Error, screen '$class' can not 'run_screen'");
+        my $msg = "Error! Screen '$class' can not 'run_screen'";
+
+        print "$msg\n";
+        $self->_log->error($msg);
+
+        return;
     }
 
     # New screen instance
     $self->{_scrobj} = $class->new();
+    $self->_log->info("new screen instance");
 
     # Show screen
     my $nb = $self->_view->get_notebook('rec');
-    $self->{idobj} = $self->{_scrobj}->run_screen($nb);
+    $self->{_scrobj}->run_screen($nb);
 
-    # Load the new screen configuration
-    $self->{_scrcfg} = Tpda3::Config::Screen->new();
-    $self->_scrcfg->config_screen_load($self->{_scrstr} . '.conf');
+    my $screen_type = $self->_scrcfg->screen->{type};
 
     # Load instance config
     $self->_cfg->config_load_instance();
@@ -596,11 +620,11 @@ sub screen_module_load {
         $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
     }
     else {
-        $geom = $self->_scrcfg->geom;
+        $geom = $self->_scrcfg->screen->{geom};
     }
     $self->_view->set_geometry($geom);
 
-    $self->_set_event_handler_screen();
+    $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
@@ -621,10 +645,12 @@ sub screen_module_load {
 
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
-    # TableMatrix header
-    my $tm_fields = $self->_scrcfg->table->{columns};
-    my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-    $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    if ($screen_type eq 'tablematrix') {
+        # TableMatrix header
+        my $tm_fields = $self->_scrcfg->table->{columns};
+        my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+        $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    }
 
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
@@ -658,6 +684,7 @@ sub screen_init {
 
     # Entry objects hash
     my $ctrl_ref = $self->{_scrobj}->get_controls();
+    return unless scalar keys %{$ctrl_ref};
 
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
@@ -876,6 +903,7 @@ sub screen_read {
      $self->{scrdata} = {};
 
      my $ctrl_ref = $self->{_scrobj}->get_controls();
+     return unless scalar keys %{$ctrl_ref};
 
      # Scan and write to controls
      foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
@@ -1121,11 +1149,14 @@ the value parameter is undef.
 sub screen_write {
     my ($self, $record_ref) = @_;
 
+    $self->_log->info("screen_write");
+
     unless ( ref $record_ref ) {
-        $self->_log->trace("No record data, emptying the screen");
+        $self->_log->info("No record data, emptying the screen");
     }
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
+    return unless scalar keys %{$ctrl_ref};
 
     # Scan and write to controls
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
@@ -1205,11 +1236,19 @@ Toggle all controls state from I<Screen>.
 sub set_screen_controls_state_to {
     my ( $self, $state ) = @_;
 
+    $self->_log->info("set_screen_controls_state_to '$state'");
+    print "set_screen_controls_state_to '$state'\n";
+
     my $ctrl_ref       = $self->{_scrobj}->get_controls();
+    return unless scalar keys %{$ctrl_ref};
+
     my $control_states = $self->control_states($state);
 
-    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
-        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
+    return unless defined $self->_scrcfg;
+
+    foreach my $field ( keys %{ $self->{_scrcfg}->maintable->{columns} } ) {
+
+        my $fld_cfg = $self->{_scrcfg}->maintable->{columns}{$field};
 
         # Skip for some control types
         # next if $fld_cfg->{ctrltype} = '';
@@ -1391,7 +1430,7 @@ sub add_tmatrix_row {
     return;
 }
 
-=head2 delete_tmatrix_row
+=head2 remove_tmatrix_row
 
 Delete TableMatrix row
 

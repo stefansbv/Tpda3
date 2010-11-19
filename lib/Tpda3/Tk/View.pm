@@ -15,7 +15,7 @@ use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog
                    Checkbutton LabFrame MListbox JComboBox Font);
 
-require Tk::ErrorDialog;
+# require Tk::ErrorDialog;
 
 use base 'Tk::MainWindow';
 

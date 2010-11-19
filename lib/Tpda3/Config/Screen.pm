@@ -45,9 +45,7 @@ Constructor method.
 sub new {
     my $class = shift;
 
-    my $self = {
-        _cfg => Tpda3::Config->instance(),
-    };
+    my $self = {};
 
     bless $self, $class;
 
@@ -60,11 +58,11 @@ Accessor for config object
 
 =cut
 
-sub _cfg {
-    my $self = shift;
+# sub _cfg {
+#     my $self = shift;
 
-    return $self->{_cfg};
-}
+#     return $self->{_cfg};
+# }
 
 =head2 _make_accessors
 
@@ -100,12 +98,12 @@ sub config_screen_load {
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
-    $log->info("Loading '$file_name' config file: $cfg_file");
+    $log->debug("Loading '$file_name' config file: $cfg_file");
 
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
     my @accessor = keys %{ $cfg_data };
-    $log->info("Making accessors for @accessor");
+    $log->debug("Making accessors for @accessor");
 
     $self->_make_accessors( $cfg_data );
 
@@ -121,8 +119,9 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    return catfile( $self->_cfg->cfapps, $self->_cfg->cfname, 'scr',
-        $file_name );
+    my $cfg = Tpda3::Config->instance();
+
+    return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
 }
 
 =head1 AUTHOR

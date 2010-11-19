@@ -2,6 +2,8 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 =head1 NAME
@@ -39,7 +41,6 @@ The screen layout
 =cut
 
 sub run_screen {
-
     my ( $self, $inreg_p ) = @_;
 
     print 'run_screen not implemented in ', __PACKAGE__, "\n";
@@ -56,9 +57,9 @@ Get a data structure containing references to the widgets.
 sub get_controls {
     my $self = shift;
 
-    croak "'get_controls' not implemented.\n"
-        unless exists $self->{controls}
-            and scalar %{ $self->{controls} };
+    # croak "'get_controls' not implemented.\n"
+    #     unless exists $self->{controls}
+    #         and scalar %{ $self->{controls} };
 
     return $self->{controls};
 }
@@ -90,14 +91,14 @@ sub get_toolbar_btn {
 =head2 toggle_tool
 
 Toggle tool bar button.  If state is defined then set to state do not
-toggle.
-
-State can come as 0 | 1 and normal | disabled.
+toggle.  State can come as 0 | 1 and normal | disabled.
 
 =cut
 
 sub toggle_tool {
     my ($self, $btn_name, $state) = @_;
+
+    return if not defined $self->{tb};
 
     $self->{tb}->toggle_tool($btn_name, $state);
 

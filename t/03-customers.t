@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 8;
 
 use lib qw( lib ../lib );
 
@@ -29,46 +29,25 @@ my $delay = 1;
 
 my $a = Tpda3->new($args);
 
-#- Test some screens
-
-# Products
+#- Test the test screens :)
 
 ok( $a->{gui}{_view}->after(
     $delay * 1000,
-    sub { $a->{gui}->screen_load('Products'); } )
+    sub { $a->{gui}->screen_module_load('Customers'); } )
 );
 
 #-- Test application states
 
 foreach my $state (qw{find idle add idle edit idle}) {
-    ok( $a->{gui}{_view}->after(
-        $delay * 1000,
-        sub {
-            $a->{gui}->set_app_mode($state);
-        }
-    ) );
-    $delay++;
-}
-
-# Customers
-
-$delay++;
-
-ok( $a->{gui}{_view}->after(
-    $delay * 1000,
-    sub { $a->{gui}->screen_load('Customers'); } )
-);
-
-#-- Test application states
-
-foreach my $state (qw{find idle add idle edit idle}) {
-    ok( $a->{gui}{_view}->after(
-        $delay * 1000,
-        sub {
-            $a->{gui}->set_app_mode($state);
-        }
-    ) );
-    $delay++;
+    ok(
+        $a->{gui}{_view}->after(
+            $delay * 1000,
+            sub {
+                $a->{gui}->set_app_mode($state);
+            }
+        )
+    );
+        $delay++;
 }
 
 #-- Quit

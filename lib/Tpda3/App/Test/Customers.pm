@@ -327,7 +327,7 @@ sub run_screen {
         countrycode      => [ 6, '  Country' ],
     };
 
-    return $ecustomernumber;
+    return;
 }
 
 =head1 AUTHOR

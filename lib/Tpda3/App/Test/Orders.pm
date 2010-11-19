@@ -3,6 +3,8 @@ package Tpda3::App::Test::Orders;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
 use base 'Tpda3::Tk::Screen';
 
@@ -43,8 +45,6 @@ sub run_screen {
     my $gui     = $inreg_p->toplevel;
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
-
-    my $eordernumber;
 
     #-- Frame 1 - Order
 
@@ -104,7 +104,7 @@ sub run_screen {
         -padleft => 5,
     );
 
-    $eordernumber = $frame1->Entry(
+    my $eordernumber = $frame1->Entry(
         -width              => 10,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -329,7 +329,7 @@ sub run_screen {
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     # This makes TableMatrix expand !!! or not :(
-    $xtable->update;
+    # $xtable->update;
 
     #- Bindings
 
@@ -383,7 +383,7 @@ sub run_screen {
     );
 
     # This makes TableMatrix expand !!!
-#    $xtable->update;
+    $xtable->update;
 
     #---
 
@@ -410,13 +410,13 @@ sub run_screen {
 
     # Required fields: fld_name => [#, Label]
     # If there is no value in the screen for this fields show a dialog message
-    $self->{fld_label} = {
+    $self->{req_controls} = {
         orderdate      => [ 0, '  Order date' ],
         requireddate   => [ 1, '  Required date' ],
         customernumber => [ 2, '  Customer number' ],
     };
 
-    return $eordernumber;
+    return;
 }
 
 =head2 callback
