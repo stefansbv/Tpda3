@@ -1143,7 +1143,7 @@ the value parameter is undef.
 sub screen_write {
     my ($self, $record_ref) = @_;
 
-    $self->_log->trace("Write to screen controls");
+    $self->_log->trace("Write to screen controls (turn controls on)");
 
     unless ( ref $record_ref ) {
         $self->_log->trace(" No record data, emptying the screen");

@@ -5,7 +5,8 @@ use warnings;
 
 use Data::Dumper;
 
-use Tk::widgets qw(DateEntry JComboBox MatchingBE TableMatrix);
+use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
+
 use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Config;
@@ -312,7 +313,7 @@ sub run_screen {
     $self->{tb}->make_toolbar_buttons($toolbar, $attribs);
 
     #- TableMatrix
-    my $xtvar;
+    my $xtvar = {};                          # Must init as hash reference!
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
         -rows  =>  5, -cols   =>  5,
@@ -329,25 +330,21 @@ sub run_screen {
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     # This makes TableMatrix expand !!! or not :(
-    # $xtable->update;
+    $xtable->update;
 
     #- Bindings
 
-    # Make enter do the same thing as return (doesn't work on GNU/Linux)
-    $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
-
     # Make the active area move after we press return:
-    # We Have to use class binding here so that we override
-    # the default return binding
+    # Have to use class binding here so that we override the default
+    # return binding
     my $t1     = $xtable->Subwidget('scrolled');
     my $params = {
-        $t1    => 'T1',
-        'gui'  => $gui,
-        # 'add1' => $add_button,
+        $t1 => 'T1',
+        gui => $gui,
     };
 
-    # $xtable->bind( 'Tk::TableMatrix',
-    #     '<Return>' => [ \&callback, $self, $params ] );
+    $xtable->bind( 'Tk::TableMatrix',
+                   '<Return>' => [ \&callback, $self, $params ] );
 
     #-- Frame Bottom Right
 
@@ -382,13 +379,10 @@ sub run_screen {
         -top => [ '&', $eordertotal, 0 ],
     );
 
-    # This makes TableMatrix expand !!!
-    $xtable->update;
-
     #---
 
     # Entry objects: var_asoc, var_obiect
-    # Other configurations in 'products.conf'
+    # Other configurations in 'orders.conf'
     $self->{controls} = {
         customername   => [ undef,           $ecustomername ],
         customernumber => [ undef,           $ecustomernumber ],
@@ -438,18 +432,18 @@ sub callback {
 
     if ( $p2->{$w1} eq 'T1' ) {
         if ( $c == 1 ) {
-            my $cols_skip = $self->{cautare}->tDict(
-                $p2->{gui},
-                'products',
-                $r, $c,
-                $w1 );
-            $cols_skip++;
-            $w1->activate("$r,$cols_skip");
+            # my $cols_skip = $self->{cautare}->tDict(
+            #     $p2->{gui},
+            #     'products',
+            #     $r, $c,
+            #     $w1 );
+            # $cols_skip++;
+            # $w1->activate("$r,$cols_skip");
         }
         elsif ( $c == 4 ) {
-            $self->calculate_order_line( $w1, $r );
-            $self->calculate_order( $w1, $r );
-            $p2->{add1}->focus;
+            # $self->calculate_order_line( $w1, $r );
+            # $self->calculate_order( $w1, $r );
+            # $p2->{add1}->focus;
             $w1->activate( ++$r . ",0" );
         }
         else {

@@ -3,8 +3,6 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Carp;
 use POSIX qw (floor);
 
@@ -1009,17 +1007,15 @@ sub set_tablematrix_tags {
     # TableMatrix header, Set Name, Align, Width
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
-
-        # print " Camp = [$col] $field -> $tm_fields->{$field}{label}\n";
-        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
         $xtable->colWidth( $col, $tm_fields->{$field}{width} );
+        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
+
+        my $xtvar  = $xtable->cget( -variable );
     }
 
     $xtable->tagRow( 'title', 0 );
-
     if ( $xtable->tagExists('expnd') ) {
-
         # Change the tag priority
         $xtable->tagRaise( 'expnd', 'title' );
     }
