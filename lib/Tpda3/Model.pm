@@ -341,7 +341,7 @@ sub query_record {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
 
-    my $where = {};
+    my $where = {};             # TODO: make a seperate function
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
 
         if    ( $attrib->[1] eq 'contains' ) {
@@ -377,9 +377,60 @@ sub query_record {
     return $hash_ref;
 }
 
+=head2 query_record_batch
+
+Query records.
+
+=cut
+
+sub query_record_batch {
+    my ( $self, $data_hr ) = @_;
+
+    my $table = $data_hr->{table};
+    my $pkcol = $data_hr->{pkcol}; print " pkcol is $pkcol\n";
+
+    my $where = {};
+    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+
+        if    ( $attrib->[1] eq 'contains' ) {
+            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
+        }
+        elsif ( $attrib->[1] eq 'allstr' ) {
+            $where->{ $field } = $attrib->[0];
+        }
+        elsif ( $attrib->[1] eq 'none' ) {
+            # just skip
+        }
+        else {
+            warn "No find type defined for '$field'";
+        }
+    }
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
+
+    my $hash_ref;
+    try {
+        $hash_ref = $self->{_dbh}->selectall_hashref(
+            $stmt, $pkcol, undef, @bind );
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $hash_ref;
+}
+
 =head2 quote4like
 
 Surround text with '%' for SQL LIKE
+
+TODO: Move to Utils.pm
 
 =cut
 

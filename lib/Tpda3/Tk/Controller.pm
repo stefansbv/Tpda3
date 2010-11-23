@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -346,7 +348,7 @@ sub on_screen_mode_idle {
     my $self = shift;
 
     $self->screen_write();      # Empty the controls
-    $self->set_screen_controls_state_to('off');
+    $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
 
     return;
@@ -380,7 +382,7 @@ sub on_screen_mode_add {
     };
 
     $self->screen_write($record_ref);
-    $self->set_screen_controls_state_to('edit');
+    $self->controls_state_set('edit');
 
     return;
 }
@@ -396,7 +398,7 @@ sub on_screen_mode_find {
     my ($self, ) = @_;
 
     $self->screen_write();                   # Empty the controls
-    $self->set_screen_controls_state_to('find');
+    $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
 
     return;
@@ -412,7 +414,7 @@ to the default color as specified in the configuration.
 sub on_screen_mode_edit {
     my $self = shift;
 
-    $self->set_screen_controls_state_to('edit');
+    $self->controls_state_set('edit');
     $self->_log->trace("Mode has changed to 'edit'");
 
     return;
@@ -792,23 +794,35 @@ sub record_load {
         return;
     }
 
-    # Table configs
+    # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $self->_scrcfg->maintable->{columns};
-
-    my $paramdata = {};
-
-    # Table data
-    $paramdata->{table} = $table_hr->{view};   # use view instead of table
-    my $field = $table_hr->{pkcol}{name};
+    my $fields_hr = $table_hr->{columns};
+    my $pk_col    = $table_hr->{pkcol}{name};
 
     # Construct where, add findtype info
-    $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
-    $paramdata->{pkcol} = $field;
+    my $params = {};
+    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{where}{$pk_col} = [ $value, $fields_hr->{$pk_col}{findtype} ];
+    $params->{pkcol} = $pk_col;
 
-    my $record = $self->_model->query_record($paramdata);
+    my $record = $self->_model->query_record($params);
 
     $self->screen_write($record);
+
+    my $screen_type = $self->_scrcfg->screen->{type};
+    if ($screen_type eq 'tablematrix') {
+
+        # Table metadata
+        my $table_hr  = $self->_scrcfg->table;
+        my $fields_hr = $table_hr->{columns};
+
+        # Construct where, add findtype info
+        $params->{table} = $table_hr->{view};
+
+        my $record = $self->_model->query_record_batch($params);
+
+        $self->control_tmatrix_write($record, $pk_col, $value);
+    }
 
     return 1;
 }
@@ -828,22 +842,22 @@ sub record_find_execute {
     my $table_hr  = $self->_scrcfg->maintable;
     my $fields_hr = $self->_scrcfg->maintable->{columns};
 
-    my $paramdata = {};
+    my $params = {};
 
     # Columns data (for found list)
-    $paramdata->{columns} = $self->_scrcfg->found_cols->{col};
+    $params->{columns} = $self->_scrcfg->found_cols->{col};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
     }
 
     # Table data
-    $paramdata->{table} = $table_hr->{view};   # use view instead of table
-    $paramdata->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_view->list_init();
-    my $record_count = $self->_view->list_populate($paramdata);
+    my $record_count = $self->_view->list_populate($params);
 
     # Set mode to sele if found
     if ($record_count > 0) {
@@ -868,18 +882,18 @@ sub record_find_count {
     my $table_hr  = $self->_scrcfg->maintable;
     my $fields_hr = $self->_scrcfg->maintable->{columns};
 
-    my $paramdata = {};
+    my $params = {};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        $paramdata->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
     }
 
     # Table data
-    $paramdata->{table} = $table_hr->{view};   # use view instead of table
-    $paramdata->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_model->count_records($paramdata);
+    $self->_model->count_records($params);
 
     return;
 }
@@ -1143,7 +1157,7 @@ the value parameter is undef.
 sub screen_write {
     my ($self, $record_ref) = @_;
 
-    $self->_log->trace("Write to screen controls (turn controls on)");
+    $self->_log->trace("Write to screen controls (turning controls on)");
 
     unless ( ref $record_ref ) {
         $self->_log->trace(" No record data, emptying the screen");
@@ -1199,6 +1213,82 @@ sub screen_write {
     return;
 }
 
+=head2 screen_tmatrix_write
+
+Write data to TableMatrix widget
+
+=cut
+
+sub control_tmatrix_write {
+    my ($self, $record_ref, $pk_col, $pk_value) = @_;
+
+    my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+    my $xtvar     = $tm_object->cget( -variable );
+
+    my $row = 1;
+    #- Scan and write to table
+
+    print "record:\n";
+    print Dumper( $record_ref );
+    # foreach my $record ( @{ $record_ref->{$pk_value} } ) {
+
+    #     foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
+
+    #         my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
+    #         my $value   = $record->{$field};
+
+    #         print $field, ' -> ', $value, "\n";
+
+    #         $value = q{} unless defined $value;  # Empty
+    #         $value =~ s/[\n\t]//g;               # Delete control chars
+    #         my $col = $fld_cfg->{id};
+
+    #         my ( $type, $width, $places )
+    #         = ( $fld_cfg->{content}, $fld_cfg->{width}, $fld_cfg->{decimals} );
+
+    #         if ( $type =~ /digit/ ) {
+    #             $value = 0 unless $value;
+    #             if ( defined $places ) {
+
+    #                 # Daca SCALE >= 0, Formatez numarul
+    #                 $value = sprintf( "%.${places}f", $value );
+    #             }
+    #             else {
+    #                 $value = sprintf( "%.0f", $value );
+    #             }
+    #         }
+
+    #         $xtvar->{"$row,$col"} = $value;
+
+    #     }
+
+    #     $row++;
+    # }
+    # Refreshing the table...
+    $tm_object->configure( -rows => $row );
+
+    # TODO: make a more general sub
+    # Execute sub defined in screen Workaround for a DBD::InterBase
+    # problem related to big decimals?  The view doesn't compute
+    # corectly the value and the VAT when accesed from perl but only
+    # from flamerobin ...  Check if sub exists first
+    # Fixed with patch from:
+    # http://github.com/pilcrow/perl-dbd-interbase.git
+    # if ( $self->{screen}->can('recalculare_factura') ) {
+    #     $self->{screen}->recalculare_factura();
+    # }
+
+    # Message
+    # if ( $sursa eq 'db' ) {
+    #     # $self->{gui}->refresh_sb( 'll', 'Record loaded', "blue" );
+    # }
+    # else {
+    #     $self->{gui}->refresh_sb( 'll', 'Record restored', "red" );
+    # }
+
+    return;
+}
+
 =head2 toggle_mode_find
 
 Toggle find mode
@@ -1231,13 +1321,13 @@ sub toggle_mode_add {
     return;
 }
 
-=head2 set_screen_controls_state_to
+=head2 controls_state_set
 
 Toggle all controls state from I<Screen>.
 
 =cut
 
-sub set_screen_controls_state_to {
+sub controls_state_set {
     my ( $self, $state ) = @_;
 
     $self->_log->trace(" Set screen controls state to '$state'");
