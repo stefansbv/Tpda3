@@ -413,17 +413,25 @@ sub query_record_batch {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $hash_ref;
+    #my $hash_ref;
+    my @records;
     try {
-        $hash_ref = $self->{_dbh}->selectall_hashref(
-            $stmt, $pkcol, undef, @bind );
+        # $hash_ref = $self->{_dbh}->selectall_hashref(
+        #     $stmt, $pkcol, undef, @bind );
+
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+
+        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
+            push( @records, $record );
+        }
     }
     catch {
         $self->_print("Database error!") ;
         croak("Transaction aborted: $_");
     };
 
-    return $hash_ref;
+    return \@records;
 }
 
 =head2 quote4like

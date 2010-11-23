@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use lib qw( lib ../lib );
 
@@ -18,6 +18,8 @@ BEGIN {
         exit 0;
     }
 }
+
+use_ok('Tpda3::App::Test::Customers');
 
 my $args = {
     cfname => 'test',

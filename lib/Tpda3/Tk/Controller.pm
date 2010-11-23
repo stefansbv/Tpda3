@@ -819,9 +819,9 @@ sub record_load {
         # Construct where, add findtype info
         $params->{table} = $table_hr->{view};
 
-        my $record = $self->_model->query_record_batch($params);
+        my $records = $self->_model->query_record_batch($params);
 
-        $self->control_tmatrix_write($record, $pk_col, $value);
+        $self->control_tmatrix_write($records, $pk_col, $value);
     }
 
     return 1;
@@ -1213,57 +1213,52 @@ sub screen_write {
     return;
 }
 
-=head2 screen_tmatrix_write
+=head2 control_tmatrix_write
 
 Write data to TableMatrix widget
 
 =cut
 
 sub control_tmatrix_write {
-    my ($self, $record_ref, $pk_col, $pk_value) = @_;
+    my ( $self, $records, $pk_col, $pk_value ) = @_;
 
     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
     my $xtvar     = $tm_object->cget( -variable );
 
     my $row = 1;
+
     #- Scan and write to table
 
-    print "record:\n";
-    print Dumper( $record_ref );
-    # foreach my $record ( @{ $record_ref->{$pk_value} } ) {
+    foreach my $record ( @{$records} ) {
+        foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
+            my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
 
-    #     foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
+            my $value = $record->{$field};
+            $value = q{} unless defined $value;    # Empty
+            $value =~ s/[\n\t]//g;                 # Delete control chars
 
-    #         my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
-    #         my $value   = $record->{$field};
+            my ( $col, $type, $width, $places ) =
+              @$fld_cfg{ 'id', 'content', 'width', 'decimals' };    # hash slice
 
-    #         print $field, ' -> ', $value, "\n";
+            if ( $type =~ /digit/ ) {
+                $value = 0 unless $value;
+                if ( defined $places ) {
 
-    #         $value = q{} unless defined $value;  # Empty
-    #         $value =~ s/[\n\t]//g;               # Delete control chars
-    #         my $col = $fld_cfg->{id};
+                    # Daca SCALE >= 0, Formatez numarul
+                    $value = sprintf( "%.${places}f", $value );
+                }
+                else {
+                    $value = sprintf( "%.0f", $value );
+                }
+            }
 
-    #         my ( $type, $width, $places )
-    #         = ( $fld_cfg->{content}, $fld_cfg->{width}, $fld_cfg->{decimals} );
+            $xtvar->{"$row,$col"} = $value;
 
-    #         if ( $type =~ /digit/ ) {
-    #             $value = 0 unless $value;
-    #             if ( defined $places ) {
+        }
 
-    #                 # Daca SCALE >= 0, Formatez numarul
-    #                 $value = sprintf( "%.${places}f", $value );
-    #             }
-    #             else {
-    #                 $value = sprintf( "%.0f", $value );
-    #             }
-    #         }
+        $row++;
+    }
 
-    #         $xtvar->{"$row,$col"} = $value;
-
-    #     }
-
-    #     $row++;
-    # }
     # Refreshing the table...
     $tm_object->configure( -rows => $row );
 
@@ -1276,14 +1271,6 @@ sub control_tmatrix_write {
     # http://github.com/pilcrow/perl-dbd-interbase.git
     # if ( $self->{screen}->can('recalculare_factura') ) {
     #     $self->{screen}->recalculare_factura();
-    # }
-
-    # Message
-    # if ( $sursa eq 'db' ) {
-    #     # $self->{gui}->refresh_sb( 'll', 'Record loaded', "blue" );
-    # }
-    # else {
-    #     $self->{gui}->refresh_sb( 'll', 'Record restored', "red" );
     # }
 
     return;
@@ -1330,9 +1317,9 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->trace(" Set screen controls state to '$state'");
+    $self->_log->trace("Screen controls state is '$state'");
 
-    my $ctrl_ref       = $self->{_scrobj}->get_controls();
+    my $ctrl_ref = $self->{_scrobj}->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
     my $control_states = $self->control_states($state);
