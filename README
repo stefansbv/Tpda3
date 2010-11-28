@@ -1,8 +1,43 @@
 
-The new Tpda
 
-The new Tpda (Tpda3) aims to follow the Model View Controller (MVC)
-architecture.
+CHANGES
+
+Tpda3 is the new TPDA.  Tpda3 aims to follow the Model View Controller
+(MVC) architecture and will completely replace Tpda when all the
+features that Tpda has will be implemented.
+
+Other changes:
+
+Thanks to the File::UserConfig module, the configurations files are
+automatically installed in the user's HOME directory, at test faze, or
+at the first start of the application.
+
+The XML configuration files used by the old Tpda are replaced by
+multiple files in "YAML" format (handled by the YAML::Tiny module) and
+a file in "Config" format (handled by the Config::General module).
+
+Tpda3 has from early stage a few tests, for the configuration module
+and for the database connection.  The GUI tests are not doing their
+job yet, they tend to pass even when the screen modules throw errors,
+and warnings, but they look cool. ;)
+
+In order to have minimum parameter passing between instances, the
+configuration module "Tpda3::Config" is using the "Class::Singleton"
+module and the "Class::Accessor" module for automatically create
+accessors for the main configuration elements.  The database
+connection module "Tpda3::Db" is also using the Class::Singleton
+module.
+
+
+CONTRIBUTING
+
+I'm in a continuous process of learning Perl, a very challenging
+process, I can say, certainly one of the attributes that makes Perl my
+preferred choice of the programming language to use.  That is why if
+one thinks that I don't use properly the modules and/or follow the
+patterns for implementing MVC and has the patience to explain why and
+how it thinks is better in his way, please let me know.  Thank you.
+
 
 INSTALLATION
 
@@ -19,7 +54,7 @@ SUPPORT AND DOCUMENTATION
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc Tpda
+    perldoc Tpda3
 
 
 LICENSE AND COPYRIGHT
