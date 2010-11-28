@@ -148,13 +148,13 @@ None known.
 
 Please report any bugs or feature requests to the author.
 
-=head1 ACKNOWLEDGEMENTS
+=head1 ACKNOWLEDGMENTS
 
 From: Cipres::Registry::Observable
 Author: Rutger Vos, 17/Aug/2006 13:57
         http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
              /cipres/framework/perl/cipres/lib/Cipres/
-Thank You!
+Thank you!
 
 =head1 LICENSE AND COPYRIGHT
 
