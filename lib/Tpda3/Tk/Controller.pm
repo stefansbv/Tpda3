@@ -171,7 +171,10 @@ sub _set_event_handlers {
     #-- Find mode
     $self->_view->get_toolbar_btn('tb_fm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->toggle_mode_find();
+            # From add mode forbid find mode
+            if ( !$self->_model->is_mode('add') ) {
+                $self->toggle_mode_find();
+            }
         }
     );
 
@@ -216,8 +219,24 @@ sub _set_event_handlers {
     #-- Make some key bindings
 
     $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
-    $self->_view->bind( '<F7>'    => sub { $self->toggle_mode_find } );
-    $self->_view->bind( '<F8>'    => sub { $self->record_find_execute } );
+    $self->_view->bind(
+        '<F7>' => sub {
+            # From add mode forbid find mode
+            if ( !$self->_model->is_mode('add') ) {
+                $self->toggle_mode_find();
+            }
+        }
+    );
+    $self->_view->bind(
+        '<F8>' => sub {
+            if ( $self->_model->is_mode('find') ) {
+                $self->record_find_execute;
+            }
+            else {
+                print "WARN: Not in find mode\n";
+            }
+        }
+    );
 
     return;
 }
@@ -829,7 +848,34 @@ sub record_load {
 
 =head2 record_find_execute
 
-Execute find
+Execute search.
+
+Searching by DATE
+
+Date type entry fields are a special case. Note that type_of_entry='d'
+and the variable name begins with a 'd'. If the user enters a year
+like '2009' (four digits) in a date field than the WHERE Clause will
+look like this:
+
+  WHERE (EXTRACT YEAR FROM b_date) = 2009
+
+Another case is where the user enters a year and a month separated by
+a slash, a point or a dash. The order can be reversed too: month-year
+
+  2009.12 or 2009/12 or 2009-12
+  12.2009 or 12/2009 or 12-2009
+
+The result WHERE Clause has to be the same:
+
+  WHERE EXTRACT (YEAR FROM b_date) = 2009 AND
+        EXTRACT (MONTH FROM b_date) = 12
+
+The case when an entire date is entered is treated as a whole string
+and is processed by the DB SQL server differently by vendor.
+
+  WHERE b_date = '2009-12-31'
+
+TODO: convert the date string to ISO before building the WHERE Clause
 
 =cut
 

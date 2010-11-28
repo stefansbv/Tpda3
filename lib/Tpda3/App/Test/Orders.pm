@@ -329,9 +329,6 @@ sub run_screen {
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 
-    # This makes TableMatrix expand !!! or not :(
-    $xtable->update;
-
     #- Bindings
 
     # Make the active area move after we press return:
@@ -409,6 +406,9 @@ sub run_screen {
         requireddate   => [ 1, '  Required date' ],
         customernumber => [ 2, '  Customer number' ],
     };
+
+    # This makes TableMatrix expand !!! or not :(
+    $xtable->update;
 
     return;
 }
