@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Carp;
 
+use Log::Log4perl qw(get_logger);
 use File::Basename;
 use File::Copy;
 use File::Find::Rule;
@@ -11,8 +12,6 @@ use File::Path 2.07 qw( make_path );
 use File::Spec::Functions;
 use YAML::Tiny;
 use Config::General;
-
-#use Log::Log4perl qw(get_logger);
 
 =head1 NAME
 
@@ -48,12 +47,14 @@ depending on the extension of the file.
 sub config_file_load {
     my ($self, $conf_file, $message) = @_;
 
+    my $log = get_logger();
+
     if (! -f $conf_file) {
         if ($message) {
             croak("$message")
         }
         else {
-            carp("WARN: Can't load $conf_file");
+            $log->info("No '$conf_file' yet");
             return;
         }
     }

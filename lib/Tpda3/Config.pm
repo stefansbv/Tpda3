@@ -271,7 +271,7 @@ sub list_configs {
 
 =head2 config_save_instance
 
-Save instance configuarations.  Only window geometry configuration for
+Save instance configurations.  Only window geometry configuration for
 now.
 
 =cut
