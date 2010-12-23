@@ -383,11 +383,17 @@ I<findtype> used for choosing which form to use in the ...
 
 Valid configuration options are:
 
-contains
+=over
 
-allstr
+=item contains - the field value contains the search string
 
-none
+=item allstr   - the field value equals the search string
+
+=item date     - special case for date type fields
+
+=item none     - no search for this field
+
+=back
 
 =cut
 
