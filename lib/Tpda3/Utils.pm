@@ -32,9 +32,9 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head1 METHODS
 
-=head2 trim
+=head2 transformations
 
-Trim strings or arrays.
+Global hash reference !?
 
 =cut
 
@@ -47,6 +47,12 @@ my $transformations = {
     nothing => \&do_error,
     error   => \&do_error,
 };
+
+=head2 trim
+
+Trim strings or arrays.
+
+=cut
 
 sub trim {
     my ($self, @text) = @_;
@@ -175,7 +181,7 @@ sub quote4like {
 
 =head2 special_ops
 
-SQL::Abstract special op for SQL EXTRACT (YEAR|MONTH FROM field) = word1
+SQL::Abstract special ops for EXTRACT (YEAR|MONTH FROM field) = word1.
 
 =cut
 
@@ -212,6 +218,13 @@ sub special_ops {
         },
     ];
 }
+
+=head2 process_date_string
+
+Try to identify the input string as full date, year or month and year
+and return a where clause.
+
+=cut
 
 sub process_date_string {
     my ($self, $search_input) = @_;

@@ -240,8 +240,8 @@ sub count_records {
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
 
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
 
     my $record_count;
     try {
