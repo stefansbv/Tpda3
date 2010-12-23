@@ -234,29 +234,15 @@ sub count_records {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
 
-    my $where = {};
-    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-        if    ( $attrib->[1] eq 'contains' ) {
-            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
-        }
-        elsif ( $attrib->[1] eq 'allstr' ) {
-            $where->{ $field } = $attrib->[0];
-        }
-        elsif ( $attrib->[1] eq 'none' ) {
-            # just skip
-        }
-        else {
-            warn "No find type defined for '$field'";
-        }
-    }
+    my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
 
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
+    print "SQL : $stmt\n";
+    print "bind: @bind\n";
 
     my $record_count;
     try {
@@ -290,21 +276,7 @@ sub query_records_find {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
 
-    my $where = {};
-    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-        if    ( $attrib->[1] eq 'contains' ) {
-            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
-        }
-        elsif ( $attrib->[1] eq 'allstr' ) {
-            $where->{ $field } = $attrib->[0];
-        }
-        elsif ( $attrib->[1] eq 'none' ) {
-            # just skip
-        }
-        else {
-            warn "No find type defined for '$field'";
-        }
-    }
+    my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
 
@@ -341,22 +313,7 @@ sub query_record {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
 
-    my $where = {};             # TODO: make a seperate function
-    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-
-        if    ( $attrib->[1] eq 'contains' ) {
-            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
-        }
-        elsif ( $attrib->[1] eq 'allstr' ) {
-            $where->{ $field } = $attrib->[0];
-        }
-        elsif ( $attrib->[1] eq 'none' ) {
-            # just skip
-        }
-        else {
-            warn "No find type defined for '$field'";
-        }
-    }
+    my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
 
@@ -389,22 +346,7 @@ sub query_record_batch {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol}; print " pkcol is $pkcol\n";
 
-    my $where = {};
-    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-
-        if    ( $attrib->[1] eq 'contains' ) {
-            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
-        }
-        elsif ( $attrib->[1] eq 'allstr' ) {
-            $where->{ $field } = $attrib->[0];
-        }
-        elsif ( $attrib->[1] eq 'none' ) {
-            # just skip
-        }
-        else {
-            warn "No find type defined for '$field'";
-        }
-    }
+    my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
 
@@ -451,6 +393,44 @@ sub quote4like {
     else {
         return qq{%$text%};
     }
+}
+
+=head2 build_where
+
+Return a hash reference containing where clause attributes.  Table
+columns (fields) used in the screen has a configuration named
+I<findtype> used for choosing which form to use in the ...
+
+Valid configuration options are:
+
+contains
+
+allstr
+
+none
+
+=cut
+
+sub build_where {
+    my ( $self, $data_hr ) = @_;
+
+    my $where = {};
+    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+        if    ( $attrib->[1] eq 'contains' ) {
+            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
+        }
+        elsif ( $attrib->[1] eq 'allstr' ) {
+            $where->{ $field } = $attrib->[0];
+        }
+        elsif ( $attrib->[1] eq 'none' ) {
+            # just skip
+        }
+        else {
+            warn "No find type defined for '$field'";
+        }
+    }
+
+    return $where;
 }
 
 =head2 get_codes
