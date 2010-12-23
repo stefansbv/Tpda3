@@ -3,6 +3,8 @@ package Tpda3::Utils;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Tpda3::Utils - The great new Tpda3::Utils!
@@ -35,6 +37,16 @@ if you don't export anything, such as for a purely object-oriented module.
 Trim strings or arrays.
 
 =cut
+
+my $transformations = {
+    datey   => \&year_month,
+    dateym  => \&year_month,
+    datemy  => \&year_month,
+    dateiso => \&date_string,
+    dateamb => \&date_string,
+    nothing => \&do_error,
+    error   => \&do_error,
+};
 
 sub trim {
     my ($self, @text) = @_;
@@ -140,6 +152,160 @@ sub sort_hash_by_id {
       keys %temp;
 
     return \@attribs;
+}
+
+=head2 quote4like
+
+Surround text with '%' for SQL LIKE
+
+TODO: Move to Utils.pm
+
+=cut
+
+sub quote4like {
+    my ( $self, $text ) = @_;
+
+    if ( $text =~ m{%}xm ) {
+        return $text;
+    }
+    else {
+        return qq{%$text%};
+    }
+}
+
+=head2 special_ops
+
+SQL::Abstract special op for SQL EXTRACT (YEAR|MONTH FROM field) = word1
+
+=cut
+
+sub special_ops {
+    my $self = shift;
+
+    return [
+
+        {
+            regex   => qr/^extractyear$/i,
+            handler => sub {
+                my ( $self, $field, $op, $arg ) = @_;
+                $arg = [$arg] if not ref $arg;
+                my $label         = $self->_quote($field);
+                my ($placeholder) = $self->_convert('?');
+                my $sql           = $self->_sqlcase('extract (year from')
+                  . " $label) = $placeholder ";
+                my @bind = $self->_bindtype( $field, @$arg );
+                return ( $sql, @bind );
+              }
+        },
+        {
+            regex   => qr/^extractmonth$/i,
+            handler => sub {
+                my ( $self, $field, $op, $arg ) = @_;
+                $arg = [$arg] if not ref $arg;
+                my $label         = $self->_quote($field);
+                my ($placeholder) = $self->_convert('?');
+                my $sql           = $self->_sqlcase('extract (month from')
+                  . " $label) = $placeholder ";
+                my @bind = $self->_bindtype( $field, @$arg );
+                return ( $sql, @bind );
+              }
+        },
+    ];
+}
+
+sub process_date_string {
+    my ($self, $search_input) = @_;
+
+    my $dtype = $self->identify_date_string($search_input);
+    my $where = $self->format_query($dtype);
+
+    return $where;
+}
+
+=head2 identify_date_string
+
+Identify format of the I<input> I<string> from a date type field and
+return the matched pieces in a string as separate values where the
+separator is the colon character.
+
+=cut
+
+sub identify_date_string {
+    my ($self, $is) = @_;
+
+    #                When date format is...                     Type is ...
+    return $is eq q{}                                        ? 'nothing'
+           : $is =~ m/^(\d{4})[\.\/-](\d{2})[\.\/-](\d{2})$/ ? "dateiso:$is"
+           : $is =~ m/^(\d{2})[\.\/-](\d{2})[\.\/-](\d{4})$/ ? "dateamb:$is"
+           : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
+           : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
+           : $is =~ m/^(\d{4})$/                             ? "datey:$1"
+           :                                                    "dataerr:$is";
+}
+
+=head2 format_query
+
+Execute the appropriate sub and return the where attributes Choices
+are defined in the I<$transformations> hash.
+
+=cut
+
+sub format_query {
+    my ( $self, $type ) = @_;
+
+    my ( $directive, $year, $month ) = split /:/, $type, 3;
+
+    my $where;
+    if ( exists $transformations->{$directive} ) {
+        $where = $transformations->{$directive}->( $year, $month );
+    }
+    else {
+        warn "Unrecognized directive '$directive'";
+    }
+
+    return $where;
+}
+
+=head2 year_month
+
+Case of string identified as year and/or month.
+
+=cut
+
+sub year_month {
+    my ( $year, $month ) = @_;
+
+    my $where = {};
+    $where->{-extractyear}  = [$year]  if ($year);
+    $where->{-extractmonth} = [$month] if ($month);
+
+    return $where;
+}
+
+=head2 date_string
+
+Case of string identified as full date string, regardless of the format.
+
+=cut
+
+sub date_string {
+    my ($date) = @_;
+
+    return $date;
+}
+
+=head2 do_error
+
+Case of string not identified or empty.
+
+=cut
+
+sub do_error {
+    my ($date) = @_;
+
+    print "String not identified or empty!\n";
+
+    return;
 }
 
 =head1 AUTHOR

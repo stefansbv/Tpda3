@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -13,6 +11,7 @@ use Tpda3::Config;
 use Tpda3::Observable;
 use Tpda3::Db;
 use Tpda3::Codings;
+use Tpda3::Utils;
 
 =head1 NAME
 
@@ -236,7 +235,7 @@ sub count_records {
 
     my $where = $self->build_where($data_hr);
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
@@ -278,7 +277,7 @@ sub query_records_find {
 
     my $where = $self->build_where($data_hr);
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $data_hr->{columns}, $where );
 
@@ -315,7 +314,7 @@ sub query_record {
 
     my $where = $self->build_where($data_hr);
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
@@ -344,11 +343,11 @@ sub query_record_batch {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol}; print " pkcol is $pkcol\n";
+    my $pkcol = $data_hr->{pkcol}; # print " pkcol is $pkcol\n";
 
     my $where = $self->build_where($data_hr);
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
@@ -376,25 +375,6 @@ sub query_record_batch {
     return \@records;
 }
 
-=head2 quote4like
-
-Surround text with '%' for SQL LIKE
-
-TODO: Move to Utils.pm
-
-=cut
-
-sub quote4like {
-    my ( $self, $text ) = @_;
-
-    if ( $text =~ m{%}xm ) {
-        return $text;
-    }
-    else {
-        return qq{%$text%};
-    }
-}
-
 =head2 build_where
 
 Return a hash reference containing where clause attributes.  Table
@@ -416,13 +396,19 @@ sub build_where {
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-        if    ( $attrib->[1] eq 'contains' ) {
-            $where->{ $field } = { -like => $self->quote4like($attrib->[0]) };
+        if ( $attrib->[1] eq 'contains' ) {
+            $where->{$field} =
+              { -like => Tpda3::Utils->quote4like( $attrib->[0] ) };
         }
         elsif ( $attrib->[1] eq 'allstr' ) {
-            $where->{ $field } = $attrib->[0];
+            $where->{$field} = $attrib->[0];
+        }
+        elsif ( $attrib->[1] eq 'date' ) {
+            $where->{$field} =
+              Tpda3::Utils->process_date_string( $attrib->[0] );
         }
         elsif ( $attrib->[1] eq 'none' ) {
+
             # just skip
         }
         else {
