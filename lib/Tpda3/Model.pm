@@ -48,8 +48,6 @@ sub new {
         _appmode   => Tpda3::Observable->new(),
     };
 
-    $self->{codes} = Tpda3::Codings->new();
-
     bless $self, $class;
 
     return $self;
@@ -89,6 +87,7 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
+        $self->_print('Connected');
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
@@ -109,7 +108,7 @@ sub _disconnect {
 
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set( 0 );
-    $self->_print('Disconnected.');
+    $self->_print('Disconnected');
 
     return;
 }
@@ -434,7 +433,8 @@ Return the data structure used to fill the list of choices.
 sub get_codes {
     my ($self, $field, $para) = @_;
 
-    my $codes = $self->{codes}->get_coding_init($field, $para);
+    my $codings = Tpda3::Codings->new();
+    my $codes   = $codings->get_coding_init($field, $para);
 
     return $codes;
 }

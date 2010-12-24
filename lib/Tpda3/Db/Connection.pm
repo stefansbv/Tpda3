@@ -62,14 +62,8 @@ sub _connect {
     my $inst = Tpda3::Config->instance;
     my $conf = $inst->connection;
 
-    $conf->{user} = $inst->user;    # add user and pass to options
-    if ( !$conf->{user} ) {
-        $conf->{user} = $self->read_username();
-    }
-    $conf->{pass} = $inst->pass;
-    if ( !$conf->{pass} ) {
-        $conf->{pass} = $self->read_password();
-    }
+    $conf->{user} = $inst->user;    # add user and pass to
+    $conf->{pass} = $inst->pass;    #  connection options
 
     my $driver = $conf->{driver};
     my $db;

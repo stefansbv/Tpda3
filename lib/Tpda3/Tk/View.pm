@@ -10,8 +10,8 @@ use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Tk;
-use Tk::widgets qw(NoteBook StatusBar Dialog
-                   Checkbutton LabFrame MListbox JComboBox Font);
+use Tk::widgets qw(NoteBook StatusBar Dialog Checkbutton
+                   LabFrame MListbox JComboBox Font);
 
 # require Tk::ErrorDialog;
 
@@ -39,7 +39,6 @@ our $VERSION = '0.01';
     use Tpda3::Tk::Notebook;
 
     $self->{_nb} = Tpda3::Tk::Notebook->new( $gui );
-
 
 =head1 METHODS
 
@@ -287,7 +286,7 @@ sub make_menus {
     #- Create menus
     foreach my $menu_name ( @{$menus} ) {
 
-        $self->{_menu}{$menu_name} = $self->{_menu}->Menu();
+        $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
 
         my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
         foreach my $id (@popups) {

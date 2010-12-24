@@ -14,6 +14,7 @@ use Tpda3::Config;
 use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Tk::View;
+use Tpda3::Tk::Dialog::Pwd;
 
 =head1 NAME
 
@@ -97,8 +98,21 @@ sub start {
 
     $self->_log->trace("start");
 
-    # Connect to database at start
-    $self->_model->toggle_db_connect();
+    # Check if we have user and pass, if not, show dialog
+    if ( !$self->_cfg->user or !$self->_cfg->pass ) {
+        my $pd = Tpda3::Tk::Dialog::Pwd->new;
+        $pd->run_dialog( $self->_view );
+    }
+
+    # Check again ...
+    if ( $self->_cfg->user and $self->_cfg->pass ) {
+
+        # Connect to database
+        $self->_model->toggle_db_connect();
+    }
+    else {
+        $self->_view->on_quit;
+    }
 
     return;
 }

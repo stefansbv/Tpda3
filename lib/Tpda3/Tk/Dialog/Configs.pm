@@ -24,7 +24,7 @@ Set and save configuaration options.
 
     use Tpda3::Tk::Dialog::Configs;
 
-    my $fd = Tpda3::Tk::Dialog::Config->new;
+    my $fd = Tpda3::Tk::Dialog::Configs->new;
 
     $fd->run_dialog($self);
 

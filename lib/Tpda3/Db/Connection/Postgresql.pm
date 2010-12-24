@@ -61,7 +61,7 @@ sub db_connect {
     $log->info("Connecting to the $conf->{driver} server");
     $log->info("Parameters:");
     $log->info("  => Database = $conf->{dbname}\n");
-    $log->info("  => Server   = $conf->{server}\n");
+    $log->info("  => Host     = $conf->{host}\n");
     $log->info("  => User     = $conf->{user}\n");
 
     try {
@@ -70,7 +70,7 @@ sub db_connect {
               . "dbname="
               . $conf->{dbname}
               . ";host="
-              . $conf->{server}
+              . $conf->{host}
               . ";port="
               . $conf->{port},
             $conf->{user}, $conf->{pass},

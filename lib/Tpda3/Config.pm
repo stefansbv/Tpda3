@@ -131,7 +131,7 @@ sub config_main_load {
         cfiface => $maincfg->{interface},
         cfapp   => $maincfg->{application},
         cfrun   => $maincfg->{runtime},
-        user    => $args->{user}, # make accessors for user and pass
+        user    => $args->{user},   # make accessors for user and pass
         pass    => $args->{pass},
     };
 
