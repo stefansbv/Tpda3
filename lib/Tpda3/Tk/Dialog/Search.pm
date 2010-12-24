@@ -45,15 +45,14 @@ sub new {
 
     my $self = {};
 
-    $self->{caut} = shift;    # Search object
-    $self->{conf} = shift;    # Config object
+    $self->{box} = {};    # Search results list box
+                          # $self->{caut} = shift;    # Search object
+                          # $self->{conf} = shift;    # Config object
 
-    $self->{topl} = {};       # TopLevel object
-    $self->{mesg} = {};       # Message object
-    $self->{filt} = {};       # Filter
+    # $self->{mesg} = {};       # Message object
+    # $self->{filt} = {};       # Filter
 
-    $self->{src_str}     = q{ };    # A space
-    $self->{case_ignore} = 1;       # Ignore case checkbutton value
+    # $self->{src_str}     = q{ };    # A space
 
     bless( $self, $type );
 
@@ -69,31 +68,42 @@ Show dialog
 sub run_dialog {
     my ( $self, $mw, $table, $filter ) = @_;
 
-    my $columns_ref;# = $self->{conf}->get_general_conf_search($table);
+    my $columns_ref;    # = $self->{conf}->get_general_conf_search($table);
 
-    #-- Dialog Box
+    #--- Dialog Box
 
-    $self->{topl} = $mw->DialogBox(
+    my $dlg = $mw->DialogBox(
         -title   => 'Search dialog',
         -buttons => [ 'Load', 'Cancel' ]
     );
 
-    # Main frame
+    #-- Main frame
 
-    my $mf = $self->{topl}->Frame();
-    $mf->pack( -side => 'top', -anchor => 'nw', -fill => 'both' );
+    my $mf = $dlg->Frame()->pack(
+        -side   => 'top',
+        -anchor => 'nw',
+        -fill   => 'both',
+    );
 
-    # Frame 1
+    #- Frame 1
 
     # Optiuni cautare
-    my $frm1 = $mf->Frame( -foreground => 'blue' );
-    $frm1->pack( -expand => 1, -fill => 'x', -ipady => 3 );
+    my $frm1 = $mf->Frame( -foreground => 'blue', )->pack(
+        -expand => 1,
+        -fill   => 'x',
+        -ipady  => 3,
+    );
 
     my $lblcamp = $frm1->Label();
-    $lblcamp->grid( -row => 0, -column => 0, -sticky => 'e', -padx => 5 );
+    $lblcamp->grid(
+        -row    => 0,
+        -column => 0,
+        -sticky => 'e',
+        -padx   => 5,
+    );
 
     # Entry sir cautare
-    my $esir = $frm1->Entry( -width => 20 );
+    my $esir = $frm1->Entry( -width => 20, );
 
     my $selected;
     my $searchopt = $frm1->JComboBox(
@@ -102,21 +112,29 @@ sub run_dialog {
         -choices      => [
             { -name => 'contains',    -value => 'C', -selected => 1 },
             { -name => 'starts with', -value => 'S' },
-            { -name => 'end with',    -value => 'E' },
-        ]
+            { -name => 'ends with',   -value => 'E' },
+        ],
+    )->grid(
+        -row    => 0,
+        -column => 1,
+        -padx   => 5,
+        -pady   => 6,
     );
 
-    $searchopt->grid( -row => 0, -column => 1, -padx => 5, -pady => 6 );
-
-    $esir->grid( -row => 0, -column => 2, -padx => 5, -pady => 5 );
+    $esir->grid(
+        -row    => 0,
+        -column => 2,
+        -padx   => 5,
+        -pady   => 5,
+    );
 
     # Focus on Entry
     $esir->focus;
 
     # Buton cautare
-    my $but1 = $frm1->Button(
+    my $find_button = $frm1->Button(
         -text    => 'Find',
-        -width   => 7,
+        -width   => 4,
         -command => [
             sub {
                 my ($self) = @_;
@@ -126,9 +144,14 @@ sub run_dialog {
             $self,
         ],
     );
-    $but1->grid( -row => 0, -column => 3, -padx => 5, -pady => 5 );
+    $find_button->grid(
+        -row    => 0,
+        -column => 3,
+        -padx   => 5,
+        -pady   => 5,
+    );
 
-    # Frame cu lista rezultate
+    #- Frame cu lista rezultate
 
     my $frm2 = $mf->LabFrame(
         -label      => 'Rezult',
@@ -136,7 +159,7 @@ sub run_dialog {
     );
     $frm2->pack( -expand => 1, -fill => 'both', -ipadx => 5, -ipady => 3 );
 
-    $box = $frm2->Scrolled(
+    $self->{box} = $frm2->Scrolled(
         'MListbox',
         -scrollbars         => 'ose',
         -background         => 'white',
@@ -144,10 +167,12 @@ sub run_dialog {
         -width              => 0,
         -selectmode         => 'browse',
         -relief             => 'sunken',
+    )->pack(
+        -expand => 1,
+        -fill   => 'both',
+        -ipadx  => 5,
+        -ipady  => 3,
     );
-
-    # $box->grid(-row => 0, -column => 0, -sticky => 'nsew');
-    $box->pack( -expand => 1, -fill => 'both', -ipadx => 5, -ipady => 3 );
 
     # Box header
 
@@ -156,21 +181,21 @@ sub run_dialog {
 
     foreach my $col ( @{$columns_ref} ) {
 
-        $den_label = $col->{label} if $col->{key} eq 'scol1'; # label name
+        $den_label = $col->{label} if $col->{key} eq 'scol1';    # label name
         my $label = $col->{label};
         my $name  = $col->{name};
         my $width = $col->{width};
         my $sort  = $col->{sort};
 
-        $box->columnInsert( 'end', -text => $label );
-        $box->columnGet($colcnt)->Subwidget("heading")
+        $self->{box}->columnInsert( 'end', -text => $label );
+        $self->{box}->columnGet($colcnt)->Subwidget("heading")
           ->configure( -background => 'tan' );
-        $box->columnGet($colcnt)->Subwidget("heading")
+        $self->{box}->columnGet($colcnt)->Subwidget("heading")
           ->configure( -width => $width );
 
         if ( defined $sort ) {
             if ( $sort eq 'N' ) {
-                $box->columnGet($colcnt)
+                $self->{box}->columnGet($colcnt)
                   ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
             }
         }
@@ -182,7 +207,7 @@ sub run_dialog {
     }
 
     # Search in field ...
-    $den_label = $den_label || q{}; # Empty if not defined
+    $den_label = $den_label || q{};    # Empty string if not defined
     $lblcamp->configure( -text => "[ $den_label ]", -foreground => 'blue' );
 
     $esir->bind(
@@ -190,9 +215,9 @@ sub run_dialog {
         sub {
 
             # do find
-            $but1->focus;
-            $but1->invoke;
-            $box->focus;
+            $find_button->focus;
+            $find_button->invoke;
+            $self->{box}->focus;
             Tk->break;
         }
     );
@@ -239,7 +264,7 @@ sub run_dialog {
             my ( $self, $esir, $sele ) = @_;
 
             # Sterg continutul tabelului - init
-            $box->delete( 0, 'end' );
+            $self->{box}->delete( 0, 'end' );
         },
     );
 
@@ -260,13 +285,13 @@ sub run_dialog {
 
     #---
 
-    my $result = $self->{topl}->Show;
+    my $result = $dlg->Show;
     my $ind_cod;
 
     if ( $result =~ /Load/ ) {
 
         # Sunt inreg. in lista?
-        eval { $ind_cod = $box->curselection(); };
+        eval { $ind_cod = $self->{box}->curselection(); };
         if ($@) {
             warn "Error: $@";
 
@@ -276,7 +301,7 @@ sub run_dialog {
         else {
             unless ($ind_cod) { $ind_cod = 0; }
         }
-        my @valret = $box->getRow($ind_cod);
+        my @valret = $self->{box}->getRow($ind_cod);
 
         # print "valret = @valret\n";
         return ( \@valret, $field_ref );
@@ -286,16 +311,21 @@ sub run_dialog {
     }
 }
 
+=head2 search_command
+
+Lookup in dictionary and display result in list box
+
+=cut
+
 sub search_command {
-    my ($self, $esir, $table, $columns, $sele, $filter) = @_;
+    my ( $self, $esir, $table, $columns, $sele, $filter ) = @_;
 
     my $src_opt = ${$sele};
 
-    # $self->build_str( $esir, $src_opt ); # Not needed ???
     $self->{src_str} = $esir->get;
 
     # Sterg continutul tabelului - init
-    $box->delete( 0, 'end' );
+    $self->{box}->delete( 0, 'end' );
 
     # Search tabel for code -> name pairs
     my $inreg_ref;
@@ -307,38 +337,39 @@ sub search_command {
     # Found records
     my $rowcnt = 0;
     if ($inreg_ref) {
-        my $nrinreg = $#{$inreg_ref} + 1;
+        my $nrinreg = scalar @{$inreg_ref};
         my $mesaj = $nrinreg == 1 ? "one record" : "$nrinreg records";
-        $self->refresh_mesg( $mesaj, 'darkgreen' );
+
+        # $self->refresh_mesg( $mesaj, 'darkgreen' );
         foreach my $hashref ( @{$inreg_ref} ) {
             my @row = ();
             foreach my $field_width (@$field_ref) {
                 my ( $field, $width ) = split( ':', $field_width );
                 push @row, $hashref->{$field};
             }
-            $box->insert( 'end', [@row] );
+            $self->{box}->insert( 'end', [@row] );
 
-            # $box->see('active');
-            # $box->update;
+            # $self->{box}->see('active');
+            # $self->{box}->update;
             $rowcnt++;
         }
-        $box->selectionClear( 0, 'end' );
-        $box->activate(0);
-        $box->selectionSet(0);
-        $box->see('active');
-        $box->focus;
+        $self->{box}->selectionClear( 0, 'end' );
+        $self->{box}->activate(0);
+        $self->{box}->selectionSet(0);
+        $self->{box}->see('active');
+        $self->{box}->focus;
     }
 
     return $field_ref;
 }
 
+=head2 refresh_mesg
+
+Refresh the message on the screen
+
+=cut
+
 sub refresh_mesg {
-
-   # +-------------------------------------------------------------------------+
-   # | Descriere: Refresh the Message on the screen                            |
-   # | Parametri: obiect                                                       |
-   # +-------------------------------------------------------------------------+
-
     my ( $self, $text, $color ) = @_;
 
     $self->{mesg}->configure( -textvariable => \$text ) if defined $text;
@@ -347,13 +378,13 @@ sub refresh_mesg {
     return;
 }
 
+=head2 refresh_filt
+
+Refresh the filter message on the screen
+
+=cut
+
 sub refresh_filt {
-
- # +---------------------------------------------------------------------------+
- # | Descriere: Refresh the Message on the screen                              |
- # | Parametri: obiect                                                         |
- # +---------------------------------------------------------------------------+
-
     my ( $self, $text, $color ) = @_;
 
     $self->{filt}->configure( -textvariable => \$text ) if defined $text;
@@ -362,4 +393,4 @@ sub refresh_filt {
     return;
 }
 
-1; # End of Tpda3::Tk::Dialog::Search
+1;    # End of Tpda3::Tk::Dialog::Search

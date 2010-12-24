@@ -82,7 +82,7 @@ sub run_screen {
     $ecustomername->bind(
         '<KeyPress-Return>' => sub {
             # $self->{cautare}->Dict( $gui, 'customers' );
-            $lookup->dict_lookup( $gui, 'customers' );
+            $lookup->dict_lookup( $gui, 'customers', undef, undef );
         }
     );
 

@@ -10,13 +10,13 @@ sub new {
 
     my $self = {};
 
-    $self->{tpda} = shift;    # Tpda object
+    # $self->{tpda} = shift;    # Tpda object
 
     bless( $self, $type );
 
     $self->{dlgc} = Tpda3::Tk::Dialog::Search->new(
-        $self,
-        $self->{tpda}->{conf},
+        # $self,
+        # $self->{tpda}->{conf},
     );
 
     return $self;
