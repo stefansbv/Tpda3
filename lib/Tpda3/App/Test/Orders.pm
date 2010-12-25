@@ -300,7 +300,7 @@ sub run_screen {
     my $tbf1 = $frm_t->Frame();
     $tbf1->pack(
         -anchor => 'n',
-        -expand => 'y',
+        -expand =>  1,
         -fill   => 'x',
     );
 
@@ -333,9 +333,9 @@ sub run_screen {
 
     #- Bindings
 
-    # Make the active area move after we press return:
-    # Have to use class binding here so that we override the default
-    # return binding
+    # Make the active area move after we press return: Have to use
+    # class binding here so that we override the default return
+    # binding
     my $t1     = $xtable->Subwidget('scrolled');
     my $params = {
         $t1 => 'T1',
@@ -344,6 +344,7 @@ sub run_screen {
 
     $xtable->bind( 'Tk::TableMatrix',
                    '<Return>' => [ \&callback, $self, $params ] );
+
 
     #-- Frame Bottom Right
 
@@ -374,8 +375,8 @@ sub run_screen {
 
     my $lordertotal = $frm_bl->Label( -text => 'Order total' );
     $lordertotal->form(
+        -top   => [ '&',          $eordertotal, 0 ],
         -right => [ $eordertotal, -15 ],
-        -top => [ '&', $eordertotal, 0 ],
     );
 
     #---

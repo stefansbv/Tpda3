@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -433,6 +431,7 @@ sub on_screen_mode_find {
     my ($self, ) = @_;
 
     $self->screen_write();                   # Empty the controls
+    $self->control_tmatrix_write();
     $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
 
@@ -853,6 +852,7 @@ sub record_load {
 
         # Construct where, add findtype info
         $params->{table} = $table_hr->{view};
+        $params->{fkcol} = $table_hr->{fkcol}{name};
 
         my $records = $self->_model->query_record_batch($params);
 
@@ -1308,7 +1308,7 @@ sub control_tmatrix_write {
             $value =~ s/[\n\t]//g;                 # Delete control chars
 
             my ( $col, $type, $width, $places ) =
-              @$fld_cfg{ 'id', 'content', 'width', 'decimals' };    # hash slice
+              @$fld_cfg{'id','content','width','decimals'}; # hash slice
 
             if ( $type =~ /digit/ ) {
                 $value = 0 unless $value;

@@ -2,7 +2,7 @@
 # Database connection configuration
 ---
 connection:
-  driver: postgresql
-  server: localhost
+  driver: firebird
+  host:   localhost
   dbname: classicmodels
-  port:   5432
+  port:   3050

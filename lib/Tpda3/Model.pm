@@ -342,23 +342,20 @@ sub query_record_batch {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol}; # print " pkcol is $pkcol\n";
+    my $pkcol = $data_hr->{pkcol};       # print " pkcol is $pkcol\n";
+    my $order = $data_hr->{fkcol};       # print " fkcol is $fkcol\n";
 
     my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+    my ( $stmt, @bind ) = $sql->select( $table, undef, $where, $order );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    #my $hash_ref;
     my @records;
     try {
-        # $hash_ref = $self->{_dbh}->selectall_hashref(
-        #     $stmt, $pkcol, undef, @bind );
-
         my $sth = $self->{_dbh}->prepare($stmt);
         $sth->execute(@bind);
 

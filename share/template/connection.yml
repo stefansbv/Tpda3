@@ -3,6 +3,6 @@
 ---
 connection:
   driver: postgresql
-  server: localhost
+  host:   localhost
   dbname: testdb
   port:   5432
