@@ -2,6 +2,8 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -391,16 +393,18 @@ Valid configuration options are:
 
 =back
 
+Second parameter 'option' is passed to quote4like.
+
 =cut
 
 sub build_where {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $data_hr, $opt ) = @_;
 
     my $where = {};
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
         if ( $attrib->[1] eq 'contains' ) {
             $where->{$field} =
-              { -like => Tpda3::Utils->quote4like( $attrib->[0] ) };
+                { -like => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
         }
         elsif ( $attrib->[1] eq 'allstr' ) {
             $where->{$field} = $attrib->[0];
@@ -434,6 +438,46 @@ sub get_codes {
     my $codes   = $codings->get_coding_init($field, $para);
 
     return $codes;
+}
+
+=head2 query_dictionary
+
+Query a dictionary table
+
+=cut
+
+sub query_dictionary {
+    my ( $self, $data_hr ) = @_;
+
+    my $table = $data_hr->{table};
+    my $opt   = $data_hr->{options};
+    my $order = $data_hr->{order};
+    my $cols  = $data_hr->{columns};
+
+    my $where = $self->build_where($data_hr, $opt);
+
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+
+    print "SQL : $stmt\n";
+    print "bind: @bind\n";
+
+    my @records;
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+
+        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
+            push( @records, $record );
+        }
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return \@records;
 }
 
 =head1 AUTHOR

@@ -39,20 +39,12 @@ Constructor method
 =cut
 
 # Variabile locale
-my $box;
 my $field_ref;
 
 sub new {
     my $type = shift;
 
     my $self = {};
-
-    $self->{box} = {};    # Search results list box
-                          # $self->{caut} = shift;    # Search object
-                          # $self->{conf} = shift;    # Config object
-
-    # $self->{mesg} = {};       # Message object
-    # $self->{filt} = {};       # Filter
 
     # $self->{src_str}     = q{ };    # A space
 
@@ -136,8 +128,10 @@ sub run_dialog {
         -command => [
             sub {
                 my ($self) = @_;
-                $self->search_command( $esir, $para->{table}, \$selected,
-                    $filter );
+                $self->search_command(
+                    $view->_model, $esir->get, $para,
+                    $selected,     $filter
+                );
             },
             $self,
         ],
@@ -263,14 +257,14 @@ sub run_dialog {
 
     # Callback for search JCombobox
 
-    $searchopt->configure(
-        -browsecmd => sub {
-            my ( $self, $esir, $sele ) = @_;
+    # $searchopt->configure(
+    #     -browsecmd => sub {
+    #         my ( $self, $esir, $sele ) = @_;
 
-            # Initialy empty
-            $self->{box}->delete( 0, 'end' );
-        },
-    );
+    #         # Initialy empty
+    #         # $self->{box}->delete( 0, 'end' );
+    #     },
+    # );
 
     # Filter?
 
@@ -322,37 +316,36 @@ Lookup in dictionary and display result in list box
 =cut
 
 sub search_command {
-    my ( $self, $esir, $table, $columns, $sele, $filter ) = @_;
+    my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
 
-    my $src_opt = ${$sele};
+    print " search for $srcstr with $options\n";
 
-    $self->{src_str} = $esir->get;
+    # Construct where, add findtype info
+    my $params = {};
+    $params->{table} = $para->{table};
+    $params->{where}{ $para->{lookup} } = [ $srcstr, 'contains' ];
+    $params->{options} = $options;
+    $params->{columns} =  [ map { keys %{$_} } @{ $para->{columns} } ];
+    $params->{order} = $para->{lookup};      # order by lookup field
+
+    my $records = $model->query_dictionary($params);
 
     # Sterg continutul tabelului - init
     $self->{box}->delete( 0, 'end' );
 
-    # Search tabel for code -> name pairs
-    my $inreg_ref;
-    ( $inreg_ref, $field_ref ) =
-      $self->{caut}->{tpda}->{conn}
-      ->tbl_dict_search( $table, $columns, $self->{src_str}, $filter, $src_opt,
-      );
-
     # Found records
     my $rowcnt = 0;
-    if ($inreg_ref) {
-        my $nrinreg = scalar @{$inreg_ref};
+    if ($records) {
+        my $nrinreg = scalar @{$records};
         my $mesaj = $nrinreg == 1 ? "one record" : "$nrinreg records";
 
         # $self->refresh_mesg( $mesaj, 'darkgreen' );
-        foreach my $hashref ( @{$inreg_ref} ) {
+        foreach my $hash_ref ( @{$records} ) {
             my @row = ();
-            foreach my $field_width (@$field_ref) {
-                my ( $field, $width ) = split( ':', $field_width );
-                push @row, $hashref->{$field};
+            foreach my $field ( @{$params->{columns}} ) {
+                push @row, $hash_ref->{$field};
             }
             $self->{box}->insert( 'end', [@row] );
-
             # $self->{box}->see('active');
             # $self->{box}->update;
             $rowcnt++;

@@ -164,18 +164,19 @@ sub sort_hash_by_id {
 
 Surround text with '%' for SQL LIKE
 
-TODO: Move to Utils.pm
 
 =cut
 
 sub quote4like {
-    my ( $self, $text ) = @_;
+    my ( $self, $text, $option ) = @_;
 
     if ( $text =~ m{%}xm ) {
         return $text;
     }
     else {
-        return qq{%$text%};
+        return qq{$text%} if $option eq 'S'; # Start with
+        return qq{%$text} if $option eq 'E'; # End with
+        return qq{%$text%};                  # Contains
     }
 }
 
