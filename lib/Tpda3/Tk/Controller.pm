@@ -380,7 +380,8 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->screen_write();      # Empty the controls
+    $self->screen_write();      # Empty the main controls
+    $self->control_tmatrix_write();
     $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
 
@@ -401,20 +402,21 @@ sub on_screen_mode_add {
     $self->_log->trace("Mode has changed to 'add'");
 
     # Test record data
-    my $record_ref = {
-        productcode        => 'S700_2047',
-        productname        => 'HMS Bounty',
-        buyprice           => '39.83',
-        msrp               => '90.52',
-        productvendor      => 'Unimax Art Galleries',
-        productscale       => '1:700',
-        quantityinstock    => '3501',
-        productline        => 'Ships',
-        productlinecode    => '2',
-        productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
-    };
+    # my $record_ref = {
+    #     productcode        => 'S700_2047',
+    #     productname        => 'HMS Bounty',
+    #     buyprice           => '39.83',
+    #     msrp               => '90.52',
+    #     productvendor      => 'Unimax Art Galleries',
+    #     productscale       => '1:700',
+    #     quantityinstock    => '3501',
+    #     productline        => 'Ships',
+    #     productlinecode    => '2',
+    #     productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
+    # };
 
-    $self->screen_write($record_ref);
+    $self->screen_write();
+    $self->control_tmatrix_write();
     $self->controls_state_set('edit');
 
     return;
@@ -854,7 +856,7 @@ sub record_load {
 
         my $records = $self->_model->query_record_batch($params);
 
-        $self->control_tmatrix_write($records, $pk_col, $value);
+        $self->control_tmatrix_write($records);
     }
 
     return 1;
@@ -1280,10 +1282,18 @@ Write data to TableMatrix widget
 =cut
 
 sub control_tmatrix_write {
-    my ( $self, $records, $pk_col, $pk_value ) = @_;
+    my ( $self, $records ) = @_;
 
     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-    my $xtvar     = $tm_object->cget( -variable );
+    my $xtvar;
+    if ($tm_object) {
+        $xtvar = $tm_object->cget( -variable );
+    }
+    else {
+
+        # Just ignore :)
+        return;
+    }
 
     my $row = 1;
 

@@ -71,9 +71,11 @@ Get a data structure containing references to table matrix widgets.
 =cut
 
 sub get_tm_controls {
-    my ($self, $tm) = @_;
+    my ( $self, $tm ) = @_;
 
-    return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+    if ( exists $self->{tm_controls} ) {
+        return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+    }
 }
 
 =head2 get_toolbar_btn
