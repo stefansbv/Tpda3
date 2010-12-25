@@ -8,7 +8,6 @@ use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
 use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Config;
-use Tpda3::Lookup;
 use Tpda3::Tk::ToolBar;
 
 =head1 NAME
@@ -46,8 +45,6 @@ sub run_screen {
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
-    my $lookup = Tpda3::Lookup->new;
-
     #-- Frame 1 - Order
 
     my $frame1 = $inreg_p->LabFrame(
@@ -78,12 +75,6 @@ sub run_screen {
     $ecustomername->form(
         -top  => [ '&', $lcustomername, 0 ],
         -left => [ %0,  110 ],
-    );
-    $ecustomername->bind(
-        '<KeyPress-Return>' => sub {
-            # $self->{cautare}->Dict( $gui, 'customers' );
-            $lookup->dict_lookup( $gui, 'customers', undef, undef );
-        }
     );
 
     #-+ Customer number (customernumber)

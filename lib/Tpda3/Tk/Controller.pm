@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -13,6 +15,7 @@ use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Tk::View;
 use Tpda3::Tk::Dialog::Pwd;
+use Tpda3::Lookup;
 
 =head1 NAME
 
@@ -319,6 +322,73 @@ sub _set_event_handler_screen {
             $self->remove_tmatrix_row();
         }
     );
+
+    #-- Lookup bindings
+    $self->setup_lookup_bindings();
+
+    return;
+}
+
+sub setup_lookup_bindings {
+    my $self = shift;
+
+    my $dict     = Tpda3::Lookup->new;
+    my $ctrl_ref = $self->{_scrobj}->get_controls();
+    my $bindings = $self->_scrcfg->bindings;
+
+    foreach my $lookup ( keys %{$bindings} ) {
+        next unless ( $ctrl_ref->{$lookup}[1] );    # skip nonexistent
+
+        my $para = {                     # parameter for Search dialog
+            table  => $bindings->{$lookup}{table},
+            lookup => $lookup,
+        };
+
+        # Add lookup field to columns
+        my $field_cfg = $self->_scrcfg->maintable->{columns}{$lookup};
+        my @cols;
+        my $rec = {};
+        $rec->{$lookup} = {
+            width => $field_cfg->{width},
+            label => $field_cfg->{label},
+            order => $field_cfg->{order},
+        };
+        push @cols, $rec;
+
+        if ( ref $bindings->{$lookup}{field} ) {
+
+            # Multiple fields
+            foreach my $fld ( @{ $bindings->{$lookup}{field} } ) {
+                my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
+                my $rec = {};
+                $rec->{$fld} = {
+                    width => $field_cfg->{width},
+                    label => $field_cfg->{label},
+                    order => $field_cfg->{order},
+                };
+                push @cols, $rec;
+            }
+        }
+        else {
+            my $fld       = $bindings->{$lookup}{field};
+            my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
+            my $rec = {};
+            $rec->{$fld} = {
+                width => $field_cfg->{width},
+                label => $field_cfg->{label},
+                order => $field_cfg->{order},
+            };
+            push @cols, $rec;
+        }
+
+        $para->{columns} = [@cols];
+
+        $ctrl_ref->{$lookup}[1]->bind(
+            '<KeyPress-Return>' => sub {
+                $dict->lookup( $self->_view, $para );
+            }
+        );
+    }
 
     return;
 }

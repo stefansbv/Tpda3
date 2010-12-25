@@ -22,7 +22,7 @@ sub new {
     return $self;
 }
 
-sub dict_lookup {
+sub lookup {
     my ($self, $gui, $table, $filter, $wid_group) = @_;
 
     my ( $record_ref, $field_ref )

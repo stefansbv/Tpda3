@@ -3,6 +3,8 @@ package Tpda3::Tk::Dialog::Search;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::LabFrame;
 use Tk::MListbox;
 use Tk::StatusBar;
@@ -66,13 +68,11 @@ Show dialog
 =cut
 
 sub run_dialog {
-    my ( $self, $mw, $table, $filter ) = @_;
-
-    my $columns_ref;    # = $self->{conf}->get_general_conf_search($table);
+    my ( $self, $view, $para, $filter ) = @_;
 
     #--- Dialog Box
 
-    my $dlg = $mw->DialogBox(
+    my $dlg = $view->DialogBox(
         -title   => 'Search dialog',
         -buttons => [ 'Load', 'Cancel' ]
     );
@@ -103,6 +103,12 @@ sub run_dialog {
     #- Search string
 
     my $esir = $frm1->Entry( -width => 20, );
+    $esir->grid(
+        -row    => 0,
+        -column => 2,
+        -padx   => 5,
+        -pady   => 5,
+    );
 
     my $selected;
     my $searchopt = $frm1->JComboBox(
@@ -120,13 +126,6 @@ sub run_dialog {
         -pady   => 6,
     );
 
-    $esir->grid(
-        -row    => 0,
-        -column => 2,
-        -padx   => 5,
-        -pady   => 5,
-    );
-
     # Focus on Entry
     $esir->focus;
 
@@ -137,7 +136,7 @@ sub run_dialog {
         -command => [
             sub {
                 my ($self) = @_;
-                $self->search_command( $esir, $table, $columns_ref, \$selected,
+                $self->search_command( $esir, $para->{table}, \$selected,
                     $filter );
             },
             $self,
@@ -179,38 +178,32 @@ sub run_dialog {
 
     # Box header
 
-    my $den_label;
     my $colcnt = 0;
+    foreach my $rec ( @{ $para->{columns} } ) {
 
-    foreach my $col ( @{$columns_ref} ) {
+        foreach my $field ( keys %{$rec} ) {
+            $self->{box}->columnInsert( 'end', -text => $rec->{$field}{label} );
+            $self->{box}->columnGet($colcnt)->Subwidget("heading")
+              ->configure( -background => 'tan' );
+            $self->{box}->columnGet($colcnt)->Subwidget("heading")
+              ->configure( -width => $rec->{$field}{width} );
 
-        $den_label = $col->{label} if $col->{key} eq 'scol1';    # label name
-        my $label = $col->{label};
-        my $name  = $col->{name};
-        my $width = $col->{width};
-        my $sort  = $col->{sort};
-
-        $self->{box}->columnInsert( 'end', -text => $label );
-        $self->{box}->columnGet($colcnt)->Subwidget("heading")
-          ->configure( -background => 'tan' );
-        $self->{box}->columnGet($colcnt)->Subwidget("heading")
-          ->configure( -width => $width );
-
-        if ( defined $sort ) {
-            if ( $sort eq 'N' ) {
-                $self->{box}->columnGet($colcnt)
-                  ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
+            if ( defined $rec->{$field}{order} ) {
+                if ( $rec->{$field}{order} eq 'N' ) {
+                    $self->{box}->columnGet($colcnt)
+                      ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
+                }
             }
-        }
-        else {
-            warn "Warning: no sort option for $name\n";
-        }
+            else {
+                warn "Warning: no sort option for $field\n";
+            }
 
-        $colcnt++;
+            $colcnt++;
+        }
     }
 
     # Search in field ...
-    $den_label = $den_label || q{};    # Empty string if not defined
+    my $den_label = $para->{lookup} || q{}; # label name or empty string
     $lblcamp->configure( -text => "[ $den_label ]", -foreground => 'blue' );
 
     $esir->bind(
@@ -274,7 +267,7 @@ sub run_dialog {
         -browsecmd => sub {
             my ( $self, $esir, $sele ) = @_;
 
-            # Sterg continutul tabelului - init
+            # Initialy empty
             $self->{box}->delete( 0, 'end' );
         },
     );
