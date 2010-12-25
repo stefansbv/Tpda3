@@ -77,7 +77,7 @@ sub run_dialog {
         -buttons => [ 'Load', 'Cancel' ]
     );
 
-    #-- Main frame
+    #--- Main frame
 
     my $mf = $dlg->Frame()->pack(
         -side   => 'top',
@@ -85,24 +85,23 @@ sub run_dialog {
         -fill   => 'both',
     );
 
-    #- Frame 1
+    #-- Frame 1
 
-    # Optiuni cautare
     my $frm1 = $mf->Frame( -foreground => 'blue', )->pack(
         -expand => 1,
         -fill   => 'x',
         -ipady  => 3,
     );
 
-    my $lblcamp = $frm1->Label();
-    $lblcamp->grid(
+    my $lblcamp = $frm1->Label()->grid(
         -row    => 0,
         -column => 0,
         -sticky => 'e',
         -padx   => 5,
     );
 
-    # Entry sir cautare
+    #- Search string
+
     my $esir = $frm1->Entry( -width => 20, );
 
     my $selected;
@@ -151,13 +150,17 @@ sub run_dialog {
         -pady   => 5,
     );
 
-    #- Frame cu lista rezultate
+    #-- Frame (lista rezultate)
 
     my $frm2 = $mf->LabFrame(
         -label      => 'Rezult',
-        -foreground => 'darkgreen'
-    );
-    $frm2->pack( -expand => 1, -fill => 'both', -ipadx => 5, -ipady => 3 );
+        -foreground => 'darkgreen',
+      )->pack(
+        -expand => 1,
+        -fill   => 'both',
+        -ipadx  => 5,
+        -ipady  => 3,
+      );
 
     $self->{box} = $frm2->Scrolled(
         'MListbox',
@@ -222,39 +225,47 @@ sub run_dialog {
         }
     );
 
-    my $frm3 = $mf->Frame()->pack( -fill => 'x' );
+    #-- Frame
 
-    # Label
+    my $frm3 = $mf->Frame()->pack(
+        -expand => 1,
+        -fill   => 'x',
+        -ipady  => 3,
+    );
+
+    #- Label
 
     my $fltlbl = $frm3->Label(
         -text => 'Filter:',
-        -padx => 5,
-        -pady => 5,
-      )->pack(
-        -side   => 'left',
-        -anchor => 'w',
-      );
+    )->grid(
+        -row    => 0,
+        -column => 0,
+        -sticky => 'e',
+        -padx   => 5,
+    );
 
-    # Filter label
+    #- Filter label
 
     $self->{filt} = $frm3->Label(
         -relief => 'groove',
-        -width  => 50
-      )->pack(
+        -width  => 50,
+    )->grid(
+        -row    => 0,
+        -column => 1,
         -padx   => 5,
-        -side   => 'left',
-        -anchor => 'e',
-      );
+        -pady   => 5,
+    );
 
-    my $frm4 = $mf->Frame()->pack( -fill => 'x' );
+    #-- Frame
+
+    my $frm4 = $mf->Frame()->pack( -expand => 1, -fill => 'x' );
 
     # Mesage label
 
-    $self->{mesg} = $frm4->Label( -anchor => 's' )->pack(
-        -side   => 'left',
+    $self->{mesg} = $frm4->Label( -relief => 'sunken', )->pack(
         -expand => 1,
-        -anchor => 'w',
-        -fill   => 'x'
+        -fill   => 'x',
+        -padx   => 8,
     );
 
     # Callback for search JCombobox
