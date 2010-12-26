@@ -322,8 +322,6 @@ Lookup in dictionary and display result in list box
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
 
-    print " search for $srcstr with $options\n";
-
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $para->{table};

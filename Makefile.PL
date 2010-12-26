@@ -46,6 +46,6 @@ requires 'Tk::FontDialog'             => '0.15';
 build_requires 'Test::More'           => '0.47';
 
 install_share  'share';
-#install_script 'bin/tpda-mvc';
+#install_script 'bin/tpda3';
 
 WriteAll;

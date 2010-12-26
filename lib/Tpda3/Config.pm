@@ -102,7 +102,7 @@ sub config_main_load {
     my ( $self, $args ) = @_;
 
     my $configpath = File::UserConfig->new(
-        dist     => 'tpda-mvc',
+        dist     => 'tpda3',
         sharedir => 'share',
     )->configdir;
 
@@ -193,7 +193,7 @@ sub config_application_load {
 
         $self->{_log}->info("Loading $section config file: $cfg_file");
         my $msg = qq{\nConfiguration error, to fix, run\n\n};
-        $msg .= qq{  tpda-mvc -init };
+        $msg .= qq{  tpda3 -init };
         $msg .= $self->cfname . qq{\n\n};
 
         #$msg   .= qq{then edit: $cfgconn_f\n};

@@ -393,8 +393,8 @@ sub query_dictionary {
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
+    # print "SQL : $stmt\n";
+    # print "bind: @bind\n";
 
     my $args = { MaxRows => 50 }; # Limit search result to max 50 rows
     my $ary_ref;

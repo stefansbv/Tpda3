@@ -60,7 +60,7 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
-    $self->title(" Tpda ");
+    $self->title(" Tpda3 ");
 
     #-- Menu
     $self->_create_menu();
