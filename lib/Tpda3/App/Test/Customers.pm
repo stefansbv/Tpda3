@@ -206,11 +206,6 @@ sub run_screen {
         -top  => [ '&', $lcountryname, 0 ],
         -left => [ %0,  110 ],
     );
-    $ecountryname->bind(
-        '<KeyPress-Return>' => sub {
-            $self->{cautare}->Dict( $gui, 'v_country' );
-        }
-    );
 
     #-+ Countrycode
     my $ecountrycode = $frame1->Entry(
@@ -236,11 +231,6 @@ sub run_screen {
     $esalesrepemployee->form(
         -top  => [ '&', $lsalesrepemployee, 0 ],
         -left => [ %0,  110 ],
-    );
-    $esalesrepemployee->bind(
-        '<KeyPress-Return>' => sub {
-            $self->{cautare}->Dict( $gui, 'v_employees' );
-        }
     );
 
     #-+ Eemployeenumber

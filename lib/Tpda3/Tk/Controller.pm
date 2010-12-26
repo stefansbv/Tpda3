@@ -127,7 +127,7 @@ Setup event handlers for the interface.
 sub _set_event_handlers {
     my $self = shift;
 
-    $self->_log->trace("_set_event_handlers");
+    $self->_log->trace("Setup event handlers");
 
     #- Base menu
 
@@ -267,7 +267,7 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
-    $self->_log->trace("_set_event_handler_nb for '$page'");
+    $self->_log->trace("Setup event handler on NoteBook for '$page'");
 
     #- NoteBook events
 
@@ -306,7 +306,7 @@ in the screen, regardless of the screen type.
 sub _set_event_handler_screen {
     my $self = shift;
 
-    $self->_log->trace("_set_event_handler_screen");
+    $self->_log->trace("Setup event handler for screen");
     #- screen ToolBar
 
     #-- Add row button
@@ -323,11 +323,27 @@ sub _set_event_handler_screen {
         }
     );
 
-    #-- Lookup bindings
-    $self->setup_lookup_bindings();
-
     return;
 }
+
+=head2 setup_lookup_bindings
+
+Create bindings for widgets as defined in the configuration file in
+the I<bindings> section.
+
+For example in orders.conf:
+
+  <bindings>
+    <customername>
+      table = customers
+      field = customernumber
+    </customername>
+  </bindings>
+
+This will create a binding for the I<customername> widget, alowing the
+user to lookup the I<customernumber> in the I<customer> table.
+
+=cut
 
 sub setup_lookup_bindings {
     my $self = shift;
@@ -336,8 +352,16 @@ sub setup_lookup_bindings {
     my $ctrl_ref = $self->{_scrobj}->get_controls();
     my $bindings = $self->_scrcfg->bindings;
 
+    $self->_log->trace("Setup binding for configured widgets");
+
     foreach my $lookup ( keys %{$bindings} ) {
-        next unless ( $ctrl_ref->{$lookup}[1] );    # skip nonexistent
+        unless ( $ctrl_ref->{$lookup}[1] ) {
+            # Skip nonexistent
+            $self->_log->trace("Wrong binding config for '$lookup'");
+            next;
+        }
+
+        $self->_log->trace("Setup binding for '$lookup'");
 
         my $para = {                     # parameter for Search dialog
             table  => $bindings->{$lookup}{table},
@@ -357,7 +381,7 @@ sub setup_lookup_bindings {
 
         if ( ref $bindings->{$lookup}{field} ) {
 
-            # Multiple fields
+            # Multiple fields returned as array
             foreach my $fld ( @{ $bindings->{$lookup}{field} } ) {
                 my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
                 my $rec = {};
@@ -370,6 +394,7 @@ sub setup_lookup_bindings {
             }
         }
         else {
+            # One field, no array
             my $fld       = $bindings->{$lookup}{field};
             my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
             my $rec = {};
@@ -385,7 +410,8 @@ sub setup_lookup_bindings {
 
         $ctrl_ref->{$lookup}[1]->bind(
             '<KeyPress-Return>' => sub {
-                $dict->lookup( $self->_view, $para );
+                my $record = $dict->lookup( $self->_view, $para );
+                $self->screen_write($record);
             }
         );
     }
@@ -688,12 +714,8 @@ sub screen_module_load {
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
 
-    if ($class->can('run_screen') ) {
-        $self->_log->trace("Screen '$class' can 'run_screen'");
-    }
-    else {
+    unless ($class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
-
         print "$msg\n";
         $self->_log->error($msg);
 
@@ -725,7 +747,10 @@ sub screen_module_load {
     }
     $self->_view->set_geometry($geom);
 
+    # Event handlers
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    #-- Lookup bindings
+    $self->setup_lookup_bindings();
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
@@ -1292,7 +1317,7 @@ sub screen_write {
     $self->_log->trace("Write to screen controls (turning controls on)");
 
     unless ( ref $record_ref ) {
-        $self->_log->trace(" No record data, emptying the screen");
+        $self->_log->trace("No record data, emptying the screen");
     }
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();

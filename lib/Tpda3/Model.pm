@@ -373,6 +373,42 @@ sub query_record_batch {
     return \@records;
 }
 
+=head2 query_dictionary
+
+Query a dictionary table
+
+=cut
+
+sub query_dictionary {
+    my ( $self, $data_hr ) = @_;
+
+    my $table = $data_hr->{table};
+    my $opt   = $data_hr->{options};
+    my $order = $data_hr->{order};
+    my $cols  = $data_hr->{columns};
+
+    my $where = $self->build_where($data_hr, $opt);
+
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+
+    print "SQL : $stmt\n";
+    print "bind: @bind\n";
+
+    my $args = { MaxRows => 50 }; # Limit search result to max 50 rows
+    my $ary_ref;
+    try {
+        $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $ary_ref;
+}
+
 =head2 build_where
 
 Return a hash reference containing where clause attributes.  Table
@@ -438,46 +474,6 @@ sub get_codes {
     my $codes   = $codings->get_coding_init($field, $para);
 
     return $codes;
-}
-
-=head2 query_dictionary
-
-Query a dictionary table
-
-=cut
-
-sub query_dictionary {
-    my ( $self, $data_hr ) = @_;
-
-    my $table = $data_hr->{table};
-    my $opt   = $data_hr->{options};
-    my $order = $data_hr->{order};
-    my $cols  = $data_hr->{columns};
-
-    my $where = $self->build_where($data_hr, $opt);
-
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-
-    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-
-    print "SQL : $stmt\n";
-    print "bind: @bind\n";
-
-    my @records;
-    try {
-        my $sth = $self->{_dbh}->prepare($stmt);
-        $sth->execute(@bind);
-
-        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
-            push( @records, $record );
-        }
-    }
-    catch {
-        $self->_print("Database error!") ;
-        croak("Transaction aborted: $_");
-    };
-
-    return \@records;
 }
 
 =head1 AUTHOR

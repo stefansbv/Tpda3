@@ -116,6 +116,8 @@ There is another column named 'filtru' than can be used to restrict
 the values listed when they depend on the value of another widget in
 the current screen (not yet used!).
 
+TODO: Change the field names
+
 =cut
 
 sub tbl_dict_query {

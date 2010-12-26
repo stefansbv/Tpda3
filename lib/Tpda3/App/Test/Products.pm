@@ -116,11 +116,6 @@ sub run_screen {
         -top  => [ '&', $lproductline, 0 ],
         -left => [ %0,  80 ],
     );
-    $eproductline->bind(
-        '<KeyPress-Return>' => sub {
-            $self->{cautare}->Dict( $gui, 'productlines' );
-        }
-    );
 
     #-+ Productlinecode
 

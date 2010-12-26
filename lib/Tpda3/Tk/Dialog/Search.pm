@@ -38,9 +38,6 @@ Constructor method
 
 =cut
 
-# Variabile locale
-my $field_ref;
-
 sub new {
     my $type = shift;
 
@@ -172,10 +169,12 @@ sub run_dialog {
 
     # Box header
 
+    my @columns;
     my $colcnt = 0;
     foreach my $rec ( @{ $para->{columns} } ) {
 
         foreach my $field ( keys %{$rec} ) {
+            push @columns, $field;
             $self->{box}->columnInsert( 'end', -text => $rec->{$field}{label} );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
               ->configure( -background => 'tan' );
@@ -268,18 +267,18 @@ sub run_dialog {
 
     # Filter?
 
-    if ($filter) {
-        my $mesg = '';
-        my ( $fltcmp, $fltval );
-        my @filtre = split( /:/, $filter );
-        foreach (@filtre) {
-            ( $fltcmp, $fltval ) = split( /=/, $_ );
-            $mesg .= "$fltcmp=$fltval ";
-        }
-        if ($fltval) {
-            $self->refresh_filt( $mesg, 'red' );
-        }
-    }
+    # if ($filter) {
+    #     my $mesg = '';
+    #     my ( $fltcmp, $fltval );
+    #     my @filtre = split( /:/, $filter );
+    #     foreach (@filtre) {
+    #         ( $fltcmp, $fltval ) = split( /=/, $_ );
+    #         $mesg .= "$fltcmp=$fltval ";
+    #     }
+    #     if ($fltval) {
+    #         $self->refresh_filt( $mesg, 'red' );
+    #     }
+    # }
 
     #---
 
@@ -293,16 +292,21 @@ sub run_dialog {
         if ($@) {
             warn "Error: $@";
 
-            # &status_mesaj_l('selectati o inreg.');
             return;
         }
         else {
             unless ($ind_cod) { $ind_cod = 0; }
         }
-        my @valret = $self->{box}->getRow($ind_cod);
+        my @values = $self->{box}->getRow($ind_cod);
 
-        # print "valret = @valret\n";
-        return ( \@valret, $field_ref );
+        #- Prepare data and return as hash reference
+
+        my $row_data = {};
+        for (my $i = 0; $i < @columns; $i++) {
+            $row_data->{ $columns[$i] } = $values[$i];
+        }
+
+        return $row_data;
     }
     else {
         return "";
@@ -325,7 +329,7 @@ sub search_command {
     $params->{table} = $para->{table};
     $params->{where}{ $para->{lookup} } = [ $srcstr, 'contains' ];
     $params->{options} = $options;
-    $params->{columns} =  [ map { keys %{$_} } @{ $para->{columns} } ];
+    $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
     $params->{order} = $para->{lookup};      # order by lookup field
 
     my $records = $model->query_dictionary($params);
@@ -339,15 +343,9 @@ sub search_command {
         my $nrinreg = scalar @{$records};
         my $mesaj = $nrinreg == 1 ? "one record" : "$nrinreg records";
 
-        # $self->refresh_mesg( $mesaj, 'darkgreen' );
-        foreach my $hash_ref ( @{$records} ) {
-            my @row = ();
-            foreach my $field ( @{$params->{columns}} ) {
-                push @row, $hash_ref->{$field};
-            }
-            $self->{box}->insert( 'end', [@row] );
-            # $self->{box}->see('active');
-            # $self->{box}->update;
+        $self->refresh_mesg( $mesaj, 'darkgreen' );
+        foreach my $array_ref ( @{$records} ) {
+            $self->{box}->insert( 'end', $array_ref );
             $rowcnt++;
         }
         $self->{box}->selectionClear( 0, 'end' );
@@ -357,7 +355,7 @@ sub search_command {
         $self->{box}->focus;
     }
 
-    return $field_ref;
+    return;
 }
 
 =head2 refresh_mesg
