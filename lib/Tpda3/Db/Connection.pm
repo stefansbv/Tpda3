@@ -86,6 +86,11 @@ sub _connect {
             $db = Tpda3::Db::Connection::MySql->new();
             last SWITCH;
         };
+        /sqlite/xi && do {
+            require Tpda3::Db::Connection::Sqlite;
+            $db = Tpda3::Db::Connection::Sqlite->new();
+            last SWITCH;
+        };
         # Default
         warn "Database $driver not supported!\n";
         return;

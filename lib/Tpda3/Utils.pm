@@ -3,11 +3,9 @@ package Tpda3::Utils;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 =head1 NAME
 
-Tpda3::Utils - The great new Tpda3::Utils!
+Tpda3::Utils - Various utility functions
 
 =head1 VERSION
 
@@ -24,11 +22,6 @@ Various utility functions used by all other modules.
     use Tpda3::Utils;
 
     my $foo = Tpda3::Utils->function_name();
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
 
 =head1 METHODS
 

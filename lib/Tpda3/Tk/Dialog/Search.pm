@@ -309,7 +309,7 @@ sub run_dialog {
         return $row_data;
     }
     else {
-        return "";
+        return;
     }
 }
 

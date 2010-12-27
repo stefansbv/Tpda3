@@ -741,6 +741,9 @@ sub screen_module_load {
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
         $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
+        unless ($geom) {
+            $geom = $self->_scrcfg->screen->{geom};
+        }
     }
     else {
         $geom = $self->_scrcfg->screen->{geom};
@@ -1313,6 +1316,8 @@ the value parameter is undef.
 
 sub screen_write {
     my ($self, $record_ref) = @_;
+
+    return unless ref $record_ref eq q{HASH};
 
     $self->_log->trace("Write to screen controls (turning controls on)");
 
