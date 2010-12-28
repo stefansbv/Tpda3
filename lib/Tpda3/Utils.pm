@@ -155,8 +155,10 @@ sub sort_hash_by_id {
 
 =head2 quote4like
 
-Surround text with '%' for SQL LIKE
+Surround text with '%', by default, for SQL LIKE.  An optional second
+parameter can be used for 'start with' or 'end with' sintax.
 
+If option parameter is not 'C', 'S', or 'E', 'C' is assumed.
 
 =cut
 
@@ -167,9 +169,10 @@ sub quote4like {
         return $text;
     }
     else {
-        return qq{$text%} if $option eq 'S'; # Start with
-        return qq{%$text} if $option eq 'E'; # End with
-        return qq{%$text%};                  # Contains
+        $option ||= q{C};    # default 'C'
+        return qq{$text%} if $option eq 'S';    # (S)tart with
+        return qq{%$text} if $option eq 'E';    # (E)nd with
+        return qq{%$text%};                     # (C)ontains
     }
 }
 

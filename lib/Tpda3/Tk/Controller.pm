@@ -1194,7 +1194,8 @@ sub control_read_d {
         return;
     }
 
-    my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
+    # Value from variable or empty string
+    my $value = ${ $ctrl_ref->{$field}[0] } || q{};
 
     # # Get configured date style and format accordingly
     # my $dstyle = $self->{conf}->get_misc_config('datestyle');
