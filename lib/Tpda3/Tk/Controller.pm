@@ -1318,8 +1318,6 @@ the value parameter is undef.
 sub screen_write {
     my ($self, $record_ref) = @_;
 
-    return unless ref $record_ref eq q{HASH};
-
     $self->_log->trace("Write to screen controls (turning controls on)");
 
     unless ( ref $record_ref ) {
@@ -1328,7 +1326,7 @@ sub screen_write {
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
 
-    return unless scalar keys %{$ctrl_ref};
+    return unless scalar keys %{$ctrl_ref};  # no controls?
 
     #- Scan and write to controls, swich on before write
 
@@ -1344,12 +1342,20 @@ sub screen_write {
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
 
-        my $value = $record_ref->{ lc $field };
-        if ( defined $value ) {
+        my $value;
+        if (ref $record_ref eq q{HASH}) {
+            $value = $record_ref->{ lc $field };
+        }
+        else {
+            $value = q{};                    # empty string
+        }
+
+        if ( $value ) {
 
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
 
+            # Should make $value = 0, than format as number ?
             my $decimals = $fld_cfg->{decimals};
             if ( $decimals ) {
                 if ( $decimals > 0 ) {
