@@ -79,7 +79,15 @@ sub new {
 
     bless $self, $class;
 
-    $self->_log->trace("new");
+    my $loglevel_old = $self->_log->level();
+
+    # Set log level to trace in this sub
+    # $self->_log->level($TRACE);
+
+    # $self->_log->trace("new");
+
+    # # Restore default log level
+    # $self->_log->level($loglevel_old);
 
     $self->_control_states_init;
 
@@ -411,7 +419,7 @@ sub setup_lookup_bindings {
         $ctrl_ref->{$lookup}[1]->bind(
             '<KeyPress-Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para );
-                $self->screen_write($record);
+                $self->screen_write($record, 'fields');
             }
         );
     }
@@ -474,7 +482,7 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->screen_write();      # Empty the main controls
+    $self->screen_write(undef, 'clear');      # Empty the main controls
     $self->control_tmatrix_write();
     $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
@@ -509,7 +517,7 @@ sub on_screen_mode_add {
     #     productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
     # };
 
-    $self->screen_write();
+    $self->screen_write(undef, 'clear');
     $self->control_tmatrix_write();
     $self->controls_state_set('edit');
 
@@ -526,7 +534,7 @@ content in the I<Screen> and change the background to light green.
 sub on_screen_mode_find {
     my ($self, ) = @_;
 
-    $self->screen_write();                   # Empty the controls
+    $self->screen_write(undef, 'clear'); # Empty the controls
     $self->control_tmatrix_write();
     $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
@@ -678,11 +686,6 @@ sub screen_module_load {
 
     $self->{_scrstr} = lc $module;
 
-    my $loglevel_old = $self->_log->level();
-
-    # Set log level to trace in this sub
-    $self->_log->level($TRACE);
-
     # Load the new screen configuration
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
     $self->_scrcfg->config_screen_load($self->{_scrstr} . '.conf');
@@ -783,9 +786,6 @@ sub screen_module_load {
 
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
-
-    # Restore default log level
-    $self->_log->level($loglevel_old);
 
     return;
 }
@@ -1307,57 +1307,73 @@ sub control_read_l {
 
 =head2 screen_write
 
-Write record to screen.  Controls must be I<on> to allow write.
+Write record to screen.  It first turns controls I<on> to allow write.
 
-No need to empty the screen before calling I<screen_write>, the methods
-defined for each control (widget) type should handle the case when
-the value parameter is undef.
+First parameter is a hash reference with the field names as keys.
+
+The second parameter is optional and can have the following values:
+
+=over
+
+=item record - write the entire record to controls, undef values too
+
+=item fields - write only the fields present in the hash reference
+
+=item clear  - clear all widgets contents
+
+=back
+
+If the second parameter is present, obviously the first has to be
+present to, at least as 'undef'.
 
 =cut
 
 sub screen_write {
-    my ($self, $record_ref) = @_;
+    my ($self, $record_ref, $option) = @_;
 
-    $self->_log->trace("Write to screen controls (turning controls on)");
+    $option ||= 'record';             # default option record
 
-    unless ( ref $record_ref ) {
-        $self->_log->trace("No record data, emptying the screen");
-    }
+    # $self->_log->trace("Write '$option' screen controls");
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
 
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
-    #- Scan and write to controls, swich on before write
-
+  FIELD:
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
-        # Store value for state
         my $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
-
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
 
         my $value;
-        if (ref $record_ref eq q{HASH}) {
+        if ( $option eq 'record' ) {
             $value = $record_ref->{ lc $field };
         }
+        elsif ( $option eq 'fields' ) {
+            $value = $record_ref->{ lc $field };
+            next FIELD if !$value;
+        }
+        elsif ( $option eq 'clear' ) {
+
+            # nothing here
+        }
         else {
-            $value = q{};                    # empty string
+            warn "Should never get here!\n";
         }
 
-        if ( $value ) {
+        if ($value) {
 
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
 
             # Should make $value = 0, than format as number ?
             my $decimals = $fld_cfg->{decimals};
-            if ( $decimals ) {
+            if ($decimals) {
                 if ( $decimals > 0 ) {
 
                     # if decimals > 0, format as number
@@ -1367,7 +1383,7 @@ sub screen_write {
         }
 
         # Run appropriate sub according to control (entry widget) type
-        my $sub_name = "control_write_$ctrltype";
+        my $sub_name = qq{control_write_$ctrltype};
         if ( $self->can($sub_name) ) {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
@@ -1378,6 +1394,8 @@ sub screen_write {
         # Restore state
         $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
     }
+
+    # $self->_log->trace("Write finished (restored controls states)");
 
     return;
 }
