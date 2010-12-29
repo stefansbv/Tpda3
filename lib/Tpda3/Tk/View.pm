@@ -61,6 +61,7 @@ sub new {
     $self->{_cfg} = Tpda3::Config->instance();
 
     $self->title(" Tpda3 ");
+    $self->optionReadfile('./xresource.xrdb', 'userDefault');
 
     #-- Menu
     $self->_create_menu();
