@@ -1,0 +1,22 @@
+# tpda-mvc
+# Interface configuration
+# Application specific menu definitions
+---
+appmenubar:
+  menu_app:
+    id:    1001
+    label: Sample
+    underline: 0
+    popup:
+      1:
+        name: Menu1
+        label: Menu 1
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: Menu2
+        label: Menu 2
+        underline: 0
+        sep: none
+        key: ~

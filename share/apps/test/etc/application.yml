@@ -1,0 +1,6 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+application:
+  module: Test

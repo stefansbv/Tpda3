@@ -9,7 +9,7 @@ use File::Basename;
 use File::Copy;
 use File::Find::Rule;
 use File::Path 2.07 qw( make_path );
-use File::Spec::Functions;
+#use File::Spec::Functions;
 use YAML::Tiny;
 use Config::General;
 
@@ -159,6 +159,51 @@ sub save_yaml {
     return;
 }
 
+=head2 create_path
+
+Create a new path or die.
+
+=cut
+
+sub create_path {
+    my ( $self, $new_path ) = @_;
+
+    make_path( $new_path, { error => \my $err } );
+    if (@$err) {
+        for my $diag (@$err) {
+            my ( $file, $message ) = %{$diag};
+            if ( $file eq '' ) {
+                die "Error: $message\n";
+            }
+        }
+    }
+
+    return;
+}
+
+=head2 copy_files
+
+Copy files or die.
+
+=cut
+
+sub copy_files {
+    my ($self, $src_fqn, $dst_p) = @_;
+
+    if ( !-f $src_fqn ) {
+        print "\nSource not found:\n $src_fqn\n";
+        print "\nBACKUP and remove the configurations path,\n";
+        print " run again this command to recreate the configuration paths!\n";
+        die;
+    }
+    if ( !-d $dst_p ) {
+        print "Destination path not found:\n $dst_p\n";
+        die;
+    }
+
+    copy( $src_fqn, $dst_p ) or die $!;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
@@ -172,7 +217,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

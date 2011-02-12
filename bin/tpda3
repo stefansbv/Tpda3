@@ -54,7 +54,7 @@ if ( defined $list xor $init ) {
         exit 0;
     }
     if ( $init ) {
-        $cfg->init_configs($init);
+        $cfg->config_init($init);
         exit 0;
     }
 }

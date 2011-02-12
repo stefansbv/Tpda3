@@ -3,8 +3,6 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -712,7 +710,8 @@ sub screen_module_load {
     $self->_set_event_handler_nb('lst');
 
     # The application and class names
-    my $name  = ucfirst $self->_cfg->cfname;
+    #my $name  = ucfirst $self->_cfg->cfname;
+    my $name = $self->_cfg->application->{module};
     my $class = "Tpda3::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
@@ -1795,7 +1794,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

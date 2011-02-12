@@ -1,5 +1,4 @@
 
-
 CHANGES
 
 Tpda3 is the new TPDA.  Tpda3 aims to follow the Model View Controller
@@ -27,6 +26,10 @@ module and the "Class::Accessor" module for automatically create
 accessors for the main configuration elements.  The database
 connection module "Tpda3::Db" is also using the Class::Singleton
 module.
+
+In Tpda the namespace of the application modules is based on the
+configuration name, as a consequence the same application can't be
+used with more than one configuration.  This has changed in Tpda3.
 
 
 ACKNOWLEDGMENTS

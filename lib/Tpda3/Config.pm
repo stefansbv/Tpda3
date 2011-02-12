@@ -130,6 +130,7 @@ sub config_main_load {
         cfapps  => catdir($configpath, 'apps'),
         cfiface => $maincfg->{interface},
         cfapp   => $maincfg->{application},
+        cfgen   => $maincfg->{general},
         cfrun   => $maincfg->{runtime},
         user    => $args->{user},   # make accessors for user and pass
         pass    => $args->{pass},
@@ -200,7 +201,7 @@ sub config_application_load {
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
-        $self->{_log}->info("Making accessors for @accessor");
+        $self->{_log}->info("runtime: Making accessors for @accessor");
 
         $self->make_accessors($cfg_hr);
     }
@@ -258,14 +259,23 @@ sub list_configs {
     my $cfpath = $self->cfapps;
     my $conlst = Tpda3::Config::Utils->find_subdirs($cfpath);
 
-    print "Connection configurations:\n";
+    print "\nConnection configurations:\n";
+  CONN:
     foreach my $cfg_name ( @{$conlst} ) {
         my $cfg_file = $self->config_file_name($cfg_name);
+
         # If connection file exist than list as connection name
-        if (-f $cfg_file) {
-            print " > $cfg_name\n";
-            if ($cfg_name_param eq $cfg_name) {
-                $self->print_cfg_details($cfg_file);
+        if ( -f $cfg_file ) {
+            if ($cfg_name_param) {
+                if ( $cfg_name_param eq $cfg_name ) {
+                    $self->print_cfg_details($cfg_file);
+                }
+                else {
+                    next CONN;
+                }
+            }
+            else {
+                print " > $cfg_name\n";
             }
         }
     }
@@ -335,6 +345,51 @@ sub print_cfg_details {
     return;
 }
 
+=head2 config_init
+
+Create new connection configuration directory and install new
+configuration file(s) from the template(s).
+
+=cut
+
+sub config_init {
+    my ( $self, $cfg_name ) = @_;
+
+    my $cfg_file = $self->config_file_name($cfg_name);
+    if ( -f $cfg_file ) {
+        print "Connection configuration exists, can't overwrite.\n";
+        print " > $cfg_name\n";
+        return;
+    }
+    else {
+        print "Creating new configs '$cfg_name' .. ";
+    }
+
+    # Create application config paths
+    my $cfg_path_etc = catdir( $self->cfapps, $cfg_name, 'etc');
+    Tpda3::Config::Utils->create_path($cfg_path_etc);
+    my $cfg_path_scr = catdir( $self->cfapps, $cfg_name, 'scr');
+    Tpda3::Config::Utils->create_path($cfg_path_scr);
+
+    #-- Install templates
+
+    #- Application
+    my $app_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{apptmpl} );
+    Tpda3::Config::Utils->copy_files($app_tmpl_qn, $cfg_path_etc);
+
+    #- Connection
+    my $conn_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{conntmpl} );
+    Tpda3::Config::Utils->copy_files($conn_tmpl_qn, $cfg_path_etc);
+
+    #- Menu
+    my $menu_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{menutmpl} );
+    Tpda3::Config::Utils->copy_files($menu_tmpl_qn, $cfg_path_etc);
+
+    print "done.\n";
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>
@@ -347,7 +402,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
