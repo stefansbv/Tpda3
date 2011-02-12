@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -454,7 +452,7 @@ sub build_where {
             # just skip
         }
         else {
-            warn "No find type defined for '$field'";
+            warn "Unknown 'find type' configured for '$field'";
         }
     }
 

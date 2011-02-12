@@ -309,16 +309,19 @@ sub run_screen {
     my $xtvar = {};                          # Must init as hash reference!
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
-        -rows  =>  5, -cols   =>  5,
-        -width => -1, -height => -1,
-        -ipadx         => 3,
-        -titlerows     => 1,
-        -validate      => 1,
-        -variable      => $xtvar,
-        -selectmode    => 'single',
-        -resizeborders => 'none',
-        -bg            => 'white',
-        -scrollbars    => 'osw',
+        -rows           => 5,
+        -cols           => 5,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -validate       => 1,
+        -variable       => $xtvar,
+        -selectmode     => 'single',
+        -resizeborders  => 'none',
+        -colstretchmode => 'unset',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 

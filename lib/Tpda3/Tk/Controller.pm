@@ -1201,10 +1201,15 @@ sub control_read_d {
     # my $dstyle = $self->{conf}->get_misc_config('datestyle');
     # if ($dstyle and $value) {
 
-    #     # Date should go to database in ISO format
-    #     my ($y,$m,$d) = $self->{utils}->dateentry_parse_date($dstyle, $value);
+    #     # Skip date formatting for find mode
+    #     if ( !$self->is_app_status_find ) {
 
-    #     $value = $self->{utils}->dateentry_format_date('iso', $y, $m, $d);
+    #         # Date should go to database in ISO format
+    #         my ( $y, $m, $d ) =
+    #           $self->{utils}->dateentry_parse_date( $dstyle, $value );
+
+    #         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
+    #     }
     # }
     # else {
     #     # default to ISO

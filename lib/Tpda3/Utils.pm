@@ -125,7 +125,7 @@ sub dateentry_format_date {
             last SWITCH;
         };
         # DEFAULT
-        warn "Wrong date format: $format\n";
+        warn "Unknown date format: $format\n";
     }
 
     return $date;
@@ -180,6 +180,8 @@ sub quote4like {
 
 SQL::Abstract special ops for EXTRACT (YEAR|MONTH FROM field) = word1.
 
+Note: Not compatible with SQLite.
+
 =cut
 
 sub special_ops {
@@ -194,7 +196,7 @@ sub special_ops {
                 $arg = [$arg] if not ref $arg;
                 my $label         = $self->_quote($field);
                 my ($placeholder) = $self->_convert('?');
-                my $sql           = $self->_sqlcase('extract (year from')
+                my $sql = $self->_sqlcase('extract (year from')
                   . " $label) = $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
