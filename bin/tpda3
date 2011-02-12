@@ -46,6 +46,8 @@ my $opts = {};
 # Check 'list' and 'init' options first
 if ( defined $list xor $init ) {
 
+    tpda3_version();
+
     # Initialize configurations
     my $cfg = Tpda3::Config->instance();
 
@@ -61,6 +63,8 @@ if ( defined $list xor $init ) {
 
 # Check connection configuration name option last
 if ( $cfname ) {
+
+    tpda3_version();
 
     # Other options
     $opts->{user} = $user;
