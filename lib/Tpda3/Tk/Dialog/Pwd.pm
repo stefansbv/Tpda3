@@ -68,9 +68,8 @@ sub run_dialog {
         -labelside  => 'acrosstop',
     );
     $frame->pack(
-        -padx  => 10,
-        -pady  => 10,
-        -ipadx => 5,
+        -padx  => 10, -pady  => 10,
+        -ipadx => 5,  -ipady => 5,
     );
 
     #-- User
@@ -79,14 +78,15 @@ sub run_dialog {
         -text => 'User:',
     );
     $luser->form(
-        -left => [ %0, 0 ],
         -top  => [ %0, 0 ],
-        -padx => 5,
-        -pady => 5,
+        -left => [ %0, 0 ],
+        -padleft => 5,
     );
     my $euser = $frame->Entry(
-        -width => 30,
-        -bg    => 'white',
+        -width              => 30,
+        -background         => 'white',
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
     );
     $euser->form(
         -top  => [ '&', $luser, 0 ],
@@ -99,24 +99,21 @@ sub run_dialog {
         -text => 'Password:',
     );
     $lpass->form(
+        -top  => [ $luser, 8 ],
         -left => [ %0,     0 ],
-        -top  => [ $luser, 0 ],
-        -padx => 5,
-        -pady => 5,
+        -padleft => 5,
     );
     my $epass = $frame->Entry(
-        -width => 30,
-        -bg    => 'white',
-        -show  => '*',
+        -width              => 30,
+        -background         => 'white',
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+        -show               => '*',
     );
     $epass->form(
         -top  => [ '&', $lpass, 0 ],
         -left => [ %0,  90 ],
     );
-
-    # $self->{dlg}->Subwidget('B_Accept')->configure(
-    #     -command => [ \&ok_command, $self, \$euser, \$epass ],
-    # );
 
     $euser->focus;
 
@@ -147,7 +144,7 @@ sub run_dialog {
         }
     }
     else {
-        $mw->on_quit;
+        $mw->destroy;
     }
 }
 
