@@ -251,7 +251,9 @@ List all existing connection configurations.
 =cut
 
 sub list_configs {
-    my $self = shift;
+    my ($self, $cfg_name_param) = @_;
+
+    $cfg_name_param ||= q{};                 # default empty
 
     my $cfpath = $self->cfapps;
     my $conlst = Tpda3::Config::Utils->find_subdirs($cfpath);
@@ -261,7 +263,10 @@ sub list_configs {
         my $cfg_file = $self->config_file_name($cfg_name);
         # If connection file exist than list as connection name
         if (-f $cfg_file) {
-            print "  > $cfg_name\n";
+            print " > $cfg_name\n";
+            if ($cfg_name_param eq $cfg_name) {
+                $self->print_cfg_details($cfg_file);
+            }
         }
     }
     print " in '$cfpath'\n";
@@ -305,6 +310,27 @@ sub config_load_instance {
     my $cfg_hr = Tpda3::Config::Utils->config_file_load( $inst_qfn );
 
     $self->make_accessors($cfg_hr);
+
+    return;
+}
+
+=head2 print_cfg_details
+
+Print configuration details.
+
+=cut
+
+sub print_cfg_details {
+    my ( $self, $cfg_file ) = @_;
+
+    my $msg = qq{\nConfiguration error\n};
+    my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+
+    while ( my ( $key, $value ) = each( %{ $cfg_hr->{connection} } ) ) {
+        print "    $key = ";
+        print "$value" if defined $value;
+        print "\n";
+    }
 
     return;
 }

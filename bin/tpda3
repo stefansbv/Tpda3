@@ -25,7 +25,7 @@ if ( @ARGV > 0 ) {
         'help|?'    => \$help,
         'man'       => \$man,
         'version'   => \$version,
-        'list'      => \$list,
+        'list:s'    => \$list,
         'user=s'    => \$user,
         'password=s'=> \$pass,
         'init:s'    => \$init,
@@ -49,8 +49,8 @@ if ( defined $list xor $init ) {
     # Initialize configurations
     my $cfg = Tpda3::Config->instance();
 
-    if ( $list ) {
-        $cfg->list_configs();
+    if ( defined $list ) {
+        $cfg->list_configs($list);
         exit 0;
     }
     if ( $init ) {
