@@ -7,10 +7,9 @@ use Carp;
 #use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
-
 use File::Spec::Functions qw(abs2rel);
-use Wx qw[:everything];
 
+use Wx qw{:everything};
 use base 'Wx::Frame';
 
 use Tpda3::Config;

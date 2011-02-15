@@ -3,9 +3,11 @@ package Tpda3::Wx::Controller;
 use strict;
 use warnings;
 
-use Wx ':everything';
+use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
                  EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
+
+use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Model;
 use Tpda3::Wx::App;
@@ -52,13 +54,19 @@ sub new {
         _app     => $app,
         _view    => $app->{_view},
         _toolbar => $app->{_view}->get_toolbar,
+        _scrcls  => undef,
+        _scrobj  => undef,
+        _scrcfg  => undef,
+        _scrstr  => undef,
+        _cfg     => Tpda3::Config->instance(),
+        _log     => get_logger(),
     };
 
     bless $self, $class;
 
-    $self->_set_event_handlers;
+    # my $loglevel_old = $self->_log->level();
 
-    # $self->_view->Show( 1 );
+    $self->_set_event_handlers;
 
     return $self;
 }
@@ -75,18 +83,25 @@ TODO: make a more general method
 sub start {
     my ($self, ) = @_;
 
-    # $self->_view->list_populate_all();
+    $self->_log->trace("start");
 
-    # $self->_view->log_config_options();
+    # Check if we have user and pass, if not, show dialog
+    if ( !$self->_cfg->user or !$self->_cfg->pass ) {
+        my $pd = Tpda3::Wx::Dialog::Pwd->new;
+        $pd->run_dialog( $self->_view );
+    }
 
-    # # Connect to database at start
-    # $self->_model->db_connect();
+    # Check again ...
+    if ( $self->_cfg->user and $self->_cfg->pass ) {
 
-    # my $default_choice = $self->_view->get_choice_default();
-    # $self->_model->set_choice("0:$default_choice");
+        # Connect to database
+        $self->_model->toggle_db_connect();
+    }
+    else {
+        $self->_view->on_quit;
+    }
 
-    # $self->_model->set_idlemode();
-    # $self->toggle_controls;
+    return;
 }
 
 =head2 _set_event_handlers
@@ -135,30 +150,125 @@ my $exit = sub {
 
 =head2 _set_event_handlers
 
-Setup event handlers
+Setup event handlers for the interface.
 
 =cut
 
 sub _set_event_handlers {
     my $self = shift;
 
-    #- Menu
-    EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
-    EVT_MENU $self->_view, wxID_HELP, $about;
-    EVT_MENU $self->_view, wxID_EXIT,  $exit;
-
-    #- Toolbar
-
-    #- Quit
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
+    $self->_log->trace("Setup event handlers");
 
     #- Frame
     EVT_CLOSE $self->_view, $closeWin;
+
+    #- Base menu
+
+    EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
+    EVT_MENU $self->_view, wxID_EXIT,  $exit;
+    # EVT_MENU $self->_view, wxID_HELP,  $help;
+
+    # Config dialog
+    # $self->_view->get_menu_popup_item('mn_fn')->configure(
+    #     -command => sub {
+    #         $self->_view->show_config_dialog;
+    #     }
+    # );
+
+    #- Custom application menu from menu.yml
+
+    # my $appmenus = $self->_view->get_app_menus_list();
+    # foreach my $item ( @{$appmenus} ) {
+    #     $self->_view->get_menu_popup_item($item)->configure(
+    #         -command => sub {
+    #             $self->screen_module_load($item);
+    #         }
+    #     );
+    # }
+
+    #- Toolbar
+
+    #-- Attach to desktop - pin (save geometry to config file)
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_at')->GetId, sub {
+        my $scr_name = $self->{_scrstr} || 'main';
+        $self->_cfg->config_save_instance(
+            $scr_name,
+            # $self->_view->w_geometry();
+        );
+    };
+
+    #-- Find mode
+    # $self->_view->get_toolbar_btn('tb_fm')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         # From add mode forbid find mode
+    #         if ( !$self->_model->is_mode('add') ) {
+    #             $self->toggle_mode_find();
+    #         }
+    #     }
+    # );
+
+    #-- Find execute
+    # $self->_view->get_toolbar_btn('tb_fe')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         if ( $self->_model->is_mode('find') ) {
+    #             $self->record_find_execute;
+    #         }
+    #         else {
+    #             print "WARN: Not in find mode\n";
+    #         }
+    #     }
+    # );
+
+    #-- Find count
+    # $self->_view->get_toolbar_btn('tb_fc')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         if ( $self->_model->is_mode('find') ) {
+    #             $self->record_find_count;
+    #         }
+    #         else {
+    #             print "WARN: Not in find mode\n";
+    #         }
+    #     }
+    # );
+
+    #-- Add mode
+    # $self->_view->get_toolbar_btn('tb_ad')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->toggle_mode_add();
+    #     }
+    # );
+
+    #-- Quit
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
+
+    #-- Make some key bindings
+
+    # $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
+    # $self->_view->bind(
+    #     '<F7>' => sub {
+    #         # From add mode forbid find mode
+    #         if ( !$self->_model->is_mode('add') ) {
+    #             $self->toggle_mode_find();
+    #         }
+    #     }
+    # );
+    # $self->_view->bind(
+    #     '<F8>' => sub {
+    #         if ( $self->_model->is_mode('find') ) {
+    #             $self->record_find_execute;
+    #         }
+    #         else {
+    #             print "WARN: Not in find mode\n";
+    #         }
+    #     }
+    # );
+
+    return;
 }
 
 =head2 _model
 
-Return model instance variable
+Return model instance variable.
 
 =cut
 
@@ -180,96 +290,28 @@ sub _view {
     return $self->{_view};
 }
 
-=head2 toggle_controls
+=head2 _cfg
 
-Toggle controls appropriate for diferent states of the application
+Return config instance variable
 
 =cut
 
-sub toggle_controls {
+sub _cfg {
     my $self = shift;
 
-    my $is_edit = $self->_model->is_editmode ? 1 : 0;
-
-    # Tool buttons states
-    my $states = {
-        tb_cn => !$is_edit,
-        tb_sv => $is_edit,
-        tb_rf => !$is_edit,
-        tb_ad => !$is_edit,
-        tb_rm => !$is_edit,
-        tb_ls => !$is_edit,
-        tb_go => !$is_edit,
-        tb_qt => !$is_edit,
-    };
-
-    foreach my $btn ( keys %{$states} ) {
-        $self->toggle_controls_tb( $btn, $states->{$btn} );
-    }
-
-    # List control
-    $self->{_list}->Enable(!$is_edit);
-
-    # Controls by page Enabled in edit mode
-    foreach my $page ( qw(para list conf sql ) ) {
-        $self->toggle_controls_page( $page, $is_edit );
-    }
+    return $self->{_cfg};
 }
 
-=head2 toggle_controls_tb
+=head2 _log
 
-Toggle the toolbar buttons state
+Return log instance variable
 
 =cut
 
-sub toggle_controls_tb {
-    my ( $self, $btn_name, $status ) = @_;
+sub _log {
+    my $self = shift;
 
-    my $tb_btn = $self->_view->get_toolbar_btn_id($btn_name);
-    $self->{_toolbar}->EnableTool( $tb_btn, $status );
-}
-
-=head2 toggle_controls_page
-
-Toggle the controls on page
-
-=cut
-
-sub toggle_controls_page {
-    my ($self, $page, $is_edit) = @_;
-
-    my $get = 'get_controls_'.$page;
-    my $controls = $self->_view->$get();
-
-    foreach my $control ( @{$controls} ) {
-        foreach my $name ( keys %{$control} ) {
-
-            my $state = $control->{$name}->[1];  # normal | disabled
-            my $color = $control->{$name}->[2];  # name
-
-            # Controls state are defined in View as strings
-            # Here we need to transform them to 0|1
-            my $editable;
-            if (!$is_edit) {
-                $editable = 0;
-                $color = 'lightgrey'; # Default color for disabled ctrl
-            }
-            else {
-                $editable = $state eq 'normal' ? 1 : 0;
-            }
-
-            if ($page ne 'sql') {
-                $control->{$name}->[0]->SetEditable($editable);
-            }
-            else {
-                $control->{$name}->[0]->Enable($editable);
-            }
-
-            $control->{$name}->[0]->SetBackgroundColour(
-                Wx::Colour->new( $color ),
-            );
-        }
-    }
+    return $self->{_log};
 }
 
 =head1 AUTHOR

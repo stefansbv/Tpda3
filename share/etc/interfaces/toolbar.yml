@@ -154,9 +154,9 @@ toolbar:
     help:    Attach to desktop, here
     sep:     after
     state:
-      idle: normal
-      add:  normal
-      edit: normal
+      idle: disabled
+      add:  disabled
+      edit: disabled
       find: disabled
       sele: disabled
   tb_qt:
