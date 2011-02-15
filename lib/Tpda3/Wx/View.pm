@@ -3,18 +3,22 @@ package Tpda3::Wx::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
+use Carp;
+use POSIX qw (floor);
+
+use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Wx qw[:everything];
-use Wx::Perl::ListCtrl;
-use Wx::STC;
-
-use Tpda3::Config;
-use Tpda3::Wx::Notebook;
-use Tpda3::Wx::ToolBar;
+#use Wx::Perl::ListCtrl;
+#use Wx::STC;
 
 use base 'Wx::Frame';
+
+use Tpda3::Config;
+use Tpda3::Utils;
+#use Tpda3::Wx::Notebook;
+use Tpda3::Wx::ToolBar;
 
 =head1 NAME
 
@@ -54,6 +58,8 @@ sub new {
 
     $self->{_model} = $model;
 
+    $self->{_cfg} = Tpda3::Config->instance();
+
     $self->SetMinSize( Wx::Size->new( 425, 597 ) );
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
@@ -61,27 +67,13 @@ sub new {
     $self->create_menu();
 
     #-- ToolBar
-    # $self->SetToolBar( Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE ) );
-    # $self->{_tb} = $self->GetToolBar;
-    # $self->{_tb}->Realize;
+    $self->_create_toolbar();
 
     #-- Statusbar
     $self->create_statusbar();
 
     #-- Notebook
     # $self->{_nb} = Tpda3::Wx::Notebook->new( $self );
-
-    #--- Parameters Tab (page) Panel
-    # $self->create_para_page();
-
-    # #--- SQL Tab (page)
-    # $self->create_sql_page();
-
-    # #--- Configs Tab (page)
-    # $self->create_config_page();
-
-    # #--- Front Tab (page)
-    # $self->create_report_page();
 
     # $self->_set_model_callbacks();
 
@@ -100,6 +92,17 @@ sub _model {
     my $self = shift;
 
     $self->{_model};
+}
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{_cfg};
 }
 
 =head2 _set_model_callbacks
@@ -174,6 +177,50 @@ sub get_menubar {
     return $self->{_menu};
 }
 
+=head2 _create_toolbar
+
+Create toolbar
+
+=cut
+
+sub _create_toolbar {
+    my $self = shift;
+
+    my $tb = Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE );
+
+    my ($toolbars, $attribs) = $self->toolbar_names();
+
+    my $ico_path = $self->{_cfg}->cfico;
+
+    $tb->make_toolbar_buttons($toolbars, $attribs, $ico_path);
+
+    $self->SetToolBar($tb);
+
+    $self->{_tb} = $self->GetToolBar;
+    $self->{_tb}->Realize;
+
+    return;
+}
+
+=head2 toolbar_names
+
+Get Toolbar names as array reference from config.
+
+=cut
+
+sub toolbar_names {
+    my $self = shift;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->_cfg->toolbar;
+
+    # TODO: Change the config file so we don't need this sorting anymore
+    # or better keep them sorted and ready to use in config
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    return ($toolbars, $attribs);
+}
+
 =head2 create_statusbar
 
 Create the status bar
@@ -211,356 +258,6 @@ sub get_notebook {
     my $self = shift;
 
     return $self->{_nb};
-}
-
-=head2 create_report_page
-
-Create the report page (tab) on the notebook
-
-=cut
-
-sub create_report_page {
-    my $self = shift;
-
-    $self->{_list} = Wx::Perl::ListCtrl->new(
-        $self->{_nb}{p1}, -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
-    );
-
-    $self->{_list}->InsertColumn( 0, '#',           wxLIST_FORMAT_LEFT, 50  );
-    $self->{_list}->InsertColumn( 1, 'Query name', wxLIST_FORMAT_LEFT, 337 );
-
-    #-- Controls
-
-    my $repo_lbl1 = Wx::StaticText->new( $self->{_nb}{p1}, -1, 'Title', );
-    $self->{title} =
-        Wx::TextCtrl->new( $self->{_nb}{p1}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $repo_lbl2 = Wx::StaticText->new( $self->{_nb}{p1}, -1, 'Query file', );
-    $self->{filename} =
-        Wx::TextCtrl->new( $self->{_nb}{p1}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $repo_lbl3 = Wx::StaticText->new( $self->{_nb}{p1}, -1, 'Output file', );
-    $self->{output} =
-        Wx::TextCtrl->new( $self->{_nb}{p1}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $repo_lbl4 = Wx::StaticText->new( $self->{_nb}{p1}, -1, 'Sheet name', );
-    $self->{sheet} =
-        Wx::TextCtrl->new( $self->{_nb}{p1}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    $self->{description} =
-        Wx::TextCtrl->new( $self->{_nb}{p1}, -1, q{}, [ -1, -1 ], [ -1, 40 ],
-                           wxTE_MULTILINE, );
-
-    #--- Layout
-
-    my $repo_main_sz = Wx::FlexGridSizer->new( 4, 1, 5, 5 );
-
-    #-- Top
-
-    my $repo_top_sz =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->{_nb}{p1}, -1, ' Query list ', ),
-        wxVERTICAL, );
-
-    $repo_top_sz->Add( $self->{_list}, 1, wxEXPAND, 3 );
-
-    #-- Middle
-
-    my $repo_mid_sz =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->{_nb}{p1}, -1, ' Header ', ), wxVERTICAL, );
-
-    my $repo_mid_fgs = Wx::FlexGridSizer->new( 4, 2, 5, 10 );
-
-    $repo_mid_fgs->Add( $repo_lbl1, 0, wxTOP | wxLEFT,  5 );
-    $repo_mid_fgs->Add( $self->{title},    0, wxEXPAND | wxTOP, 5 );
-
-    $repo_mid_fgs->Add( $repo_lbl2, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{filename}, 0, wxEXPAND, 0 );
-
-    $repo_mid_fgs->Add( $repo_lbl3, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{output},   0, wxEXPAND, 0 );
-
-    $repo_mid_fgs->Add( $repo_lbl4, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{sheet},    0, wxEXPAND, 0 );
-
-    # $repo_mid_fgs->AddGrowableRow( 1, 1 );
-    $repo_mid_fgs->AddGrowableCol( 1, 1 );
-
-    $repo_mid_sz->Add( $repo_mid_fgs, 0, wxALL | wxGROW, 0 );
-
-    #-- Bottom
-
-    my $repo_bot_sz =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->{_nb}{p1}, -1, ' Description ', ),
-        wxVERTICAL, );
-
-    $repo_bot_sz->Add( $self->{description}, 1, wxEXPAND );
-
-    #--
-
-    $repo_main_sz->Add( $repo_top_sz, 0, wxALL | wxGROW, 5 );
-    $repo_main_sz->Add( $repo_mid_sz, 0, wxALL | wxGROW, 5 );
-    $repo_main_sz->Add( $repo_bot_sz, 0, wxALL | wxGROW, 5 );
-
-    $repo_main_sz->AddGrowableRow(0);
-    $repo_main_sz->AddGrowableCol(0);
-
-    $self->{_nb}{p1}->SetSizer($repo_main_sz);
-}
-
-=head2 create_para_page
-
-Create the parameters page (tab) on the notebook
-
-=cut
-
-sub create_para_page {
-
-    my $self = shift;
-
-    #-- Controls
-
-    my $para_tit_lbl1 =
-      Wx::StaticText->new( $self->{_nb}{p2}, -1, 'Label', );
-    my $para_tit_lbl2 =
-      Wx::StaticText->new( $self->{_nb}{p2}, -1, 'Description', );
-    my $para_tit_lbl3 =
-      Wx::StaticText->new( $self->{_nb}{p2}, -1, 'Value', );
-
-    my $para_lbl1 = Wx::StaticText->new( $self->{_nb}{p2}, -1, 'value1', );
-    $self->{descr1} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ 170, -1 ], );
-    $self->{value1} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $para_lbl2 = Wx::StaticText->new( $self->{_nb}{p2}, -1, 'value2', );
-    $self->{descr2} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ 170, -1 ], );
-    $self->{value2} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $para_lbl3 = Wx::StaticText->new( $self->{_nb}{p2}, -1, 'value3', );
-    $self->{descr3} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ 170, -1 ], );
-    $self->{value3} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $para_lbl4 = Wx::StaticText->new( $self->{_nb}{p2}, -1, 'value4', );
-    $self->{descr4} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ 170, -1 ], );
-    $self->{value4} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    my $para_lbl5 = Wx::StaticText->new( $self->{_nb}{p2}, -1, 'value5', );
-    $self->{descr5} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ 170, -1 ], );
-    $self->{value5} =
-      Wx::TextCtrl->new( $self->{_nb}{p2}, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
-
-    #-- Layout
-
-    my $para_fgs = Wx::FlexGridSizer->new( 6, 3, 5, 10 );
-
-    $para_fgs->Add( $para_tit_lbl1, 0, wxTOP | wxLEFT, 10 );
-    $para_fgs->Add( $para_tit_lbl2, 0, wxTOP | wxLEFT, 10 );
-    $para_fgs->Add( $para_tit_lbl3, 0, wxTOP | wxLEFT, 10 );
-
-    $para_fgs->Add( $para_lbl1, 0, wxTOP | wxLEFT,   5 );
-    $para_fgs->Add( $self->{descr1},   0, wxEXPAND | wxTOP, 5 );
-    $para_fgs->Add( $self->{value1},   1, wxEXPAND | wxTOP, 5 );
-
-    $para_fgs->Add( $para_lbl2, 0, wxLEFT,   5 );
-    $para_fgs->Add( $self->{descr2},   1, wxEXPAND, 0 );
-    $para_fgs->Add( $self->{value2},   1, wxEXPAND, 0 );
-
-    $para_fgs->Add( $para_lbl3, 0, wxLEFT,   5 );
-    $para_fgs->Add( $self->{descr3},   1, wxEXPAND, 0 );
-    $para_fgs->Add( $self->{value3},   1, wxEXPAND, 0 );
-
-    $para_fgs->Add( $para_lbl4, 0, wxLEFT,   5 );
-    $para_fgs->Add( $self->{descr4},   1, wxEXPAND, 0 );
-    $para_fgs->Add( $self->{value4},   1, wxEXPAND, 0 );
-
-    $para_fgs->Add( $para_lbl5, 0, wxLEFT,   5 );
-    $para_fgs->Add( $self->{descr5},   1, wxEXPAND, 0 );
-    $para_fgs->Add( $self->{value5},   1, wxEXPAND, 0 );
-
-    $para_fgs->AddGrowableCol(2);
-
-    my $para_main_sz = Wx::BoxSizer->new(wxHORIZONTAL);
-
-    my $para_sbs =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->{_nb}{p2}, -1, ' Parameters ', ), wxVERTICAL,
-      );
-
-    $para_sbs->Add( $para_fgs, 0, wxEXPAND, 3 );
-    $para_main_sz->Add( $para_sbs, 1, wxALL | wxGROW, 5 );
-
-    $self->{_nb}{p2}->SetSizer( $para_main_sz );
-}
-
-=head2 create_sql_page
-
-Create the SQL page (tab) on the notebook
-
-=cut
-
-sub create_sql_page {
-    my $self = shift;
-
-    #--- SQL Tab (page)
-
-    #-- Controls
-
-    my $sql_sb = Wx::StaticBox->new( $self->{_nb}{p3}, -1, ' SQL ', );
-
-    $self->{sql} = Wx::StyledTextCtrl->new(
-        $self->{_nb}{p3},
-        -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-
-    $self->{sql}->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
-    $self->{sql}->SetMarginWidth( 1, 10 );
-    $self->{sql}->StyleSetFont( wxSTC_STYLE_DEFAULT,
-        Wx::Font->new( 10, wxDEFAULT, wxNORMAL, wxNORMAL, 0, 'Courier New' ) );
-    # $self->{sql}->SetLexer( wxSTC_LEX_SQL );
-    $self->{sql}->SetLexer( wxSTC_LEX_MSSQL );
-    # List0
-    $self->{sql}->SetKeyWords(0,
-    q{all and any ascending between by cast collate containing day
-descending distinct escape exists from full group having in
-index inner into is join left like merge month natural not
-null on order outer plan right select singular some sort starting
-transaction union upper user where with year} );
-    # List1
-    $self->{sql}->SetKeyWords(1,
-    q{blob char decimal integer number varchar} );
-    # List2 Only for MSSQL?
-    $self->{sql}->SetKeyWords(2,
-    q{avg count gen_id max min sum} );
-    $self->{sql}->SetTabWidth(4);
-    $self->{sql}->SetIndent(4);
-    $self->{sql}->SetHighlightGuide(4);
-
-    $self->{sql}->StyleClearAll();
-
-    # Global default styles for all languages
-    $self->{sql}->StyleSetSpec( wxSTC_STYLE_BRACELIGHT,
-                                "fore:#FFFFFF,back:#0000FF,bold" );
-    $self->{sql}->StyleSetSpec( wxSTC_STYLE_BRACEBAD,
-                                "fore:#000000,back:#FF0000,bold" );
-
-    # MSSQL - works with wxSTC_LEX_MSSQL
-    $self->{sql}->StyleSetSpec(0, "fore:#000000");            #*Default
-    $self->{sql}->StyleSetSpec(1, "fore:#ff7373,italic");     #*Comment
-    $self->{sql}->StyleSetSpec(2, "fore:#007f7f,italic");     #*Commentline
-    $self->{sql}->StyleSetSpec(3, "fore:#0000ff");            #*Number
-    $self->{sql}->StyleSetSpec(4, "fore:#dca3a3");            #*Singlequoted
-    $self->{sql}->StyleSetSpec(5, "fore:#3f3f3f");            #*Operation
-    $self->{sql}->StyleSetSpec(6, "fore:#000000");            #*Identifier
-    $self->{sql}->StyleSetSpec(7, "fore:#8cd1d3");            #*@-Variable
-    $self->{sql}->StyleSetSpec(8, "fore:#705050");            #*Doublequoted
-    $self->{sql}->StyleSetSpec(9, "fore:#dfaf8f");            #*List0
-    $self->{sql}->StyleSetSpec(10,"fore:#94c0f3");            #*List1
-    $self->{sql}->StyleSetSpec(11,"fore:#705030");            #*List2
-
-    #-- Layout
-
-    my $sql_main_sz = Wx::BoxSizer->new(wxVERTICAL);
-    my $sql_sbs = Wx::StaticBoxSizer->new( $sql_sb, wxHORIZONTAL, );
-
-    $sql_sbs->Add( $self->{sql}, 1, wxEXPAND, 0 );
-    $sql_main_sz->Add( $sql_sbs, 1, wxALL | wxEXPAND, 5 );
-
-    $self->{_nb}{p3}->SetSizer( $sql_main_sz );
-}
-
-=head2 create_config_page
-
-Create the configuration info page (tab) on the notebook.
-
-Using the MySQL lexer for very basic syntax highlighting. This was
-chosen because permits the definition of 3 custom lists. For this
-purpose three key word lists are defined with a keyword in each. B<EE>
-is for error, B<II> for information and B<WW> for warning. Words in
-the lists must be lower case.
-
-=cut
-
-sub create_config_page {
-    my $self = shift;
-
-    #-- Controls
-
-    #- Log text control
-
-    $self->{log} = Wx::StyledTextCtrl->new(
-        $self->{_nb}{p4},
-        -1,
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-
-    # $self->{log}->SetUseHorizontalScrollBar(0); # turn off scrollbars
-    # $self->{log}->SetUseVerticalScrollBar(0);
-    $self->{log}->SetMarginType( 1, wxSTC_MARGIN_SYMBOL );
-    $self->{log}->SetMarginWidth( 1, 10 );
-    $self->{log}->StyleSetFont( wxSTC_STYLE_DEFAULT,
-        Wx::Font->new( 10, wxDEFAULT, wxNORMAL, wxNORMAL, 0, 'Courier New' ) );
-    $self->{log}->SetLexer( wxSTC_LEX_MSSQL );
-    $self->{log}->SetWrapMode(wxSTC_WRAP_NONE); # wxSTC_WRAP_WORD
-
-    # List0
-    $self->{log}->SetKeyWords(0, q{ii} );
-    # List1
-    $self->{log}->SetKeyWords(1, q{ee} );
-    # List2
-
-    $self->{log}->SetKeyWords(2, q{ww} );
-    $self->{log}->SetTabWidth(4);
-    $self->{log}->SetIndent(4);
-    $self->{log}->SetHighlightGuide(4);
-    $self->{log}->StyleClearAll();
-
-    # MSSQL - works with wxSTC_LEX_MSSQL
-    $self->{log}->StyleSetSpec(4, "fore:#dca3a3");            #*Singlequoted
-    $self->{log}->StyleSetSpec(8, "fore:#705050");            #*Doublequoted
-    $self->{log}->StyleSetSpec(9, "fore:#00ff00");            #*List0
-    $self->{log}->StyleSetSpec(10,"fore:#ff0000");            #*List1
-    $self->{log}->StyleSetSpec(11,"fore:#0000ff");            #*List2
-
-    #--- Layout
-
-    my $conf_main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
-
-    #-- Top - removed :)
-
-    #-- Bottom
-
-    my $conf_bot_sz =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $self->{_nb}{p4}, -1, ' Log ', ),
-        wxVERTICAL, );
-
-    $conf_bot_sz->Add( $self->{log}, 1, wxEXPAND );
-
-    #--
-
-    # $conf_main_sz->Add( $conf_top_sz, 0, wxALL | wxGROW, 5 );
-    $conf_main_sz->Add( $conf_bot_sz, 0, wxALL | wxGROW, 5 );
-
-    $conf_main_sz->AddGrowableRow(0);
-    $conf_main_sz->AddGrowableCol(0);
-
-    $self->{_nb}{p4}->SetSizer($conf_main_sz);
 }
 
 =head2 dialog_popup

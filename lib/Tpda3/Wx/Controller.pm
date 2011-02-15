@@ -50,13 +50,10 @@ sub new {
     my $app = Tpda3::Wx::App->create($model);
 
     my $self = {
-        _model => $model,
-        _app   => $app,
-        _view  => $app->{_view},
-
-        # _nbook   => $view->get_notebook,
-        # _toolbar => $view->get_toolbar,
-        # _list    => $view->get_listcontrol,
+        _model   => $model,
+        _app     => $app,
+        _view    => $app->{_view},
+        _toolbar => $app->{_view}->get_toolbar,
     };
 
     bless $self, $class;

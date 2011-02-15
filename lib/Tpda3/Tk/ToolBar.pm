@@ -3,8 +3,6 @@ package Tpda3::Tk::ToolBar;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use base qw{Tk::ToolBar};
 
@@ -76,7 +74,7 @@ sub make_toolbar_buttons {
     return;
 }
 
-=head2 item_normal
+=head2 _item_normal
 
 Create a normal toolbar button
 
@@ -97,7 +95,7 @@ sub _item_normal {
     return;
 }
 
-=head2 item_check
+=head2 _item_check
 
 Create a check toolbar button
 

@@ -3,8 +3,6 @@ package Tpda3::Wx::ToolBar;
 use strict;
 use warnings;
 
-use Tpda3::Config;
-
 use Wx qw(:everything);
 use base qw{Wx::ToolBar};
 
@@ -36,7 +34,6 @@ Constructor method.
 =cut
 
 sub new {
-
     my ( $self, $gui ) = @_;
 
     $self = $self->SUPER::new(
@@ -51,34 +48,57 @@ sub new {
     $self->SetToolBitmapSize( Wx::Size->new( 16, 16 ) );
     $self->SetMargins( 4, 4 );
 
-    # Get ToolBar button atributes
-    my $cfg = Tpda3::Config->instance();
-    my $attribs = $cfg->toolbar;
-    $self->{ico_p} = $cfg->icons;
+    # # Get ToolBar button atributes
+    #my $cfg = Tpda3::Config->instance();
+    # my $attribs = $cfg->toolbar;
 
-    #-- Sort by id
 
-    #- Keep only key and id for sorting
-    my %temp = map { $_ => $attribs->{$_}{id} } keys %$attribs;
+    # #-- Sort by id
 
-    # Save for later use :) Access from View.pm
-    $self->{_tb_btn} = \%temp;
+    # #- Keep only key and id for sorting
+    # my %temp = map { $_ => $attribs->{$_}{id} } keys %$attribs;
 
-    #- Sort with  ST
-    my @attribs = map  { $_->[0] }
-        sort { $a->[1] <=> $b->[1] }
-        map  { [ $_ => $temp{$_} ] }
-        keys %temp;
+    # # Save for later use :) Access from View.pm
+    # $self->{_tb_btn} = \%temp;
 
-    $self->{options} = $self->get_choice_options();
+    # #- Sort with  ST
+    # my @attribs = map  { $_->[0] }
+    #     sort { $a->[1] <=> $b->[1] }
+    #     map  { [ $_ => $temp{$_} ] }
+    #     keys %temp;
 
-    # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name (@attribs) {
-        my $type = $attribs->{$name}{type};
-        $self->$type( $name, $attribs->{$name} );
-    }
+    # $self->{options} = $self->get_choice_options();
+
+    # # Create buttons in ID order; use sub defined by 'type'
+    # foreach my $name (@attribs) {
+    #     my $type = $attribs->{$name}{type};
+    #     $self->$type( $name, $attribs->{$name} );
+    # }
 
     return $self;
+}
+
+=head2 make_toolbar_buttons
+
+Make main toolbar buttons.
+
+=cut
+
+sub make_toolbar_buttons {
+    my ($self, $toolbars, $attribs, $ico_path) = @_;
+
+    # Create buttons in ID order; use sub defined by 'type'
+    foreach my $name (@{$toolbars}) {
+        my $type = $attribs->{$name}{type};
+        $self->$type( $name, $attribs->{$name}, $ico_path );
+
+        # Initial state disabled, except quit and attach button
+        next if $name eq 'tb_qt';
+        next if $name eq 'tb_at';
+        # $self->toggle_tool( $name, 'disabled' );
+    }
+
+    return;
 }
 
 =head2 get_toolbar
@@ -93,21 +113,21 @@ sub get_toolbar {
     return $self->{_toolbar};
 }
 
-=head2 item_normal
+=head2 _item_normal
 
 Create a normal toolbar button
 
 =cut
 
-sub item_normal {
-    my ($self, $name, $attribs) = @_;
+sub _item_normal {
+    my ($self, $name, $attribs, $ico_path) = @_;
 
     $self->AddSeparator if $attribs->{sep} =~ m{before};
 
     # Add the button
     $self->{$name} = $self->AddTool(
         $attribs->{id},
-        $self->make_bitmap( $attribs->{icon} ),
+        $self->make_bitmap( $ico_path, $attribs->{icon} ),
         wxNullBitmap,
         wxITEM_NORMAL,
         undef,
@@ -120,18 +140,18 @@ sub item_normal {
     return;
 }
 
-=head2 item_check
+=head2 _item_check
 
 Create a check toolbar button
 
 =cut
 
-sub item_check {
+sub _item_check {
 
     # I know, another copy of a sub with only one diff is
     #  at least unusual :)
 
-    my ($self, $name, $attribs) = @_;
+    my ($self, $name, $attribs, $ico_path) = @_;
 
     $self->AddSeparator if $attribs->{sep} =~ m{before};
 
@@ -139,7 +159,7 @@ sub item_check {
     $self->{name} = $self->AddCheckTool(
         $attribs->{id},
         $name,
-        $self->make_bitmap( $attribs->{icon} ),
+        $self->make_bitmap( $ico_path, $attribs->{icon} ),
         wxNullBitmap, # bmpDisabled=wxNullBitmap other doesn't work
         $attribs->{tooltip},
         $attribs->{help},
@@ -150,18 +170,32 @@ sub item_check {
     return;
 }
 
+=head2 get_toolbar_btn
+
+Return a toolbar button when we know the its name
+
+=cut
+
+sub get_toolbar_btn {
+    my ( $self, $name ) = @_;
+
+    return $self->{$name};
+}
+
 =head2 make_bitmap
 
 Create and return a bitmap object, of any type.
+
+TODO: Put (replace) full path to the iconfile to attribs
 
 =cut
 
 sub make_bitmap {
 
-    my ($self, $icon) = @_;
+    my ($self, $ico_path, $icon) = @_;
 
     my $bmp = Wx::Bitmap->new(
-        $self->{ico_p} . "/$icon",
+        $ico_path . "/$icon.gif",
         wxBITMAP_TYPE_ANY,
     );
 
@@ -170,7 +204,7 @@ sub make_bitmap {
 
 =head2 item_list
 
-Create a list toolbar button
+Create a list toolbar button. Not used.
 
 =cut
 
@@ -220,6 +254,59 @@ sub get_choice_options {
     }
 }
 
+=head2 toggle_tool
+
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
+
+=cut
+
+sub toggle_tool {
+    my ($self, $btn_name, $state) = @_;
+
+    my $tb_btn = $self->get_toolbar_btn($btn_name);
+
+    my $other;
+    if ($state) {
+        if ( $state =~ m{norma|disabled}x ) {
+            $other = $state;
+        }
+        else {
+            $other = $state ? 'normal' : 'disabled';
+        }
+    }
+    else {
+        $state = $tb_btn->cget(-state);
+        $other = $state eq 'normal' ? 'disabled' : 'normal';
+    }
+
+    $tb_btn->configure( -state => $other );
+
+    return;
+}
+
+=head2 toggle_tool_check
+
+Toggle a toolbar checkbutton.
+
+=cut
+
+sub toggle_tool_check {
+    my ($self, $btn_name, $state) = @_;
+
+    my $tb_btn = $self->get_toolbar_btn($btn_name);
+
+    if ($state) {
+        $tb_btn->select;
+    }
+    else {
+        $tb_btn->deselect;
+    }
+
+    return;
+}
 
 =head1 AUTHOR
 

@@ -6,7 +6,7 @@ toolbar:
   tb_fm:
     id:      1001
     type:    _item_check
-    icon:    filefind16
+    icon:    connectyes16
     tooltip: Toggle find mode
     help:    Toggle find mode
     sep:     none
@@ -19,7 +19,7 @@ toolbar:
   tb_fe:
     id:      1002
     type:    _item_normal
-    icon:    actcheck16
+    icon:    connectyes16
     tooltip: Execute found
     help:    Execute found
     sep:     none
@@ -32,7 +32,7 @@ toolbar:
   tb_fc:
     id:      1003
     type:    _item_normal
-    icon:    acthelp16
+    icon:    connectyes16
     tooltip: Execute count
     help:    Execute count
     sep:     after
@@ -45,7 +45,7 @@ toolbar:
   tb_pr:
     id:      1004
     type:    _item_normal
-    icon:    fileprint16
+    icon:    connectyes16
     tooltip: Print (preview)
     help:    Print (preview) default report
     sep:     after
@@ -58,7 +58,7 @@ toolbar:
   tb_tn:
     id:      1005
     type:    _item_normal
-    icon:    apppencil16
+    icon:    connectyes16
     tooltip: Take note
     help:    Take note
     sep:     none
@@ -71,7 +71,7 @@ toolbar:
   tb_tr:
     id:      1006
     type:    _item_normal
-    icon:    actredo16
+    icon:    connectyes16
     tooltip: Restore note
     help:    Restore note
     sep:     after
@@ -84,7 +84,7 @@ toolbar:
   tb_cl:
     id:      1007
     type:    _item_normal
-    icon:    filenew16
+    icon:    edit16
     tooltip: Clear
     help:    Clear
     sep:     none
@@ -149,7 +149,7 @@ toolbar:
   tb_at:
     id:      1012
     type:    _item_normal
-    icon:    actattach16
+    icon:    connectyes16
     tooltip: Attach to desktop, here
     help:    Attach to desktop, here
     sep:     after
