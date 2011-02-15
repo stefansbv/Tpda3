@@ -15,15 +15,13 @@ use Tpda3::Wx::View;
 
 Tpda3::Wx::Controller - The Controller
 
-
 =head1 VERSION
 
 Version 0.05
 
 =cut
 
-our $VERSION = '0.05';
-
+our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
@@ -77,7 +75,6 @@ TODO: make a more general method
 sub start {
     my ($self, ) = @_;
 
-
     # $self->_view->list_populate_all();
 
     # $self->_view->log_config_options();
@@ -114,10 +111,10 @@ my $about = sub {
     my ( $self, $event ) = @_;
 
     Wx::MessageBox(
-        "TPDA - Query Repository Tool v0.11\n(C) 2010 - 2011 Stefan Suciu\n\n"
+        "Tpda3 - v0.01\n(C) 2010 - 2011 Stefan Suciu\n\n"
             . " - WxPerl $Wx::VERSION\n"
             . " - " . Wx::wxVERSION_STRING,
-        "About TPDA-QRT",
+        "About Tpda3-wxPerl",
 
         wxOK | wxICON_INFORMATION,
         $self
@@ -150,78 +147,10 @@ sub _set_event_handlers {
     EVT_MENU $self->_view, wxID_HELP, $about;
     EVT_MENU $self->_view, wxID_EXIT,  $exit;
 
-    # #- Toolbar
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_cn'), sub {
-    #     if ($self->_model->is_connected ) {
-    #         $self->_view->dialog_popup( 'Info', 'Already connected!' );
-    #     }
-    #     else {
-    #         $self->_model->db_connect;
-    #     }
-    # };
+    #- Toolbar
 
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_rf'), sub {
-    #     $self->_model->on_item_selected(@_);
-    # };
-
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_ad'), sub {
-    #     my $rec = $self->_model->report_add();
-    #     $self->_view->list_populate_item($rec);
-    # };
-
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_rm'), sub {
-    #     my $msg = 'Delete query definition file?';
-    #     if ( $self->_view->action_confirmed($msg) ) {
-    #         my $file_fqn = $self->_view->list_remove_item();
-    #         if ($file_fqn) {
-    #             $self->_model->report_remove($file_fqn);
-    #         }
-    #     }
-    #     else {
-    #         $self->_view->log_msg("II delete canceled");
-    #     }
-    # };
-
-    # # Disable editmode when save
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_sv'), sub {
-    #     if ($self->_model->is_editmode) {
-    #         $self->_view->save_query_def();
-    #         $self->_model->set_idlemode;
-    #         $self->toggle_controls;
-    #     }
-    # };
-
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_ed'), sub {
-    #     $self->_model->is_editmode
-    #         ? $self->_model->set_idlemode
-    #         : $self->_model->set_editmode;
-    #     $self->toggle_controls;
-    # };
-
-    # #- Choice
-    # EVT_CHOICE $self->_view, $self->_view->get_toolbar_btn_id('tb_ls'), sub {
-    #     my $choice = $_[1]->GetSelection;
-    #     my $text   = $_[1]->GetString;
-    #     $self->_model->set_choice("$choice:$text");
-    # };
-
-    # #- Run
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_go'), sub {
-    #     if ($self->_model->is_connected ) {
-    #         $self->_view->process_sql();
-    #     }
-    #     else {
-    #         $self->_view->dialog_popup( 'Error', 'Not connected!' );
-    #     }
-    # };
-
-    # #- Quit
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn_id('tb_qt'), $exit;
-
-    # #- List controll
-    # EVT_LIST_ITEM_SELECTED $self->_view, $self->{_list}, sub {
-    #     $self->_model->on_item_selected(@_);
-    # };
+    #- Quit
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
 
     #- Frame
     EVT_CLOSE $self->_view, $closeWin;

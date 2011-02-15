@@ -300,16 +300,16 @@ sub action_confirmed {
      }
 }
 
-=head2 get_toolbar_btn_id
+=head2 get_toolbar_btn
 
-Return a toolbar button ID when we know the its name.
+Return a toolbar button by name.
 
 =cut
 
-sub get_toolbar_btn_id {
-    my ($self, $name) = @_;
+sub get_toolbar_btn {
+    my ( $self, $name ) = @_;
 
-    return $self->{_tb}{_tb_btn}{$name};
+    return $self->{_tb}->get_toolbar_btn($name);
 }
 
 =head2 get_toolbar

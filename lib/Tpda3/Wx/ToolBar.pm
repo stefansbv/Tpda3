@@ -48,33 +48,6 @@ sub new {
     $self->SetToolBitmapSize( Wx::Size->new( 16, 16 ) );
     $self->SetMargins( 4, 4 );
 
-    # # Get ToolBar button atributes
-    #my $cfg = Tpda3::Config->instance();
-    # my $attribs = $cfg->toolbar;
-
-
-    # #-- Sort by id
-
-    # #- Keep only key and id for sorting
-    # my %temp = map { $_ => $attribs->{$_}{id} } keys %$attribs;
-
-    # # Save for later use :) Access from View.pm
-    # $self->{_tb_btn} = \%temp;
-
-    # #- Sort with  ST
-    # my @attribs = map  { $_->[0] }
-    #     sort { $a->[1] <=> $b->[1] }
-    #     map  { [ $_ => $temp{$_} ] }
-    #     keys %temp;
-
-    # $self->{options} = $self->get_choice_options();
-
-    # # Create buttons in ID order; use sub defined by 'type'
-    # foreach my $name (@attribs) {
-    #     my $type = $attribs->{$name}{type};
-    #     $self->$type( $name, $attribs->{$name} );
-    # }
-
     return $self;
 }
 
@@ -172,7 +145,7 @@ sub _item_check {
 
 =head2 get_toolbar_btn
 
-Return a toolbar button when we know the its name
+Return a toolbar button by name.
 
 =cut
 
