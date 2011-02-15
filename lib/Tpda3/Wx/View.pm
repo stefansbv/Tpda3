@@ -60,7 +60,7 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
-    $self->SetMinSize( Wx::Size->new( 425, 597 ) );
+    $self->SetMinSize( Wx::Size->new( 460, 240 ) );
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
     #-- Menu
