@@ -10,8 +10,6 @@ use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Wx qw[:everything];
-#use Wx::Perl::ListCtrl;
-#use Wx::STC;
 
 use base 'Wx::Frame';
 
@@ -64,7 +62,8 @@ sub new {
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
     #-- Menu
-    $self->create_menu();
+    $self->_create_menu();
+    $self->_create_app_menu();
 
     #-- ToolBar
     $self->_create_toolbar();
@@ -141,29 +140,147 @@ sub _set_model_callbacks {
     $xo->add_callback( sub{ $self->log_msg( @_ ) } );
 }
 
-=head2 create_menu
+=head2 _create_menu
 
-Create the menu
+Create the menubar and the menus. Menus are defined in configuration
+files.
 
 =cut
 
-sub create_menu {
+sub _create_menu {
     my $self = shift;
 
     my $menu = Wx::MenuBar->new;
 
     $self->{_menu} = $menu;
 
-    my $menu_app = Wx::Menu->new;
-    $menu_app->Append( wxID_EXIT, "E&xit\tAlt+X" );
-    $menu->Append( $menu_app, "&App" );
-
-    my $menu_help = Wx::Menu->new();
-    $menu_help->AppendString( wxID_HELP, "&Contents...", q{} );
-    $menu_help->AppendString( wxID_ABOUT, "&About", q{} );
-    $menu->Append( $menu_help, "&Help" );
+    $self->make_menus( $self->_cfg->menubar );
 
     $self->SetMenuBar($menu);
+
+    return;
+}
+
+=head2 _create_app_menu
+
+Insert application menu. The menubars are inserted after the first
+item of the default menu.
+
+=cut
+
+sub _create_app_menu {
+    my $self = shift;
+
+    my $attribs = $self->_cfg->appmenubar;
+
+    $self->make_menus($attribs, 1);  # insert starting with position 1
+
+    return;
+}
+
+=head2 make_menus
+
+Make menus.
+
+=cut
+
+sub make_menus {
+    my ($self, $attribs, $position) = @_;
+
+    $position = $position ||= 0;             # default
+
+    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    #- Create menus
+    foreach my $menu_name ( @{$menus} ) {
+
+        # $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
+        $self->{$menu_name} = Wx::Menu->new();
+
+        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        foreach my $id (@popups) {
+            $self->make_popup_item(
+                $self->{$menu_name},
+                $attribs->{$menu_name}{popup}{$id},
+                $attribs->{$menu_name}{id} . $id, # menu Id
+            );
+        }
+
+        $self->{_menu}->Insert(
+            $position,
+            $self->{$menu_name},
+            Tpda3::Utils->ins_underline_mark(
+                $attribs->{$menu_name}{label},
+                $attribs->{$menu_name}{underline}
+            ),
+        );
+
+        $position++;
+    }
+
+    return;
+}
+
+=head2 get_app_menus_list
+
+Get application menus list, needed for binding the command to load the
+screen.  We only need the name of the popup which is also the name of
+the screen (and also the name of the module).
+
+=cut
+
+sub get_app_menus_list {
+    my $self = shift;
+
+    my $attribs = $self->_cfg->appmenubar;
+    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    my @menulist;
+    foreach my $menu_name ( @{$menus} ) {
+        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        foreach my $item (@popups) {
+            push @menulist, $attribs->{$menu_name}{popup}{$item}{name};
+        }
+    }
+
+    return \@menulist;
+}
+
+=head2 make_popup_item
+
+Make popup item
+
+=cut
+
+sub make_popup_item {
+    my ( $self, $menu, $item, $id ) = @_;
+
+    $menu->AppendSeparator() if $item->{sep} eq 'before';
+
+    $self->{ $item->{name} } = $menu->Append(
+        $id,
+        Tpda3::Utils->ins_underline_mark(
+            $item->{label},
+            $item->{underline},
+        ),
+        # -accelerator => $item->{key},
+    );
+
+    $menu->AppendSeparator() if $item->{sep} eq 'after';
+
+    return;
+}
+
+=head2 get_menu_popup_item
+
+Return a menu popup by name
+
+=cut
+
+sub get_menu_popup_item {
+    my ( $self, $name ) = @_;
+
+    return $self->{_menu}{$name};
 }
 
 =head2 get_menubar
