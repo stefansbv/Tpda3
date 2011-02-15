@@ -256,6 +256,10 @@ sub make_popup_item {
 
     $menu->AppendSeparator() if $item->{sep} eq 'before';
 
+    # Preserve some default Id's used by Wx
+    $id = wxID_ABOUT if $item->{name} eq q{mn_ab};
+    $id = wxID_EXIT  if $item->{name} eq q{mn_qt};
+
     $self->{ $item->{name} } = $menu->Append(
         $id,
         Tpda3::Utils->ins_underline_mark(
