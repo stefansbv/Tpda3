@@ -68,7 +68,7 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-        # $self->toggle_tool( $name, 'disabled' );
+        $self->toggle_tool( $name, 0 );      # 'disabled'
     }
 
     return;
@@ -80,11 +80,11 @@ Return the toolbar instance variable
 
 =cut
 
-sub get_toolbar {
-    my $self = shift;
+# sub get_toolbar {
+#     my $self = shift;
 
-    return $self->{_toolbar};
-}
+#     return $self->{_toolbar};
+# }
 
 =head2 _item_normal
 
@@ -120,20 +120,25 @@ Create a check toolbar button
 =cut
 
 sub _item_check {
-
-    # I know, another copy of a sub with only one diff is
-    #  at least unusual :)
-
     my ($self, $name, $attribs, $ico_path) = @_;
 
     $self->AddSeparator if $attribs->{sep} =~ m{before};
 
     # Add the button
-    $self->{name} = $self->AddCheckTool(
+    # $self->{name} = $self->AddCheckTool(
+    #     $attribs->{id},
+    #     $name,
+    #     $self->make_bitmap( $ico_path, $attribs->{icon} ),
+    #     wxNullBitmap, # bmpDisabled=wxNullBitmap other doesn't work
+    #     $attribs->{tooltip},
+    #     $attribs->{help},
+    # );
+    $self->{$name} = $self->AddTool(
         $attribs->{id},
-        $name,
         $self->make_bitmap( $ico_path, $attribs->{icon} ),
-        wxNullBitmap, # bmpDisabled=wxNullBitmap other doesn't work
+        wxNullBitmap,
+        wxITEM_CHECK,
+        undef,
         $attribs->{tooltip},
         $attribs->{help},
     );
@@ -239,23 +244,28 @@ State can come as 0 | 1 and normal | disabled.
 sub toggle_tool {
     my ($self, $btn_name, $state) = @_;
 
-    my $tb_btn = $self->get_toolbar_btn($btn_name);
+    print " btn_name is $btn_name\n";
+#    my $tb = $self->get_toolbar();
+    my $tb_btn = $self->get_toolbar_btn($btn_name)->GetId;
 
     my $other;
     if ($state) {
-        if ( $state =~ m{norma|disabled}x ) {
-            $other = $state;
+        if ( $state =~ m{norma}x ) {
+            $other = 1;
+        }
+        elsif ( $state =~ m{disabled}x ) {
         }
         else {
-            $other = $state ? 'normal' : 'disabled';
+            # 1?
         }
     }
     else {
-        $state = $tb_btn->cget(-state);
-        $other = $state eq 'normal' ? 'disabled' : 'normal';
+        # TODO: How to get current state?
+        # $state = $tb_btn->cget(-state);
+        # $other = $state eq 'normal' ? 1 : 0;
     }
 
-    $tb_btn->configure( -state => $other );
+    $self->ToggleTool($tb_btn, $other);
 
     return;
 }

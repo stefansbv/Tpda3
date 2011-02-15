@@ -69,7 +69,7 @@ sub _init {
     # $self->{gui} = Tpda3::Tk::Controller->new();
     $self->{gui} = Tpda3::Wx::Controller->new();
 
-    # $self->{gui}->start();
+    $self->{gui}->start();
 
     return;
 }

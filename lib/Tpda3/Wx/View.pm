@@ -340,6 +340,23 @@ sub toolbar_names {
     return ($toolbars, $attribs);
 }
 
+=head2 toggle_tool
+
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
+
+=cut
+
+sub toggle_tool {
+    my ($self, $btn_name, $state) = @_;
+
+    $self->{_tb}->toggle_tool($btn_name, $state);
+
+    return;
+}
+
 =head2 create_statusbar
 
 Create the status bar
