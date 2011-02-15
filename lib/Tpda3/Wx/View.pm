@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
-use POSIX qw (floor);
+#use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
 
@@ -69,7 +69,7 @@ sub new {
     $self->_create_toolbar();
 
     #-- Statusbar
-    $self->create_statusbar();
+    $self->_create_statusbar();
 
     #-- Notebook
     # $self->{_nb} = Tpda3::Wx::Notebook->new( $self );
@@ -106,7 +106,7 @@ sub _cfg {
 
 =head2 _set_model_callbacks
 
-Define the model callbacks
+Define the model callbacks.
 
 =cut
 
@@ -194,7 +194,6 @@ sub make_menus {
     #- Create menus
     foreach my $menu_name ( @{$menus} ) {
 
-        # $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
         $self->{$menu_name} = Wx::Menu->new();
 
         my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
@@ -263,7 +262,6 @@ sub make_popup_item {
             $item->{label},
             $item->{underline},
         ),
-        # -accelerator => $item->{key},
     );
 
     $menu->AppendSeparator() if $item->{sep} eq 'after';
@@ -291,6 +289,7 @@ Return the menu bar handler
 
 sub get_menubar {
     my $self = shift;
+
     return $self->{_menu};
 }
 
@@ -344,7 +343,7 @@ Create the status bar
 
 =cut
 
-sub create_statusbar {
+sub _create_statusbar {
     my $self = shift;
 
     my $sb = $self->CreateStatusBar( 3 );
@@ -385,6 +384,7 @@ Define a dialog popup.
 
 sub dialog_popup {
     my ( $self, $msgtype, $msg ) = @_;
+
     if ( $msgtype eq 'Error' ) {
         Wx::MessageBox( $msg, $msgtype, wxOK|wxICON_ERROR, $self )
     }
@@ -441,100 +441,6 @@ sub get_toolbar {
     return $self->{_tb};
 }
 
-=head2 get_choice_default
-
-Return the choice default option, the first element in the array.
-
-=cut
-
-sub get_choice_default {
-    my $self = shift;
-
-    return $self->{_tb}->get_choice_options(0);
-}
-
-=head2 get_listcontrol
-
-Return the list control handler.
-
-=cut
-
-sub get_listcontrol {
-    my $self = shift;
-
-    return $self->{_list};
-}
-
-=head2 get_controls_list
-
-Return a AoH with information regarding the controls from the list page.
-
-=cut
-
-sub get_controls_list {
-    my $self = shift;
-
-    return [
-        { title       => [ $self->{title}      , 'normal'  , 'white'     ] },
-        { filename    => [ $self->{filename}   , 'disabled', 'lightgrey' ] },
-        { output      => [ $self->{output}     , 'normal'  , 'white'     ] },
-        { sheet       => [ $self->{sheet}      , 'normal'  , 'white'     ] },
-        { description => [ $self->{description}, 'normal'  , 'white'     ] },
-    ];
-}
-
-=head2 get_controls_para
-
-Return a AoH with information regarding the controls from the parameters page.
-
-=cut
-
-sub get_controls_para {
-    my $self = shift;
-
-    return [
-        { descr1 => [ $self->{descr1}, 'normal'  , 'white' ] },
-        { value1 => [ $self->{value1}, 'normal'  , 'white' ] },
-        { descr2 => [ $self->{descr2}, 'normal'  , 'white' ] },
-        { value2 => [ $self->{value2}, 'normal'  , 'white' ] },
-        { descr3 => [ $self->{descr3}, 'normal'  , 'white' ] },
-        { value3 => [ $self->{value3}, 'normal'  , 'white' ] },
-        { descr4 => [ $self->{descr4}, 'normal'  , 'white' ] },
-        { value4 => [ $self->{value4}, 'normal'  , 'white' ] },
-        { descr5 => [ $self->{descr5}, 'normal'  , 'white' ] },
-        { value5 => [ $self->{value5}, 'normal'  , 'white' ] },
-    ];
-}
-
-=head2 get_controls_sql
-
-Return a AoH with information regarding the controls from the SQL page.
-
-=cut
-
-sub get_controls_sql {
-    my $self = shift;
-
-    return [
-        { sql => [ $self->{sql}, 'normal'  , 'white' ] },
-    ];
-}
-
-=head2 get_controls_conf
-
-Return a AoH with information regarding the controls from the
-configurations page.
-
-None at this time.
-
-=cut
-
-sub get_controls_conf {
-    my $self = shift;
-
-    return [];
-}
-
 =head2 get_control_by_name
 
 Return the control instance by name.
@@ -547,159 +453,9 @@ sub get_control_by_name {
     return $self->{$name},
 }
 
-=head2 get_list_text
-
-Return text item from list control row and col
-
-=cut
-
-sub get_list_text {
-    my ($self, $row, $col) = @_;
-
-    return $self->get_listcontrol->GetItemText( $row, $col );
-}
-
-=head2 set_list_text
-
-Set text item from list control row and col
-
-=cut
-
-sub set_list_text {
-    my ($self, $row, $col, $text) = @_;
-    $self->get_listcontrol->SetItemText( $row, $col, $text );
-}
-
-=head2 set_list_data
-
-Set item data from list control
-
-=cut
-
-sub set_list_data {
-    my ($self, $item, $data_href) = @_;
-    $self->get_listcontrol->SetItemData( $item, $data_href );
-}
-
-=head2 get_list_data
-
-Return item data from list control
-
-=cut
-
-sub get_list_data {
-    my ($self, $item) = @_;
-    return $self->get_listcontrol->GetItemData( $item );
-}
-
-=head2 list_item_select_first
-
-Select the first item in list
-
-=cut
-
-sub list_item_select_first {
-    my ($self) = @_;
-
-    my $items_no = $self->get_list_max_index();
-
-    if ( $items_no > 0 ) {
-        $self->get_listcontrol->Select(0, 1);
-    }
-}
-
-=head2 list_item_select_last
-
-Select the last item in list
-
-=cut
-
-sub list_item_select_last {
-    my ($self) = @_;
-
-    my $items_no = $self->get_list_max_index();
-    my $idx = $items_no - 1;
-    $self->get_listcontrol->Select( $idx, 1 );
-    $self->get_listcontrol->EnsureVisible($idx);
-}
-
-=head2 get_list_max_index
-
-Return the max index from the list control
-
-=cut
-
-sub get_list_max_index {
-    my ($self) = @_;
-
-    return $self->get_listcontrol->GetItemCount();
-}
-
-=head2 get_list_selected_index
-
-Return the selected index from the list control
-
-=cut
-
-sub get_list_selected_index {
-    my ($self) = @_;
-
-    return $self->get_listcontrol->GetSelection();
-}
-
-=head2 list_item_insert
-
-Insert item in list control
-
-=cut
-
-sub list_item_insert {
-    my ( $self, $indice, $nrcrt, $title, $file ) = @_;
-
-    # Remember, always sort by index before insert!
-    $self->list_string_item_insert($indice);
-    $self->set_list_text($indice, 0, $nrcrt);
-    $self->set_list_text($indice, 1, $title);
-    # Set data
-    $self->set_list_data($indice, $file );
-}
-
-=head2 list_string_item_insert
-
-Insert string item in list control
-
-=cut
-
-sub list_string_item_insert {
-    my ($self, $indice) = @_;
-    $self->get_listcontrol->InsertStringItem( $indice, 'dummy' );
-}
-
-=head2 list_item_clear
-
-Delete list control item
-
-=cut
-
-sub list_item_clear {
-    my ($self, $item) = @_;
-    $self->get_listcontrol->DeleteItem($item);
-}
-
-=head2 list_item_clear_all
-
-Delete all list control items
-
-=cut
-
-sub list_item_clear_all {
-    my ($self) = @_;
-    $self->get_listcontrol->DeleteAllItems;
-}
-
 =head2 log_config_options
 
-Log configuration options with data from the Config module
+Log configuration options with data from the Config module.
 
 =cut
 
@@ -712,157 +468,6 @@ sub log_config_options {
     while ( my ( $key, $value ) = each( %{$path} ) ) {
         $self->log_msg("II Config: '$key' set to '$value'");
     }
-}
-
-=head2 list_populate_all
-
-Populate all other pages except the configuration page
-
-=cut
-
-sub list_populate_all {
-
-    my ($self) = @_;
-
-    my $titles = $self->_model->get_list_data();
-
-    # Clear list
-    $self->list_item_clear_all();
-
-    # Populate list in sorted order
-    my @titles = sort { $a <=> $b } keys %{$titles};
-    foreach my $indice ( @titles ) {
-        my $nrcrt = $titles->{$indice}[0];
-        my $title = $titles->{$indice}[1];
-        my $file  = $titles->{$indice}[2];
-        # print "$nrcrt -> $title\n";
-        $self->list_item_insert($indice, $nrcrt, $title, $file);
-    }
-
-    # Set item 0 selected on start
-    $self->list_item_select_first();
-}
-
-=head2 list_populate_item
-
-Add new item in list control and select the last item
-
-=cut
-
-sub list_populate_item {
-    my ( $self, $rec ) = @_;
-
-    my $idx = $self->get_list_max_index();
-    $self->list_item_insert( $idx, $idx + 1, $rec->{title}, $rec->{file} );
-    $self->list_item_select_last();
-}
-
-=head2 list_remove_item
-
-Remove item from list control and select the first item
-
-=cut
-
-sub list_remove_item {
-    my $self = shift;
-
-    my $sel_item = $self->get_list_selected_index();
-    my $file_fqn = $self->get_list_data($sel_item);
-
-    # Remove from list
-    $self->list_item_clear($sel_item);
-
-    # Set item 0 selected
-    $self->list_item_select_first();
-
-    return $file_fqn;
-}
-
-=head2 get_detail_data
-
-Return detail data from the selected list control item
-
-=cut
-
-sub get_detail_data {
-    my $self = shift;
-
-    my $sel_item  = $self->get_list_selected_index();
-    my $file_fqn  = $self->get_list_data($sel_item);
-    my $ddata_ref = $self->_model->get_detail_data($file_fqn);
-
-    return ( $ddata_ref, $file_fqn, $sel_item );
-}
-
-=head2 controls_populate
-
-Populate controls with data from XML
-
-=cut
-
-sub controls_populate {
-    my $self = shift;
-
-    my ($ddata_ref, $file_fqn) = $self->get_detail_data();
-
-    my $cfg  = Tpda3::Config->instance();
-    my $qdfpath =$cfg->cfgpath;
-
-    #-- Header
-    # Write in the control the filename, remove path config path
-    my $file_rel = File::Spec->abs2rel( $file_fqn, $qdfpath ) ;
-
-    # Add real path to control
-    $ddata_ref->{header}{filename} = $file_rel;
-    $self->controls_write_page('list', $ddata_ref->{header} );
-
-    #-- Parameters
-    my $params = $self->params_data_to_hash( $ddata_ref->{parameters} );
-    $self->controls_write_page('para', $params );
-
-    #-- SQL
-    $self->control_set_value( 'sql', $ddata_ref->{body}{sql} );
-
-    #--- Highlight SQL parameters
-    $self->toggle_sql_replace();
-}
-
-=head2 toggle_sql_replace
-
-Toggle sql replace
-
-=cut
-
-sub toggle_sql_replace {
-    my $self = shift;
-
-    #- Detail data
-    my ( $ddata, $file_fqn ) = $self->get_detail_data();
-
-    #-- Parameters
-    my $params = $self->params_data_to_hash( $ddata->{parameters} );
-
-    if ( $self->_model->is_editmode ) {
-        $self->control_set_value( 'sql', $ddata->{body}{sql} );
-    }
-    else {
-        $self->control_replace_sql_text( $ddata->{body}{sql}, $params );
-    }
-}
-
-=head2 control_replace_sql_text
-
-Replace sql text control
-
-=cut
-
-sub control_replace_sql_text {
-    my ($self, $sqltext, $params) = @_;
-
-    my ($newtext, $positions) = $self->string_replace_pos($sqltext, $params);
-
-    # Write new text to control
-    $self->control_set_value('sql', $newtext);
 }
 
 =head2 status_msg
@@ -905,113 +510,6 @@ sub log_msg {
     $self->control_append_value( 'log', $message );
 }
 
-=head2 process_sql
-
-Get the sql text string from the QDF file, prepare it for execution.
-
-=cut
-
-sub process_sql {
-    my $self = shift;
-
-    my ($data, $file_fqn, $item) = $self->get_detail_data();
-
-    my ($bind, $sqltext) = $self->string_replace_for_run(
-        $data->{body}{sql},
-        $data->{parameters},
-    );
-
-    if ($bind and $sqltext) {
-        $self->_model->run_export(
-            $data->{header}{output}, $bind, $sqltext);
-    }
-}
-
-=head2 params_data_to_hash
-
-Transform data in simple hash reference format
-
-TODO: Move this to model?
-
-=cut
-
-sub params_data_to_hash {
-    my ($self, $params) = @_;
-
-    my $parameters;
-    foreach my $parameter ( @{ $params->{parameter} } ) {
-        my $id = $parameter->{id};
-        if ($id) {
-            $parameters->{"value$id"} = $parameter->{value};
-            $parameters->{"descr$id"} = $parameter->{descr};
-        }
-    }
-
-    return $parameters;
-}
-
-=head2 string_replace_pos
-
-Replace string pos
-
-=cut
-
-sub string_replace_pos {
-
-    my ($self, $text, $params) = @_;
-
-    my @strpos;
-
-    while (my ($key, $value) = each ( %{$params} ) ) {
-        next unless $key =~ m{value[0-9]}; # Skip 'descr'
-
-        # Replace  text and return the strpos
-        $text =~ s/($key)/$value/pm;
-        my $pos = $-[0];
-        push(@strpos, [ $pos, $key, $value ]);
-    }
-
-    # Sorted by $pos
-    my @sortedpos = sort { $a->[0] <=> $b->[0] } @strpos;
-
-    return ($text, \@sortedpos);
-}
-
-=head2 string_replace_for_run
-
-Prepare sql text string for execution.  Replace the 'valueN' string
-with with '?'.  Create an array of parameter values, used for binding.
-
-Need to check if number of parameters match number of 'valueN' strings
-in SQL statement text and print an error if not.
-
-=cut
-
-sub string_replace_for_run {
-    my ( $self, $sqltext, $params ) = @_;
-
-    my @bind;
-    foreach my $rec ( @{ $params->{parameter} } ) {
-        my $value = $rec->{value};
-        my $p_num = $rec->{id};         # Parameter number for bind_param
-        my $var   = 'value' . $p_num;
-        unless ( $sqltext =~ s/($var)/\?/pm ) {
-            $self->log_msg("EE Parameter mismatch, to few parameters in SQL");
-            return;
-        }
-
-        push( @bind, [ $p_num, $value ] );
-    }
-
-    # Check for remaining not substituted 'value[0-9]' in SQL
-    if ( $sqltext =~ m{(value[0-9])}pm ) {
-        $self->log_msg("EE Parameter mismatch, to many parameters in SQL");
-        return;
-    }
-
-    return ( \@bind, $sqltext );
-}
-
 =head2 control_set_value
 
 Set new value for a controll
@@ -1048,90 +546,6 @@ sub control_append_value {
     $ctrl->AppendText($value);
     $ctrl->AppendText( "\n" );
     $ctrl->Colourise( 0, $ctrl->GetTextLength );
-}
-
-=head2 controls_write_page
-
-Write all controls on page with data
-
-=cut
-
-sub controls_write_page {
-    my ($self, $page, $data) = @_;
-
-    # Get controls name and object from $page
-    my $get = 'get_controls_'.$page;
-    my $controls = $self->$get();
-
-    foreach my $control ( @{$controls} ) {
-        foreach my $name ( keys %{$control} ) {
-
-            my $value = $data->{$name};
-
-            # Cleanup value
-            if ( defined $value ) {
-                $value =~ s/\n$//mg;    # Multiline
-            }
-            else {
-                $value = q{};           # Empty
-            }
-
-            $control->{$name}[0]->SetValue($value);
-        }
-    }
-}
-
-=head2 controls_read_page
-
-Read all controls from page and return an array reference
-
-=cut
-
-sub controls_read_page {
-    my ( $self, $page ) = @_;
-
-    # Get controls name and object from $page
-    my $get      = 'get_controls_' . $page;
-    my $controls = $self->$get();
-    my @records;
-
-    foreach my $control ( @{$controls} ) {
-        foreach my $name ( keys %{$control} ) {
-            my $value;
-            if ($page ne 'sql') {
-                $value = $control->{$name}[0]->GetValue();
-            }
-            else {
-                $value = $control->{$name}[0]->GetText();
-            }
-
-            push(@records, { $name => $value } ) if ($name and $value);
-        }
-    }
-
-    return \@records;
-}
-
-=head2 save_query_def
-
-Save query definition file
-
-=cut
-
-sub save_query_def {
-    my $self = shift;
-
-    my (undef, $file_fqn, $item) = $self->get_detail_data();
-
-    my $head = $self->controls_read_page('list');
-    my $para = $self->controls_read_page('para');
-    my $body = $self->controls_read_page('sql');
-
-    my $new_title =
-      $self->_model->save_query_def( $file_fqn, $head, $para, $body );
-
-    # Update title in list
-    $self->set_list_text( $item, 1, $new_title );
 }
 
 =head1 AUTHOR
