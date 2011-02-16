@@ -85,6 +85,8 @@ sub new {
 
     $self->_set_event_handlers;
 
+    # $self->set_app_mode('idle'); # initial mode
+
     return $self;
 }
 

@@ -68,7 +68,7 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-        #$self->enable_tool( $name, 0 );      # 'disabled'
+        $self->enable_tool( $name, 0 );      # 0 = disabled
     }
 
     return;
@@ -236,27 +236,30 @@ used for both Tk and Wx, this sub is more complex that is should be.
 sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
-    print " $btn_name, $state\t";
+    # print " $btn_name, $state\t";
 
     my $tb_btn_id = $self->get_toolbar_btn($btn_name)->GetId;
 
-    my $other;
+    my $new_state;
     if ( defined $state ) {
 
       SWITCH: for ($state) {
-            /^$/        && do { $other = 0; last SWITCH; };
-            /normal/i   && do { $other = 1; last SWITCH; };
-            /disabled/i && do { $other = 0; last SWITCH; };
-            $other = 1;         # true value: on
+            /^$/        && do { $new_state = 0; last SWITCH; };
+            /normal/i   && do { $new_state = 1; last SWITCH; };
+            /disabled/i && do { $new_state = 0; last SWITCH; };
+
+            # If other value like 1 | 0
+            $new_state = $state ? 1 : 0;
         }
     }
     else {
         # Undef state: toggle
-        $other = !$self->GetToolState($tb_btn_id);
+        # print " toggle ";
+        $new_state = !$self->GetToolState($tb_btn_id);
     }
 
-    print "set to $other\n";
-    $self->EnableTool($tb_btn_id, $other);
+    # print "set to $new_state\n";
+    $self->EnableTool($tb_btn_id, $new_state);
 
     return;
 }
@@ -271,8 +274,6 @@ sub toggle_tool_check {
     my ($self, $btn_name, $state) = @_;
 
     my $tb_btn_id = $self->get_toolbar_btn($btn_name)->GetId;
-
-    $state ||= !$self->GetToolState($tb_btn_id);
 
     $self->ToggleTool($tb_btn_id, $state);
 

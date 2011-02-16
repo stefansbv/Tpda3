@@ -58,7 +58,7 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
-    $self->SetMinSize( Wx::Size->new( 460, 240 ) );
+    $self->SetMinSize( Wx::Size->new( 460, 160 ) );
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
     #-- Menu
@@ -89,6 +89,7 @@ sub _model {
 
     $self->{_model};
 }
+
 =head2 _cfg
 
 Return config instance variable
@@ -529,11 +530,9 @@ Color is ignored for wxPerl.
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
 
-    print "set_status_msg $text \n";
-
     my $sb = $self->get_statusbar();
 
-    if ( $sb_id eq 'cn' ) {
+    if ( $sb_id eq 'db' ) {
         $sb->SetStatusText( $text, 2 ) if defined $text;
     }
     elsif ($sb_id eq 'ms') {
