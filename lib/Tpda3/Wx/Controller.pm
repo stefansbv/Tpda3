@@ -9,9 +9,14 @@ use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
 
 use Log::Log4perl qw(get_logger :levels);
 
+use Tpda3::Utils;
+use Tpda3::Config;
+#use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Wx::App;
 use Tpda3::Wx::View;
+#use Tpda3::Tk::Dialog::Pwd;
+use Tpda3::Lookup;
 
 =head1 NAME
 
@@ -19,7 +24,7 @@ Tpda3::Wx::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.05
+Version 0.01
 
 =cut
 
@@ -47,7 +52,9 @@ sub new {
 
     my $model = Tpda3::Model->new();
 
-    my $app = Tpda3::Wx::App->create($model);
+    my $app = Tpda3::Wx::App->create(
+        $model,
+    );
 
     my $self = {
         _model   => $model,
@@ -64,7 +71,15 @@ sub new {
 
     bless $self, $class;
 
-    # my $loglevel_old = $self->_log->level();
+    my $loglevel_old = $self->_log->level();
+
+    # Set log level to trace in this sub
+    # $self->_log->level($TRACE);
+
+    # $self->_log->trace("new");
+
+    # # Restore default log level
+    # $self->_log->level($loglevel_old);
 
     $self->_control_states_init;
 
@@ -81,7 +96,7 @@ database.
 =cut
 
 sub start {
-    my ($self, ) = @_;
+    my $self = shift;
 
     $self->_log->trace("start");
 
@@ -476,7 +491,7 @@ sub on_screen_mode_idle {
     my $self = shift;
 
     $self->screen_write(undef, 'clear');      # Empty the main controls
-    $self->control_tmatrix_write();
+#    $self->control_tmatrix_write();
     $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
 

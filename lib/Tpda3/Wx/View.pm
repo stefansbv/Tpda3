@@ -112,29 +112,22 @@ Define the model callbacks.
 sub _set_model_callbacks {
     my $self = shift;
 
-    my $tb = $self->get_toolbar();
-    #-
     my $co = $self->_model->get_connection_observable;
     $co->add_callback(
-        sub { $tb->ToggleTool( $self->get_toolbar_btn_id('tb_cn'), $_[0] ) } );
-    #--
-    my $em = $self->_model->get_editmode_observable;
-    $em->add_callback(
         sub {
-            $tb->ToggleTool( $self->get_toolbar_btn_id('tb_ed'), $_[0] );
-            $self->toggle_sql_replace();
+            $self->toggle_status_cn( $_[0] );
         }
     );
-    #--
-    my $upd = $self->_model->get_itemchanged_observable;
-    $upd->add_callback(
-        sub { $self->controls_populate(); } );
-    #--
-    my $so = $self->_model->get_stdout_observable;
-    $so->add_callback( sub{ $self->set_status( @_ ) } );
 
-    my $xo = $self->_model->get_exception_observable;
-    $xo->add_callback( sub{ $self->log_msg( @_ ) } );
+    my $so = $self->_model->get_stdout_observable;
+    $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
+
+    # When the status changes, update gui components
+    my $apm = $self->_model->get_appmode_observable;
+    $apm->add_callback(
+        sub { $self->update_gui_components(); } );
+
+    return;
 }
 
 =head2 _create_menu
@@ -490,7 +483,7 @@ sub log_config_options {
     }
 }
 
-=head2 set_status
+=head2 set_status_msg
 
 Set status message.
 
@@ -498,7 +491,7 @@ Color is ignored for wxPerl.
 
 =cut
 
-sub set_status {
+sub set_status_msg {
     my ( $self, $text, $sb_id, $color ) = @_;
 
     my $sb = $self->get_statusbar();
@@ -573,6 +566,25 @@ sub control_append_value {
     $ctrl->AppendText($value);
     $ctrl->AppendText( "\n" );
     $ctrl->Colourise( 0, $ctrl->GetTextLength );
+}
+
+=head2 toggle_status_cn
+
+Toggle the icon in the status bar
+
+=cut
+
+sub toggle_status_cn {
+    my ($self, $status) = @_;
+
+    if ($status) {
+        $self->set_status($self->_cfg->connection->{dbname},'db','darkgreen');
+    }
+    else {
+        $self->set_status('','db');
+    }
+
+    return;
 }
 
 =head1 AUTHOR

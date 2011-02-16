@@ -56,7 +56,7 @@ Constructor method.
 =cut
 
 sub new {
-    my ( $class, $app ) = @_;
+    my $class = shift;
 
     my $model = Tpda3::Model->new();
 
@@ -96,7 +96,8 @@ sub new {
 
 =head2 start
 
-Initialization of states
+Check if we have user and pass, if not, show dialog.  Connect do
+database.
 
 =cut
 
@@ -105,7 +106,6 @@ sub start {
 
     $self->_log->trace("start");
 
-    # Check if we have user and pass, if not, show dialog
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
         my $pd = Tpda3::Tk::Dialog::Pwd->new;
         $pd->run_dialog( $self->_view );
