@@ -7,9 +7,10 @@ use Carp;
 #use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
-use File::Spec::Functions qw(abs2rel);
 
+use File::Spec::Functions qw(abs2rel);
 use Wx qw{:everything};
+
 use base 'Wx::Frame';
 
 use Tpda3::Config;
@@ -70,10 +71,7 @@ sub new {
     #-- Statusbar
     $self->_create_statusbar();
 
-    #-- Notebook
-    # $self->{_nb} = Tpda3::Wx::Notebook->new( $self );
-
-    # $self->_set_model_callbacks();
+    $self->_set_model_callbacks();
 
     $self->Fit;
 
@@ -126,6 +124,41 @@ sub _set_model_callbacks {
     my $apm = $self->_model->get_appmode_observable;
     $apm->add_callback(
         sub { $self->update_gui_components(); } );
+
+    return;
+}
+
+=head2 update_gui_components
+
+When the application status (mode) changes, update gui components.
+Screen controls (widgets) are not handled here, but in controller
+module.
+
+=cut
+
+sub update_gui_components {
+    my $self = shift;
+
+    my $mode = $self->_model->get_appmode();
+
+    $self->set_status($mode, 'md');          # update statusbar
+
+    SWITCH: {
+          $mode eq 'find' && do {
+              $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+              $self->{_tb}->toggle_tool_check( 'tb_fm', 1 );
+              last SWITCH;
+          };
+          $mode eq 'add' && do {
+              $self->{_tb}->toggle_tool_check( 'tb_ad', 1 );
+              $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+              last SWITCH;
+          };
+
+          # Else
+          $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+          $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+      }
 
     return;
 }
@@ -350,24 +383,26 @@ sub enable_tool {
 
 =head2 create_statusbar
 
-Create the status bar
+Create a statusbar with 3 fields.  The first field have a fixed width,
+the rest have variable widths.
 
 =cut
 
 sub _create_statusbar {
     my $self = shift;
 
-    my $sb = $self->CreateStatusBar( 3 );
-    $self->{_sb} = $sb;
+    $self->{_sb} = $self->CreateStatusBar( 3 );
+
     $self->SetStatusWidths( 260, -1, -2 );
-    #$sb->SetStatusStyles(3, wxSB_RAISED);    #  wxSB_RAISED  wxSB_FLAT
+
+    # $self->{_sb}->SetStatusStyles(3, wxSB_RAISED); #  wxSB_RAISED  wxSB_FLAT
 
     return;
 }
 
 =head2 get_statusbar
 
-Return the status bar handler
+Return the statusbar handler.
 
 =cut
 
@@ -483,7 +518,7 @@ sub log_config_options {
     }
 }
 
-=head2 set_status_msg
+=head2 set_status
 
 Set status message.
 
@@ -491,13 +526,18 @@ Color is ignored for wxPerl.
 
 =cut
 
-sub set_status_msg {
+sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
+
+    print "set_status_msg $text \n";
 
     my $sb = $self->get_statusbar();
 
     if ( $sb_id eq 'cn' ) {
         $sb->SetStatusText( $text, 2 ) if defined $text;
+    }
+    elsif ($sb_id eq 'ms') {
+        $sb->SetStatusText( $text, 0 ) if defined $text;
     }
     else {
         $sb->SetStatusText( $text, 1 ) if defined $text;
@@ -520,14 +560,18 @@ sub dialog_msg {
 
 =head2 log_msg
 
-Set log message
+Log messages
 
 =cut
 
 sub log_msg {
-    my ( $self, $message ) = @_;
+    my ( $self, $msg ) = @_;
 
-    $self->control_append_value( 'log', $message );
+    my $log = get_logger();
+
+    $log->info($msg);
+
+    return;
 }
 
 =head2 control_set_value
