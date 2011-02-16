@@ -11,7 +11,7 @@ use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Utils;
 use Tpda3::Config;
-#use Tpda3::Config::Screen;
+use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Wx::App;
 use Tpda3::Wx::View;
@@ -193,14 +193,13 @@ sub _set_event_handlers {
 
     #- Custom application menu from menu.yml
 
-    # my $appmenus = $self->_view->get_app_menus_list();
-    # foreach my $item ( @{$appmenus} ) {
-    #     $self->_view->get_menu_popup_item($item)->configure(
-    #         -command => sub {
-    #             $self->screen_module_load($item);
-    #         }
-    #     );
-    # }
+    my $appmenus = $self->_view->get_app_menus_list();
+    foreach my $item ( @{$appmenus} ) {
+        my $menu_id = $self->_view->get_menu_popup_item($item)->GetId;
+        EVT_MENU $self->_view, $menu_id, sub {
+            $self->screen_module_load($item);
+        }
+    }
 
     #- Toolbar
 
@@ -718,85 +717,85 @@ sub screen_module_load {
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    $self->_set_event_handler_nb('rec');
-    $self->_set_event_handler_nb('lst');
+    # $self->_set_event_handler_nb('rec');
+    # $self->_set_event_handler_nb('lst');
 
-    # The application and class names
-    #my $name  = ucfirst $self->_cfg->cfname;
-    my $name = $self->_cfg->application->{module};
-    my $class = "Tpda3::App::${name}::${module}";
-    (my $file = "$class.pm") =~ s/::/\//g;
-    require $file;
+    # # The application and class names
+    # #my $name  = ucfirst $self->_cfg->cfname;
+    # my $name = $self->_cfg->application->{module};
+    # my $class = "Tpda3::App::${name}::${module}";
+    # (my $file = "$class.pm") =~ s/::/\//g;
+    # require $file;
 
-    unless ($class->can('run_screen') ) {
-        my $msg = "Error! Screen '$class' can not 'run_screen'";
-        print "$msg\n";
-        $self->_log->error($msg);
+    # unless ($class->can('run_screen') ) {
+    #     my $msg = "Error! Screen '$class' can not 'run_screen'";
+    #     print "$msg\n";
+    #     $self->_log->error($msg);
 
-        return;
-    }
+    #     return;
+    # }
 
-    # New screen instance
-    $self->{_scrobj} = $class->new();
-    $self->_log->trace("New screen instance: $module");
+    # # New screen instance
+    # $self->{_scrobj} = $class->new();
+    # $self->_log->trace("New screen instance: $module");
 
-    # Show screen
-    my $nb = $self->_view->get_notebook('rec');
-    $self->{_scrobj}->run_screen($nb);
-    $self->_log->trace("Show screen $module");
+    # # Show screen
+    # my $nb = $self->_view->get_notebook('rec');
+    # $self->{_scrobj}->run_screen($nb);
+    # $self->_log->trace("Show screen $module");
 
-    my $screen_type = $self->_scrcfg->screen->{type};
+    # my $screen_type = $self->_scrcfg->screen->{type};
 
-    # Load instance config
-    $self->_cfg->config_load_instance();
+    # # Load instance config
+    # $self->_cfg->config_load_instance();
 
-    # Update window geometry from instance config if exists or from
-    # defaults
-    my $geom;
-    if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
-        unless ($geom) {
-            $geom = $self->_scrcfg->screen->{geom};
-        }
-    }
-    else {
-        $geom = $self->_scrcfg->screen->{geom};
-    }
-    $self->_view->set_geometry($geom);
+    # # Update window geometry from instance config if exists or from
+    # # defaults
+    # my $geom;
+    # if ( $self->_cfg->can('geometry') ) {
+    #     $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
+    #     unless ($geom) {
+    #         $geom = $self->_scrcfg->screen->{geom};
+    #     }
+    # }
+    # else {
+    #     $geom = $self->_scrcfg->screen->{geom};
+    # }
+    # $self->_view->set_geometry($geom);
 
-    # Event handlers
-    $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
-    #-- Lookup bindings
-    $self->setup_lookup_bindings();
+    # # Event handlers
+    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    # #-- Lookup bindings
+    # $self->setup_lookup_bindings();
 
-    # Store currently loaded screen class
-    $self->{_scrcls} = $class;
+    # # Store currently loaded screen class
+    # $self->{_scrcls} = $class;
 
-    $self->set_app_mode('idle');
+    # $self->set_app_mode('idle');
 
-    # List header
-    my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
-    my $fields = $self->_scrcfg->maintable->{columns};
-    my $header_attr = {};
-    foreach my $col ( @header_cols ) {
-        $header_attr->{$col} = {
-            label =>  $fields->{$col}{label},
-            width =>  $fields->{$col}{width},
-            order =>  $fields->{$col}{order},
-        };
-    }
+    # # List header
+    # my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
+    # my $fields = $self->_scrcfg->maintable->{columns};
+    # my $header_attr = {};
+    # foreach my $col ( @header_cols ) {
+    #     $header_attr->{$col} = {
+    #         label =>  $fields->{$col}{label},
+    #         width =>  $fields->{$col}{width},
+    #         order =>  $fields->{$col}{order},
+    #     };
+    # }
 
-    $self->_view->make_list_header( \@header_cols, $header_attr );
+    # $self->_view->make_list_header( \@header_cols, $header_attr );
 
-    if ($screen_type eq 'tablematrix') {
-        # TableMatrix header
-        my $tm_fields = $self->_scrcfg->table->{columns};
-        my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-        $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
-    }
+    # if ($screen_type eq 'tablematrix') {
+    #     # TableMatrix header
+    #     my $tm_fields = $self->_scrcfg->table->{columns};
+    #     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+    #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    # }
 
-    # Load lists into JBrowseEntry or JComboBox widgets
-    $self->screen_init();
+    # # Load lists into JBrowseEntry or JComboBox widgets
+    # $self->screen_init();
 
     return;
 }

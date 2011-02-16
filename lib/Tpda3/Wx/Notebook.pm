@@ -35,7 +35,6 @@ Constructor method.
 =cut
 
 sub new {
-
     my ( $class, $gui ) = @_;
 
     #- The Notebook
@@ -48,25 +47,28 @@ sub new {
         wxAUI_NB_TAB_FIXED_WIDTH,
     );
 
-    #-- Panels
-
-    $self->{p1} = Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize );
-    $self->{p2} =
-        Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize, );
-
-    $self->{p3} =
-        Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize, );
-    $self->{p4} =
-        Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize, );
-
-    #--- Pages
-
-    $self->AddPage( $self->{p1}, 'Query list' );
-    $self->AddPage( $self->{p2}, 'Parameters' );
-    $self->AddPage( $self->{p3}, 'SQL' );
-    $self->AddPage( $self->{p4}, 'Info' );
-
     return $self;
+}
+
+=head2 create_notebook_page
+
+Create a notebook_panel and page.
+
+=cut
+
+sub create_notebook_page {
+    my ($self, $name, $label) = @_;
+
+    $self->{$name} = Wx::Panel->new(
+        $self,
+        -1,
+        wxDefaultPosition,
+        wxDefaultSize,
+    );
+
+    $self->AddPage( $self->{$name}, $label );
+
+    return;
 }
 
 =head1 AUTHOR

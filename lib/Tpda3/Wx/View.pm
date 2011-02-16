@@ -10,12 +10,13 @@ use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel);
 use Wx qw{:everything};
+use Wx::Perl::ListCtrl;
 
 use base 'Wx::Frame';
 
 use Tpda3::Config;
 use Tpda3::Utils;
-#use Tpda3::Wx::Notebook;
+use Tpda3::Wx::Notebook;
 use Tpda3::Wx::ToolBar;
 
 =head1 NAME
@@ -58,7 +59,7 @@ sub new {
 
     $self->{_cfg} = Tpda3::Config->instance();
 
-    $self->SetMinSize( Wx::Size->new( 460, 160 ) );
+    $self->SetMinSize( Wx::Size->new( 480, 300 ) );
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
     #-- Menu
@@ -306,7 +307,7 @@ Return a menu popup by name
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
 
-    return $self->{_menu}{$name};
+    return $self->{$name};
 }
 
 =head2 get_menubar
@@ -413,18 +414,6 @@ sub get_statusbar {
     return $self->{_sb};
 }
 
-=head2 get_notebook
-
-Return the notebook handler
-
-=cut
-
-sub get_notebook {
-    my $self = shift;
-
-    return $self->{_nb};
-}
-
 =head2 dialog_popup
 
 Define a dialog popup.
@@ -464,6 +453,98 @@ sub action_confirmed {
      if( $answer == Wx::wxYES() ) {
          return 1;
      }
+}
+
+=head2 create_notebook
+
+Create the NoteBook and the 3 panes.  The pane first named 'rec'
+contains widgets mostly of the type Entry, mapped to the fields of a
+table.  The second pane contains a MListbox widget and is used for
+listing the search results.  The third pane is for records from a
+dependent table.
+
+=cut
+
+sub create_notebook {
+    my $self = shift;
+
+    #- NoteBook
+
+    $self->{_nb} = Tpda3::Wx::Notebook->new( $self );
+
+    #-- Panels
+
+    $self->{_nb}->create_notebook_page('rec', 'Record');
+    $self->{_nb}->create_notebook_page('lst', 'List');
+    # $self->{_nb}->create_notebook_page('det', 'Details');
+
+    $self->{_list} = Wx::Perl::ListCtrl->new(
+        $self->{_nb}{lst}, -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
+    );
+
+    $self->{_list}->InsertColumn( 0, '#',          wxLIST_FORMAT_LEFT, 50  );
+    $self->{_list}->InsertColumn( 1, 'Query name', wxLIST_FORMAT_LEFT, 337 );
+
+    #-- Top
+
+    my $lst_main_sz = Wx::BoxSizer->new(wxVERTICAL);
+
+    my $lst_sbs = Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new(
+            $self->{_nb}{lst},
+            -1,
+            ' List ',
+        ),
+        wxHORIZONTAL,
+    );
+
+    $lst_sbs->Add( $self->{_list}, 1, wxEXPAND, 0 );
+    $lst_main_sz->Add( $lst_sbs, 1, wxALL | wxEXPAND, 5 );
+
+    $self->{_nb}{lst}->SetSizer( $lst_main_sz );
+
+    #--
+
+    my $main_sizer = Wx::BoxSizer->new(wxVERTICAL);
+    $main_sizer->Add($self->{_nb}, 1, wxEXPAND, 0);
+    $self->SetSizer($main_sizer);
+    $self->Layout();
+
+    return;
+}
+
+=head2 get_notebook
+
+Return the notebook handler
+
+=cut
+
+sub get_notebook {
+    my ($self, $page) = @_;
+
+    if ($page) {
+        return $self->{_nb}{$page};
+    }
+    else {
+        return $self->{_nb};
+    }
+}
+
+=head2 destroy_notebook
+
+Destroy existing window, before the creation of an other.
+
+=cut
+
+sub destroy_notebook {
+    my $self = shift;
+
+#    $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
+
+    return;
 }
 
 =head2 get_toolbar_btn
