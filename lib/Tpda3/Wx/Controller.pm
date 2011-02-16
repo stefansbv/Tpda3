@@ -197,12 +197,12 @@ sub _set_event_handlers {
     };
 
     #-- Find mode
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId, sub {
-    #     # From add mode forbid find mode
-    #     if ( !$self->_model->is_mode('add') ) {
-    #         $self->toggle_mode_find();
-    #     }
-    # };
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId, sub {
+        # From add mode forbid find mode
+        if ( !$self->_model->is_mode('add') ) {
+            $self->toggle_mode_find();
+        }
+    };
 
     #-- Find execute
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fe')->GetId, sub {
@@ -225,9 +225,9 @@ sub _set_event_handlers {
     };
 
     #-- Add mode
-    # EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId, sub {
-    #     $self->toggle_mode_add();
-    # };
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId, sub {
+        $self->toggle_mode_add();
+    };
 
     #-- Quit
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
@@ -871,8 +871,7 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        print "$name : $status\n";
-        $self->_view->toggle_tool( $name, $status );
+        $self->_view->enable_tool( $name, $status );
     }
 
     return;
@@ -899,7 +898,7 @@ sub toggle_screen_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $state = $attribs->{$name}{state}{$mode};
-        $self->{_scrobj}->toggle_tool($name, $state);
+        $self->{_scrobj}->enable_tool($name, $state);
     }
 
     return;

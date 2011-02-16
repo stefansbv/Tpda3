@@ -68,7 +68,7 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-        $self->toggle_tool( $name, 'disabled' );
+        $self->enable_tool( $name, 'disabled' );
     }
 
     return;
@@ -130,7 +130,7 @@ sub get_toolbar_btn {
     return $self->{$name};
 }
 
-=head2 toggle_tool
+=head2 enable_tool
 
 Toggle tool bar button.  If state is defined then set to state do not
 toggle.
@@ -139,7 +139,7 @@ State can come as 0 | 1 and normal | disabled.
 
 =cut
 
-sub toggle_tool {
+sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
     my $tb_btn = $self->get_toolbar_btn($btn_name);

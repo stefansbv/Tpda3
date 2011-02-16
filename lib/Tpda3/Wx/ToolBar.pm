@@ -68,7 +68,7 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-        $self->toggle_tool( $name, 0 );      # 'disabled'
+        #$self->enable_tool( $name, 0 );      # 'disabled'
     }
 
     return;
@@ -125,14 +125,6 @@ sub _item_check {
     $self->AddSeparator if $attribs->{sep} =~ m{before};
 
     # Add the button
-    # $self->{name} = $self->AddCheckTool(
-    #     $attribs->{id},
-    #     $name,
-    #     $self->make_bitmap( $ico_path, $attribs->{icon} ),
-    #     wxNullBitmap, # bmpDisabled=wxNullBitmap other doesn't work
-    #     $attribs->{tooltip},
-    #     $attribs->{help},
-    # );
     $self->{$name} = $self->AddTool(
         $attribs->{id},
         $self->make_bitmap( $ico_path, $attribs->{icon} ),
@@ -169,7 +161,6 @@ TODO: Put (replace) full path to the iconfile to attribs
 =cut
 
 sub make_bitmap {
-
     my ($self, $ico_path, $icon) = @_;
 
     my $bmp = Wx::Bitmap->new(
@@ -180,13 +171,13 @@ sub make_bitmap {
     return $bmp;
 }
 
-=head2 item_list
+=head2 _item_list
 
 Create a list toolbar button. Not used.
 
 =cut
 
-sub item_list {
+sub _item_list {
 
     my ($self, $name, $attribs) = @_;
 
@@ -232,61 +223,58 @@ sub get_choice_options {
     }
 }
 
-=head2 toggle_tool
+=head2 enable_tool
 
-Toggle tool bar button.  If state is defined then set to state do not
+Toggle tool bar button.  If state is defined then set to state, do not
 toggle.
 
-State can come as 0 | 1 and normal | disabled.
+State can come as 0 | 1 and normal | disabled.  Because toolbar.yml is
+used for both Tk and Wx, this sub is more complex that is should be.
 
 =cut
 
-sub toggle_tool {
+sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
-    print " btn_name is $btn_name\n";
-#    my $tb = $self->get_toolbar();
-    my $tb_btn = $self->get_toolbar_btn($btn_name)->GetId;
+    print " $btn_name, $state\t";
+
+    my $tb_btn_id = $self->get_toolbar_btn($btn_name)->GetId;
 
     my $other;
-    if ($state) {
-        if ( $state =~ m{norma}x ) {
-            $other = 1;
-        }
-        elsif ( $state =~ m{disabled}x ) {
-        }
-        else {
-            # 1?
+    if ( defined $state ) {
+
+      SWITCH: for ($state) {
+            /^$/        && do { $other = 0; last SWITCH; };
+            /normal/i   && do { $other = 1; last SWITCH; };
+            /disabled/i && do { $other = 0; last SWITCH; };
+            $other = 1;         # true value: on
         }
     }
     else {
-        # TODO: How to get current state?
-        # $state = $tb_btn->cget(-state);
-        # $other = $state eq 'normal' ? 1 : 0;
+        # Undef state: toggle
+        $other = !$self->GetToolState($tb_btn_id);
     }
 
-    $self->ToggleTool($tb_btn, $other);
+    print "set to $other\n";
+    $self->EnableTool($tb_btn_id, $other);
 
     return;
 }
 
 =head2 toggle_tool_check
 
-Toggle a toolbar checkbutton.
+Toggle a toolbar checkbutton.  State can come as 0 | 1.
 
 =cut
 
 sub toggle_tool_check {
     my ($self, $btn_name, $state) = @_;
 
-    my $tb_btn = $self->get_toolbar_btn($btn_name);
+    my $tb_btn_id = $self->get_toolbar_btn($btn_name)->GetId;
 
-    if ($state) {
-        $tb_btn->select;
-    }
-    else {
-        $tb_btn->deselect;
-    }
+    $state ||= !$self->GetToolState($tb_btn_id);
+
+    $self->ToggleTool($tb_btn_id, $state);
 
     return;
 }

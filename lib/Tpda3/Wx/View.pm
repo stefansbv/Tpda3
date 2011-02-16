@@ -131,11 +131,9 @@ sub _set_model_callbacks {
         sub { $self->controls_populate(); } );
     #--
     my $so = $self->_model->get_stdout_observable;
-    #$so->add_callback( sub{ $self->log_msg( $_[0] ) } );
-    $so->add_callback( sub{ $self->status_msg( @_ ) } );
+    $so->add_callback( sub{ $self->set_status( @_ ) } );
 
     my $xo = $self->_model->get_exception_observable;
-    # $xo->add_callback( sub{ $self->dialog_msg( @_ ) } );
     $xo->add_callback( sub{ $self->log_msg( @_ ) } );
 }
 
@@ -349,10 +347,10 @@ State can come as 0 | 1 and normal | disabled.
 
 =cut
 
-sub toggle_tool {
+sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
-    $self->{_tb}->toggle_tool($btn_name, $state);
+    $self->{_tb}->enable_tool($btn_name, $state);
 
     return;
 }
@@ -368,8 +366,10 @@ sub _create_statusbar {
 
     my $sb = $self->CreateStatusBar( 3 );
     $self->{_sb} = $sb;
-
     $self->SetStatusWidths( 260, -1, -2 );
+    #$sb->SetStatusStyles(3, wxSB_RAISED);    #  wxSB_RAISED  wxSB_FLAT
+
+    return;
 }
 
 =head2 get_statusbar
@@ -490,20 +490,27 @@ sub log_config_options {
     }
 }
 
-=head2 status_msg
+=head2 set_status
 
-Set status message
+Set status message.
+
+Color is ignored for wxPerl.
 
 =cut
 
-sub status_msg {
-    my ( $self, $msg ) = @_;
+sub set_status {
+    my ( $self, $text, $sb_id, $color ) = @_;
 
-    my ( $text, $sb_id ) = split ':', $msg; # Work around until I learn how
-                                            # to pass other parameters ;)
+    my $sb = $self->get_statusbar();
 
-    $sb_id = 0 if $sb_id !~ m{[0-9]}; # Fix for when file name contains ':'
-    $self->get_statusbar()->SetStatusText( $text, $sb_id );
+    if ( $sb_id eq 'cn' ) {
+        $sb->SetStatusText( $text, 2 ) if defined $text;
+    }
+    else {
+        $sb->SetStatusText( $text, 1 ) if defined $text;
+    }
+
+    return;
 }
 
 =head2 dialog_msg
