@@ -293,23 +293,39 @@ sub _set_event_handler_nb {
 
     my $nb = $self->_view->get_notebook();
 
-    $nb->pageconfigure(
-        $page,
-        -raisecmd => sub {
-            # print "$page tab activated\n";
-            if ($page eq 'lst') {
-                $self->set_app_mode('sele');
+    EVT_AUINOTEBOOK_PAGE_CHANGED $self->_view, $nb->GetId, sub {
+        my $current_page = $nb->GetSelection();
+        print "page is $current_page\n";
+        if ( $current_page == 1 ) {    # 'lst'
+            $self->set_app_mode('sele');
+        }
+        else {
+            if ( $self->record_load ) {
+                $self->set_app_mode('edit');
             }
             else {
-                if ( $self->record_load ) {
-                    $self->set_app_mode('edit');
-                }
-                else {
-                    $self->set_app_mode('idle');
-                }
+                $self->set_app_mode('idle');
             }
-        },
-    );
+        }
+    };
+
+    # $nb->pageconfigure(
+    #     $page,
+    #     -raisecmd => sub {
+    #         # print "$page tab activated\n";
+    #         if ($page eq 'lst') {
+    #             $self->set_app_mode('sele');
+    #         }
+    #         else {
+    #             if ( $self->record_load ) {
+    #                 $self->set_app_mode('edit');
+    #             }
+    #             else {
+    #                 $self->set_app_mode('idle');
+    #             }
+    #         }
+    #     },
+    # );
 
     return;
 }
@@ -530,7 +546,7 @@ sub on_screen_mode_add {
     # };
 
     $self->screen_write(undef, 'clear');
-    $self->control_tmatrix_write();
+    # $self->control_tmatrix_write();
     $self->controls_state_set('edit');
 
     return;
@@ -547,7 +563,7 @@ sub on_screen_mode_find {
     my ($self, ) = @_;
 
     $self->screen_write(undef, 'clear'); # Empty the controls
-    $self->control_tmatrix_write();
+    # $self->control_tmatrix_write();
     $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
 
@@ -720,7 +736,7 @@ sub screen_module_load {
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    # $self->_set_event_handler_nb('rec');
+    $self->_set_event_handler_nb('rec');
     # $self->_set_event_handler_nb('lst');
 
     # The application and class names
@@ -1430,70 +1446,70 @@ Write data to TableMatrix widget
 
 =cut
 
-sub control_tmatrix_write {
-    my ( $self, $records ) = @_;
+# sub control_tmatrix_write {
+#     my ( $self, $records ) = @_;
 
-    my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-    my $xtvar;
-    if ($tm_object) {
-        $xtvar = $tm_object->cget( -variable );
-    }
-    else {
+#     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xtvar;
+#     if ($tm_object) {
+#         $xtvar = $tm_object->cget( -variable );
+#     }
+#     else {
 
-        # Just ignore :)
-        return;
-    }
+#         # Just ignore :)
+#         return;
+#     }
 
-    my $row = 1;
+#     my $row = 1;
 
-    #- Scan and write to table
+#     #- Scan and write to table
 
-    foreach my $record ( @{$records} ) {
-        foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
-            my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
+#     foreach my $record ( @{$records} ) {
+#         foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
+#             my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
 
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # Empty
-            $value =~ s/[\n\t]//g;                 # Delete control chars
+#             my $value = $record->{$field};
+#             $value = q{} unless defined $value;    # Empty
+#             $value =~ s/[\n\t]//g;                 # Delete control chars
 
-            my ( $col, $type, $width, $places ) =
-              @$fld_cfg{'id','content','width','decimals'}; # hash slice
+#             my ( $col, $type, $width, $places ) =
+#               @$fld_cfg{'id','content','width','decimals'}; # hash slice
 
-            if ( $type =~ /digit/ ) {
-                $value = 0 unless $value;
-                if ( defined $places ) {
+#             if ( $type =~ /digit/ ) {
+#                 $value = 0 unless $value;
+#                 if ( defined $places ) {
 
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
+#                     # Daca SCALE >= 0, Formatez numarul
+#                     $value = sprintf( "%.${places}f", $value );
+#                 }
+#                 else {
+#                     $value = sprintf( "%.0f", $value );
+#                 }
+#             }
 
-            $xtvar->{"$row,$col"} = $value;
+#             $xtvar->{"$row,$col"} = $value;
 
-        }
+#         }
 
-        $row++;
-    }
+#         $row++;
+#     }
 
-    # Refreshing the table...
-    $tm_object->configure( -rows => $row );
+#     # Refreshing the table...
+#     $tm_object->configure( -rows => $row );
 
-    # TODO: make a more general sub
-    # Execute sub defined in screen Workaround for a DBD::InterBase
-    # problem related to big decimals?  The view doesn't compute
-    # corectly the value and the VAT when accesed from perl but only
-    # from flamerobin ...  Check if sub exists first
-    # Fixed with patch from:
-    # http://github.com/pilcrow/perl-dbd-interbase.git
-    # if ( $self->{screen}->can('recalculare_factura') ) {
-    #     $self->{screen}->recalculare_factura();
-    # }
+#     # TODO: make a more general sub
+#     # Execute sub defined in screen Workaround for a DBD::InterBase
+#     # problem related to big decimals?  The view doesn't compute
+#     # corectly the value and the VAT when accesed from perl but only
+#     # from flamerobin ...  Check if sub exists first
+#     # Fixed with patch from:
+#     # http://github.com/pilcrow/perl-dbd-interbase.git
+#     # if ( $self->{screen}->can('recalculare_factura') ) {
+#     #     $self->{screen}->recalculare_factura();
+#     # }
 
-    return;
-}
+#     return;
+# }
 
 =head2 toggle_mode_find
 

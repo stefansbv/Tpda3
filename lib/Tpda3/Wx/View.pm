@@ -485,8 +485,7 @@ sub create_notebook {
         Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
     );
 
-    $self->{_rc}->InsertColumn( 0, '#',          wxLIST_FORMAT_LEFT, 50  );
-    $self->{_rc}->InsertColumn( 1, 'Query name', wxLIST_FORMAT_LEFT, 337 );
+    $self->{_rc}->InsertColumn( 0, 'Empty', wxLIST_FORMAT_LEFT, 50  );
 
     #-- Top
 
@@ -750,6 +749,374 @@ sub make_list_header {
     }
 
     return;
+}
+
+=head2 get_list_text
+
+Return text item from list control row and col
+
+=cut
+
+sub get_list_text {
+    my ($self, $row, $col) = @_;
+
+    return $self->get_listcontrol->GetItemText( $row, $col );
+}
+
+=head2 get_list_text_row
+
+Get entire row text from a list control as array ref.
+
+=cut
+
+sub get_list_text_row {
+    my ($self, $row) = @_;
+
+    my $col_cnt = $self->get_listcontrol->GetColumnCount() - 1;
+
+    my @row_text;
+    foreach my $col (1..$col_cnt) {
+        push @row_text, $self->get_list_text($row, $col);
+    }
+
+    return \@row_text;
+}
+
+=head2 set_list_text
+
+Set text item from list control row and col
+
+=cut
+
+sub set_list_text {
+    my ($self, $row, $col, $text) = @_;
+    $self->get_listcontrol->SetItemText( $row, $col, $text );
+}
+
+=head2 set_list_data
+
+Set item data from list control
+
+=cut
+
+sub set_list_data {
+    my ($self, $item, $data_href) = @_;
+    $self->get_listcontrol->SetItemData( $item, $data_href );
+}
+
+=head2 get_list_data
+
+Return item data from list control
+
+=cut
+
+sub get_list_data {
+    my ($self, $item) = @_;
+    return $self->get_listcontrol->GetItemData( $item );
+}
+
+=head2 list_item_select_first
+
+Select the first item in list
+
+=cut
+
+sub list_item_select_first {
+    my ($self) = @_;
+
+    my $items_no = $self->get_list_max_index();
+
+    if ( $items_no > 0 ) {
+        $self->get_listcontrol->Select(0, 1);
+    }
+}
+
+=head2 list_item_select_last
+
+Select the last item in list
+
+=cut
+
+sub list_item_select_last {
+    my ($self) = @_;
+
+    my $items_no = $self->get_list_max_index();
+    my $idx = $items_no - 1;
+    $self->get_listcontrol->Select( $idx, 1 );
+    $self->get_listcontrol->EnsureVisible($idx);
+}
+
+=head2 get_list_max_index
+
+Return the max index from the list control
+
+=cut
+
+sub get_list_max_index {
+    my ($self) = @_;
+
+    return $self->get_listcontrol->GetItemCount();
+}
+
+=head2 get_list_selected_index
+
+Return the selected index from the list control
+
+=cut
+
+sub get_list_selected_index {
+    my ($self) = @_;
+
+    return $self->get_listcontrol->GetSelection();
+}
+
+=head2 list_item_insert
+
+Insert item in list control
+
+=cut
+
+sub list_item_insert {
+    my ( $self, $indice, $nrcrt, $title, $file ) = @_;
+
+    # Remember, always sort by index before insert!
+    $self->list_string_item_insert($indice);
+    $self->set_list_text($indice, 0, $nrcrt);
+    $self->set_list_text($indice, 1, $title);
+    # Set data
+    $self->set_list_data($indice, $file );
+}
+
+=head2 list_string_item_insert
+
+Insert string item in list control
+
+=cut
+
+sub list_string_item_insert {
+    my ($self, $indice) = @_;
+    $self->get_listcontrol->InsertStringItem( $indice, 'dummy' );
+}
+
+=head2 list_item_clear
+
+Delete list control item
+
+=cut
+
+sub list_item_clear {
+    my ($self, $item) = @_;
+    $self->get_listcontrol->DeleteItem($item);
+}
+
+=head2 list_item_clear_all
+
+Delete all list control items
+
+=cut
+
+sub list_item_clear_all {
+    my ($self) = @_;
+    $self->get_listcontrol->DeleteAllItems;
+}
+
+=head2 list_populate_all
+
+Populate all other pages except the configuration page
+
+=cut
+
+sub list_populate_all {
+
+    my ($self) = @_;
+
+    my $titles = $self->_model->get_list_data();
+
+    # Clear list
+    $self->list_item_clear_all();
+
+    # Populate list in sorted order
+    my @titles = sort { $a <=> $b } keys %{$titles};
+    foreach my $indice ( @titles ) {
+        my $nrcrt = $titles->{$indice}[0];
+        my $title = $titles->{$indice}[1];
+        my $file  = $titles->{$indice}[2];
+        # print "$nrcrt -> $title\n";
+        $self->list_item_insert($indice, $nrcrt, $title, $file);
+    }
+
+    # Set item 0 selected on start
+    $self->list_item_select_first();
+}
+
+=head2 list_populate_item
+
+Add new item in list control and select the last item
+
+=cut
+
+sub list_populate_item {
+    my ( $self, $rec ) = @_;
+
+    my $idx = $self->get_list_max_index();
+    $self->list_item_insert( $idx, $idx + 1, $rec->{title}, $rec->{file} );
+    $self->list_item_select_last();
+}
+
+=head2 list_remove_item
+
+Remove item from list control and select the first item
+
+=cut
+
+sub list_remove_item {
+    my $self = shift;
+
+    my $sel_item = $self->get_list_selected_index();
+    my $file_fqn = $self->get_list_data($sel_item);
+
+    # Remove from list
+    $self->list_item_clear($sel_item);
+
+    # Set item 0 selected
+    $self->list_item_select_first();
+
+    return $file_fqn;
+}
+
+=head2 list_init
+
+Delete the rows of the list.
+
+=cut
+
+sub list_init {
+    my $self = shift;
+
+    $self->{_rc}->ClearAll();
+
+    return;
+}
+
+=head2 list_populate
+
+Polulate list with data from query result.
+
+=cut
+
+sub list_populate {
+    my ( $self, $paramdata ) = @_;
+
+    my $row_count;
+
+    if ( Exists( $self->{_rc} ) ) {
+        eval { $row_count = $self->{_rc}->size(); };
+        if ($@) {
+            warn "Error: $@";
+            $row_count = 0;
+        }
+    }
+    else {
+        warn "No MList!\n";
+        return;
+    }
+
+    my $ary_ref = $self->_model->query_records_find($paramdata);
+    my $record_count = scalar @{$ary_ref};
+
+    # Data
+    foreach my $record ( @{$ary_ref} ) {
+        $self->{_rc}->insert( 'end', $record );
+        $self->{_rc}->see('end');
+        $row_count++;
+        $self->set_status("$row_count records fetched", 'ms');
+        $self->{_rc}->update;
+
+        # Progress bar
+        my $p = floor( $row_count * 10 / $record_count ) * 10;
+        if ( $p % 10 == 0 ) { $self->{progres} = $p; }
+    }
+
+    $self->set_status("$row_count records listed", 'ms');
+
+    # Activate and select last
+    $self->{_rc}->selectionClear( 0, 'end' );
+    $self->{_rc}->activate('end');
+    $self->{_rc}->selectionSet('end');
+    $self->{_rc}->see('active');
+    $self->{progres} = 0;
+
+    # Raise List tab if found
+    if ($record_count > 0) {
+        $self->{_nb}->raise('lst');
+    }
+
+    return $record_count;
+}
+
+=head2 has_list_records
+
+Return number of records from list.
+
+=cut
+
+sub has_list_records {
+    my $self = shift;
+
+    my $row_count;
+
+    if ( ref $self->{_rc} ) {
+        eval { $row_count = $self->{_rc}->GetItemCount(); };
+        if ($@) {
+            warn "Error: $@";
+            $row_count = 0;
+        }
+    }
+    else {
+        warn "Error, List doesn't exists?\n";
+        $row_count = 0;
+    }
+
+    return $row_count;
+}
+
+=head2 list_read_selected
+
+Read and return selected row (column 0) from list
+
+=cut
+
+sub list_read_selected {
+    my $self = shift;
+
+    if ( !$self->has_list_records ) {
+        warn "No records!\n";
+        return;
+    }
+
+    my $sel_no = $self->{_rc}->GetSelectedItemCount();
+    if ($sel_no <= 0) {
+        print "No record selected\n";
+        return;
+    }
+
+    my $row = $self->get_list_selected_index();
+    my $selected_value = $self->get_list_text_row($row);
+
+    if ($selected_value) {
+        print "No record selected?";
+        return;
+    }
+    else {
+
+        # # Trim spaces
+        # if ( defined($selected_value) ) {
+        #     $selected_value =~ s/^\s+//;
+        #     $selected_value =~ s/\s+$//;
+        # }
+    }
+
+    return $selected_value;
 }
 
 =head1 AUTHOR
