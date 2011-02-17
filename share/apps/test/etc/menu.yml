@@ -26,3 +26,9 @@ appmenubar:
         underline: 0
         sep: none
         key: ~
+      4:
+        name: WxFirst
+        label: WxFirst
+        underline: 0
+        sep: none
+        key: ~

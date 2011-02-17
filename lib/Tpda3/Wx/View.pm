@@ -542,7 +542,7 @@ Destroy existing window, before the creation of an other.
 sub destroy_notebook {
     my $self = shift;
 
-#    $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
+    $self->{_nb}->Destroy if ref $self->{_nb};
 
     return;
 }

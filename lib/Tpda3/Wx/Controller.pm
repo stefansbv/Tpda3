@@ -720,31 +720,31 @@ sub screen_module_load {
     # $self->_set_event_handler_nb('rec');
     # $self->_set_event_handler_nb('lst');
 
-    # # The application and class names
-    # #my $name  = ucfirst $self->_cfg->cfname;
-    # my $name = $self->_cfg->application->{module};
-    # my $class = "Tpda3::App::${name}::${module}";
-    # (my $file = "$class.pm") =~ s/::/\//g;
-    # require $file;
+    # The application and class names
+    #my $name  = ucfirst $self->_cfg->cfname;
+    my $name = $self->_cfg->application->{module};
+    my $class = "Tpda3::App::${name}::${module}";
+    (my $file = "$class.pm") =~ s/::/\//g;
+    require $file;
 
-    # unless ($class->can('run_screen') ) {
-    #     my $msg = "Error! Screen '$class' can not 'run_screen'";
-    #     print "$msg\n";
-    #     $self->_log->error($msg);
+    unless ($class->can('run_screen') ) {
+        my $msg = "Error! Screen '$class' can not 'run_screen'";
+        print "$msg\n";
+        $self->_log->error($msg);
 
-    #     return;
-    # }
+        return;
+    }
 
-    # # New screen instance
-    # $self->{_scrobj} = $class->new();
-    # $self->_log->trace("New screen instance: $module");
+    # New screen instance
+    $self->{_scrobj} = $class->new();
+    $self->_log->trace("New screen instance: $module");
 
-    # # Show screen
-    # my $nb = $self->_view->get_notebook('rec');
-    # $self->{_scrobj}->run_screen($nb);
-    # $self->_log->trace("Show screen $module");
+    # Show screen
+    my $nb = $self->_view->get_notebook('rec');
+    $self->{_scrobj}->run_screen($nb);
+    $self->_log->trace("Show screen $module");
 
-    # my $screen_type = $self->_scrcfg->screen->{type};
+    my $screen_type = $self->_scrcfg->screen->{type};
 
     # # Load instance config
     # $self->_cfg->config_load_instance();
