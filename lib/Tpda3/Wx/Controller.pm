@@ -9,6 +9,7 @@ use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
                  EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
 
+use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Utils;
