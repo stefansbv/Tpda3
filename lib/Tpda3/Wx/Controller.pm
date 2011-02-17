@@ -287,7 +287,7 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
-    $self->_log->trace("Setup event handler on NoteBook for '$page'");
+    $self->_log->trace("Setup event handler on NoteBook");
 
     #- NoteBook events
 
@@ -295,7 +295,6 @@ sub _set_event_handler_nb {
 
     EVT_AUINOTEBOOK_PAGE_CHANGED $self->_view, $nb->GetId, sub {
         my $current_page = $nb->GetSelection();
-        print "page is $current_page\n";
         if ( $current_page == 1 ) {    # 'lst'
             $self->set_app_mode('sele');
         }
@@ -308,24 +307,6 @@ sub _set_event_handler_nb {
             }
         }
     };
-
-    # $nb->pageconfigure(
-    #     $page,
-    #     -raisecmd => sub {
-    #         # print "$page tab activated\n";
-    #         if ($page eq 'lst') {
-    #             $self->set_app_mode('sele');
-    #         }
-    #         else {
-    #             if ( $self->record_load ) {
-    #                 $self->set_app_mode('edit');
-    #             }
-    #             else {
-    #                 $self->set_app_mode('idle');
-    #             }
-    #         }
-    #     },
-    # );
 
     return;
 }
@@ -611,15 +592,15 @@ sub _control_states_init {
 
     $self->{control_states} = {
         off  => {
-            state      => 0,
+            state      => 'disabled',
             background => 'disabled_bgcolor',
         },
         on   => {
-            state      => 1,
+            state      => 'normal',
             background => 'from_config',
         },
         find => {
-            state      => 1,
+            state      => 'normal',
             background => 'lightgreen',
         },
         edit => {
@@ -736,11 +717,9 @@ sub screen_module_load {
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    $self->_set_event_handler_nb('rec');
-    # $self->_set_event_handler_nb('lst');
+    $self->_set_event_handler_nb();
 
     # The application and class names
-    #my $name  = ucfirst $self->_cfg->cfname;
     my $name = $self->_cfg->application->{module};
     my $class = "Tpda3::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
@@ -765,8 +744,8 @@ sub screen_module_load {
 
     my $screen_type = $self->_scrcfg->screen->{type};
 
-    # # Load instance config
-    # $self->_cfg->config_load_instance();
+    # Load instance config
+    $self->_cfg->config_load_instance();
 
     # Update window geometry from instance config if exists or from
     # defaults
@@ -954,10 +933,11 @@ Load the selected record in screen
 sub record_load {
     my $self = shift;
 
-    my $value = $self->_view->list_read_selected();
+    # Retrieve col0 from the selected value
+    my $value = $self->_view->list_read_selected()->[0];
 
-    if ( ! defined $value ) {
-        print "No value selected in list";
+    if ( ! $value ) {
+        $self->_view->set_status('Nothing selected','ms');
         return;
     }
 
@@ -1051,12 +1031,12 @@ sub record_find_execute {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
 
-    # Set mode to sele if found
-    if ($record_count > 0) {
+    if ( $record_count > 0 ) {
         $self->set_app_mode('sele');
+        $self->_view->list_item_select_last();
+        $self->_view->get_notebook->SetSelection(1);    # 'lst'
     }
 
     return;
@@ -1155,7 +1135,7 @@ sub control_read_e {
         return;
     }
 
-    my $value = $ctrl_ref->{$field}[1]->get;
+    my $value = $ctrl_ref->{$field}[1]->GetValue();
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -1570,7 +1550,6 @@ sub controls_state_set {
         # next if $fld_cfg->{ctrltype} = '';
 
         my $ctrl_state = $control_states->{state};
-        print "ctrl_state is $ctrl_state\n";
         $ctrl_state = $fld_cfg->{state}
             if $ctrl_state eq 'from_config';
 
@@ -1584,14 +1563,15 @@ sub controls_state_set {
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
-                $ctrl_state = 'disabled';
+                $ctrl_state = 0;             # 'disabled'
                 $bg_color   = $self->{_scrobj}->get_bgcolor();
             }
         }
 
         # Configure controls
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
-        $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+        $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
+        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
+        #$ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
     }
 
     return;
@@ -1617,7 +1597,7 @@ sub control_write_e {
 
 =head2 control_write_t
 
-Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
 
 =cut
 

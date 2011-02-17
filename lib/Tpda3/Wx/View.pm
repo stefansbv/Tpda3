@@ -3,6 +3,8 @@ package Tpda3::Wx::View;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Carp;
 #use POSIX qw (floor);
 
@@ -570,6 +572,18 @@ sub get_toolbar {
     return $self->{_tb};
 }
 
+=head2 get_listcontrol
+
+Return list control handler.
+
+=cut
+
+sub get_listcontrol {
+    my $self = shift;
+
+    return $self->{_rc};
+}
+
 =head2 get_control_by_name
 
 Return the control instance by name.
@@ -720,14 +734,14 @@ sub make_list_header {
     my ($self, $header_cols, $header_attr) = @_;
 
     # Delete all items and all columns
-    $self->{_rc}->ClearAll();
+    $self->get_listcontrol->ClearAll();
 
     # Header
     my $colcnt = 0;
     foreach my $col ( @{$header_cols} ) {
         my $attr = $header_attr->{$col};
 
-        $self->{_rc}->InsertColumn(
+        $self->get_listcontrol->InsertColumn(
             $colcnt,
             $attr->{label},
             wxLIST_FORMAT_LEFT,
@@ -822,7 +836,7 @@ Select the first item in list
 =cut
 
 sub list_item_select_first {
-    my ($self) = @_;
+    my $self = shift;
 
     my $items_no = $self->get_list_max_index();
 
@@ -838,12 +852,16 @@ Select the last item in list
 =cut
 
 sub list_item_select_last {
-    my ($self) = @_;
+    my $self = shift;
 
-    my $items_no = $self->get_list_max_index();
-    my $idx = $items_no - 1;
-    $self->get_listcontrol->Select( $idx, 1 );
-    $self->get_listcontrol->EnsureVisible($idx);
+    my $lst = $self->get_listcontrol;
+    my $idx = $self->get_list_max_index() - 1;
+    #$lst->Select( $idx, 1 );
+    #$lst->EnsureVisible($idx);
+    $self->{_rc}->Select( $idx, 1 );
+    $self->{_rc}->EnsureVisible($idx);
+
+    return;
 }
 
 =head2 get_list_max_index
@@ -853,7 +871,7 @@ Return the max index from the list control
 =cut
 
 sub get_list_max_index {
-    my ($self) = @_;
+    my $self = shift;
 
     return $self->get_listcontrol->GetItemCount();
 }
@@ -865,14 +883,14 @@ Return the selected index from the list control
 =cut
 
 sub get_list_selected_index {
-    my ($self) = @_;
+    my $self = shift;
 
     return $self->get_listcontrol->GetSelection();
 }
 
 =head2 list_item_insert
 
-Insert item in list control
+Insert item in list control.
 
 =cut
 
@@ -916,37 +934,9 @@ Delete all list control items
 =cut
 
 sub list_item_clear_all {
-    my ($self) = @_;
+    my $self = shift;
+
     $self->get_listcontrol->DeleteAllItems;
-}
-
-=head2 list_populate_all
-
-Populate all other pages except the configuration page
-
-=cut
-
-sub list_populate_all {
-
-    my ($self) = @_;
-
-    my $titles = $self->_model->get_list_data();
-
-    # Clear list
-    $self->list_item_clear_all();
-
-    # Populate list in sorted order
-    my @titles = sort { $a <=> $b } keys %{$titles};
-    foreach my $indice ( @titles ) {
-        my $nrcrt = $titles->{$indice}[0];
-        my $title = $titles->{$indice}[1];
-        my $file  = $titles->{$indice}[2];
-        # print "$nrcrt -> $title\n";
-        $self->list_item_insert($indice, $nrcrt, $title, $file);
-    }
-
-    # Set item 0 selected on start
-    $self->list_item_select_first();
 }
 
 =head2 list_populate_item
@@ -993,7 +983,7 @@ Delete the rows of the list.
 sub list_init {
     my $self = shift;
 
-    $self->{_rc}->ClearAll();
+    $self->get_listcontrol->ClearAll();
 
     return;
 }
@@ -1007,14 +997,10 @@ Polulate list with data from query result.
 sub list_populate {
     my ( $self, $paramdata ) = @_;
 
-    my $row_count;
+    my $row_cnt;
 
-    if ( Exists( $self->{_rc} ) ) {
-        eval { $row_count = $self->{_rc}->size(); };
-        if ($@) {
-            warn "Error: $@";
-            $row_count = 0;
-        }
+    if ( ref $self->get_listcontrol ) {
+        $row_cnt = $self->get_listcontrol->GetItemCount();
     }
     else {
         warn "No MList!\n";
@@ -1022,36 +1008,33 @@ sub list_populate {
     }
 
     my $ary_ref = $self->_model->query_records_find($paramdata);
-    my $record_count = scalar @{$ary_ref};
+    my $record_cnt = scalar @{$ary_ref};
+
+    my $list = $self->get_listcontrol();
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-        $self->{_rc}->insert( 'end', $record );
-        $self->{_rc}->see('end');
-        $row_count++;
-        $self->set_status("$row_count records fetched", 'ms');
-        $self->{_rc}->update;
+        my $col_max = scalar @{ $paramdata->{columns} };
+
+         $list->InsertStringItem( $row_cnt, 'dummy' );
+        for ( my $col = 0 ; $col < $col_max ; $col++ ) {
+            $list->SetItemText( $row_cnt, $col, $record->[$col] );
+        }
+
+        $row_cnt++;
+
+        $self->set_status("$row_cnt records fetched", 'ms');
 
         # Progress bar
-        my $p = floor( $row_count * 10 / $record_count ) * 10;
-        if ( $p % 10 == 0 ) { $self->{progres} = $p; }
+        # my $p = floor( $row_cnt * 10 / $record_cnt ) * 10;
+        # if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status("$row_count records listed", 'ms');
+    $self->set_status("$row_cnt records listed", 'ms');
 
-    # Activate and select last
-    $self->{_rc}->selectionClear( 0, 'end' );
-    $self->{_rc}->activate('end');
-    $self->{_rc}->selectionSet('end');
-    $self->{_rc}->see('active');
-    $self->{progres} = 0;
+    # $self->{progres} = 0;
 
-    # Raise List tab if found
-    if ($record_count > 0) {
-        $self->{_nb}->raise('lst');
-    }
-
-    return $record_count;
+    return $record_cnt;
 }
 
 =head2 has_list_records
@@ -1063,21 +1046,21 @@ Return number of records from list.
 sub has_list_records {
     my $self = shift;
 
-    my $row_count;
+    my $row_cnt;
 
-    if ( ref $self->{_rc} ) {
-        eval { $row_count = $self->{_rc}->GetItemCount(); };
+    if ( ref $self->get_listcontrol ) {
+        eval { $row_cnt = $self->get_listcontrol->GetItemCount(); };
         if ($@) {
             warn "Error: $@";
-            $row_count = 0;
+            $row_cnt = 0;
         }
     }
     else {
         warn "Error, List doesn't exists?\n";
-        $row_count = 0;
+        $row_cnt = 0;
     }
 
-    return $row_count;
+    return $row_cnt;
 }
 
 =head2 list_read_selected
@@ -1094,7 +1077,7 @@ sub list_read_selected {
         return;
     }
 
-    my $sel_no = $self->{_rc}->GetSelectedItemCount();
+    my $sel_no = $self->get_listcontrol->GetSelectedItemCount();
     if ($sel_no <= 0) {
         print "No record selected\n";
         return;
@@ -1103,8 +1086,8 @@ sub list_read_selected {
     my $row = $self->get_list_selected_index();
     my $selected_value = $self->get_list_text_row($row);
 
-    if ($selected_value) {
-        print "No record selected?";
+    if ( !$selected_value ) {
+        print "No selected value?\n";
         return;
     }
     else {
