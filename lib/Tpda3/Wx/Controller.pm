@@ -211,7 +211,7 @@ sub _set_event_handlers {
         my $scr_name = $self->{_scrstr} || 'main';
         $self->_cfg->config_save_instance(
             $scr_name,
-            # $self->_view->w_geometry();
+            $self->_view->w_geometry,
         );
     };
 
@@ -762,7 +762,7 @@ sub screen_module_load {
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
     $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
-    $self->_view->SetMinSize( Wx::Size->new( $w, $h ) );
+    #$self->_view->SetMinSize( Wx::Size->new( $w, $h ) );
 
     # Event handlers
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
@@ -779,12 +779,12 @@ sub screen_module_load {
     my $fields = $self->_scrcfg->maintable->{columns};
     my $header_attr = {};
     foreach my $col ( @header_cols ) {
-        # Width config is in chars
-        # Using chars x 10 to compute the with
-        # TODO: better method?, maybe the width of the font?
+        # Width config is in chars.  Using chars_number x char_width
+        # to compute the with in pixels
+        my $char_width = $self->_view->GetCharWidth();
         $header_attr->{$col} = {
             label =>  $fields->{$col}{label},
-            width =>  $fields->{$col}{width} * 10,
+            width =>  $fields->{$col}{width} * $char_width,
             order =>  $fields->{$col}{order},
         };
     }
@@ -934,12 +934,13 @@ sub record_load {
     my $self = shift;
 
     # Retrieve col0 from the selected value
-    my $value = $self->_view->list_read_selected()->[0];
+    my $selected_row_ref = $self->_view->list_read_selected();
 
-    if ( ! $value ) {
+    if ( ! ref $selected_row_ref ) {
         $self->_view->set_status('Nothing selected','ms');
         return;
     }
+    my $value = $selected_row_ref->[0];
 
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;

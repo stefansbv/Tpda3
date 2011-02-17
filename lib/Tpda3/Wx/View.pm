@@ -627,13 +627,13 @@ sub set_status {
     my $sb = $self->get_statusbar();
 
     if ( $sb_id eq 'db' ) {
-        $sb->SetStatusText( $text, 2 ) if defined $text;
+        $sb->PushStatusText( $text, 2 ) if defined $text;
     }
     elsif ($sb_id eq 'ms') {
-        $sb->SetStatusText( $text, 0 ) if defined $text;
+        $sb->PushStatusText( $text, 0 ) if defined $text;
     }
     else {
-        $sb->SetStatusText( $text, 1 ) if defined $text;
+        $sb->PushStatusText( $text, 1 ) if defined $text;
     }
 
     return;
@@ -1100,6 +1100,34 @@ sub list_read_selected {
     }
 
     return $selected_value;
+}
+
+=head2 w_geometry
+
+Return window geometry
+
+=cut
+
+sub w_geometry {
+    my $self = shift;
+
+    # my $wsys = $self->windowingsystem;
+    my $name = $self->GetName();
+    my $rect = $self->GetScreenRect();
+
+    # All dimensions are in pixels.
+    my $sh = $rect->height;
+    my $sw = $rect->width;
+    my $x  = $rect->x;
+    my $y  = $rect->y;
+
+    my $geom = "${sw}x${sh}+$x+$y";
+
+    # print "\nSystem   = $wsys\n";
+    print "Name     = $name\n";
+    print "Geometry = $geom\n";
+
+    return $geom;
 }
 
 =head1 AUTHOR
