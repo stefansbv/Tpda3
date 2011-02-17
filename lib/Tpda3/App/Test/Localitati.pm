@@ -71,7 +71,7 @@ sub run_screen {
       Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $inreg_p, -1, ' Localitate ', ), wxVERTICAL, );
 
-    my $loco_mid_fgs = Wx::FlexGridSizer->new( 4, 2, 5, 10 );
+    my $loco_mid_fgs = Wx::FlexGridSizer->new( 2, 2, 5, 10 );
 
     $loco_mid_fgs->Add( $lcod_p, 0, wxTOP | wxLEFT,  5 );
     $loco_mid_fgs->Add( $ecod_p,    0, wxEXPAND | wxTOP, 5 );
@@ -104,7 +104,7 @@ sub run_screen {
     $loco_main_sz->Add( $loco_mid_sz, 0, wxALL | wxGROW, 5 );
     $loco_main_sz->Add( $loco_bot_sz, 0, wxALL | wxGROW, 5 );
 
-    $loco_main_sz->AddGrowableRow(0);
+    $loco_main_sz->AddGrowableRow(1);
     $loco_main_sz->AddGrowableCol(0);
 
     $inreg_p->SetSizer($loco_main_sz);
