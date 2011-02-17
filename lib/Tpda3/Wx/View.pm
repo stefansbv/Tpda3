@@ -478,15 +478,15 @@ sub create_notebook {
     $self->{_nb}->create_notebook_page('lst', 'List');
     # $self->{_nb}->create_notebook_page('det', 'Details');
 
-    $self->{_list} = Wx::Perl::ListCtrl->new(
+    $self->{_rc} = Wx::Perl::ListCtrl->new(
         $self->{_nb}{lst}, -1,
         [ -1, -1 ],
         [ -1, -1 ],
         Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
     );
 
-    $self->{_list}->InsertColumn( 0, '#',          wxLIST_FORMAT_LEFT, 50  );
-    $self->{_list}->InsertColumn( 1, 'Query name', wxLIST_FORMAT_LEFT, 337 );
+    $self->{_rc}->InsertColumn( 0, '#',          wxLIST_FORMAT_LEFT, 50  );
+    $self->{_rc}->InsertColumn( 1, 'Query name', wxLIST_FORMAT_LEFT, 337 );
 
     #-- Top
 
@@ -501,7 +501,7 @@ sub create_notebook {
         wxHORIZONTAL,
     );
 
-    $lst_sbs->Add( $self->{_list}, 1, wxEXPAND, 0 );
+    $lst_sbs->Add( $self->{_rc}, 1, wxEXPAND, 0 );
     $lst_main_sz->Add( $lst_sbs, 1, wxALL | wxEXPAND, 5 );
 
     $self->{_nb}{lst}->SetSizer( $lst_main_sz );
@@ -706,6 +706,47 @@ sub toggle_status_cn {
     }
     else {
         $self->set_status('','db');
+    }
+
+    return;
+}
+
+=head2 make_list_header
+
+Make header for list
+
+=cut
+
+sub make_list_header {
+    my ($self, $header_cols, $header_attr) = @_;
+
+    # Delete all items and all columns
+    $self->{_rc}->ClearAll();
+
+    # Header
+    my $colcnt = 0;
+    foreach my $col ( @{$header_cols} ) {
+        my $attr = $header_attr->{$col};
+
+        $self->{_rc}->InsertColumn(
+            $colcnt,
+            $attr->{label},
+            wxLIST_FORMAT_LEFT,
+            $attr->{width},
+        );
+
+        if ( defined $attr->{order} ) {
+            # TODO: Figure out how to sort
+            # if ($attr->{order} eq 'N') {
+            #     $self->{_rc}->columnGet($colcnt)
+            #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
+            # }
+        }
+        else {
+            warn " Warning: no sort option for '$col'\n";
+        }
+
+        $colcnt++;
     }
 
     return;

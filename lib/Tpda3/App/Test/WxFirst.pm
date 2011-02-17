@@ -41,7 +41,6 @@ sub run_screen {
     my $main_p  = $inreg_p->GetParent;
     # $self->{bg} = $gui->cget('-background');
 
-    #-- Controls
 
     my $repo_lbl1 = Wx::StaticText->new( $inreg_p, -1, 'Title', );
     $self->{title} =
@@ -65,7 +64,7 @@ sub run_screen {
 
     #--- Layout
 
-    my $repo_main_sz = Wx::FlexGridSizer->new( 4, 1, 5, 5 );
+    my $repo_main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
 
     #-- Middle
 
@@ -110,6 +109,13 @@ sub run_screen {
     $repo_main_sz->AddGrowableCol(0);
 
     $inreg_p->SetSizer($repo_main_sz);
+
+    # No visual effect with this:
+    # $inreg_p->SetSizerAndFit($repo_main_sz);
+    # $inreg_p->FitInside();
+    # $gui->SetClientSize($inreg_p->GetSize());
+    #$gui->Fit();
+    #$gui->SetAutoLayout( 1 );
 
     return;
 }

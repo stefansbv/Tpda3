@@ -3,6 +3,8 @@ package Tpda3::Wx::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
                  EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
@@ -460,7 +462,7 @@ sub set_app_mode {
     return unless ref $self->{_scrobj};
 
     # TODO: Should this be called on all screens?
-    $self->toggle_screen_interface_controls;
+    # $self->toggle_screen_interface_controls;
 
     if ( my $method_name = $method_for{$mode} ) {
         $self->$method_name();
@@ -749,43 +751,49 @@ sub screen_module_load {
     # # Load instance config
     # $self->_cfg->config_load_instance();
 
-    # # Update window geometry from instance config if exists or from
-    # # defaults
-    # my $geom;
-    # if ( $self->_cfg->can('geometry') ) {
-    #     $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
-    #     unless ($geom) {
-    #         $geom = $self->_scrcfg->screen->{geom};
-    #     }
-    # }
-    # else {
-    #     $geom = $self->_scrcfg->screen->{geom};
-    # }
-    # $self->_view->set_geometry($geom);
+    # Update window geometry from instance config if exists or from
+    # defaults
+    my $geom;
+    if ( $self->_cfg->can('geometry') ) {
+        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
+        unless ($geom) {
+            $geom = $self->_scrcfg->screen->{geom};
+        }
+    }
+    else {
+        $geom = $self->_scrcfg->screen->{geom};
+    }
 
-    # # Event handlers
-    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
-    # #-- Lookup bindings
-    # $self->setup_lookup_bindings();
+    my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
+    $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
+    $self->_view->SetMinSize( Wx::Size->new( $w, $h ) );
 
-    # # Store currently loaded screen class
-    # $self->{_scrcls} = $class;
+    # Event handlers
+    $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    #-- Lookup bindings
+    $self->setup_lookup_bindings();
 
-    # $self->set_app_mode('idle');
+    # Store currently loaded screen class
+    $self->{_scrcls} = $class;
 
-    # # List header
-    # my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
-    # my $fields = $self->_scrcfg->maintable->{columns};
-    # my $header_attr = {};
-    # foreach my $col ( @header_cols ) {
-    #     $header_attr->{$col} = {
-    #         label =>  $fields->{$col}{label},
-    #         width =>  $fields->{$col}{width},
-    #         order =>  $fields->{$col}{order},
-    #     };
-    # }
+    $self->set_app_mode('idle');
 
-    # $self->_view->make_list_header( \@header_cols, $header_attr );
+    # List header
+    my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
+    my $fields = $self->_scrcfg->maintable->{columns};
+    my $header_attr = {};
+    foreach my $col ( @header_cols ) {
+        # Width config is in chars
+        # Using chars x 10 to compute the with
+        # TODO: better method?, maybe the width of the font?
+        $header_attr->{$col} = {
+            label =>  $fields->{$col}{label},
+            width =>  $fields->{$col}{width} * 10,
+            order =>  $fields->{$col}{order},
+        };
+    }
+
+    $self->_view->make_list_header( \@header_cols, $header_attr );
 
     # if ($screen_type eq 'tablematrix') {
     #     # TableMatrix header
