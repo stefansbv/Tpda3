@@ -41,81 +41,90 @@ sub run_screen {
     my $main_p  = $inreg_p->GetParent;
     # $self->{bg} = $gui->cget('-background');
 
-
-    my $repo_lbl1 = Wx::StaticText->new( $inreg_p, -1, 'Title', );
-    $self->{title} =
+    my $lcod_p = Wx::StaticText->new( $inreg_p, -1, 'Cod', );
+    my $ecod_p =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    my $repo_lbl2 = Wx::StaticText->new( $inreg_p, -1, 'Query file', );
-    $self->{filename} =
+    my $llocalitate = Wx::StaticText->new( $inreg_p, -1, 'Localitate', );
+    my $elocalitate =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    my $repo_lbl3 = Wx::StaticText->new( $inreg_p, -1, 'Output file', );
-    $self->{output} =
+    my $ljudet = Wx::StaticText->new( $inreg_p, -1, 'Judet', );
+    my $ejudet =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    my $repo_lbl4 = Wx::StaticText->new( $inreg_p, -1, 'Sheet name', );
-    $self->{sheet} =
+    my $lid_judet = Wx::StaticText->new( $inreg_p, -1, 'Cod judet', );
+    my $eid_judet =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    $self->{description} =
+    my $tprim_adresa =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, 40 ],
                            wxTE_MULTILINE, );
 
     #--- Layout
 
-    my $repo_main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
+    my $loco_main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
 
     #-- Middle
 
-    my $repo_mid_sz =
+    my $loco_mid_sz =
       Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $inreg_p, -1, ' Header ', ), wxVERTICAL, );
+        Wx::StaticBox->new( $inreg_p, -1, ' Localitate ', ), wxVERTICAL, );
 
-    my $repo_mid_fgs = Wx::FlexGridSizer->new( 4, 2, 5, 10 );
+    my $loco_mid_fgs = Wx::FlexGridSizer->new( 4, 2, 5, 10 );
 
-    $repo_mid_fgs->Add( $repo_lbl1, 0, wxTOP | wxLEFT,  5 );
-    $repo_mid_fgs->Add( $self->{title},    0, wxEXPAND | wxTOP, 5 );
+    $loco_mid_fgs->Add( $lcod_p, 0, wxTOP | wxLEFT,  5 );
+    $loco_mid_fgs->Add( $ecod_p,    0, wxEXPAND | wxTOP, 5 );
 
-    $repo_mid_fgs->Add( $repo_lbl2, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{filename}, 0, wxEXPAND, 0 );
+    $loco_mid_fgs->Add( $llocalitate, 0, wxLEFT,   5 );
+    $loco_mid_fgs->Add( $elocalitate, 0, wxEXPAND, 0 );
 
-    $repo_mid_fgs->Add( $repo_lbl3, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{output},   0, wxEXPAND, 0 );
+    $loco_mid_fgs->Add( $ljudet, 0, wxLEFT,   5 );
+    $loco_mid_fgs->Add( $ejudet,   0, wxEXPAND, 0 );
 
-    $repo_mid_fgs->Add( $repo_lbl4, 0, wxLEFT,   5 );
-    $repo_mid_fgs->Add( $self->{sheet},    0, wxEXPAND, 0 );
+    $loco_mid_fgs->Add( $lid_judet, 0, wxLEFT,   5 );
+    $loco_mid_fgs->Add( $eid_judet,    0, wxEXPAND, 0 );
 
-    # $repo_mid_fgs->AddGrowableRow( 1, 1 );
-    $repo_mid_fgs->AddGrowableCol( 1, 1 );
+    #- Layout
 
-    $repo_mid_sz->Add( $repo_mid_fgs, 0, wxALL | wxGROW, 0 );
+    $loco_mid_fgs->AddGrowableCol( 1, 1 );
+    $loco_mid_sz->Add( $loco_mid_fgs, 0, wxALL | wxGROW, 0 );
 
     #-- Bottom
 
-    my $repo_bot_sz =
+    my $loco_bot_sz =
       Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $inreg_p, -1, ' Description ', ),
+        Wx::StaticBox->new( $inreg_p, -1, ' Adresa primarie ', ),
         wxVERTICAL, );
 
-    $repo_bot_sz->Add( $self->{description}, 1, wxEXPAND );
+    $loco_bot_sz->Add( $tprim_adresa, 1, wxEXPAND );
 
     #--
 
-    $repo_main_sz->Add( $repo_mid_sz, 0, wxALL | wxGROW, 5 );
-    $repo_main_sz->Add( $repo_bot_sz, 0, wxALL | wxGROW, 5 );
+    $loco_main_sz->Add( $loco_mid_sz, 0, wxALL | wxGROW, 5 );
+    $loco_main_sz->Add( $loco_bot_sz, 0, wxALL | wxGROW, 5 );
 
-    $repo_main_sz->AddGrowableRow(0);
-    $repo_main_sz->AddGrowableCol(0);
+    $loco_main_sz->AddGrowableRow(0);
+    $loco_main_sz->AddGrowableCol(0);
 
-    $inreg_p->SetSizer($repo_main_sz);
+    $inreg_p->SetSizer($loco_main_sz);
 
     # No visual effect with this:
-    # $inreg_p->SetSizerAndFit($repo_main_sz);
+    # $inreg_p->SetSizerAndFit($loco_main_sz);
     # $inreg_p->FitInside();
     # $gui->SetClientSize($inreg_p->GetSize());
     #$gui->Fit();
     #$gui->SetAutoLayout( 1 );
+
+    # Entry objects: var_asoc, var_obiect
+    # Other configurations in 'products.conf'
+    $self->{controls} = {
+        localitate  => [ undef, $elocalitate ],
+        judet       => [ undef, $ejudet ],
+        id_judet    => [ undef, $eid_judet ],
+        cod_p       => [ undef, $ecod_p ],
+        prim_adresa => [ undef, $tprim_adresa ],
+    };
 
     return;
 }

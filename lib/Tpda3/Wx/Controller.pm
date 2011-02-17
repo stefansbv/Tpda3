@@ -1384,8 +1384,9 @@ sub screen_write {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
-        my $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
-        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
+        # Save control state
+        my $ctrl_state = $ctrl_ref->{$field}[1]->IsEditable();
+        $ctrl_ref->{$field}[1]->SetEditable(1);
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
@@ -1432,7 +1433,7 @@ sub screen_write {
         }
 
         # Restore state
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
+        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
     }
 
     # $self->_log->trace("Write finished (restored controls states)");
@@ -1608,8 +1609,8 @@ sub control_write_e {
     $value = q{} unless defined $value; # Empty
 
     # Tip Entry 'e'
-    $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
-    $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
+    # $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
+    $ctrl_ref->{$field}[1]->SetValue($value) if $value;
 
     return;
 }
@@ -1626,8 +1627,9 @@ sub control_write_t {
     $value = q{} unless defined $value; # Empty
 
     # Tip TextEntry 't'
-    $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
-    $ctrl_ref->{$field}[1]->insert( '1.0', $value ) if $value;
+    $ctrl_ref->{$field}[1]->ClearAll;
+    $ctrl_ref->{$field}[1]->AppendText($value);
+    $ctrl_ref->{$field}[1]->AppendText( "\n" );
 
     return;
 }
