@@ -39,7 +39,7 @@ sub run_screen {
 
     my $gui     = $inreg_p->GetGrandParent;
     my $main_p  = $inreg_p->GetParent;
-    # $self->{bg} = $gui->cget('-background');
+    $self->{bg} = $inreg_p->GetBackgroundColour();
 
     my $lcod_p = Wx::StaticText->new( $inreg_p, -1, 'Cod', );
     my $ecod_p =

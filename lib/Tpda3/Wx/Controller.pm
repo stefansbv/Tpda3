@@ -176,7 +176,7 @@ Setup event handlers for the interface.
 sub _set_event_handlers {
     my $self = shift;
 
-    $self->_log->trace("Setup event handlers");
+    $self->_log->trace('Setup event handlers');
 
     #- Frame
     EVT_CLOSE $self->_view, $closeWin;
@@ -186,6 +186,25 @@ sub _set_event_handlers {
     EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
     EVT_MENU $self->_view, wxID_EXIT,  $exit;
     # EVT_MENU $self->_view, wxID_HELP,  $help;
+
+    #-- Toggle mode find
+
+    EVT_MENU $self->_view, 50011, sub {
+        if ( !$self->_model->is_mode('add') ) {
+            $self->toggle_mode_find();
+        }
+    };
+
+    #-- Execute search
+
+    EVT_MENU $self->_view, 50012, sub {
+        if ( $self->_model->is_mode('find') ) {
+            $self->record_find_execute;
+        }
+        else {
+            print "WARN: Not in find mode\n";
+        }
+    };
 
     # Config dialog
     # $self->_view->get_menu_popup_item('mn_fn')->configure(
@@ -253,25 +272,14 @@ sub _set_event_handlers {
 
     #-- Make some key bindings
 
-    # $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
-    # $self->_view->bind(
-    #     '<F7>' => sub {
-    #         # From add mode forbid find mode
-    #         if ( !$self->_model->is_mode('add') ) {
-    #             $self->toggle_mode_find();
-    #         }
-    #     }
-    # );
-    # $self->_view->bind(
-    #     '<F8>' => sub {
-    #         if ( $self->_model->is_mode('find') ) {
-    #             $self->record_find_execute;
-    #         }
-    #         else {
-    #             print "WARN: Not in find mode\n";
-    #         }
-    #     }
-    # );
+    $self->_view->SetAcceleratorTable(
+        Wx::AcceleratorTable->new(
+            [ wxACCEL_NORMAL, WXK_F1, wxID_EXIT, ],    # Exit on F1
+            # Wx::AcceleratorEntry->new( wxACCEL_ALT, 'X', 4 )
+            [ wxACCEL_NORMAL, WXK_F7, 50011 ],
+            [ wxACCEL_NORMAL, WXK_F8, 50012 ],
+        )
+    );
 
     return;
 }
@@ -1534,7 +1542,7 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->trace("Screen controls state is '$state'");
+    $self->_log->info("Screen controls state is '$state'");
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
     return unless scalar keys %{$ctrl_ref};
@@ -1546,9 +1554,6 @@ sub controls_state_set {
     foreach my $field ( keys %{ $self->{_scrcfg}->maintable->{columns} } ) {
 
         my $fld_cfg = $self->{_scrcfg}->maintable->{columns}{$field};
-
-        # Skip for some control types
-        # next if $fld_cfg->{ctrltype} = '';
 
         my $ctrl_state = $control_states->{state};
         $ctrl_state = $fld_cfg->{state}
@@ -1572,7 +1577,9 @@ sub controls_state_set {
         # Configure controls
         $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
         $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
-        #$ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+        $ctrl_ref->{$field}[1]->SetBackgroundColour(
+            Wx::Colour->new($bg_color)
+          ) if $bg_color;
     }
 
     return;

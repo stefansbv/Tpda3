@@ -1,27 +1,40 @@
 # tpda-mvc
 # Interface configuration
 # Don't touch!, not for users ;)
+# The application menu Id's start at 5000
 ---
 menubar:
   menu_app:
-    id:    1001
+    id:    5001
     label: App
     underline: 0
     popup:
       1:
-        name: mn_rr
-        label: Run report
+        name: mn_fm
+        label: Toggle find mode
         underline: 0
-        sep: after
-        key: ~
-      2:
-        name: mn_qt
-        label: Exit
-        underline: 1
         sep: none
-        key: Alt-x
+        key: F7
+      2:
+        name: mn_fe
+        label: Execute found
+        underline: 0
+        sep: none
+        key: F8
+      3:
+        name: mn_fc
+        label: Execute count
+        underline: 0
+        sep: none
+        key: ~
+      4:
+        name: mn_qt
+        label: Quit
+        underline: 1
+        sep: before
+        key: Ctrl+Q
   menu_tool:
-    id:    1002
+    id:    5002
     label: Tools
     underline: 0
     popup:
@@ -37,14 +50,8 @@ menubar:
         underline: 0
         sep: none
         key: Alt-c
-      3:
-        name: mn_fn
-        label: Set font
-        underline: 4
-        sep: none
-        key: Alt-f
   menu_help:
-    id:    1003
+    id:    5003
     label: Help
     underline: 0
     popup:

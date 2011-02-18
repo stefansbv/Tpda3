@@ -1,6 +1,7 @@
 # tpda-mvc
 # Interface configuration
 # Don't touch!, not for users ;)
+# The toolbar Id's start at 1000
 ---
 toolbar:
   tb_fm:
