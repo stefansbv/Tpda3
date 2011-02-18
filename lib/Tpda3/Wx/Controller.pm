@@ -822,17 +822,16 @@ sub screen_module_load {
     #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
     # }
 
-    # # Load lists into JBrowseEntry or JComboBox widgets
-    # $self->screen_init();
+    # $self->screen_lists_populate();
 
     $self->_set_menus_enable(1);
 
     return;
 }
 
-=head2 screen_init
+=head2 screen_lists_populate
 
-Load options in Listbox like widgets - JCombobox support only.
+Load options in Listbox like widgets.
 
 All JBrowseEntry or JComboBox widgets must have a <lists> record in
 config to define where the data for the list come from:
@@ -848,7 +847,7 @@ config to define where the data for the list come from:
 
 =cut
 
-sub screen_init {
+sub screen_lists_populate {
     my $self = shift;
 
     # Entry objects hash
@@ -1280,7 +1279,7 @@ sub control_read_d {
 
 =head2 control_read_m
 
-Read contents of a Tk::JComboBox control.
+Read contents of a Wx::ComboBox control.
 
 =cut
 
@@ -1670,7 +1669,7 @@ sub control_write_d {
 
 =head2 control_write_m
 
-Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
+Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
 
 =cut
 
