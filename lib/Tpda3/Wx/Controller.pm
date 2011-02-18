@@ -88,7 +88,7 @@ sub new {
 
     $self->_set_event_handlers;
 
-    # $self->set_app_mode('idle'); # initial mode
+    $self->_set_menus_enable(0); # disable some menus
 
     return $self;
 }
@@ -185,7 +185,6 @@ sub _set_event_handlers {
 
     EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
     EVT_MENU $self->_view, wxID_EXIT,  $exit;
-    # EVT_MENU $self->_view, wxID_HELP,  $help;
 
     #-- Toggle mode find
 
@@ -234,7 +233,7 @@ sub _set_event_handlers {
         );
     };
 
-    #-- Find mode
+    #-- Find mode toggle
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId, sub {
         # From add mode forbid find mode
         if ( !$self->_model->is_mode('add') ) {
@@ -252,7 +251,7 @@ sub _set_event_handlers {
         }
     };
 
-    #-- Find count
+    #-- Count
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId, sub {
         if ( $self->_model->is_mode('find') ) {
             $self->record_find_count;
@@ -270,16 +269,14 @@ sub _set_event_handlers {
     #-- Quit
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
 
-    #-- Make some key bindings
+    #-- Make more key bindings
 
-    $self->_view->SetAcceleratorTable(
-        Wx::AcceleratorTable->new(
-            [ wxACCEL_NORMAL, WXK_F1, wxID_EXIT, ],    # Exit on F1
-            # Wx::AcceleratorEntry->new( wxACCEL_ALT, 'X', 4 )
-            [ wxACCEL_NORMAL, WXK_F7, 50011 ],
-            [ wxACCEL_NORMAL, WXK_F8, 50012 ],
-        )
-    );
+    # $self->_view->SetAcceleratorTable(
+    #     Wx::AcceleratorTable->new(
+    #         [ wxACCEL_NORMAL, WXK_F7, 50011 ],
+    #         [ wxACCEL_NORMAL, WXK_F8, 50012 ],
+    #     )
+    # );
 
     return;
 }
@@ -347,6 +344,25 @@ sub _set_event_handler_screen {
             $self->remove_tmatrix_row();
         }
     );
+
+    return;
+}
+
+=head2 _set_menus_inimodes
+
+Disable some menus at start.
+
+=cut
+
+sub _set_menus_enable {
+    my ($self, $enable) = @_;
+
+    my $mn = $self->_view->get_menubar();
+
+    foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
+        my $mn_id = $self->_view->get_menu_popup_item($mnu)->GetId;
+        $mn->Enable($mn_id, $enable);
+    }
 
     return;
 }
@@ -808,6 +824,8 @@ sub screen_module_load {
 
     # # Load lists into JBrowseEntry or JComboBox widgets
     # $self->screen_init();
+
+    $self->_set_menus_enable(1);
 
     return;
 }

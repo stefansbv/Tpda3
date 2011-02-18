@@ -287,10 +287,13 @@ sub make_popup_item {
     $id = wxID_ABOUT if $item->{name} eq q{mn_ab};
     $id = wxID_EXIT  if $item->{name} eq q{mn_qt};
 
+    my $label = $item->{label};
+    $label .= "\t" . $item->{key} if $item->{key}; # add shortcut key
+
     $self->{ $item->{name} } = $menu->Append(
         $id,
         Tpda3::Utils->ins_underline_mark(
-            $item->{label},
+            $label,
             $item->{underline},
         ),
     );

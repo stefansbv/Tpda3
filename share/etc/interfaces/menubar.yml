@@ -17,7 +17,7 @@ menubar:
         key: F7
       2:
         name: mn_fe
-        label: Execute found
+        label: Execute search
         underline: 0
         sep: none
         key: F8
@@ -26,7 +26,7 @@ menubar:
         label: Execute count
         underline: 0
         sep: none
-        key: ~
+        key: F9
       4:
         name: mn_qt
         label: Quit
