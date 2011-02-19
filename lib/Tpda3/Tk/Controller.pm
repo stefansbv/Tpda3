@@ -712,7 +712,7 @@ sub screen_module_load {
     # The application and class names
     #my $name  = ucfirst $self->_cfg->cfname;
     my $name = $self->_cfg->application->{module};
-    my $class = "Tpda3::App::${name}::${module}";
+    my $class = "Tpda3::Tk::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
 

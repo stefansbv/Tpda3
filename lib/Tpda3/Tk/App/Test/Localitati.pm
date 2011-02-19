@@ -1,4 +1,4 @@
-package Tpda3::App::Test::Localitati;
+package Tpda3::Tk::App::Test::Localitati;
 
 use strict;
 use warnings;
@@ -228,4 +228,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::Test::Localitati
+1; # End of Tpda3::Tk::App::Test::Localitati
