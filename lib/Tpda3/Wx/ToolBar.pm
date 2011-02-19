@@ -68,23 +68,11 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
-        #$self->enable_tool( $name, 0 );      # 0 = disabled
+        $self->enable_tool( $name, 0 );      # 0 = disabled
     }
 
     return;
 }
-
-=head2 get_toolbar
-
-Return the toolbar instance variable
-
-=cut
-
-# sub get_toolbar {
-#     my $self = shift;
-
-#     return $self->{_toolbar};
-# }
 
 =head2 _item_normal
 
@@ -236,7 +224,7 @@ used for both Tk and Wx, this sub is more complex that is should be.
 sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
-    print " $btn_name, $state\t";
+    # print " $btn_name, $state\t";
 
     my $tb_btn_id = $self->get_toolbar_btn($btn_name)->GetId;
 

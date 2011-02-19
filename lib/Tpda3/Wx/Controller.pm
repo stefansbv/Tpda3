@@ -63,7 +63,6 @@ sub new {
         _model   => $model,
         _app     => $app,
         _view    => $app->{_view},
-        # _toolbar => $app->{_view}->get_toolbar,
         _scrcls  => undef,
         _scrobj  => undef,
         _scrcfg  => undef,
@@ -106,7 +105,7 @@ sub start {
     $self->_log->trace("start");
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        my $pd = Tpda3::Wx::Dialog::Pwd->new;
+        my $pd = Tpda3::Wx::Dialog::Login->new;
         $pd->run_dialog( $self->_view );
     }
 
@@ -205,13 +204,6 @@ sub _set_event_handlers {
         }
     };
 
-    # Config dialog
-    # $self->_view->get_menu_popup_item('mn_fn')->configure(
-    #     -command => sub {
-    #         $self->_view->show_config_dialog;
-    #     }
-    # );
-
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -269,7 +261,7 @@ sub _set_event_handlers {
     #-- Quit
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
 
-    #-- Make more key bindings
+    #-- Make more key bindings (alternative to the menu entries)
 
     # $self->_view->SetAcceleratorTable(
     #     Wx::AcceleratorTable->new(
