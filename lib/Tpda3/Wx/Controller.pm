@@ -63,7 +63,7 @@ sub new {
         _model   => $model,
         _app     => $app,
         _view    => $app->{_view},
-        _toolbar => $app->{_view}->get_toolbar,
+        # _toolbar => $app->{_view}->get_toolbar,
         _scrcls  => undef,
         _scrobj  => undef,
         _scrcfg  => undef,
@@ -745,7 +745,7 @@ sub screen_module_load {
 
     # The application and class names
     my $name = $self->_cfg->application->{module};
-    my $class = "Tpda3::App::${name}::${module}";
+    my $class = "Tpda3::Wx::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
 
