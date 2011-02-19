@@ -1,92 +1,14 @@
 
-CHANGES
-
-Tpda3 is the new TPDA.  Tpda3 aims to follow the Model View Controller
-(MVC) architecture and will completely replace Tpda when all the
-features that Tpda has will be implemented.
-
-Other changes:
-
-Thanks to the File::UserConfig module, the configurations files are
-automatically installed in the user's HOME directory, at test faze, or
-at the first start of the application.
-
-The XML configuration files used by the old Tpda are replaced by
-multiple files in "YAML" format (handled by the YAML::Tiny module) and
-a file in "Config" format (handled by the Config::General module).
-
-Tpda3 has from early stage a few tests, for the configuration module
-and for the database connection.  The GUI tests are not doing their
-job yet, they tend to pass even when the screen modules throw errors,
-and warnings, but they look cool. ;)
-
-In order to have minimum parameter passing between instances, the
-configuration module "Tpda3::Config" is using the "Class::Singleton"
-module and the "Class::Accessor" module for automatically create
-accessors for the main configuration elements.  The database
-connection module "Tpda3::Db" is also using the Class::Singleton
-module.
-
-In Tpda the namespace of the application modules is based on the
-configuration name, as a consequence the same application can't be
-used with more than one configuration.  This has changed in Tpda3.
-
-
-ACKNOWLEDGMENTS
-
-The implementation of the MVC pattern is (heavily) based on the
-implementation from the Cipres project:
-
-Author: Rutger Vos, 17/Aug/2006
-        http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
-             /cipres/framework/perl/cipres/lib/Cipres/
-
-Thank You!
-
-And of course, again, Thank You! to
-
-The Open Source movement, and all the authors, contributors and
-community behind this great projects:
- Perl and Perl modules
- Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
- Firebird and Flamerobin
- Postgresql
- GNU/Linux
- MySQL and SQLite
- and Sourceforge for hosting this project.
-
-
-CONTRIBUTING
-
-I'm in a continuous process of learning Perl, a very challenging
-process, I can say, certainly one of the attributes that makes Perl my
-preferred choice of the programming language to use.  That is why if
-one thinks that I don't use properly the modules and/or follow the
-patterns for implementing MVC and has the patience to explain why and
-how it thinks is better in his way, please let me know.  Thank you.
-
-
-INSTALLATION
-
-To install this module, run the following commands:
-
-    perl Makefile.PL
-    make
-    make test
-    make install
-
-
-SUPPORT AND DOCUMENTATION
-
-After installing, you can find documentation for this module with the
-perldoc command.
-
-    perldoc Tpda3
+Tpda3 (Tiny Perl Database Application 3) is a classic desktop database
+application framework, written in Perl, that aims to follow the Model
+View Controller (MVC) architecture.  Tpda3 has PerlTk and wxPerl
+support for the GUI part and Firebird, PostgreSQL and (limited) SQLite
+support for the database.
 
 
 LICENSE AND COPYRIGHT
 
-Copyright (C) 2010 Stefan Suciu
+Copyright (C) 2010-2011 Stefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
