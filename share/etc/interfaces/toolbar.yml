@@ -1,6 +1,7 @@
 # tpda-mvc
 # Interface configuration
 # Don't touch!, not for users ;)
+# The toolbar Id's start at 1000
 ---
 toolbar:
   tb_fm:
@@ -155,8 +156,8 @@ toolbar:
     sep:     after
     state:
       idle: normal
-      add:  normal
-      edit: normal
+      add:  disabled
+      edit: disabled
       find: disabled
       sele: disabled
   tb_qt:

@@ -161,11 +161,11 @@ sub _set_event_handlers {
     );
 
     # Config dialog
-    $self->_view->get_menu_popup_item('mn_fn')->configure(
-        -command => sub {
-            $self->_view->show_config_dialog;
-        }
-    );
+    # $self->_view->get_menu_popup_item('mn_fn')->configure(
+    #     -command => sub {
+    #         $self->_view->show_config_dialog;
+    #     }
+    # );
 
     #- Custom application menu from menu.yml
 

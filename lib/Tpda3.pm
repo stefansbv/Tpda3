@@ -30,10 +30,18 @@ Perhaps a little code snippet.
     use Tpda3;
 
     my $foo = Tpda3->new();
-    ...
+
+=head1 DESCRIPTION
+
+B<Tpda3> (Tiny Perl Database Application) is a classic desktop
+database application framework, written in Perl, that aims to follow
+the Model View Controller (MVC) architecture.  Tpda3 has PerlTk and
+wxPerl support for the GUI part and Firebird, PostgreSQL and (limited)
+SQLite support for the database.
+
+This is the main module of the application.
 
 =head1 METHODS
-
 
 =head2 new
 
@@ -101,6 +109,23 @@ You can find documentation for this module with the perldoc command.
 You can also look for information at:
 
 =head1 ACKNOWLEDGEMENTS
+
+The implementation of the MVC pattern is (heavily) based on the
+implementation from the Cipres project:
+
+Author: Rutger Vos, 17/Aug/2006
+        http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
+             /cipres/framework/perl/cipres/lib/Cipres/
+
+The Open Source movement, and all the authors, contributors and
+community behind this great projects:
+ Perl and Perl modules
+ Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
+ Firebird (and Flamerobin)
+ Postgresql and SQLite
+and last but not least  GNU/Linux
+
+Thank You!
 
 =head1 LICENSE AND COPYRIGHT
 

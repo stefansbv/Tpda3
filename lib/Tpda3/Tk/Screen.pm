@@ -2,8 +2,6 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 =head1 NAME
