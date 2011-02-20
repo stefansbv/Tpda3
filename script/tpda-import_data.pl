@@ -17,26 +17,34 @@
 #
 # Converted from IBPerl to DBD::InterBase by Stefan Suciu,
 # based on article 'IBPerl Migration' by Bill Karwin
-# http://www.karwin.com/products/ibperl_migration.html
+# http://www.karwin.com/products/ibperl_migration.html, long time ago...
+#
+# TODO: replace if .. then; update POD; TEST with ALL drivers!
+#
+# 2010-02-20 Started refactoring. 3 args open, user and pass reading,
+# diferent messages when batch processing; using scope localized vars.
+#
 
 use strict;
 use warnings;
-use DBI;
 use Carp;
 
 use Getopt::Long;
 use Pod::Usage;
 
-# Parse options and print usage if there is a syntax error,
-# or if usage was explicitly requested.
-my $help   = '';
-my $man    = '';
+use Term::ReadKey;
+use DBI;
+
+# Parse options and print usage if there is a syntax error, or if
+# usage was explicitly requested.
+my ($help, $man);
+my ($dbname, $file, $batch);
+
+# Some (legacy) defaults
 my $module = 'fb';          # Database type fb=Firebird is default
 my $server = 'localhost';
-my $dbname;
-my $file;
-my $user = 'SYSDBA';        # Default user ;)
-my $pass = 'secret';        # This works for Postgresql if password not set
+my $user   = 'SYSDBA';      # Default user ;)
+my $pass   = 'secret';      # This works for Postgresql if password not set
 
 # Process options.
 if ( @ARGV > 0 ) {
@@ -50,7 +58,8 @@ if ( @ARGV > 0 ) {
         'dbname=s' => \$dbname,
         'file=s'   => \$file,
         'user=s'   => \$user,
-        'pass=s'   => \$pass
+        'pass=s'   => \$pass,
+        'batch'    => \$batch,
       ),
       or pod2usage(2);
 }
@@ -67,44 +76,56 @@ if ( $man or $help or $#ARGV >= 0 ) {
 }
 
 unless ($dbname) {
-    pod2usage("\n$0: Database name is required\n");
+    if ($batch) {
+        print "Database name is required\n";
+    }
+    else {
+        pod2usage("\n$0: Database name is required\n");
+    }
 }
 
 if ($file) {
-    unless ( -f $file ) {
+    if ( ! -f $file ) {
+        if ($batch) {
+            print "Data file not found: $file!\n";
+        }
+        else {
+            require "Pod/Usage.pm";
+            import Pod::Usage;
+            pod2usage("$0: Data file not found: $file!");
+        }
+    }
+}
+else {
+    if ($batch) {
+        print "Data file option required!\n";
+    }
+    else {
         require "Pod/Usage.pm";
         import Pod::Usage;
-        pod2usage("$0: Data file not found: $file!");
-    }
-}
-else {
-    require "Pod/Usage.pm";
-    import Pod::Usage;
-    pod2usage("$0: Data file required");
-}
-
-if ( $module eq 'pg' ) {
-    unless ($user) {
-        pod2usage("\n$0: User is required\n");
-    }
-}
-else {
-    unless ( $user && $pass ) {
-        pod2usage("\n$0: User and pass are required\n");
+        pod2usage("$0: Data file required");
     }
 }
 
-print "Server    = $server\n";
-print "Database  = $dbname\n";
-print "User      = $user\n";
-print "Data file = $file\n";
+if ( !$batch ) {
+    print "Server    = $server\n";
+    print "Database  = $dbname\n";
+    print "User      = $user\n";
+    print "Data file = $file\n";
+}
 
-my ( $dbh, $tr, $st );
-my ( $line, $table, @fields, $sql );
-
-print "Connect";
-
+my $dbh;
 if ( $module =~ /ib|fb|firebird/i ) {
+
+    unless ( $user or $pass ) {
+        if ($batch) {
+            pod2usage("\n$0: User and pass are required\n");
+        }
+        else {
+            $user = read_username() if !$user;
+            $pass = read_password() if !$pass;
+        }
+    }
 
     # Interbase / Firebird
     $dbh = DBI->connect(
@@ -119,11 +140,35 @@ if ( $module =~ /ib|fb|firebird/i ) {
 }
 elsif ( $module =~ /pg|pgsql|postgresql/i ) {
 
+    unless ( $pass ) {
+        if ($batch) {
+            pod2usage("\n$0: User and optional pass are required\n");
+        }
+        else {
+            $user = read_username() if !$user;
+            # $pass = read_password() if !$pass;
+        }
+    }
+
     # Postgresql
     $dbh = DBI->connect( "dbi:Pg:" . "dbname=" . $dbname . ";host=" . $server,
         $user, $pass );
 }
 elsif ( $module =~ /my|mysql/i ) {
+
+    unless ( $user or $pass ) {
+        if ($batch) {
+            pod2usage("\n$0: User and pass are required\n");
+        }
+        else {
+            $user = read_username() if !$user;
+            $pass = read_password() if !$pass;
+        }
+    }
+
+    unless ( $user && $pass ) {
+        pod2usage("\n$0: User and pass are required\n") if ! $batch;
+    }
 
     # MySQL
     $dbh =
@@ -144,65 +189,91 @@ $dbh->{RaiseError}         = 1;
 $dbh->{PrintError}         = 1;
 $dbh->{ShowErrorStatement} = 0;
 
-print "ed\n";
+print " Loading $file\t";
+open my $file_fh, '<', $file
+    or croak "Can't open file ",$file, ": $!";
 
-open( INFIS, "$file" )
-  or die "Could not open file: $file:$!\n";
-
-$table = <INFIS>;
+my $table = <$file_fh>;
 $table =~ s/[\r\n]//g;
-$line = <INFIS>;
+my $line = <$file_fh>;
 $line =~ s/[\r\n]//g;
-@fields = ( split( ';', $line ) );
+my @fields = ( split( ';', $line ) );
 
-$sql =
+my $sql =
     "INSERT INTO $table ("
   . join( ',', @fields )
   . ') VALUES ('
   . ( '?, ' x $#fields ) . "?)";
-
-my ( $linie, @linie, $camp, @data_lin );
 
 $dbh->{AutoCommit} = 0;    # enable transactions, if possible
 $dbh->{RaiseError} = 1;
 $dbh->{PrintError} = 0;
 
 eval {
+    my $st = $dbh->prepare($sql);
 
-    # do lots of work here including inserts and updates
-    $st = $dbh->prepare($sql);
+    while ( my $line = <$file_fh> ) {
+        chomp $line;
 
-    while ( $linie = <INFIS> ) {
-        chomp $linie;
-        @linie = split( ';', $linie );
+        my @data;
+        foreach my $field_value ( split ';', $line ) {
+            # Null fields == 'undef' in CSV data
+            $field_value = undef if $field_value eq q{undef};
+            push( @data, $field_value );
+        }
 
-        foreach $camp (@linie) {
-            if ( $camp eq "undef" ) {
-                $camp = undef;
-            }
-            push( @data_lin, $camp );
-        }    # end foreach
-
-        my $aref = \@data_lin;
-
-        $st->execute( @{$aref} );
-
-        # Initializare
-        @data_lin = ();
+        $st->execute(@data);
     }
 
     $dbh->commit;    # commit the changes if we get this far
 };
 if ($@) {
-    print "$@ -> $linie\n";
+    print "$@ -> $line\n";
     $dbh->rollback;    # undo the incomplete changes
 }
 
-close(INFIS);
+close $file_fh;
 $dbh->disconnect();
-print "Done!\n";
+print " done.\n";
 
 exit 0;
+
+=head2 read_username
+
+Read and return user name from command line
+
+=cut
+
+sub read_username {
+    my $self = shift;
+
+    print 'Enter your user name: ';
+
+    my $user = ReadLine(0);
+    chomp $user;
+
+    return $user;
+}
+
+=head2 read_password
+
+Read and return password from command line
+
+=cut
+
+sub read_password {
+    my $self = shift;
+
+    print 'Enter your password: ';
+
+    ReadMode('noecho');
+    my $pass = ReadLine(0);
+    print "\n";
+    chomp $pass;
+    ReadMode('normal');
+
+    return $pass;
+}
 
 __END__
 
