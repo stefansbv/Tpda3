@@ -1,9 +1,14 @@
 
-Tpda3 (Tiny Perl Database Application 3) is a classic desktop database
-application framework, written in Perl, that aims to follow the Model
-View Controller (MVC) architecture.  Tpda3 has PerlTk and wxPerl
-support for the GUI part and Firebird, PostgreSQL and (limited) SQLite
-support for the database.
+Tpda3 (Tiny Perl Database Application 3)
+Copyright (C) 2010-2011  Stefan Suciu
+GNU General Public License v3
+
+Tpda3 is a classic desktop database application framework, written in
+Perl, that aims to follow the Model View Controller (MVC) architecture
+pattern.
+
+Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
+PostgreSQL and (limited) SQLite support for the database.
 
 
 LICENSE AND COPYRIGHT

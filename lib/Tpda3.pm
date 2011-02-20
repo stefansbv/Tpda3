@@ -123,13 +123,17 @@ community behind this great projects:
  Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
  Firebird (and Flamerobin)
  Postgresql and SQLite
-and last but not least  GNU/Linux
+ GNU/Linux
+
+And last but least, for the wxPerl stuff, Herbert Breunung for his
+guidance, hints and for his Kephra project a very good source of
+inspiration.
 
 Thank You!
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

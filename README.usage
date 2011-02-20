@@ -1,0 +1,89 @@
+
+Tpda3 (Tiny Perl Database Application 3)
+Copyright (C) 2010-2011  Stefan Suciu
+GNU General Public License v3
+
+Tpda3 is a classic desktop database application framework, written in
+Perl, that aims to follow the Model View Controller (MVC) architecture
+pattern.
+
+Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
+PostgreSQL and (limited) SQLite support for the database.
+
+
+QUICK USAGE
+
+Note: PerlTk implementation is on the main branch, wxPerl is on the
+wxPerl branch.
+
+Create and populate a SQLite database named classicmodels using the
+tools from the scripts dir.
+
+From the project's main dir:
+
+% script/load_classicmodels.sh si  # only for GNU/Linux and Cygwin?
+
+Assuming all the required Perl modules are installed, build the
+application:
+
+% perl Makefile && make
+
+Start the application, 'user' and 'pass' can be anything for SQLite,
+but both required, for now:
+
+% perl -Mblib bin/tpda3 test -u user - p pass
+
+For the Perl Tk implementation, if 'classicmodels' (the name of the
+database) appears in GREEN color in the status bar then the connection
+is OK, if is RED the connection failed, check the RDBMS server and/or
+the user and password.
+
+For the wxPerl implementation, if the name of the database appears in
+the status bar then the connection is OK, if not, no connection!
+
+Select a screen[1] from the menu, e.g Test -> Customers.
+
+- Resize and move the window using the mouse so all the widgets are
+  visible and the window is on desired place on the desktop and select
+  'Tools->Save window geometry' from the menu to save the settings in
+  the configuration file.  Do this for every screen at first use.  At
+  start, this also works for the main Tpda window (before opening a
+  screen).
+
+- Search for records
+  - click the <Search mode> button on the toolbar (or hit F7)
+  - fill in some search strings in the fields with a green background
+  - click the <Search> button on the toolbar (or hit F8), if some records
+    match the criteria than the <List> tab is activated and you can
+    select one record from the list (the last record is automatically
+    selected).
+  - Now click the Record tab and the selected record will be loaded in
+    the fields of the screen.
+
+- Add new records using the (+) button on the toolbar:         NOT IMPLEMENTED
+- Save record by clicking on the <save> button on the toolbar: NOT IMPLEMENTED
+- Delete current record using the (-) button on the toolbar:   NOT IMPLEMENTED
+
+
+LICENSE AND COPYRIGHT
+
+Copyright (C) 2010-2011 Stefan Suciu
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 dated June, 1991 or at your option
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the source tree;
+if not, write to the Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+Footnotes:
+[1] Screen: in this application, means a window (form) with Perl Tk
+     widgets or wxPerl controls used for updating columns from a table
+     in the database.
