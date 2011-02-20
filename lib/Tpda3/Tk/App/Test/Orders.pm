@@ -1,4 +1,4 @@
-package Tpda3::App::Test::Orders;
+package Tpda3::Tk::App::Test::Orders;
 
 use strict;
 use warnings;
@@ -547,4 +547,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::Test::Orders
+1; # End of Tpda3::Tk::App::Test::Orders

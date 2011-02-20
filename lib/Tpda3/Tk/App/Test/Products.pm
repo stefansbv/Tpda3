@@ -1,4 +1,4 @@
-package Tpda3::App::Test::Products;
+package Tpda3::Tk::App::Test::Products;
 
 use strict;
 use warnings;
@@ -320,4 +320,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::Test::Products
+1; # End of Tpda3::Tk::App::Test::Products
