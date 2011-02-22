@@ -66,6 +66,7 @@ sub new {
 
     my $self = {
         _model   => $model,
+        _app     => $view,                   # an alias ...
         _view    => $view,
         _scrcls  => undef,
         _scrobj  => undef,
@@ -80,11 +81,11 @@ sub new {
     my $loglevel_old = $self->_log->level();
 
     # Set log level to trace in this sub
-    # $self->_log->level($TRACE);
+    $self->_log->level($TRACE);
 
-    # $self->_log->trace("new");
+    $self->_log->trace("new");
 
-    # # Restore default log level
+    # Restore default log level
     # $self->_log->level($loglevel_old);
 
     $self->_control_states_init;
@@ -876,7 +877,7 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        $self->_view->toggle_tool( $name, $status );
+        $self->_view->enable_tool( $name, $status );
     }
 
     return;
@@ -903,7 +904,7 @@ sub toggle_screen_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $state = $attribs->{$name}{state}{$mode};
-        $self->{_scrobj}->toggle_tool($name, $state);
+        $self->{_scrobj}->enable_tool($name, $state);
     }
 
     return;

@@ -1,0 +1,7 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+application:
+  widgetset: Wx
+  module:    Test

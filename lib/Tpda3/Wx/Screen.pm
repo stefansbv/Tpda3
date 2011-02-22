@@ -90,19 +90,19 @@ sub get_toolbar_btn {
     return $self->{tb}->get_toolbar_btn($name);
 }
 
-=head2 toggle_tool
+=head2 enable_tool
 
 Toggle tool bar button.  If state is defined then set to state do not
 toggle.  State can come as 0 | 1 and normal | disabled.
 
 =cut
 
-sub toggle_tool {
+sub enable_tool {
     my ($self, $btn_name, $state) = @_;
 
     return if not defined $self->{tb};
 
-    $self->{tb}->toggle_tool($btn_name, $state);
+    $self->{tb}->enable_tool($btn_name, $state);
 
     return;
 }

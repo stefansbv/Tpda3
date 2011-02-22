@@ -135,8 +135,9 @@ sub config_main_load {
         cfgen   => $maincfg->{general},
         cfrun   => $maincfg->{runtime},
         cfico   => catdir( $configpath, $maincfg->{resource}{icons} ),
-        user => $args->{user},    # make accessors for user and pass
-        pass => $args->{pass},
+        user      => $args->{user},           # make accessors for user and pass
+        pass      => $args->{pass},
+        widgetset => $maincfg->{widgetset},   # Wx or Tk
     };
 
     # Setup when GUI runtime

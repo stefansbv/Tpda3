@@ -7,9 +7,6 @@ use 5.008005;
 
 use Log::Log4perl qw(get_logger);
 
-#use Tpda3::Tk::Controller;
-use Tpda3::Wx::Controller;
-
 =head1 NAME
 
 Tpda3 - The third incarnation of Tpda!
@@ -20,7 +17,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -39,6 +36,31 @@ database application framework, written in Perl, that aims to follow
 the Model View Controller (MVC) architecture.  Tpda3 has PerlTk and
 wxPerl support for the GUI part and Firebird, PostgreSQL and (limited)
 SQLite support for the database.
+
+This project has two components, the B<Tpda3> I<runtime> and the
+B<Tpda3> I<applications>.
+
+The I<runtime> is responsible for loading the configuration files,
+connect and work with the database, create the main application
+I<Frame> with a menubar, toolbar and statusbar.
+
+The B<Tpda3> I<application> is a collection of screens.  At run time,
+after the main I<Frame> is created, the user can select a I<Screen>
+from the menu.  Then the I<runtime> will create a I<NoteBook> with two
+pages named I<Record> and I<List>. In the I<Record> page will create
+the controls of the selected I<Screen>.  The I<List> page holds a list
+control widget used for the search results.
+
+TODO:
+
+This application is designed to be very flexible, as a consequence the
+configurations are ...
+
+...
+
+The application configuration file, located in the F<.tpda3>
+tree in F<< apps/<appname>/etc/application.yml >>, has a (new) option
+named I<widgetset> with Tk and Wx as valid values (case insensitive).
 
 This is the main module of the application.
 
@@ -64,18 +86,32 @@ sub new {
 
 =head2 _init
 
-Initialize the configurations module and create the PerlTk application
-instance.
+Initialize the configurations module and create the PerlTk or the
+wxPerl application instance.
 
 =cut
 
 sub _init {
     my ( $self, $args ) = @_;
 
-    Tpda3::Config->instance($args);
+    my $cfg = Tpda3::Config->instance($args);
 
-    # $self->{gui} = Tpda3::Tk::Controller->new();
-    $self->{gui} = Tpda3::Wx::Controller->new();
+    my $widgetset = $cfg->application->{widgetset};
+
+    if ( $widgetset =~ m{wx}ix ) {
+        print " Wx application\n";
+        require Tpda3::Wx::Controller;
+        $self->{gui} = Tpda3::Wx::Controller->new();
+    }
+    elsif ( $widgetset =~ m{tk}ix ) {
+        print " Tk application\n";
+        require Tpda3::Tk::Controller;
+        $self->{gui} = Tpda3::Tk::Controller->new();
+    }
+    else {
+        warn "Unknown widget set!\n";
+        exit;
+    }
 
     $self->{gui}->start();
 

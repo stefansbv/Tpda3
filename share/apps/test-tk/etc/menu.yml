@@ -1,0 +1,28 @@
+# tpda-mvc
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+appmenubar:
+  menu_app:
+    id:    1001
+    label: Test
+    underline: 0
+    popup:
+      1:
+        name: Products
+        label: Products
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: Customers
+        label: Customers
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: Orders
+        label: Orders
+        underline: 0
+        sep: none
+        key: ~
