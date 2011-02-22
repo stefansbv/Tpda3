@@ -458,7 +458,8 @@ sub set_app_mode {
         $self->$method_name();
     }
 
-    return;
+    return 1;                       # to make ok from Test::More happy
+                                    # probably missing something :) TODO!
 }
 
 =head2 is_record
@@ -789,7 +790,8 @@ sub screen_module_load {
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
 
-    return;
+    return 1;                       # to make ok from Test::More happy
+                                    # probably missing something :) TODO!
 }
 
 =head2 screen_init

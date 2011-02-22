@@ -1131,6 +1131,14 @@ sub w_geometry {
     return $geom;
 }
 
+sub on_quit {
+    my $self = shift;
+
+    $self->Destroy();
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

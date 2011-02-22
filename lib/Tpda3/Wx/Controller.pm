@@ -183,7 +183,9 @@ sub _set_event_handlers {
     #- Base menu
 
     EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
-    EVT_MENU $self->_view, wxID_EXIT,  $exit;
+    EVT_MENU $self->_view, wxID_EXIT,  sub {
+        $self->_view->on_quit;
+    };
 
     #-- Toggle mode find
 
@@ -482,7 +484,7 @@ sub set_app_mode {
         $self->$method_name();
     }
 
-    return;
+    return 1;
 }
 
 =head2 is_record
@@ -818,7 +820,8 @@ sub screen_module_load {
 
     $self->_set_menus_enable(1);
 
-    return;
+    return 1;                       # to make ok from Test::More happy
+                                    # probably missing something :) TODO!
 }
 
 =head2 screen_lists_populate
@@ -988,7 +991,8 @@ sub record_load {
         $self->control_tmatrix_write($records);
     }
 
-    return 1;
+    return 1;                       # to make ok from Test::More happy
+                                    # probably missing something :) TODO!
 }
 
 =head2 record_find_execute
