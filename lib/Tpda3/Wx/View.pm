@@ -371,12 +371,11 @@ sub toolbar_names {
     return ($toolbars, $attribs);
 }
 
-=head2 toggle_tool
+=head2 enable_tool
 
-Toggle tool bar button.  If state is defined then set to state do not
-toggle.
+Enable|disable tool bar button.
 
-State can come as 0 | 1 and normal | disabled.
+State can come as 0|1 and normal|disabled.
 
 =cut
 
@@ -690,9 +689,9 @@ sub control_set_value {
 
 }
 
-=head2 control_set_value
+=head2 control_append_value
 
-Set new value for a controll
+Append value to a control.
 
 =cut
 
@@ -891,22 +890,22 @@ sub get_list_selected_index {
     return $self->get_listcontrol->GetSelection();
 }
 
-=head2 list_item_insert
+# =head2 list_item_insert
 
-Insert item in list control.
+# Insert item in list control.
 
-=cut
+# =cut
 
-sub list_item_insert {
-    my ( $self, $indice, $nrcrt, $title, $file ) = @_;
+# sub list_item_insert {
+#     my ( $self, $indice, $nrcrt, $title, $file ) = @_;
 
-    # Remember, always sort by index before insert!
-    $self->list_string_item_insert($indice);
-    $self->set_list_text($indice, 0, $nrcrt);
-    $self->set_list_text($indice, 1, $title);
-    # Set data
-    $self->set_list_data($indice, $file );
-}
+#     # Remember, always sort by index before insert!
+#     $self->list_string_item_insert($indice);
+#     $self->set_list_text($indice, 0, $nrcrt);
+#     $self->set_list_text($indice, 1, $title);
+#     # Set data
+#     $self->set_list_data($indice, $file );
+# }
 
 =head2 list_string_item_insert
 
@@ -940,20 +939,6 @@ sub list_item_clear_all {
     my $self = shift;
 
     $self->get_listcontrol->DeleteAllItems;
-}
-
-=head2 list_populate_item
-
-Add new item in list control and select the last item
-
-=cut
-
-sub list_populate_item {
-    my ( $self, $rec ) = @_;
-
-    my $idx = $self->get_list_max_index();
-    $self->list_item_insert( $idx, $idx + 1, $rec->{title}, $rec->{file} );
-    $self->list_item_select_last();
 }
 
 =head2 list_remove_item
@@ -1130,6 +1115,12 @@ sub w_geometry {
 
     return $geom;
 }
+
+=head2 on_quit
+
+Quit.
+
+=cut
 
 sub on_quit {
     my $self = shift;

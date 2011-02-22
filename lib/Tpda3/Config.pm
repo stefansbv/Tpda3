@@ -127,6 +127,7 @@ sub config_main_load {
     $self->{_log}->info("Main config file loaded.");
 
     # Base configuration methods
+    # TODO: Rename this methods !!!
     my $main_hr = {
         cfpath  => $configpath,
         cfapps  => catdir( $configpath, 'apps' ),
@@ -202,7 +203,7 @@ sub config_application_load {
         $msg .= qq{To create it, run:\n};
         $msg .= qq{% tpda3 -init $cf_name\n};
         $msg .= qq{and Edit the configuration files in: };
-        $msg .= $self->config_app_file_name($cf_name) . qq{\n};
+        $msg .= $self->config_app_dir() . qq{\n};
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
@@ -235,7 +236,21 @@ Return fully qualified application configuration file name.
 sub config_app_file_name {
     my ($self, $section) = @_;
 
-    return catfile( $self->cfapps, $self->cfname,  $self->cfapp->{$section} );
+my $fl = catfile( $self->cfapps, $self->cfname,  $self->cfapp->{$section} );
+#    print "$section: config_app_file_name is $fl \n";
+    return $fl;
+}
+
+=head2 config_app_dir
+
+Return application configuration directory.
+
+=cut
+
+sub config_app_dir {
+    my $self = shift;
+
+    return catdir( $self->cfapps, $self->cfname );
 }
 
 =head2 config_file_name

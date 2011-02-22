@@ -14,9 +14,9 @@ use lib qw( lib ../lib );
 use Tpda3::Config;
 
 my $args = {
-    cfname => 'test',
-    user    => 'stefan',
-    pass    => 'passed',
+    cfname => 'test-tk',
+    user   => 'stefan',
+    pass   => 'passed',
 };
 
 my $c1 = Tpda3::Config->instance($args);

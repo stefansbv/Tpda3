@@ -9,7 +9,7 @@ use File::Basename;
 use File::Copy;
 use File::Find::Rule;
 use File::Path 2.07 qw( make_path );
-#use File::Spec::Functions;
+
 use YAML::Tiny;
 use Config::General;
 
@@ -172,8 +172,8 @@ sub create_path {
     make_path( $new_path, { error => \my $err } );
     if (@$err) {
         for my $diag (@$err) {
-            my ( $file, $message ) = %{$diag};
-            if ( $file eq '' ) {
+            my ( $file_err, $message ) = %{$diag};
+            if ( $file_err eq '' ) {
                 die "Error: $message\n";
             }
         }
