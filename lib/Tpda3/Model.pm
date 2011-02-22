@@ -88,10 +88,12 @@ sub _connect {
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
         $self->_print('Connected');
+        print "Connected\n";
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)
         $self->_print('Connection error!');
+        print "Connection error!\n";
     }
 
     return;
@@ -160,7 +162,7 @@ Put a message on a text controll
 sub _print {
     my ( $self, $msg ) = @_;
 
-    $self->get_stdout_observable->set( "$msg" );
+    $self->get_stdout_observable->set($msg);
 
     return;
 }

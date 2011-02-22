@@ -320,6 +320,20 @@ sub do_error {
     return;
 }
 
+=head2 ins_underline_mark
+
+Insert ampersand character for underline mark in menu.
+
+=cut
+
+sub ins_underline_mark {
+    my ($self, $label, $position) = @_;
+
+    substr($label, $position, 0) = '&';
+
+    return $label;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>

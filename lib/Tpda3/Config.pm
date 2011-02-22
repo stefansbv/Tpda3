@@ -129,13 +129,14 @@ sub config_main_load {
     # Base configuration methods
     my $main_hr = {
         cfpath  => $configpath,
-        cfapps  => catdir($configpath, 'apps'),
+        cfapps  => catdir( $configpath, 'apps' ),
         cfiface => $maincfg->{interface},
         cfapp   => $maincfg->{application},
         cfgen   => $maincfg->{general},
         cfrun   => $maincfg->{runtime},
-        user    => $args->{user},   # make accessors for user and pass
-        pass    => $args->{pass},
+        cfico   => catdir( $configpath, $maincfg->{resource}{icons} ),
+        user => $args->{user},    # make accessors for user and pass
+        pass => $args->{pass},
     };
 
     # Setup when GUI runtime

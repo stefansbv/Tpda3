@@ -1,9 +1,14 @@
-package Tpda3::Tk::Controller;
+package Tpda3::Wx::Controller;
 
 use strict;
 use warnings;
 
-use Tk;
+use Data::Dumper;
+
+use Wx q{:everything};
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
+                 EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
+
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 
@@ -11,47 +16,37 @@ use Tpda3::Utils;
 use Tpda3::Config;
 use Tpda3::Config::Screen;
 use Tpda3::Model;
-use Tpda3::Tk::View;
-use Tpda3::Tk::Dialog::Pwd;
+use Tpda3::Wx::App;
+use Tpda3::Wx::View;
+#use Tpda3::Tk::Dialog::Pwd;
 use Tpda3::Lookup;
 
 =head1 NAME
 
-Tpda3::Tk::Controller - The Controller
+Tpda3::Wx::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.05
+Version 0.01
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Controller;
+    use Tpda3::Wx::Controller;
 
-    my $controller = Tpda3::Tk::Controller->new();
+    my $controller = Tpda3::Wx::Controller->new();
 
     $controller->start();
+
 
 =head1 METHODS
 
 =head2 new
 
 Constructor method.
-
-=over
-
-=item _scrcls  - class name of the current screen
-
-=item _scrobj  - current screen object
-
-=item _scrcfg  - screen configs object
-
-=item _scrstr  - module file name in lower case
-
-=back
 
 =cut
 
@@ -60,13 +55,14 @@ sub new {
 
     my $model = Tpda3::Model->new();
 
-    my $view = Tpda3::Tk::View->new(
+    my $app = Tpda3::Wx::App->create(
         $model,
     );
 
     my $self = {
         _model   => $model,
-        _view    => $view,
+        _app     => $app,
+        _view    => $app->{_view},
         _scrcls  => undef,
         _scrobj  => undef,
         _scrcfg  => undef,
@@ -91,6 +87,8 @@ sub new {
 
     $self->_set_event_handlers;
 
+    $self->_set_menus_enable(0); # disable some menus
+
     return $self;
 }
 
@@ -107,7 +105,7 @@ sub start {
     $self->_log->trace("start");
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        my $pd = Tpda3::Tk::Dialog::Pwd->new;
+        my $pd = Tpda3::Wx::Dialog::Login->new;
         $pd->run_dialog( $self->_view );
     }
 
@@ -126,6 +124,50 @@ sub start {
 
 =head2 _set_event_handlers
 
+Close the application window
+
+=cut
+
+my $closeWin = sub {
+    my ( $self, $event ) = @_;
+
+    $self->Destroy();
+};
+
+=head2 _set_event_handlers
+
+The About dialog
+
+=cut
+
+my $about = sub {
+    my ( $self, $event ) = @_;
+
+    Wx::MessageBox(
+        "Tpda3 - v0.01\n(C) 2010 - 2011 Stefan Suciu\n\n"
+            . " - WxPerl $Wx::VERSION\n"
+            . " - " . Wx::wxVERSION_STRING,
+        "About Tpda3-wxPerl",
+
+        wxOK | wxICON_INFORMATION,
+        $self
+    );
+};
+
+=head2 _set_event_handlers
+
+The exit sub
+
+=cut
+
+my $exit = sub {
+    my ( $self, $event ) = @_;
+
+    $self->Close( 1 );
+};
+
+=head2 _set_event_handlers
+
 Setup event handlers for the interface.
 
 =cut
@@ -133,131 +175,100 @@ Setup event handlers for the interface.
 sub _set_event_handlers {
     my $self = shift;
 
-    $self->_log->trace("Setup event handlers");
+    $self->_log->trace('Setup event handlers');
+
+    #- Frame
+    EVT_CLOSE $self->_view, $closeWin;
 
     #- Base menu
 
-    #-- Exit
-    $self->_view->get_menu_popup_item('mn_qt')->configure(
-        -command => sub {
-            $self->_view->on_quit;
-        }
-    );
+    EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
+    EVT_MENU $self->_view, wxID_EXIT,  $exit;
 
-    #-- Save geometry
-    $self->_view->get_menu_popup_item('mn_sg')->configure(
-        -command => sub {
-            my $scr_name = $self->{_scrstr} || 'main';
-            $self->_cfg->config_save_instance(
-                $scr_name, $self->_view->w_geometry() );
-        }
-    );
+    #-- Toggle mode find
 
-    #-- Connect / disconnect
-    $self->_view->get_menu_popup_item('mn_cn')->configure(
-        -command => sub {
-            $self->_model->toggle_db_connect;
+    EVT_MENU $self->_view, 50011, sub {
+        if ( !$self->_model->is_mode('add') ) {
+            $self->toggle_mode_find();
         }
-    );
+    };
 
-    # Config dialog
-    # $self->_view->get_menu_popup_item('mn_fn')->configure(
-    #     -command => sub {
-    #         $self->_view->show_config_dialog;
-    #     }
-    # );
+    #-- Execute search
+
+    EVT_MENU $self->_view, 50012, sub {
+        if ( $self->_model->is_mode('find') ) {
+            $self->record_find_execute;
+        }
+        else {
+            print "WARN: Not in find mode\n";
+        }
+    };
 
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
     foreach my $item ( @{$appmenus} ) {
-        $self->_view->get_menu_popup_item($item)->configure(
-            -command => sub {
-                $self->screen_module_load($item);
-            }
-        );
+        my $menu_id = $self->_view->get_menu_popup_item($item)->GetId;
+        EVT_MENU $self->_view, $menu_id, sub {
+            $self->screen_module_load($item);
+        }
     }
 
     #- Toolbar
 
     #-- Attach to desktop - pin (save geometry to config file)
-    $self->_view->get_toolbar_btn('tb_at')->bind(
-        '<ButtonRelease-1>' => sub {
-            my $scr_name = $self->{_scrstr} || 'main';
-            $self->_cfg
-                ->config_save_instance( $scr_name, $self->_view->w_geometry() );
-        }
-    );
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_at')->GetId, sub {
+        my $scr_name = $self->{_scrstr} || 'main';
+        $self->_cfg->config_save_instance(
+            $scr_name,
+            $self->_view->w_geometry,
+        );
+    };
 
-    #-- Find mode
-    $self->_view->get_toolbar_btn('tb_fm')->bind(
-        '<ButtonRelease-1>' => sub {
-            # From add mode forbid find mode
-            if ( !$self->_model->is_mode('add') ) {
-                $self->toggle_mode_find();
-            }
+    #-- Find mode toggle
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId, sub {
+        # From add mode forbid find mode
+        if ( !$self->_model->is_mode('add') ) {
+            $self->toggle_mode_find();
         }
-    );
+    };
 
     #-- Find execute
-    $self->_view->get_toolbar_btn('tb_fe')->bind(
-        '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_execute;
-            }
-            else {
-                print "WARN: Not in find mode\n";
-            }
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fe')->GetId, sub {
+        if ( $self->_model->is_mode('find') ) {
+            $self->record_find_execute;
         }
-    );
+        else {
+            print "WARN: Not in find mode\n";
+        }
+    };
 
-    #-- Find count
-    $self->_view->get_toolbar_btn('tb_fc')->bind(
-        '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_count;
-            }
-            else {
-                print "WARN: Not in find mode\n";
-            }
+    #-- Count
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId, sub {
+        if ( $self->_model->is_mode('find') ) {
+            $self->record_find_count;
         }
-    );
+        else {
+            print "WARN: Not in find mode\n";
+        }
+    };
 
     #-- Add mode
-    $self->_view->get_toolbar_btn('tb_ad')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->toggle_mode_add();
-        }
-    );
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId, sub {
+        $self->toggle_mode_add();
+    };
 
     #-- Quit
-    $self->_view->get_toolbar_btn('tb_qt')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->_view->on_quit;
-        }
-    );
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
 
-    #-- Make some key bindings
+    #-- Make more key bindings (alternative to the menu entries)
 
-    $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
-    $self->_view->bind(
-        '<F7>' => sub {
-            # From add mode forbid find mode
-            if ( !$self->_model->is_mode('add') ) {
-                $self->toggle_mode_find();
-            }
-        }
-    );
-    $self->_view->bind(
-        '<F8>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_execute;
-            }
-            else {
-                print "WARN: Not in find mode\n";
-            }
-        }
-    );
+    # $self->_view->SetAcceleratorTable(
+    #     Wx::AcceleratorTable->new(
+    #         [ wxACCEL_NORMAL, WXK_F7, 50011 ],
+    #         [ wxACCEL_NORMAL, WXK_F8, 50012 ],
+    #     )
+    # );
 
     return;
 }
@@ -273,29 +284,26 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
-    $self->_log->trace("Setup event handler on NoteBook for '$page'");
+    $self->_log->trace("Setup event handler on NoteBook");
 
     #- NoteBook events
 
     my $nb = $self->_view->get_notebook();
 
-    $nb->pageconfigure(
-        $page,
-        -raisecmd => sub {
-            # print "$page tab activated\n";
-            if ($page eq 'lst') {
-                $self->set_app_mode('sele');
+    EVT_AUINOTEBOOK_PAGE_CHANGED $self->_view, $nb->GetId, sub {
+        my $current_page = $nb->GetSelection();
+        if ( $current_page == 1 ) {    # 'lst'
+            $self->set_app_mode('sele');
+        }
+        else {
+            if ( $self->record_load ) {
+                $self->set_app_mode('edit');
             }
             else {
-                if ( $self->record_load ) {
-                    $self->set_app_mode('edit');
-                }
-                else {
-                    $self->set_app_mode('idle');
-                }
+                $self->set_app_mode('idle');
             }
-        },
-    );
+        }
+    };
 
     return;
 }
@@ -328,6 +336,25 @@ sub _set_event_handler_screen {
             $self->remove_tmatrix_row();
         }
     );
+
+    return;
+}
+
+=head2 _set_menus_inimodes
+
+Disable some menus at start.
+
+=cut
+
+sub _set_menus_enable {
+    my ($self, $enable) = @_;
+
+    my $mn = $self->_view->get_menubar();
+
+    foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
+        my $mn_id = $self->_view->get_menu_popup_item($mnu)->GetId;
+        $mn->Enable($mn_id, $enable);
+    }
 
     return;
 }
@@ -449,7 +476,7 @@ sub set_app_mode {
     return unless ref $self->{_scrobj};
 
     # TODO: Should this be called on all screens?
-    $self->toggle_screen_interface_controls;
+    # $self->toggle_screen_interface_controls;
 
     if ( my $method_name = $method_for{$mode} ) {
         $self->$method_name();
@@ -481,7 +508,7 @@ sub on_screen_mode_idle {
     my $self = shift;
 
     $self->screen_write(undef, 'clear');      # Empty the main controls
-    $self->control_tmatrix_write();
+#    $self->control_tmatrix_write();
     $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
 
@@ -516,7 +543,7 @@ sub on_screen_mode_add {
     # };
 
     $self->screen_write(undef, 'clear');
-    $self->control_tmatrix_write();
+    # $self->control_tmatrix_write();
     $self->controls_state_set('edit');
 
     return;
@@ -533,7 +560,7 @@ sub on_screen_mode_find {
     my ($self, ) = @_;
 
     $self->screen_write(undef, 'clear'); # Empty the controls
-    $self->control_tmatrix_write();
+    # $self->control_tmatrix_write();
     $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
 
@@ -603,7 +630,7 @@ sub _control_states_init {
 
 =head2 _model
 
-Return model instance variable
+Return model instance variable.
 
 =cut
 
@@ -706,13 +733,11 @@ sub screen_module_load {
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    $self->_set_event_handler_nb('rec');
-    $self->_set_event_handler_nb('lst');
+    $self->_set_event_handler_nb();
 
     # The application and class names
-    #my $name  = ucfirst $self->_cfg->cfname;
     my $name = $self->_cfg->application->{module};
-    my $class = "Tpda3::Tk::App::${name}::${module}";
+    my $class = "Tpda3::Wx::App::${name}::${module}";
     (my $file = "$class.pm") =~ s/::/\//g;
     require $file;
 
@@ -750,7 +775,10 @@ sub screen_module_load {
     else {
         $geom = $self->_scrcfg->screen->{geom};
     }
-    $self->_view->set_geometry($geom);
+
+    my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
+    $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
+    #$self->_view->SetMinSize( Wx::Size->new( $w, $h ) );
 
     # Event handlers
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
@@ -767,31 +795,35 @@ sub screen_module_load {
     my $fields = $self->_scrcfg->maintable->{columns};
     my $header_attr = {};
     foreach my $col ( @header_cols ) {
+        # Width config is in chars.  Using chars_number x char_width
+        # to compute the with in pixels
+        my $char_width = $self->_view->GetCharWidth();
         $header_attr->{$col} = {
             label =>  $fields->{$col}{label},
-            width =>  $fields->{$col}{width},
+            width =>  $fields->{$col}{width} * $char_width,
             order =>  $fields->{$col}{order},
         };
     }
 
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
-    if ($screen_type eq 'tablematrix') {
-        # TableMatrix header
-        my $tm_fields = $self->_scrcfg->table->{columns};
-        my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-        $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
-    }
+    # if ($screen_type eq 'tablematrix') {
+    #     # TableMatrix header
+    #     my $tm_fields = $self->_scrcfg->table->{columns};
+    #     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+    #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    # }
 
-    # Load lists into JBrowseEntry or JComboBox widgets
-    $self->screen_init();
+    # $self->screen_lists_populate();
+
+    $self->_set_menus_enable(1);
 
     return;
 }
 
-=head2 screen_init
+=head2 screen_lists_populate
 
-Load options in Listbox like widgets - JCombobox support only.
+Load options in Listbox like widgets.
 
 All JBrowseEntry or JComboBox widgets must have a <lists> record in
 config to define where the data for the list come from:
@@ -807,7 +839,7 @@ config to define where the data for the list come from:
 
 =cut
 
-sub screen_init {
+sub screen_lists_populate {
     my $self = shift;
 
     # Entry objects hash
@@ -876,7 +908,7 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
-        $self->_view->toggle_tool( $name, $status );
+        $self->_view->enable_tool( $name, $status );
     }
 
     return;
@@ -903,7 +935,7 @@ sub toggle_screen_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $state = $attribs->{$name}{state}{$mode};
-        $self->{_scrobj}->toggle_tool($name, $state);
+        $self->{_scrobj}->enable_tool($name, $state);
     }
 
     return;
@@ -918,12 +950,14 @@ Load the selected record in screen
 sub record_load {
     my $self = shift;
 
-    my $value = $self->_view->list_read_selected();
+    # Retrieve col0 from the selected value
+    my $selected_row_ref = $self->_view->list_read_selected();
 
-    if ( ! defined $value ) {
-        print "No value selected in list";
+    if ( ! ref $selected_row_ref ) {
+        $self->_view->set_status('Nothing selected','ms');
         return;
     }
+    my $value = $selected_row_ref->[0];
 
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
@@ -1015,12 +1049,12 @@ sub record_find_execute {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
 
-    # Set mode to sele if found
-    if ($record_count > 0) {
+    if ( $record_count > 0 ) {
         $self->set_app_mode('sele');
+        $self->_view->list_item_select_last();
+        $self->_view->get_notebook->SetSelection(1);    # 'lst'
     }
 
     return;
@@ -1119,7 +1153,7 @@ sub control_read_e {
         return;
     }
 
-    my $value = $ctrl_ref->{$field}[1]->get;
+    my $value = $ctrl_ref->{$field}[1]->GetValue();
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -1237,7 +1271,7 @@ sub control_read_d {
 
 =head2 control_read_m
 
-Read contents of a Tk::JComboBox control.
+Read contents of a Wx::ComboBox control.
 
 =cut
 
@@ -1348,8 +1382,9 @@ sub screen_write {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
-        my $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
-        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
+        # Save control state
+        my $ctrl_state = $ctrl_ref->{$field}[1]->IsEditable();
+        $ctrl_ref->{$field}[1]->SetEditable(1);
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
@@ -1396,7 +1431,7 @@ sub screen_write {
         }
 
         # Restore state
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
+        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
     }
 
     # $self->_log->trace("Write finished (restored controls states)");
@@ -1410,70 +1445,70 @@ Write data to TableMatrix widget
 
 =cut
 
-sub control_tmatrix_write {
-    my ( $self, $records ) = @_;
+# sub control_tmatrix_write {
+#     my ( $self, $records ) = @_;
 
-    my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-    my $xtvar;
-    if ($tm_object) {
-        $xtvar = $tm_object->cget( -variable );
-    }
-    else {
+#     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xtvar;
+#     if ($tm_object) {
+#         $xtvar = $tm_object->cget( -variable );
+#     }
+#     else {
 
-        # Just ignore :)
-        return;
-    }
+#         # Just ignore :)
+#         return;
+#     }
 
-    my $row = 1;
+#     my $row = 1;
 
-    #- Scan and write to table
+#     #- Scan and write to table
 
-    foreach my $record ( @{$records} ) {
-        foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
-            my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
+#     foreach my $record ( @{$records} ) {
+#         foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
+#             my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
 
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # Empty
-            $value =~ s/[\n\t]//g;                 # Delete control chars
+#             my $value = $record->{$field};
+#             $value = q{} unless defined $value;    # Empty
+#             $value =~ s/[\n\t]//g;                 # Delete control chars
 
-            my ( $col, $type, $width, $places ) =
-              @$fld_cfg{'id','content','width','decimals'}; # hash slice
+#             my ( $col, $type, $width, $places ) =
+#               @$fld_cfg{'id','content','width','decimals'}; # hash slice
 
-            if ( $type =~ /digit/ ) {
-                $value = 0 unless $value;
-                if ( defined $places ) {
+#             if ( $type =~ /digit/ ) {
+#                 $value = 0 unless $value;
+#                 if ( defined $places ) {
 
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
+#                     # Daca SCALE >= 0, Formatez numarul
+#                     $value = sprintf( "%.${places}f", $value );
+#                 }
+#                 else {
+#                     $value = sprintf( "%.0f", $value );
+#                 }
+#             }
 
-            $xtvar->{"$row,$col"} = $value;
+#             $xtvar->{"$row,$col"} = $value;
 
-        }
+#         }
 
-        $row++;
-    }
+#         $row++;
+#     }
 
-    # Refreshing the table...
-    $tm_object->configure( -rows => $row );
+#     # Refreshing the table...
+#     $tm_object->configure( -rows => $row );
 
-    # TODO: make a more general sub
-    # Execute sub defined in screen Workaround for a DBD::InterBase
-    # problem related to big decimals?  The view doesn't compute
-    # corectly the value and the VAT when accesed from perl but only
-    # from flamerobin ...  Check if sub exists first
-    # Fixed with patch from:
-    # http://github.com/pilcrow/perl-dbd-interbase.git
-    # if ( $self->{screen}->can('recalculare_factura') ) {
-    #     $self->{screen}->recalculare_factura();
-    # }
+#     # TODO: make a more general sub
+#     # Execute sub defined in screen Workaround for a DBD::InterBase
+#     # problem related to big decimals?  The view doesn't compute
+#     # corectly the value and the VAT when accesed from perl but only
+#     # from flamerobin ...  Check if sub exists first
+#     # Fixed with patch from:
+#     # http://github.com/pilcrow/perl-dbd-interbase.git
+#     # if ( $self->{screen}->can('recalculare_factura') ) {
+#     #     $self->{screen}->recalculare_factura();
+#     # }
 
-    return;
-}
+#     return;
+# }
 
 =head2 toggle_mode_find
 
@@ -1516,7 +1551,7 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->trace("Screen controls state is '$state'");
+    $self->_log->info("Screen controls state is '$state'");
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
     return unless scalar keys %{$ctrl_ref};
@@ -1528,9 +1563,6 @@ sub controls_state_set {
     foreach my $field ( keys %{ $self->{_scrcfg}->maintable->{columns} } ) {
 
         my $fld_cfg = $self->{_scrcfg}->maintable->{columns}{$field};
-
-        # Skip for some control types
-        # next if $fld_cfg->{ctrltype} = '';
 
         my $ctrl_state = $control_states->{state};
         $ctrl_state = $fld_cfg->{state}
@@ -1546,14 +1578,17 @@ sub controls_state_set {
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
-                $ctrl_state = 'disabled';
+                $ctrl_state = 0;             # 'disabled'
                 $bg_color   = $self->{_scrobj}->get_bgcolor();
             }
         }
 
         # Configure controls
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
-        $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+        $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
+        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
+        $ctrl_ref->{$field}[1]->SetBackgroundColour(
+            Wx::Colour->new($bg_color)
+          ) if $bg_color;
     }
 
     return;
@@ -1571,15 +1606,15 @@ sub control_write_e {
     $value = q{} unless defined $value; # Empty
 
     # Tip Entry 'e'
-    $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
-    $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
+    # $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
+    $ctrl_ref->{$field}[1]->SetValue($value) if $value;
 
     return;
 }
 
 =head2 control_write_t
 
-Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
 
 =cut
 
@@ -1589,8 +1624,9 @@ sub control_write_t {
     $value = q{} unless defined $value; # Empty
 
     # Tip TextEntry 't'
-    $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
-    $ctrl_ref->{$field}[1]->insert( '1.0', $value ) if $value;
+    $ctrl_ref->{$field}[1]->ClearAll;
+    $ctrl_ref->{$field}[1]->AppendText($value);
+    $ctrl_ref->{$field}[1]->AppendText( "\n" );
 
     return;
 }
@@ -1625,7 +1661,7 @@ sub control_write_d {
 
 =head2 control_write_m
 
-Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
+Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
 
 =cut
 
@@ -1677,41 +1713,41 @@ Table matrix methods.  Add TableMatrix row.
 
 =cut
 
-sub add_tmatrix_row {
-    my ($self, $valori_ref) = @_;
+# sub add_tmatrix_row {
+#     my ($self, $valori_ref) = @_;
 
-    my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xt = $self->{_scrobj}->get_tm_controls('tm1');
 
-    unless ( $self->_model->is_mode('add')
-                 || $self->_model->is_mode('edit') ) {
-        return;
-    }
+#     unless ( $self->_model->is_mode('add')
+#                  || $self->_model->is_mode('edit') ) {
+#         return;
+#     }
 
-    $xt->configure( state => 'normal' );     # Stare normala
+#     $xt->configure( state => 'normal' );     # Stare normala
 
-    $xt->insertRows('end');
-    my $r = $xt->index( 'end', 'row' );
+#     $xt->insertRows('end');
+#     my $r = $xt->index( 'end', 'row' );
 
-    $xt->set( "$r,0", $r );     # Daca am parametru 2, introduc datele
-    my $c = 1;
-    if ( ref($valori_ref) eq 'ARRAY' ) {
+#     $xt->set( "$r,0", $r );     # Daca am parametru 2, introduc datele
+#     my $c = 1;
+#     if ( ref($valori_ref) eq 'ARRAY' ) {
 
-        # Inserez datele
-        foreach my $valoare ( @{$valori_ref} ) {
-            if ( defined $valoare ) {
-                $xt->set( "$r,$c", $valoare );
-            }
-            $c++;
-        }
-    }
+#         # Inserez datele
+#         foreach my $valoare ( @{$valori_ref} ) {
+#             if ( defined $valoare ) {
+#                 $xt->set( "$r,$c", $valoare );
+#             }
+#             $c++;
+#         }
+#     }
 
-    # Focus la randul nou inserat, coloana 1
-    $xt->focus;
-    $xt->activate("$r,1");
-    $xt->see("$r,1");
+#     # Focus la randul nou inserat, coloana 1
+#     $xt->focus;
+#     $xt->activate("$r,1");
+#     $xt->see("$r,1");
 
-    return;
-}
+#     return;
+# }
 
 =head2 remove_tmatrix_row
 
@@ -1719,44 +1755,44 @@ Delete TableMatrix row
 
 =cut
 
-sub remove_tmatrix_row {
-    my $self = shift;
+# sub remove_tmatrix_row {
+#     my $self = shift;
 
-    my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xt = $self->{_scrobj}->get_tm_controls('tm1');
 
-    unless ( $self->_model->is_mode('add')
-                 || $self->_model->is_mode('edit') ) {
-        return;
-    }
+#     unless ( $self->_model->is_mode('add')
+#                  || $self->_model->is_mode('edit') ) {
+#         return;
+#     }
 
-    $xt->configure( state => 'normal' );     # Stare normala
+#     $xt->configure( state => 'normal' );     # Stare normala
 
-    my $r;
-    eval {
-        $r = $xt->index( 'active', 'row' );
+#     my $r;
+#     eval {
+#         $r = $xt->index( 'active', 'row' );
 
-        if ( $r >= 1 ) {
-            $xt->deleteRows( $r, 1 );
-        }
-        else {
-            # my $textstr = "Select a row, first";
-            # $self->{mw}->{dialog1}->configure( -text => $textstr );
-            # $self->{mw}->{dialog1}->Show();
-        }
-    };
-    if ($@) {
-        warn "Warning: $@";
-    }
+#         if ( $r >= 1 ) {
+#             $xt->deleteRows( $r, 1 );
+#         }
+#         else {
+#             # my $textstr = "Select a row, first";
+#             # $self->{mw}->{dialog1}->configure( -text => $textstr );
+#             # $self->{mw}->{dialog1}->Show();
+#         }
+#     };
+#     if ($@) {
+#         warn "Warning: $@";
+#     }
 
-    $self->renum_tmatrix_row($xt);           # renumerotare randuri
+#     $self->renum_tmatrix_row($xt);           # renumerotare randuri
 
-    # Calcul total desfasurator; check if sub exists first
-    # if ( $self->{tpda}->{screen_curr}->can('calcul_total_des_tm2') ) {
-    #     $self->{tpda}->{screen_curr}->calcul_total_des_tm2;
-    # }
+#     # Calcul total desfasurator; check if sub exists first
+#     # if ( $self->{tpda}->{screen_curr}->can('calcul_total_des_tm2') ) {
+#     #     $self->{tpda}->{screen_curr}->calcul_total_des_tm2;
+#     # }
 
-    return $r;
-}
+#     return $r;
+# }
 
 =head2 renum_tmatrix_row
 
@@ -1764,23 +1800,23 @@ Renumber TableMatrix rows
 
 =cut
 
-sub renum_tmatrix_row {
-    my ($self, $xt) = @_;
+# sub renum_tmatrix_row {
+#     my ($self, $xt) = @_;
 
-    # print " renum\n";
+#     # print " renum\n";
 
-    my $r = $xt->index( 'end', 'row' );
+#     my $r = $xt->index( 'end', 'row' );
 
-    # print "# randuri = $r\n";
+#     # print "# randuri = $r\n";
 
-    if ( $r >= 1 ) {
-        foreach my $i ( 1 .. $r ) {
-            $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
-        }
-    }
+#     if ( $r >= 1 ) {
+#         foreach my $i ( 1 .. $r ) {
+#             $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
+#         }
+#     }
 
-    return;
-}
+#     return;
+# }
 
 =head1 AUTHOR
 
@@ -1794,12 +1830,12 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2011 Stefan Suciu.
+Copyright 2010 - 2011 Stefan Suciu.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::Controller
+1; # End of Tpda3::Wx::Controller

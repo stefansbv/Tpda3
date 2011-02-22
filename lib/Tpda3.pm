@@ -7,7 +7,8 @@ use 5.008005;
 
 use Log::Log4perl qw(get_logger);
 
-use Tpda3::Tk::Controller;
+#use Tpda3::Tk::Controller;
+use Tpda3::Wx::Controller;
 
 =head1 NAME
 
@@ -73,7 +74,8 @@ sub _init {
 
     Tpda3::Config->instance($args);
 
-    $self->{gui} = Tpda3::Tk::Controller->new();
+    # $self->{gui} = Tpda3::Tk::Controller->new();
+    $self->{gui} = Tpda3::Wx::Controller->new();
 
     $self->{gui}->start();
 
@@ -89,7 +91,7 @@ Execute the application
 sub run {
     my $self = shift;
 
-    $self->{gui}->MainLoop;
+    $self->{gui}{_app}->MainLoop;
 
     return;
 }

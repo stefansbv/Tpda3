@@ -895,7 +895,7 @@ sub list_read_selected {
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
-        return '';
+        return;
     }
     else {
 
