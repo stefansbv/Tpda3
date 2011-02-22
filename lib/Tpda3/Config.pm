@@ -196,12 +196,13 @@ sub config_application_load {
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->config_app_file_name($section);
 
+        my $cf_name = $self->cfname;
         $self->{_log}->info("Loading $section config file: $cfg_file");
-        my $msg = qq{\nConfiguration error, to fix, run\n\n};
-        $msg .= qq{  tpda3 -init };
-        $msg .= $self->cfname . qq{\n\n};
-
-        #$msg   .= qq{then edit: $cfgconn_f\n};
+        my $msg = qq{Configuration '$cf_name' not found!\n\n};
+        $msg .= qq{To create it, run:\n};
+        $msg .= qq{% tpda3 -init $cf_name\n};
+        $msg .= qq{and Edit the configuration files in: };
+        $msg .= $self->config_app_file_name($cf_name) . qq{\n};
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};

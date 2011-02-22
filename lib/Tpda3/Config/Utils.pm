@@ -51,7 +51,8 @@ sub config_file_load {
 
     if (! -f $conf_file) {
         if ($message) {
-            croak("$message")
+            print "$message";
+            exit;
         }
         else {
             $log->info("No '$conf_file' yet");
