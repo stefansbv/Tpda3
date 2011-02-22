@@ -1,8 +1,0 @@
-# tpda-mvc
-# Database connection configuration
----
-connection:
-  driver: postgresql
-  host:   localhost
-  dbname: s2i2
-  port:   5432

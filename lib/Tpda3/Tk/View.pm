@@ -890,6 +890,8 @@ sub list_read_selected {
         }
     }
 
+    # In scalar context, getRow returns the value of column 0
+    # Column 0 has to be a Pk ...
     my $selected_value;
     eval { $selected_value = $self->{_rc}->getRow($sel); };
     if ($@) {
@@ -906,6 +908,7 @@ sub list_read_selected {
         }
     }
 
+    print "selected_value is $selected_value\n";
     return $selected_value;
 }
 

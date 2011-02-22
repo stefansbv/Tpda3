@@ -286,7 +286,7 @@ sub run_screen {
     );
 
     # Entry objects: var_asoc, var_obiect
-    # Other configurations in 'products.conf'
+    # Other configurations in 'customers.conf'
     $self->{controls} = {
         customername     => [ undef, $ecustomername ],
         customernumber   => [ undef, $ecustomernumber ],

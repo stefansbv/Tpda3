@@ -31,7 +31,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -441,12 +441,12 @@ sub setup_lookup_bindings {
 
         $para->{columns} = [@cols];
 
-        $ctrl_ref->{$lookup}[1]->bind(
-            '<KeyPress-Return>' => sub {
-                my $record = $dict->lookup( $self->_view, $para );
-                $self->screen_write($record, 'fields');
-            }
-        );
+        # $ctrl_ref->{$lookup}[1]->bind(
+        #     '<KeyPress-Return>' => sub {
+        #         my $record = $dict->lookup( $self->_view, $para );
+        #         $self->screen_write($record, 'fields');
+        #     }
+        # );
     }
 
     return;
@@ -951,13 +951,11 @@ sub record_load {
     my $self = shift;
 
     # Retrieve col0 from the selected value
-    my $selected_row_ref = $self->_view->list_read_selected();
-
-    if ( ! ref $selected_row_ref ) {
+    my $value = $self->_view->list_read_selected();
+    if ( ! defined $value ) {
         $self->_view->set_status('Nothing selected','ms');
         return;
     }
-    my $value = $selected_row_ref->[0];
 
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;

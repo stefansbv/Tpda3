@@ -768,13 +768,13 @@ sub make_list_header {
     return;
 }
 
-=head2 get_list_text
+=head2 get_list_text_col
 
 Return text item from list control row and col
 
 =cut
 
-sub get_list_text {
+sub get_list_text_col {
     my ($self, $row, $col) = @_;
 
     return $self->get_listcontrol->GetItemText( $row, $col );
@@ -792,8 +792,8 @@ sub get_list_text_row {
     my $col_cnt = $self->get_listcontrol->GetColumnCount() - 1;
 
     my @row_text;
-    foreach my $col (1..$col_cnt) {
-        push @row_text, $self->get_list_text($row, $col);
+    foreach my $col (0..$col_cnt) {
+        push @row_text, $self->get_list_text_col($row, $col);
     }
 
     return \@row_text;
@@ -1087,19 +1087,17 @@ sub list_read_selected {
     }
 
     my $row = $self->get_list_selected_index();
-    my $selected_value = $self->get_list_text_row($row);
 
-    if ( !$selected_value ) {
-        print "No selected value?\n";
-        return;
-    }
-    else {
+    # Return column 0 in the row
+    my $selected_value = $self->get_list_text_col( $row, 0 ); # col 0
 
-        # # Trim spaces
-        # if ( defined($selected_value) ) {
-        #     $selected_value =~ s/^\s+//;
-        #     $selected_value =~ s/\s+$//;
-        # }
+    if ( defined $selected_value ) {
+
+        # Trim spaces
+        if ( defined($selected_value) ) {
+            $selected_value =~ s/^\s+//;
+            $selected_value =~ s/\s+$//;
+        }
     }
 
     return $selected_value;

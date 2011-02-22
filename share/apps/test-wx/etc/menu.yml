@@ -1,17 +1,28 @@
 # tpda-mvc
 # Interface configuration
 # Don't touch!, not for users ;)
-# User menu Id's start at 10000 and popups at 100
 ---
 appmenubar:
   menu_app:
-    id:    10001
+    id:    1001
     label: Test
-    underline: 2
+    underline: 0
     popup:
-      101:
-        name: Localitati
-        label: Localitati
+      1:
+        name: Products
+        label: Products
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: Customers
+        label: Customers
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: Orders
+        label: Orders
         underline: 0
         sep: none
         key: ~

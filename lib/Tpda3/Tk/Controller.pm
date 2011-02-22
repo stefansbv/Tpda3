@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -937,6 +939,7 @@ sub record_load {
     $params->{where}{$pk_col} = [ $value, $fields_hr->{$pk_col}{findtype} ];
     $params->{pkcol} = $pk_col;
 
+    print Dumper( $params);
     my $record = $self->_model->query_record($params);
 
     $self->screen_write($record);
