@@ -582,7 +582,7 @@ content in the I<Screen> and change the background to light green.
 =cut
 
 sub on_screen_mode_find {
-    my ($self, ) = @_;
+    my $self = shift;
 
     $self->screen_write(undef, 'clear'); # Empty the controls
     # $self->control_tmatrix_write();
@@ -1653,7 +1653,7 @@ sub control_write_e {
     $value = q{} unless defined $value; # Empty
 
     # Tip Entry 'e'
-    # $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
+    $ctrl_ref->{$field}[1]->Clear;
     $ctrl_ref->{$field}[1]->SetValue($value) if $value;
 
     return;

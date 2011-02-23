@@ -586,7 +586,7 @@ content in the I<Screen> and change the background to light green.
 =cut
 
 sub on_screen_mode_find {
-    my ($self, ) = @_;
+    my $self = shift;
 
     $self->screen_write(undef, 'clear'); # Empty the controls
     $self->control_tmatrix_write();
