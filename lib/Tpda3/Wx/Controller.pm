@@ -85,7 +85,9 @@ sub new {
 
     $self->_set_event_handlers;
 
-    $self->_set_menus_enable(0); # disable some menus
+    $self->_set_menus_enable(0); # disable find mode menus
+
+    $self->_check_app_menus();   # disable if no screen
 
     return $self;
 }
@@ -340,7 +342,7 @@ sub _set_event_handler_screen {
     return;
 }
 
-=head2 _set_menus_inimodes
+=head2 _set_menus_enable
 
 Disable some menus at start.
 
@@ -354,6 +356,29 @@ sub _set_menus_enable {
     foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
         my $mn_id = $self->_view->get_menu_popup_item($mnu)->GetId;
         $mn->Enable($mn_id, $enable);
+    }
+}
+
+=head2 _check_app_menus
+
+Check if screen modules from the menu exists and are loadable.
+Disable those which fail the test.
+
+=cut
+
+sub _check_app_menus {
+    my $self = shift;
+
+    my $menu = $self->_view->get_menubar();
+
+    my $appmenus = $self->_view->get_app_menus_list();
+    foreach my $menu_item ( @{$appmenus} ) {
+        my $menu_id = $self->_view->get_menu_popup_item($menu_item)->GetId;
+        my ($class, $module_file) = $self->screen_module_class($menu_item);
+        eval {require $module_file };
+        if ($@) {
+            $menu->Enable($menu_id, 0);
+        }
     }
 
     return;
@@ -700,6 +725,24 @@ sub _scrcfg {
     return $self->{_scrcfg};
 }
 
+=head2 screen_module_class
+
+Return screen module class and file name.
+
+=cut
+
+sub screen_module_class {
+    my ($self, $module) = @_;
+
+    my $app_name  = $self->_cfg->application->{module};
+
+    my $module_class = "Tpda3::Wx::App::${app_name}::${module}";
+
+    (my $module_file = "$module_class.pm") =~ s{::}{/}g;
+
+    return ($module_class, $module_file);
+}
+
 =head2 screen_module_load
 
 Load screen chosen from the menu.
@@ -735,11 +778,13 @@ sub screen_module_load {
     $self->_view->create_notebook();
     $self->_set_event_handler_nb();
 
-    # The application and class names
-    my $name = $self->_cfg->application->{module};
-    my $class = "Tpda3::Wx::App::${name}::${module}";
-    (my $module_file = "$class.pm") =~ s/::/\//g;
-    require $module_file;
+    my ($class, $module_file) = $self->screen_module_class($module, 'file');
+    eval {require $module_file };
+    if ($@) {
+        # TODO: Decide what is optimal to do here?
+        print "Can't load '$module_file'\n";
+        return;
+    }
 
     unless ($class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
@@ -814,7 +859,8 @@ sub screen_module_load {
     #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
     # }
 
-    # $self->screen_lists_populate();
+    # Load lists into JBrowseEntry or JComboBox widgets
+    # $self->screen_init();
 
     $self->_set_menus_enable(1);
 

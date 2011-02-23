@@ -1,6 +1,6 @@
-# tpda-mvc
-# Interface configuration
-# Don't touch!, not for users ;)
+# tpda3
+# Toolbar interface configuration
+# Don't change, unless you know what you are doing!
 # The toolbar Id's start at 1000
 ---
 toolbar:
@@ -21,8 +21,8 @@ toolbar:
     id:      1002
     type:    _item_normal
     icon:    actcheck16
-    tooltip: Execute found
-    help:    Execute found
+    tooltip: Execute search
+    help:    Execute search
     sep:     none
     state:
       idle: disabled
@@ -152,14 +152,14 @@ toolbar:
     type:    _item_normal
     icon:    actattach16
     tooltip: Attach to desktop, here
-    help:    Attach to desktop, here
+    help:    Save actual window position and dimensions
     sep:     after
     state:
       idle: normal
-      add:  disabled
-      edit: disabled
+      add:  normal
+      edit: normal
       find: disabled
-      sele: disabled
+      sele: normal
   tb_qt:
     id:      1013
     type:    _item_normal

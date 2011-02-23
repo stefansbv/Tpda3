@@ -1,6 +1,6 @@
-# tpda-mvc
-# Interface configuration
-# Don't touch!, not for users ;)
+# tpda3
+# Menubar interface configuration
+# Don't change, unless you know what you are doing!
 # The application menu Id's start at 5000
 ---
 menubar:
@@ -44,12 +44,6 @@ menubar:
         underline: 12
         sep: none
         key: Alt-g
-      2:
-        name: mn_cn
-        label: Connect/disconnect
-        underline: 0
-        sep: none
-        key: Alt-c
   menu_help:
     id:    5003
     label: Help

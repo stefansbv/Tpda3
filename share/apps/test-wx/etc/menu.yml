@@ -3,7 +3,7 @@
 # Don't touch!, not for users ;)
 ---
 appmenubar:
-  menu_app:
+  menu_user:
     id:    1001
     label: Test
     underline: 0

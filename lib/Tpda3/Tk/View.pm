@@ -3,6 +3,8 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Carp;
 use POSIX qw (floor);
 
@@ -206,22 +208,6 @@ sub set_geometry {
     return;
 }
 
-=head2 show_config_dialog
-
-Show config dialog
-
-=cut
-
-sub show_config_dialog {
-    my $self = shift;
-
-    my $fd = Tpda3::Tk::Dialog::Configs->new;
-
-    $fd->run_dialog($self);
-
-    return;
-}
-
 =head2 log_msg
 
 Log messages
@@ -323,7 +309,7 @@ sub get_app_menus_list {
     my $self = shift;
 
     my $attribs = $self->_cfg->appmenubar;
-    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+    my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my @menulist;
     foreach my $menu_name ( @{$menus} ) {

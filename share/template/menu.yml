@@ -3,7 +3,7 @@
 # Application specific menu definitions
 ---
 appmenubar:
-  menu_app:
+  menu_user:
     id:    1001
     label: Sample
     underline: 0
