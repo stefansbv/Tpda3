@@ -3,8 +3,6 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Carp;
 use POSIX qw (floor);
 
@@ -21,7 +19,6 @@ use base 'Tk::MainWindow';
 
 use Tpda3::Config;
 use Tpda3::Utils;
-#use Tpda3::Tk::Dialog::Configs;
 use Tpda3::Tk::ToolBar;
 
 =head1 NAME

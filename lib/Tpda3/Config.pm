@@ -3,8 +3,6 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 
 use File::HomeDir;

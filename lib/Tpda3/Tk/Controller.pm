@@ -244,7 +244,7 @@ sub _set_event_handlers {
 
     #-- Make some key bindings
 
-    $self->_view->bind( '<Alt-x>' => sub { $self->_view->on_quit } );
+    $self->_view->bind( '<Control-q>' => sub { $self->_view->on_quit } );
     $self->_view->bind(
         '<F7>' => sub {
             # From add mode forbid find mode
@@ -783,7 +783,7 @@ sub screen_module_load {
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
 
-    my ($class, $module_file) = $self->screen_module_class($module, 'file');
+    my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
     if ($@) {
         # TODO: Decide what is optimal to do here?

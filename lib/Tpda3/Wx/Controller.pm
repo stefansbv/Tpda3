@@ -778,7 +778,7 @@ sub screen_module_load {
     $self->_view->create_notebook();
     $self->_set_event_handler_nb();
 
-    my ($class, $module_file) = $self->screen_module_class($module, 'file');
+    my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
     if ($@) {
         # TODO: Decide what is optimal to do here?
@@ -1095,6 +1095,7 @@ sub record_find_execute {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
+    $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
 
     if ( $record_count > 0 ) {

@@ -1,6 +1,6 @@
-# tpda-mvc
-# Interface configuration
-# Application specific menu definitions
+# tpda3
+# Application menu interface configuration
+# Don't change, unless you know what you are doing!
 ---
 appmenubar:
   menu_user:

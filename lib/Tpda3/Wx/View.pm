@@ -969,7 +969,7 @@ Delete the rows of the list.
 sub list_init {
     my $self = shift;
 
-    $self->get_listcontrol->ClearAll();
+    $self->get_listcontrol->DeleteAllItems();
 
     return;
 }

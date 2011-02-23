@@ -32,15 +32,14 @@ requires 'DBI'                        => '1.53';
 
 #- Tk
 
-recommends 'Tk'                         => '804.028';
-recommends 'Tk::ToolBar'                => '0.09';
-recommends 'Tk::StatusBar'              => '0.04';
-recommends 'Tk::MListbox'               => '1.11';
-recommends 'Tk::JComboBox'              => '1.14';
-recommends 'Tk::DateEntry'              => '1.39';
-recommends 'Tk::TableMatrix'            => '1.23';
-recommends 'Tk::RadiobuttonGroup'       => '0.2.2';
-#requires 'Tk::FontDialog'             => '0.15';
+recommends 'Tk'                       => '804.028';
+recommends 'Tk::ToolBar'              => '0.09';
+recommends 'Tk::StatusBar'            => '0.04';
+recommends 'Tk::MListbox'             => '1.11';
+recommends 'Tk::JComboBox'            => '1.14';
+recommends 'Tk::DateEntry'            => '1.39';
+recommends 'Tk::TableMatrix'          => '1.23';
+recommends 'Tk::RadiobuttonGroup'     => '0.2.2';
 
 #- and/or Wx
 

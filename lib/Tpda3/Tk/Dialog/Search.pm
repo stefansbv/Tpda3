@@ -3,8 +3,6 @@ package Tpda3::Tk::Dialog::Search;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk::LabFrame;
 use Tk::MListbox;
 use Tk::StatusBar;

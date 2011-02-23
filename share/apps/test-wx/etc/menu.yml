@@ -1,12 +1,12 @@
-# tpda-mvc
-# Interface configuration
-# Don't touch!, not for users ;)
+# tpda3
+# Application menu interface configuration
+# Don't change, unless you know what you are doing!
 ---
 appmenubar:
   menu_user:
     id:    1001
     label: Test
-    underline: 0
+    underline: 2
     popup:
       1:
         name: Products

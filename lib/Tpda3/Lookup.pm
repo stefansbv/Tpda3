@@ -3,8 +3,6 @@ package Tpda3::Lookup;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tpda3::Tk::Dialog::Search;
 
 =head1 NAME
