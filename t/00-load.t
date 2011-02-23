@@ -2,7 +2,7 @@
 # Tpda3 use test script
 #
 
-use Test::More tests => 21;
+use Test::More tests => 20;
 
 diag( "Testing with Perl $], $^X" );
 
@@ -22,7 +22,7 @@ use_ok('Tpda3::Tk::Controller');
 use_ok('Tpda3::Tk::ToolBar');
 use_ok('Tpda3::Tk::View');
 use_ok('Tpda3::Tk::Screen');
-use_ok('Tpda3::Tk::Dialog::Configs');
+#use_ok('Tpda3::Tk::Dialog::Configs');
 
 use_ok('Tpda3::Wx::Controller');
 use_ok('Tpda3::Wx::Notebook');
