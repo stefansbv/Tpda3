@@ -19,7 +19,7 @@ use base 'Tk::MainWindow';
 
 use Tpda3::Config;
 use Tpda3::Utils;
-use Tpda3::Tk::Dialog::Configs;
+#use Tpda3::Tk::Dialog::Configs;
 use Tpda3::Tk::ToolBar;
 
 =head1 NAME
