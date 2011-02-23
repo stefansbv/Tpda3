@@ -16,7 +16,7 @@ use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Wx::App;
 use Tpda3::Wx::View;
-#use Tpda3::Tk::Dialog::Pwd;
+use Tpda3::Wx::Dialog::Login;
 use Tpda3::Lookup;
 
 =head1 NAME
@@ -94,7 +94,7 @@ sub new {
 
 =head2 start
 
-Check if we have user and pass, if not, show dialog.  Connect do
+Check if we have user and pass, if not, show dialog.  Connect to the
 database.
 
 =cut
@@ -102,11 +102,19 @@ database.
 sub start {
     my $self = shift;
 
-    $self->_log->trace("start");
+    $self->_log->trace('start');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        my $pd = Tpda3::Wx::Dialog::Login->new;
-        $pd->run_dialog( $self->_view );
+        my $login_dlg = Tpda3::Wx::Dialog::Login->new($self->_view);
+        $login_dlg->dialog_login();
+        # if ( $login_dlg->ShowModal == wxID_CANCEL ) {
+        #     return;
+        # }
+        # #my $search_term = $login_dlg->GetValue;
+        # $cfg->user($user);
+        # $cfg->pass($pass);
+
+        # $login_dlg->Destroy;
     }
 
     # Check again ...

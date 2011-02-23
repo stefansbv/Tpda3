@@ -1123,7 +1123,7 @@ Quit.
 sub on_quit {
     my $self = shift;
 
-    $self->Destroy();
+    $self->Close();
 
     return;
 }
