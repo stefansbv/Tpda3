@@ -71,11 +71,6 @@ sub new {
 
     bless $self, $class;
 
-    my $loglevel_old = $self->_log->level();
-
-    # Set log level to trace
-    # $self->_log->level($TRACE);
-
     $self->_log->trace('Controller new');
 
     $self->_control_states_init;
@@ -86,17 +81,12 @@ sub new {
 
     $self->_check_app_menus();   # disable if no screen
 
-    # Restore default log level
-    # $self->_log->level($loglevel_old);
-
     return $self;
 }
 
 =head2 start
 
 Check if we have user and pass, if not, show dialog.
-
-...
 
 Connect to the database.
 
@@ -105,15 +95,15 @@ Connect to the database.
 sub start {
     my $self = shift;
 
-    $self->_log->trace('start');
+    $self->_log->trace('Starting ...');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
         my $dlg = Tpda3::Wx::Dialog::Login->new($self->_view);
         if ( $dlg->login() == wxID_CANCEL ) {
-            print "shut down\t";
-            $self->_view->on_quit; # does not work! ???
-            print " done?\n";
-            # exit; ???
+
+            # Close the application ...
+
+            return;
         }
     }
 
@@ -124,9 +114,10 @@ sub start {
         $self->_model->toggle_db_connect();
     }
     else {
-        print "check failed\n";
-        $self->_view->on_quit;
+        $self->_view->on_quit;  # does not work! because no main loop yet?
     }
+
+    $self->_log->trace('Started');
 
     return;
 }
@@ -138,16 +129,15 @@ The About dialog
 =cut
 
 sub about {
-    my ( $self, $event ) = @_;
+    my $self = shift;
 
     Wx::MessageBox(
-        "Tpda3 - v0.01\n(C) 2010 - 2011 Stefan Suciu\n\n"
+        "Tpda3 - v0.03\n(C) 2010-2011 Stefan Suciu\n\n"
             . " - WxPerl $Wx::VERSION\n"
             . " - " . Wx::wxVERSION_STRING,
-        "About Tpda3-wxPerl",
-
-        wxOK | wxICON_INFORMATION,
-        $self
+        'About Tpda3',
+        wxOK | wxICON_INFORMATION | wxCENTRE,
+        $self->_view,
     );
 }
 

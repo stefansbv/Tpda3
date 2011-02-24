@@ -30,21 +30,22 @@ sub new {
     my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
 
     my $vbox_sz = Wx::BoxSizer->new( wxVERTICAL );
-    $top_sz->Add($vbox_sz, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    $top_sz->Add($vbox_sz, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
+
+    # Line
+    my $line0 = Wx::StaticLine->new(
+        $self,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxLI_HORIZONTAL,
+    );
+    $vbox_sz->Add($line0, 0, wxGROW | wxALL, 0);
 
     # Spacer
     $vbox_sz->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    # Message
-    my $message = Wx::StaticText->new(
-        $self,
-        -1,
-        qq{ ->[ Please enter your user name and password ]<- \n},
-        [ -1, -1 ],
-        [ -1, -1 ],
-        0,
-    );
-    $vbox_sz->Add( $message, 0, wxALIGN_LEFT | wxALL, 5 );
+    my $flex_sz = Wx::FlexGridSizer->new( 2, 2, 5, 10 );
 
     # Label - user
     my $user_label = Wx::StaticText->new(
@@ -55,7 +56,7 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $vbox_sz->Add($user_label, 0, wxALIGN_LEFT | wxALL, 5);
+    # $vbox_sz->Add($user_label, 0, wxALIGN_LEFT | wxALL, 5);
 
     # Text control - user
     $self->{user_ctrl} = Wx::TextCtrl->new(
@@ -66,7 +67,10 @@ sub new {
         [ -1, -1 ],
         wxTE_PROCESS_ENTER,
     );
-    $vbox_sz->Add($self->{user_ctrl}, 0, wxGROW | wxALL, 5);
+    # $vbox_sz->Add($self->{user_ctrl}, 0, wxGROW | wxALL, 5);
+
+    $flex_sz->Add( $user_label, 0, wxTOP | wxLEFT,  5 );
+    $flex_sz->Add( $self->{user_ctrl}, 0, wxEXPAND | wxTOP, 5 );
 
     # Label - password
     my $pass_label = Wx::StaticText->new(
@@ -77,7 +81,7 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $vbox_sz->Add($pass_label, 0, wxALIGN_LEFT | wxALL, 5);
+    # $vbox_sz->Add($pass_label, 0, wxALIGN_LEFT | wxALL, 5);
 
     # Text control - password
     $self->{pass_ctrl} = Wx::TextCtrl->new(
@@ -88,7 +92,17 @@ sub new {
         [ -1, -1 ],
         wxTE_PASSWORD | wxTE_PROCESS_ENTER,
     );
-    $vbox_sz->Add($self->{pass_ctrl}, 0, wxGROW | wxALL, 5);
+    # $vbox_sz->Add($self->{pass_ctrl}, 0, wxGROW | wxALL, 5);
+
+    $flex_sz->Add( $pass_label, 0, wxTOP | wxLEFT,  5 );
+    $flex_sz->Add( $self->{pass_ctrl}, 0, wxEXPAND | wxTOP, 5 );
+
+    # $flex_sz->AddGrowableCol( 1, 1 );
+
+    $vbox_sz->Add( $flex_sz, 0, wxALL | wxGROW, 0 );
+
+    # Spacer
+    $vbox_sz->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     # Line
     my $line = Wx::StaticLine->new(
@@ -98,7 +112,7 @@ sub new {
         [ -1, -1 ],
         wxLI_HORIZONTAL,
     );
-    $vbox_sz->Add($line, 0, wxGROW | wxALL, 5);
+    $vbox_sz->Add($line, 0, wxGROW | wxALL, 0);
 
     my $ok_cancel_box = Wx::BoxSizer->new(wxHORIZONTAL);
     $vbox_sz->Add($ok_cancel_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);

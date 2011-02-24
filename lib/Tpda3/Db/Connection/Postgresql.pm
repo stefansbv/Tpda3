@@ -58,11 +58,11 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->info("Connecting to the $conf->{driver} server");
-    $log->info("Parameters:");
-    $log->info("  => Database = $conf->{dbname}\n");
-    $log->info("  => Host     = $conf->{host}\n");
-    $log->info("  => User     = $conf->{user}\n");
+    $log->info("Database driver is: $conf->{driver}");
+    $log->trace("Parameters:");
+    $log->trace("  => Database = $conf->{dbname}\n");
+    $log->trace("  => Host     = $conf->{host}\n");
+    $log->trace("  => User     = $conf->{user}\n");
 
     try {
         $self->{_dbh} = DBI->connect(
@@ -86,8 +86,6 @@ sub db_connect {
     catch {
         $log->fatal("Transaction aborted: $_")
           or print STDERR "$_\n";
-
-          # exit 1;
     };
 
     ## Date format
@@ -95,7 +93,7 @@ sub db_connect {
     ##
     $self->{_dbh}{pg_enable_utf8} = 1;
 
-    $log->info("Connected to database $conf->{dbname}");
+    $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
 }

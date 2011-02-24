@@ -96,20 +96,27 @@ sub _init {
 
     my $cfg = Tpda3::Config->instance($args);
 
+    # $self->{_log} = get_logger();
+
     my $widgetset = $cfg->application->{widgetset};
 
     if ( $widgetset =~ m{wx}ix ) {
-        print " Wx application\n";
         require Tpda3::Wx::Controller;
         $self->{gui} = Tpda3::Wx::Controller->new();
+
+        # $self->{_log}->info('Using Wx ...');
     }
     elsif ( $widgetset =~ m{tk}ix ) {
-        print " Tk application\n";
         require Tpda3::Tk::Controller;
         $self->{gui} = Tpda3::Tk::Controller->new();
+
+        # $self->{_log}->info('Using Tk ...');
     }
     else {
         warn "Unknown widget set!\n";
+
+        # $self->{_log}->debug('Unknown widget set!');
+
         exit;
     }
 
@@ -127,7 +134,11 @@ Execute the application
 sub run {
     my $self = shift;
 
-    $self->{gui}{_app}->MainLoop;
+    # $self->{_log}->info('Run ...');
+
+    $self->{gui}{_app}->MainLoop();
+
+    # $self->{_log}->info('Stop.');
 
     return;
 }
@@ -157,15 +168,15 @@ Author: Rutger Vos, 17/Aug/2006
 
 The Open Source movement, and all the authors, contributors and
 community behind this great projects:
- Perl and Perl modules
- Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
- Firebird (and Flamerobin)
- Postgresql and SQLite
- GNU/Linux
 
-And last but least, for the wxPerl stuff, Herbert Breunung for his
-guidance, hints and for his Kephra project a very good source of
-inspiration.
+ Perl and Perl modules including CPAN
+ Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
+ Kephra
+ Padre
+ GNU/Linux
+ Firebird (and Flamerobin)
+ Postgresql
+ SQLite
 
 Thank You!
 

@@ -70,10 +70,8 @@ sub db_connect {
         );
     }
     catch {
-        print "Transaction aborted: $_"
+        $log->fatal("Transaction aborted: $_")
             or print STDERR "$_\n";
-
-        # exit 1;
     };
 
     ## Date format ISO

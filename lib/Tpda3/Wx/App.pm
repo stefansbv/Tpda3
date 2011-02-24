@@ -3,7 +3,7 @@ package Tpda3::Wx::App;
 use strict;
 use warnings;
 
-use Wx ':everything';
+use Wx q(:everything);
 use base qw(Wx::App);
 
 =head1 NAME
@@ -43,7 +43,7 @@ sub create {
         $model,
         undef,
         -1,
-        'Tpda3::WxPerl',
+        'Tpda3::wxPerl',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDEFAULT_FRAME_STYLE,
@@ -61,6 +61,10 @@ Override OnInit from WxPerl
 =cut
 
 sub OnInit { 1 }
+
+# sub OnExit {
+#     print "OnExit.\n";
+# }
 
 =head1 AUTHOR
 

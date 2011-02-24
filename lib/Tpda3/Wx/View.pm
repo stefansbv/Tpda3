@@ -62,6 +62,8 @@ sub new {
     $self->SetMinSize( Wx::Size->new( 480, 300 ) );
     $self->SetIcon( Wx::GetWxPerlIcon() );
 
+    my $log = get_logger();
+
     #-- Menu
     $self->_create_menu();
     $self->_create_app_menu();
@@ -75,6 +77,8 @@ sub new {
     $self->_set_model_callbacks();
 
     $self->Fit;
+
+    $log->trace('Frame created');
 
     return $self;
 }
