@@ -73,13 +73,10 @@ sub new {
 
     my $loglevel_old = $self->_log->level();
 
-    # Set log level to trace in this sub
+    # Set log level to trace
     # $self->_log->level($TRACE);
 
-    # $self->_log->trace("new");
-
-    # # Restore default log level
-    # $self->_log->level($loglevel_old);
+    $self->_log->trace('Controller new');
 
     $self->_control_states_init;
 
@@ -88,6 +85,9 @@ sub new {
     $self->_set_menus_enable(0); # disable find mode menus
 
     $self->_check_app_menus();   # disable if no screen
+
+    # Restore default log level
+    # $self->_log->level($loglevel_old);
 
     return $self;
 }
@@ -131,25 +131,13 @@ sub start {
     return;
 }
 
-=head2 _set_event_handlers
-
-Close the application window
-
-=cut
-
-my $closeWin = sub {
-    my ( $self, $event ) = @_;
-
-    $self->Destroy();
-};
-
-=head2 _set_event_handlers
+=head2 about
 
 The About dialog
 
 =cut
 
-my $about = sub {
+sub about {
     my ( $self, $event ) = @_;
 
     Wx::MessageBox(
@@ -161,7 +149,7 @@ my $about = sub {
         wxOK | wxICON_INFORMATION,
         $self
     );
-};
+}
 
 =head2 _set_event_handlers
 
@@ -182,7 +170,10 @@ sub _set_event_handlers {
 
     #- Base menu
 
-    EVT_MENU $self->_view, wxID_ABOUT, $about; # Change icons !!!
+    EVT_MENU $self->_view, wxID_ABOUT, sub {
+        $self->about();
+    }; # Change icons !!!
+
     EVT_MENU $self->_view, wxID_EXIT,  sub {
         $self->_view->on_quit;
     };
@@ -289,7 +280,7 @@ required (selected from the applications menu) to load.
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
-    $self->_log->trace("Setup event handler on NoteBook");
+    $self->_log->trace('Setup event handler on NoteBook');
 
     #- NoteBook events
 
@@ -325,7 +316,7 @@ in the screen, regardless of the screen type.
 sub _set_event_handler_screen {
     my $self = shift;
 
-    $self->_log->trace("Setup event handler for screen");
+    $self->_log->trace('Setup event handler for screen');
     #- screen ToolBar
 
     #-- Add row button
@@ -413,7 +404,7 @@ sub setup_lookup_bindings {
     my $ctrl_ref = $self->{_scrobj}->get_controls();
     my $bindings = $self->_scrcfg->bindings;
 
-    $self->_log->trace("Setup binding for configured widgets");
+    $self->_log->trace('Setup binding for configured widgets');
 
     foreach my $lookup ( keys %{$bindings} ) {
         unless ( $ctrl_ref->{$lookup}[1] ) {
@@ -634,6 +625,8 @@ Data structure with setting for the different modes of the controls.
 sub _control_states_init {
     my $self = shift;
 
+    $self->_log->trace('Control states data structure init');
+
     $self->{control_states} = {
         off  => {
             state      => 'disabled',
@@ -799,6 +792,10 @@ sub screen_module_load {
 
     # New screen instance
     $self->{_scrobj} = $class->new();
+
+    # Set log level to trace
+    # $self->_log->level($TRACE);
+
     $self->_log->trace("New screen instance: $module");
 
     # Show screen
@@ -1601,7 +1598,7 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->info("Screen controls state is '$state'");
+    $self->_log->trace("Screen controls state is '$state'");
 
     my $ctrl_ref = $self->{_scrobj}->get_controls();
     return unless scalar keys %{$ctrl_ref};

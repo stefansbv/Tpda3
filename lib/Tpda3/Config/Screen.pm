@@ -98,12 +98,14 @@ sub config_screen_load {
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
-    $log->debug("Loading '$file_name' config file: $cfg_file");
+
+    $log->info("Loading '$file_name' config");
+    $log->trace("file: $cfg_file");
 
     my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
 
     my @accessor = keys %{ $cfg_data };
-    $log->debug("Making accessors for @accessor");
+    $log->trace("Making accessors for: @accessor");
 
     $self->_make_accessors( $cfg_data );
 

@@ -57,9 +57,9 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->info("Connecting to the $conf->{driver} server");
-    $log->info("Parameters:");
-    $log->info("  => Database = $conf->{dbname}\n");
+    $log->info("Database driver is: $conf->{driver}");
+    $log->trace("Parameters:");
+    $log->trace("  => Database = $conf->{dbname}\n");
 
     try {
         $self->{_dbh} = DBI->connect(
@@ -81,7 +81,7 @@ sub db_connect {
     # UTF-8 support
     $self->{_dbh}{sqlite_unicode} = 1;
 
-    $log->info("Connected to database $conf->{dbname}");
+    $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
 }

@@ -80,13 +80,10 @@ sub new {
 
     my $loglevel_old = $self->_log->level();
 
-    # Set log level to trace in this sub
+    # Set log level to trace in this
     $self->_log->level($TRACE);
 
-    $self->_log->trace("new");
-
-    # Restore default log level
-    # $self->_log->level($loglevel_old);
+    $self->_log->trace('Controller new');
 
     $self->_control_states_init;
 
@@ -95,6 +92,9 @@ sub new {
     $self->_set_menus_enable('disabled');    # disable find mode menus
 
     $self->_check_app_menus();               # disable if no screen
+
+    # Restore default log level
+    $self->_log->level($loglevel_old);
 
     return $self;
 }
@@ -109,7 +109,7 @@ database.
 sub start {
     my $self = shift;
 
-    $self->_log->trace('start');
+    $self->_log->trace('starting ...');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
         my $pd = Tpda3::Tk::Dialog::Login->new;
@@ -126,6 +126,8 @@ sub start {
         $self->_view->on_quit;
     }
 
+    $self->_log->trace('... started');
+
     return;
 }
 
@@ -138,7 +140,7 @@ Setup event handlers for the interface.
 sub _set_event_handlers {
     my $self = shift;
 
-    $self->_log->trace("Setup event handlers");
+    $self->_log->trace('Setup event handlers');
 
     #- Base menu
 

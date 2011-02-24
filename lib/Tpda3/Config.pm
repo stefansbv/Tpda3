@@ -3,7 +3,7 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger :levels);
 
 use File::HomeDir;
 use File::UserConfig;
@@ -112,17 +112,19 @@ sub config_main_load {
     Log::Log4perl->init($log_qfn);
 
     $self->{_log} = get_logger();
+    # $self->{_log}->level($TRACE);            # initial log level
 
-    $self->{_log}->info("*** New session begin:");
+    $self->{_log}->info('-------------------------');
+    $self->{_log}->info('*** NEW SESSION BEGIN ***');
 
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );
-    $self->{_log}->info("Main config file is $main_qfn");
+    $self->{_log}->info("Loading 'main' config");
+    $self->{_log}->trace("file: $main_qfn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
     $msg   .= qq{\n  from '$main_qfn'!};
     my $maincfg = Tpda3::Config::Utils->config_file_load($main_qfn, $msg);
-    $self->{_log}->info("Main config file loaded.");
 
     # Base configuration methods
     # TODO: Rename this methods !!!
@@ -145,7 +147,7 @@ sub config_main_load {
     }
 
     my @accessor = keys %{$main_hr};
-    $self->{_log}->info("Making accessors for @accessor");
+    $self->{_log}->trace("Making accessors for: @accessor");
 
     $self->make_accessors($main_hr);
 
@@ -170,11 +172,13 @@ sub config_interface_load {
         my $msg = qq{\nConfiguration error: \n Can't read configurations};
         $msg .= qq{\n  from '$cfg_file'!};
 
-        $self->{_log}->info("Loading $section config file: $cfg_file");
+        $self->{_log}->info("Loading '$section' config");
+        $self->{_log}->trace("file: $cfg_file");
+
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
-        $self->{_log}->info("Making accessors for @accessor");
+        $self->{_log}->trace("Making accessors for: @accessor");
 
         $self->make_accessors($cfg_hr);
     }
@@ -196,7 +200,10 @@ sub config_application_load {
         my $cfg_file = $self->config_app_file_name($section);
 
         my $cf_name = $self->cfname;
-        $self->{_log}->info("Loading $section config file: $cfg_file");
+
+        $self->{_log}->info("Loading '$section' config");
+        $self->{_log}->trace("file: $cfg_file");
+
         my $msg = qq{Configuration '$cf_name' not found!\n\n};
         $msg .= qq{To create it, run:\n};
         $msg .= qq{% tpda3 -init $cf_name\n};
@@ -205,7 +212,7 @@ sub config_application_load {
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
-        $self->{_log}->info("runtime: Making accessors for @accessor");
+        $self->{_log}->trace("runtime: Making accessors for: @accessor");
 
         $self->make_accessors($cfg_hr);
     }

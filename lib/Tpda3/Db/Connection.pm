@@ -67,7 +67,7 @@ sub _connect {
 
     my $driver = $conf->{driver};
     my $db;
-    $log->debug("Database driver is $driver");
+    $log->trace("Database driver is $driver");
 
   SWITCH: for ( $driver ) {
         /^$/x && do warn "No driver name?\n";
