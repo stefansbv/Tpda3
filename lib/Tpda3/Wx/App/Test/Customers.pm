@@ -41,6 +41,8 @@ sub run_screen {
     my $main_p  = $inreg_p->GetParent;
     $self->{bg} = $inreg_p->GetBackgroundColour();
 
+    # TODO: use Wx::Perl::TextValidator
+
     my $lcustomername = Wx::StaticText->new( $inreg_p, -1, 'Customer', );
     my $ecustomername =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );

@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Wx qw{:everything};
+use Wx::Event qw(EVT_TEXT_ENTER);
+
 use base qw{Wx::Dialog};
 
 use Tpda3::Config;
@@ -20,31 +22,31 @@ sub new {
         wxDEFAULT_DIALOG_STYLE | wxCAPTION,
     );
 
-    # A top-level sizer
-    my $topSizer = Wx::BoxSizer->new( wxVERTICAL );
+    $self->{_view} = $frame;
 
-    # A second box sizer to give more space around the controls
-    my $boxSizer = Wx::BoxSizer->new( wxVERTICAL );
-    $topSizer->Add($boxSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    $self->{_cfg} = Tpda3::Config->instance();
+    my $user = $self->{_cfg}->user || q{};
+
+    my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
+
+    my $vbox_sz = Wx::BoxSizer->new( wxVERTICAL );
+    $top_sz->Add($vbox_sz, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     # Spacer
-    $boxSizer->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    $vbox_sz->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     # Message
     my $message = Wx::StaticText->new(
         $self,
         -1,
-        qq{-- Please enter your user name and password --\n},
+        qq{ ->[ Please enter your user name and password ]<- \n},
         [ -1, -1 ],
         [ -1, -1 ],
         0,
     );
-    $boxSizer->Add( $message, 0, wxALIGN_LEFT | wxALL, 5 );
+    $vbox_sz->Add( $message, 0, wxALIGN_LEFT | wxALL, 5 );
 
-    # Spacer
-    # $boxSizer->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-
-    # Label for the name text control
+    # Label - user
     my $user_label = Wx::StaticText->new(
         $self,
         -1,
@@ -53,20 +55,20 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $boxSizer->Add($user_label, 0, wxALIGN_LEFT | wxALL, 5);
+    $vbox_sz->Add($user_label, 0, wxALIGN_LEFT | wxALL, 5);
 
-    # A text control for the user’s name
+    # Text control - user
     $self->{user_ctrl} = Wx::TextCtrl->new(
         $self,
         -1,
-        q{},
+        $user,
         [ -1, -1 ],
         [ -1, -1 ],
-        0,
+        wxTE_PROCESS_ENTER,
     );
-    $boxSizer->Add($self->{user_ctrl}, 0, wxGROW | wxALL, 5);
+    $vbox_sz->Add($self->{user_ctrl}, 0, wxGROW | wxALL, 5);
 
-    # Label for the name text control
+    # Label - password
     my $pass_label = Wx::StaticText->new(
         $self,
         -1,
@@ -75,20 +77,20 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $boxSizer->Add($pass_label, 0, wxALIGN_LEFT | wxALL, 5);
+    $vbox_sz->Add($pass_label, 0, wxALIGN_LEFT | wxALL, 5);
 
-    # A text control for the user’s name
+    # Text control - password
     $self->{pass_ctrl} = Wx::TextCtrl->new(
         $self,
         -1,
         q{},
         [ -1, -1 ],
         [ -1, -1 ],
-        wxTE_PASSWORD,
+        wxTE_PASSWORD | wxTE_PROCESS_ENTER,
     );
-    $boxSizer->Add($self->{pass_ctrl}, 0, wxGROW | wxALL, 5);
+    $vbox_sz->Add($self->{pass_ctrl}, 0, wxGROW | wxALL, 5);
 
-    # A dividing line before the OK and Cancel buttons
+    # Line
     my $line = Wx::StaticLine->new(
         $self,
         -1,
@@ -96,13 +98,12 @@ sub new {
         [ -1, -1 ],
         wxLI_HORIZONTAL,
     );
-    $boxSizer->Add($line, 0, wxGROW | wxALL, 5);
+    $vbox_sz->Add($line, 0, wxGROW | wxALL, 5);
 
-    # A horizontal box sizer to contain OK, Cancel
-    my $okCancelBox = Wx::BoxSizer->new(wxHORIZONTAL);
-    $boxSizer->Add($okCancelBox, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    my $ok_cancel_box = Wx::BoxSizer->new(wxHORIZONTAL);
+    $vbox_sz->Add($ok_cancel_box, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    # The OK button
+    # Button - OK
     my $ok = Wx::Button->new(
         $self,
         wxID_OK,
@@ -111,9 +112,9 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $okCancelBox->Add($ok, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    $ok_cancel_box->Add($ok, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    # The Cancel button
+    # Button - Cancel
     my $cancel = Wx::Button->new(
         $self,
         wxID_CANCEL,
@@ -122,43 +123,42 @@ sub new {
         [ -1, -1 ],
         0,
     );
-    $okCancelBox->Add($cancel, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    $ok_cancel_box->Add($cancel, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    $self->SetSizer($topSizer);
-    $self->Fit;
+    $self->SetSizerAndFit($top_sz);
 
     $self->{user_ctrl}->SetFocus();
+    $self->{pass_ctrl}->SetFocus if $user;
+
+    EVT_TEXT_ENTER(
+        $self,
+        -1,
+        sub { $self->login() },
+    );
 
     return $self;
 }
 
-sub dialog_login {
+sub login {
     my $self = shift;
 
     if ( $self->ShowModal == wxID_CANCEL ) {
-        print " cancelled\n";
-        return;
+        print "Cancelled, quiting ...\n";
+        $self->EndModal(1);
+        return wxID_CANCEL;
     }
 
     my $user = $self->{user_ctrl}->GetValue();
     my $pass = $self->{pass_ctrl}->GetValue();
 
     if ( $user && $pass ) {
-        my $cfg = Tpda3::Config->instance();
-        $cfg->user($user);
-        $cfg->pass($pass);
+        $self->{_cfg}->user($user);
+        $self->{_cfg}->pass($pass);
     }
 
-    print "user is $user\n";
-    $self->Destroy;
-}
+    $self->EndModal(1);
 
-# Event handler for wxID_CANCEL
-sub OnCancel {
-    my $self = shift;
-
-    print "login OnCancel called\n";
-    $self->EndModal(wxID_CANCEL);
+    return wxID_OK;
 }
 
 =head1 AUTHOR

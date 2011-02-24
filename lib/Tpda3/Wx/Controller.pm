@@ -94,8 +94,11 @@ sub new {
 
 =head2 start
 
-Check if we have user and pass, if not, show dialog.  Connect to the
-database.
+Check if we have user and pass, if not, show dialog.
+
+...
+
+Connect to the database.
 
 =cut
 
@@ -105,16 +108,13 @@ sub start {
     $self->_log->trace('start');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        my $login_dlg = Tpda3::Wx::Dialog::Login->new($self->_view);
-        $login_dlg->dialog_login();
-        # if ( $login_dlg->ShowModal == wxID_CANCEL ) {
-        #     return;
-        # }
-        # #my $search_term = $login_dlg->GetValue;
-        # $cfg->user($user);
-        # $cfg->pass($pass);
-
-        # $login_dlg->Destroy;
+        my $dlg = Tpda3::Wx::Dialog::Login->new($self->_view);
+        if ( $dlg->login() == wxID_CANCEL ) {
+            print "shut down\t";
+            $self->_view->on_quit; # does not work! ???
+            print " done?\n";
+            # exit; ???
+        }
     }
 
     # Check again ...
@@ -124,6 +124,7 @@ sub start {
         $self->_model->toggle_db_connect();
     }
     else {
+        print "check failed\n";
         $self->_view->on_quit;
     }
 
@@ -164,18 +165,6 @@ my $about = sub {
 
 =head2 _set_event_handlers
 
-The exit sub
-
-=cut
-
-my $exit = sub {
-    my ( $self, $event ) = @_;
-
-    $self->Close( 1 );
-};
-
-=head2 _set_event_handlers
-
 Setup event handlers for the interface.
 
 =cut
@@ -186,7 +175,10 @@ sub _set_event_handlers {
     $self->_log->trace('Setup event handlers');
 
     #- Frame
-    EVT_CLOSE $self->_view, $closeWin;
+    # Deep recursion on subroutine "Tpda3::Wx::View::on_quit" ???
+    # Wx::Event::EVT_CLOSE $self->_view, sub {
+    #     $self->_view->on_quit;
+    # };
 
     #- Base menu
 
@@ -269,7 +261,10 @@ sub _set_event_handlers {
     };
 
     #-- Quit
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, $exit;
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, sub {
+        $self->_view->on_quit;
+    };
+
 
     #-- Make more key bindings (alternative to the menu entries)
 
