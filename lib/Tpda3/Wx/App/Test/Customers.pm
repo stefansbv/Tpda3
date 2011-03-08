@@ -100,67 +100,88 @@ sub run_screen {
 
     my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
 
-    #-- Middle
-
-    my $loco_mid_sz =
+    my $sbox_sz =
       Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $inreg_p, -1, ' Customer ', ), wxVERTICAL );
 
-    my $loco_mid_fgs = Wx::FlexGridSizer->new( 2, 3, 5, 10 );
+    my $grid = Wx::GridBagSizer->new(5, 0);
 
-    $loco_mid_fgs->Add( $lcustomername,   0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ecustomername,   0, wxEXPAND, 5 );
-    $loco_mid_fgs->Add( $ecustomernumber, 0, wxRIGHT,  5 );
+    $grid->Add( 0, 3, gbpos( 0, 0 ), gbspan( 1, 2 ), ); # spacer
 
-    $loco_mid_fgs->Add( $lcontactlastname, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $econtactlastname, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lcustomername,   gbpos( 1, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecustomername,   gbpos( 1, 1 ), gbspan( 1, 1 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecustomernumber, gbpos( 1, 2 ), gbspan( 1, 1 ),
+                wxEXPAND | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lcontactfirstname, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $econtactfirstname, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lcontactlastname, gbpos( 2, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $econtactlastname, gbpos( 2, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lphone, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ephone, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lcontactfirstname, gbpos( 3, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $econtactfirstname, gbpos( 3, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $laddressline1, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $eaddressline1, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lphone, gbpos( 4, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ephone, gbpos( 4, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $laddressline2, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $eaddressline2, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $laddressline1, gbpos( 5, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $eaddressline1, gbpos( 5, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lcity, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ecity, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $laddressline2, gbpos( 6, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $eaddressline2, gbpos( 6, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lstate, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $estate, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lcity, gbpos( 7, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecity, gbpos( 7, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lcountryname, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ecountryname, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( $ecountrycode, 0, wxRIGHT,  5 );
+    $grid->Add( $lstate, gbpos( 8, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $estate, gbpos( 8, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lsalesrepemployee, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $esalesrepemployee, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( $eemployeenumber,   0, wxRIGHT,  5 );
+    $grid->Add( $lcountryname, gbpos( 9, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecountryname, gbpos( 9, 1 ), gbspan( 1, 1 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecountrycode, gbpos( 9, 2 ), gbspan( 1, 1 ),
+                wxEXPAND | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lcreditlimit, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ecreditlimit, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lsalesrepemployee, gbpos( 10, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $esalesrepemployee, gbpos( 10, 1 ), gbspan( 1, 1 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $eemployeenumber, gbpos( 10, 2 ), gbspan( 1, 1 ),
+                wxEXPAND | wxRIGHT, 5 );
 
-    $loco_mid_fgs->Add( $lpostalcode, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $epostalcode, 0, wxEXPAND, 0 );
-    $loco_mid_fgs->Add( 5, 0, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0 );
+    $grid->Add( $lcreditlimit, gbpos( 11, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $ecreditlimit, gbpos( 11, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+
+    $grid->Add( $lpostalcode, gbpos( 12, 0 ), gbspan( 1, 1 ),
+                wxLEFT | wxRIGHT, 5 );
+    $grid->Add( $epostalcode, gbpos( 12, 1 ), gbspan( 1, 2 ),
+                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+
+    $grid->Add( 0, 3, gbpos( 13, 0 ), gbspan( 1, 2 ), ); # spacer
 
     #- Layout
 
-    $loco_mid_fgs->AddGrowableCol( 1, 1 );
-    $loco_mid_sz->Add( $loco_mid_fgs, 0, wxALL | wxGROW, 0 );
-    $top_sz->Add( $loco_mid_sz, 0, wxALL | wxGROW, 5 );
+    $grid->AddGrowableCol(1);
+
+    $sbox_sz->Add( $grid, 0, wxALL | wxGROW, 0 );
+    $top_sz->Add( $sbox_sz, 0, wxALL | wxGROW, 5 );
 
     $inreg_p->SetSizer($top_sz);
 
@@ -186,6 +207,10 @@ sub run_screen {
 
     return;
 }
+
+sub gbpos  { Wx::GBPosition->new(@_) }
+
+sub gbspan { Wx::GBSpan->new(@_) }
 
 =head1 AUTHOR
 
