@@ -98,7 +98,7 @@ sub run_screen {
 
     #--- Layout
 
-    my $loco_main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
+    my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
 
     #-- Middle
 
@@ -160,19 +160,9 @@ sub run_screen {
 
     $loco_mid_fgs->AddGrowableCol( 1, 1 );
     $loco_mid_sz->Add( $loco_mid_fgs, 0, wxALL | wxGROW, 0 );
-    $loco_main_sz->Add( $loco_mid_sz, 0, wxALL | wxGROW, 5 );
+    $top_sz->Add( $loco_mid_sz, 0, wxALL | wxGROW, 5 );
 
-    $loco_main_sz->AddGrowableRow(1);
-    $loco_main_sz->AddGrowableCol(0);
-
-    $inreg_p->SetSizer($loco_main_sz);
-
-    # No visual effect with this:
-    # $inreg_p->SetSizerAndFit($loco_main_sz);
-    # $inreg_p->FitInside();
-    # $gui->SetClientSize($inreg_p->GetSize());
-    #$gui->Fit();
-    #$gui->SetAutoLayout( 1 );
+    $inreg_p->SetSizer($top_sz);
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'customers.conf'
