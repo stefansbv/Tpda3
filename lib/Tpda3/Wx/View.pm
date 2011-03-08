@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
-#use POSIX qw (floor);
+use POSIX qw (floor ceil);
 
 use Log::Log4perl qw(get_logger);
 
@@ -401,9 +401,9 @@ sub _create_statusbar {
 
     $self->{_sb} = $self->CreateStatusBar( 3 );
 
-    $self->SetStatusWidths( 260, -1, -2 );
+    $self->SetStatusWidths( -1, 46, 120 );
 
-    # $self->{_sb}->SetStatusStyles(3, wxSB_RAISED); #  wxSB_RAISED  wxSB_FLAT
+    $self->{_sb}->SetStatusStyles(wxSB_NORMAL, wxSB_RAISED, wxSB_NORMAL); #wxSB_NORMAL, wxSB_RAISED, wxSB_FLAT
 
     return;
 }
@@ -630,13 +630,26 @@ sub set_status {
 
     my $sb = $self->get_statusbar();
 
-    if ( $sb_id eq 'db' ) {
+    if ( $sb_id eq q{db} ) {
+
+        # Database name
         $sb->PushStatusText( $text, 2 ) if defined $text;
     }
-    elsif ($sb_id eq 'ms') {
+    elsif ( $sb_id eq q{ms} ) {
+
+        # Messages
         $sb->PushStatusText( $text, 0 ) if defined $text;
     }
     else {
+
+        # App status
+        # my $cw = $self->GetCharWidth();
+        # my $ln = length $text;
+        # my $cn = () = $text =~ m{i|l}g;
+        # my $pl = int( ( 46 - $cw * $ln ) / 2 );
+        # $pl = ceil $pl / $cw;
+        # print "cw=$cw : ln=$ln : cn=$cn : pl=$pl: $text\n";
+        # $text = sprintf( "%*s", $pl, $text );
         $sb->PushStatusText( $text, 1 ) if defined $text;
     }
 
