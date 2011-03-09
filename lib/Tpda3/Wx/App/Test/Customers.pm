@@ -43,6 +43,8 @@ sub run_screen {
 
     # TODO: use Wx::Perl::TextValidator
 
+    #--- Controls
+
     my $lcustomername = Wx::StaticText->new( $inreg_p, -1, 'Name' );
     my $ecustomername =
         Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
@@ -75,18 +77,25 @@ sub run_screen {
     my $estate = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     my $lcountryname = Wx::StaticText->new( $inreg_p, -1, 'Country' );
-    my $ecountryname =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $ecountryname = Wx::TextCtrl->new(
+        $inreg_p, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxTE_PROCESS_ENTER,
+    );
     my $ecountrycode =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+      Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $lsalesrepemployee =
         Wx::StaticText->new( $inreg_p, -1, 'Sales repres.' );
-    my $esalesrepemployee =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
-
+    my $esalesrepemployee = Wx::TextCtrl->new(
+        $inreg_p, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxTE_PROCESS_ENTER,
+    );
     my $eemployeenumber =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+      Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $lcreditlimit = Wx::StaticText->new( $inreg_p, -1, 'Credit limit' );
     my $ecreditlimit =
@@ -175,8 +184,6 @@ sub run_screen {
                 wxEXPAND | wxLEFT | wxRIGHT, 5 );
 
     $grid->Add( 0, 3, gbpos( 13, 0 ), gbspan( 1, 2 ), ); # spacer
-
-    #- Layout
 
     $grid->AddGrowableCol(1);
 

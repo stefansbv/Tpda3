@@ -1,0 +1,393 @@
+package Tpda3::Wx::Dialog::Search;
+
+use strict;
+use warnings;
+
+use Wx qw{:everything};
+use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER EVT_CHOICE);
+use Wx::Perl::ListCtrl;
+
+use base qw{Wx::Dialog};
+
+=head2 new
+
+Constructor method.
+
+=cut
+
+sub new {
+    my $class = shift;
+
+    return bless( {}, $class );
+}
+
+=head2 search
+
+
+
+=cut
+
+sub search {
+    my ( $self, $view, $para, $filter ) = @_;
+
+    my $dlg = $self->search_dialog_gui($view, $para, $filter);
+
+    return;
+}
+
+=head2 search_dialog_gui
+
+Search dialog GUI
+
+=cut
+
+sub search_dialog_gui {
+    my ( $self, $view, $para, $filter ) = @_;
+
+    my $dlg = $self->SUPER::new(
+        $view,
+        -1,
+        'Dictionary Search',
+        [-1, -1],
+        [-1, -1],
+        wxDEFAULT_DIALOG_STYLE | wxCAPTION,
+    );
+
+    # A top-level sizer
+    my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
+
+    # A second box sizer to give more space around the controls
+    my $box_sz = Wx::BoxSizer->new( wxVERTICAL );
+    $top_sz->Add($box_sz, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+
+    #-- Search controls
+
+    my $search_sz = Wx::BoxSizer->new(wxHORIZONTAL);
+    $box_sz->Add( $search_sz, 0, wxGROW | wxALL, 5 );
+
+    # The searched field name
+    my $field_lb = Wx::StaticText->new(
+        $dlg,
+        -1,
+        q{[ null ]},
+        [ -1, -1 ],
+        [ -1, -1 ],
+    );
+    $search_sz->Add( $field_lb, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    # Search in field ...
+    my $den_label = $para->{lookup} || q{};    # label name or empty string
+    $field_lb->SetLabel("[ $den_label ]");
+
+    # Options for search
+    my $option = Wx::Choice->new(
+        $dlg,
+        -1,
+        [ -1, -1 ],
+        [ 135, -1 ],
+        [ 'contains', 'starts with', 'ends with' ],
+    );
+    $option->SetStringSelection('contains');
+    $search_sz->Add( $option, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+    my $selected;
+
+    EVT_CHOICE $dlg, $option, sub {
+        my $choice = $_[1]->GetSelection;
+        my $text   = $_[1]->GetString;
+        $selected  = $self->choices($text);
+        print "$selected is selected\n";
+    };
+
+    my $search_ctrl = Wx::SearchCtrl->new(
+        $dlg,
+        -1,
+        q{},
+        [  -1, -1 ],
+        [ 200, -1 ],
+        wxTE_PROCESS_ENTER,
+    );
+    $search_sz->Add( $search_ctrl, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+    $search_ctrl->SetFocus();
+
+    EVT_TEXT_ENTER $dlg, $search_ctrl, sub {
+        $self->search_command(
+            $view->_model,
+            $search_ctrl->GetValue,
+            $para,
+            $selected,
+            $filter
+        );                             # selected is hardwired !!! ???
+        $self->{_list}->SetFocus();
+        $self->{_list}->Select(0,1);
+    };
+
+    # The Find button
+    my $find_btn = Wx::Button->new(
+        $dlg,
+        -1,
+        "&Find",
+        [ -1, -1 ],
+        [ 50, -1 ],
+        0,
+    );
+    $search_sz->Add( $find_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+
+    # Enter in search control and Find button both call the
+    # search_command, is there something like 'invoke' in Tk?
+
+    EVT_BUTTON $dlg, $find_btn, sub {
+        $self->search_command(
+            $view->_model,
+            $search_ctrl->GetValue,
+            $para,
+            $selected,
+            $filter
+        );                             # selected is hardwired !!! ???
+        $self->{_list}->SetFocus();
+        $self->{_list}->Select(0,1);
+    };
+
+    #-- List control
+
+    my $list_sz = Wx::BoxSizer->new(wxVERTICAL);
+    $box_sz->Add( $list_sz, 0, wxGROW | wxALL, 5 );
+
+    my $list_sb = Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new(
+            $dlg,
+            -1,
+            ' Search result ',
+        ),
+        wxHORIZONTAL,
+    );
+
+    $self->{_list} = Wx::Perl::ListCtrl->new(
+        $dlg,
+        -1,
+        [ -1, -1 ],
+        [ -1, 200 ],
+        Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
+    );
+
+    #--- List header
+
+    my @header_cols = @{ $para->{columns} };
+    my $header_attr = {};
+    foreach my $col (@header_cols) {
+        foreach my $field ( keys %{$col} ) {
+
+            # Width config is in chars.  Using chars_number x char_width
+            # to compute the with in pixels
+            my $label_len = length $col->{$field}{label};
+            my $width = $col->{$field}{width};
+            $width = $label_len >= $width ? $label_len + 2 : $width;
+            my $char_width = $view->GetCharWidth();
+            $header_attr->{$col} = {
+                label => $col->{$field}{label},
+                width => $width * $char_width,
+                order => $col->{$field}{order},
+            };
+        }
+    }
+    $self->make_list_header( \@header_cols, $header_attr );
+
+    $list_sb->Add( $self->{_list}, 1, wxEXPAND, 0 );
+    $list_sz->Add( $list_sb, 1, wxALL | wxEXPAND, 5 );
+
+    #-- Status
+
+    my $lable_sz = Wx::BoxSizer->new(wxVERTICAL);
+    $box_sz->Add( $lable_sz, 0, wxGROW | wxALL, 5 );
+
+    my $flt_status = Wx::TextCtrl->new(
+        $dlg,
+        -1,
+        "Emma",
+        [ -1, -1 ],
+        [ -1, -1 ],
+        0,
+    );
+    $lable_sz->Add( $flt_status, 0, wxGROW | wxALL, 5 );
+
+    my $msg_status = Wx::TextCtrl->new(
+        $dlg,
+        -1,
+        "Emma",
+        [ -1, -1 ],
+        [ -1, -1 ],
+        0,
+    );
+    $lable_sz->Add( $msg_status, 0, wxGROW | wxALL, 5 );
+
+    # A dividing line before the OK and Cancel buttons
+    my $line = Wx::StaticLine->new(
+        $dlg,
+        -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxLI_HORIZONTAL,
+    );
+    $box_sz->Add( $line, 0, wxGROW | wxALL, 5 );
+
+    #-- Buttons
+
+    my $button_sz = Wx::BoxSizer->new(wxHORIZONTAL);
+    $box_sz->Add( $button_sz, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    # The OK button
+    my $ok_btn = Wx::Button->new(
+        $dlg,
+        wxID_OK,
+        "&Load",
+        [ -1, -1 ],
+        [ -1, -1 ],
+        0,
+    );
+    $button_sz->Add( $ok_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+
+    EVT_BUTTON $dlg, $ok_btn, sub {
+        print "what?\n";
+    };
+
+    # The Cancel button
+    my $cancel_btn = Wx::Button->new(
+        $dlg,
+        wxID_CANCEL,
+        "&Cancel",
+        [ -1, -1 ],
+        [ -1, -1 ],
+        0,
+    );
+    $button_sz->Add( $cancel_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+
+    $dlg->SetSizer($top_sz);
+    $dlg->Fit;
+
+    $dlg->ShowModal();                       # or just Show(1) ???
+
+    return;
+}
+
+=head2 search_command
+
+Lookup in dictionary and display result in list box
+
+=cut
+
+sub search_command {
+    my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
+
+    # Construct where, add findtype info
+    my $params = {};
+    $params->{table} = $para->{table};
+    $params->{where}{ $para->{lookup} } = [ $srcstr, 'contains' ];
+    $params->{options} = $options;
+    $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
+    $params->{order} = $para->{lookup};      # order by lookup field
+
+    my $records = $model->query_dictionary($params);
+
+    $self->{_list}->DeleteAllItems;
+
+    #-- Insert records in list
+
+    my $rowcnt = 0;
+    if ($records) {
+        my $record_cnt = scalar @{$records};
+        my $mesaj = $record_cnt == 1 ? "one record" : "$record_cnt records";
+
+        # $self->refresh_mesg( $mesaj, 'darkgreen' );
+        foreach my $record ( @{$records} ) {
+            my $colmax = scalar @{ $para->{columns} };
+
+            $self->{_list}->InsertStringItem( $rowcnt, 'dummy' );
+            for ( my $col = 0 ; $col < $colmax ; $col++ ) {
+                $self->{_list}->SetItemText( $rowcnt, $col, $record->[$col] );
+            }
+
+            $rowcnt++;
+        }
+    }
+
+    return;
+}
+
+=head2 refresh_mesg
+
+Refresh the message on the screen
+
+=cut
+
+sub refresh_mesg {
+    my ( $self, $text, $color ) = @_;
+
+    $self->{mesg}->configure( -textvariable => \$text ) if defined $text;
+    $self->{mesg}->configure( -foreground   => $color ) if defined $color;
+
+    return;
+}
+
+=head2 refresh_filt
+
+Refresh the filter message on the screen
+
+=cut
+
+sub refresh_filt {
+    my ( $self, $text, $color ) = @_;
+
+    $self->{filt}->configure( -textvariable => \$text ) if defined $text;
+    $self->{filt}->configure( -foreground   => $color ) if defined $color;
+
+    return;
+}
+
+=head2 make_list_header
+
+Make the header for the list control.
+
+=cut
+
+sub make_list_header {
+    my ($self, $header_cols, $header_attr) = @_;
+
+    # Delete all items and all columns
+    $self->{_list}->ClearAll();
+
+    # Header
+    my $colcnt = 0;
+    foreach my $col ( @{$header_cols} ) {
+        my $attr = $header_attr->{$col};
+
+        $self->{_list}->InsertColumn(
+            $colcnt,
+            $attr->{label},
+            wxLIST_FORMAT_LEFT,
+            $attr->{width},
+        );
+
+        $colcnt++;
+    }
+
+    return;
+}
+
+=head2 choices
+
+TODO: refactor this.
+
+=cut
+
+sub choices {
+    my ($self, $choice) = @_;
+
+    my $choices = {
+        'contains'    => 'C',
+        'starts with' => 'S',
+        'ends with'   => 'E',
+    };
+
+    return $choices->{$choice};
+}
+
+1;    # End of Tpda3::Wx::Dialog::Search

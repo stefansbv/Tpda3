@@ -88,7 +88,7 @@ sub _connect {
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set( 1 ); # yes
         $self->_print('Connected');
-        print "Connected\n";
+        # print "Connected\n";
     }
     else {
         $self->get_connection_observable->set( 0 ); # no ;)

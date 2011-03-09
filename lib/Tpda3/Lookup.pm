@@ -36,7 +36,21 @@ sub new {
 
     bless( $self, $type );
 
-    $self->{dlgc} = Tpda3::Tk::Dialog::Search->new();
+    my $cfg = Tpda3::Config->instance();
+    my $widgetset = $cfg->application->{widgetset};
+
+    if ( $widgetset =~ m{wx}ix ) {
+        require Tpda3::Wx::Dialog::Search;
+        $self->{dlg} = Tpda3::Wx::Dialog::Search->new();
+    }
+    elsif ( $widgetset =~ m{tk}ix ) {
+        require Tpda3::Tk::Dialog::Search;
+        $self->{dlg} = Tpda3::Tk::Dialog::Search->new();
+    }
+    else {
+        warn "Unknown widget set!\n";
+        exit;
+    }
 
     return $self;
 }
@@ -48,9 +62,9 @@ Show dialog and return selected record.
 =cut
 
 sub lookup {
-    my ($self, $gui, $table, $filter) = @_;
+    my ($self, $view, $para, $filter) = @_;
 
-    my $record = $self->{dlgc}->run_dialog( $gui, $table, $filter );
+    my $record = $self->{dlg}->search( $view, $para, $filter );
 
     return $record;
 }

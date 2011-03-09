@@ -113,7 +113,7 @@ sub start {
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
         my $pd = Tpda3::Tk::Dialog::Login->new;
-        $pd->run_dialog( $self->_view );
+        $pd->login( $self->_view );
     }
 
     # Check again ...

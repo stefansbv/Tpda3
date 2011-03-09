@@ -26,7 +26,7 @@ our $VERSION = '0.01';
 
     my $fd = Tpda3::Tk::Dialog::Search->new;
 
-    $fd->run_dialog($self);
+    $fd->search($self);
 
 =head1 METHODS
 
@@ -37,24 +37,18 @@ Constructor method
 =cut
 
 sub new {
-    my $type = shift;
+    my $class = shift;
 
-    my $self = {};
-
-    # $self->{src_str}     = q{ };    # A space
-
-    bless( $self, $type );
-
-    return $self;
+    return bless( {}, $class );
 }
 
-=head2 run_dialog
+=head2 search
 
 Show dialog
 
 =cut
 
-sub run_dialog {
+sub search {
     my ( $self, $view, $para, $filter ) = @_;
 
     #--- Dialog Box
@@ -89,8 +83,8 @@ sub run_dialog {
 
     #- Search string
 
-    my $esir = $frm1->Entry( -width => 20, );
-    $esir->grid(
+    my $search_ctrl = $frm1->Entry( -width => 20, );
+    $search_ctrl->grid(
         -row    => 0,
         -column => 2,
         -padx   => 5,
@@ -114,7 +108,7 @@ sub run_dialog {
     );
 
     # Focus on Entry
-    $esir->focus;
+    $search_ctrl->focus;
 
     # Buton cautare
     my $find_button = $frm1->Button(
@@ -124,7 +118,7 @@ sub run_dialog {
             sub {
                 my ($self) = @_;
                 $self->search_command(
-                    $view->_model, $esir->get, $para,
+                    $view->_model, $search_ctrl->get, $para,
                     $selected,     $filter
                 );
             },
@@ -197,7 +191,7 @@ sub run_dialog {
     my $den_label = $para->{lookup} || q{}; # label name or empty string
     $lblcamp->configure( -text => "[ $den_label ]", -foreground => 'blue' );
 
-    $esir->bind(
+    $search_ctrl->bind(
         '<Return>',
         sub {
 
@@ -256,7 +250,7 @@ sub run_dialog {
 
     # $searchopt->configure(
     #     -browsecmd => sub {
-    #         my ( $self, $esir, $sele ) = @_;
+    #         my ( $self, $search_ctrl, $sele ) = @_;
 
     #         # Initialy empty
     #         # $self->{box}->delete( 0, 'end' );

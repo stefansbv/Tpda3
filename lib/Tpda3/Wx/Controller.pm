@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Wx q{:everything};
-use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_BUTTON
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TEXT_ENTER
                  EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
 
 use Class::Unload;
@@ -450,12 +450,11 @@ sub setup_lookup_bindings {
 
         $para->{columns} = [@cols];
 
-        # $ctrl_ref->{$lookup}[1]->bind(
-        #     '<KeyPress-Return>' => sub {
-        #         my $record = $dict->lookup( $self->_view, $para );
-        #         $self->screen_write($record, 'fields');
-        #     }
-        # );
+        EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$lookup}[1], sub {
+            my $record = $dict->lookup( $self->_view, $para );
+            print " $record is returned\n";
+            # $self->screen_write($record, 'fields');
+        };
     }
 
     return;
@@ -812,8 +811,8 @@ sub screen_module_load {
     }
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
-    $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
-    #$self->_view->SetMinSize( Wx::Size->new( $w, $h ) );
+    $self->_view->SetSize( $x, $y, $w, $h ); # wxSIZE_AUTO
+    # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
 
     # Event handlers
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
@@ -832,14 +831,16 @@ sub screen_module_load {
     foreach my $col ( @header_cols ) {
         # Width config is in chars.  Using chars_number x char_width
         # to compute the with in pixels
+        my $label_len = length $fields->{$col}{label};
+        my $width = $fields->{$col}{width};
+        $width = $label_len >= $width ? $label_len + 2 : $width;
         my $char_width = $self->_view->GetCharWidth();
         $header_attr->{$col} = {
             label =>  $fields->{$col}{label},
-            width =>  $fields->{$col}{width} * $char_width,
+            width =>  $width * $char_width,
             order =>  $fields->{$col}{order},
         };
     }
-
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
     # if ($screen_type eq 'tablematrix') {

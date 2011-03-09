@@ -25,7 +25,7 @@ our $VERSION = '0.01';
 
     my $fd = Tpda3::Tk::Dialog::Login->new;
 
-    $fd->run_dialog($self);
+    $fd->login($self);
 
 =head1 METHODS
 
@@ -45,13 +45,13 @@ sub new {
     return $self;
 }
 
-=head2 run_dialog
+=head2 login
 
 Show dialog
 
 =cut
 
-sub run_dialog {
+sub login {
     my ( $self, $mw ) = @_;
 
     $self->{bg}  = $mw->cget('-background');
