@@ -30,7 +30,7 @@ use_ok('Tpda3::Wx::App::Test::Customers');
 
 my $args = {
     cfname => 'test-wx',
-    user   => 'stefan',
+    user   => 'user',
     pass   => 'pass',
 };
 

@@ -5,7 +5,8 @@ use warnings;
 
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
-                 EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED);
+                 EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
+                 EVT_LIST_ITEM_ACTIVATED);
 
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -85,14 +86,24 @@ sub new {
 
 =head2 start
 
-This will run before the main loop.
+This will run before the main loop.  If no user and password than
+start a timer. A event handler for the timer will show the login
+dialog.
+
+Else connect to the database.
 
 =cut
 
 sub start {
     my $self = shift;
 
-    # nothing here, yet
+    if ( !$self->_cfg->user or !$self->_cfg->pass ) {
+        $self->{timer} = Wx::Timer->new( $self->_view, 1 );
+        $self->{timer}->Start(500, 1); # one shot
+    }
+    else {
+        $self->_model->toggle_db_connect();
+    }
 
     return;
 }
@@ -110,17 +121,14 @@ sub start_delayed {
 
     $self->_log->trace('Starting ...');
 
-    if ( !$self->_cfg->user or !$self->_cfg->pass ) {
+    require Tpda3::Wx::Dialog::Login;
+    $self->{dlg} = Tpda3::Wx::Dialog::Login->new();
 
-        require Tpda3::Wx::Dialog::Login;
-        $self->{dlg} = Tpda3::Wx::Dialog::Login->new();
-
-        my $dialog = $self->{dlg}->login_dialog($self->_view);
-        if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
-            my ($user, $pass) = $dialog->get_login();
-            $self->_cfg->user($user);
-            $self->_cfg->pass($pass);
-        }
+    my $dialog = $self->{dlg}->login_dialog($self->_view);
+    if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
+        my ($user, $pass) = $dialog->get_login();
+        $self->_cfg->user($user);
+        $self->_cfg->pass($pass);
     }
 
     if ( $self->_cfg->user and $self->_cfg->pass ) {
@@ -131,6 +139,7 @@ sub start_delayed {
         $self->_view->on_quit;
     }
 
+    $self->{timer}->Destroy();
     $self->_log->trace('Started');
 
     return;
@@ -168,8 +177,8 @@ sub _set_event_handlers {
 
     #- Frame
 
-    $self->{timer} = Wx::Timer->new( $self->_view, 1 );
-    $self->{timer}->Start(1000, 1); # one shot
+    # $self->{timer} = Wx::Timer->new( $self->_view, 1 );
+    # $self->{timer}->Start(1000, 1); # one shot
 
     EVT_TIMER $self->_view, 1, sub { $self->start_delayed(); };
 
@@ -266,6 +275,11 @@ sub _set_event_handlers {
         $self->_view->on_quit;
     };
 
+    #-- List activate record
+    # Doesn't work !!!
+    # EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
+    #     print "activated\n";
+    # };
 
     #-- Make more key bindings (alternative to the menu entries)
 
