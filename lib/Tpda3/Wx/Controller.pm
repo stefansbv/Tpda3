@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use Wx q{:everything};
-use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TEXT_ENTER
-                 EVT_AUINOTEBOOK_PAGE_CHANGED EVT_LIST_ITEM_SELECTED);
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL
+                 EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED);
 
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -452,7 +452,9 @@ sub setup_lookup_bindings {
 
         EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$lookup}[1], sub {
             my $record = $dict->lookup( $self->_view, $para );
-            # $self->screen_write($record, 'fields');
+            # A lookup field can not be cleared in Tpda
+            # TODO: In Tpda3.
+            $self->screen_write($record, 'fields');
         };
     }
 

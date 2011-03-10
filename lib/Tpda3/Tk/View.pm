@@ -891,7 +891,6 @@ sub list_read_selected {
         }
     }
 
-    print "selected_value is $selected_value\n";
     return $selected_value;
 }
 

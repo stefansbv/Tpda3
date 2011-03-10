@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Wx qw{:everything};
-use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER EVT_CHOICE);
+use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER
+                 EVT_CHOICE EVT_LIST_ITEM_ACTIVATED);
 use Wx::Perl::ListCtrl;
 
 use base qw{Wx::Dialog};
@@ -77,19 +78,6 @@ sub search_dialog_gui {
     my $search_sz = Wx::BoxSizer->new(wxHORIZONTAL);
     $box_sz->Add( $search_sz, 0, wxGROW | wxALL, 5 );
 
-    # The searched field name
-    # my $field_lb = Wx::StaticText->new(
-    #     $dlg,
-    #     -1,
-    #     q{[ null ]},
-    #     [ -1, -1 ],
-    #     [ -1, -1 ],
-    # );
-    # $search_sz->Add( $field_lb, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    # Search in field ...
-    # $field_lb->SetLabel("[ $den_label ]");
-
     # Options for search
     my $option = Wx::Choice->new(
         $dlg,
@@ -106,7 +94,6 @@ sub search_dialog_gui {
         my $choice = $_[1]->GetSelection;
         my $text   = $_[1]->GetString;
         $selected  = $self->choices($text);
-        print "$selected is selected\n";
     };
 
     my $search_ctrl = Wx::SearchCtrl->new(
@@ -184,9 +171,11 @@ sub search_dialog_gui {
 
     my @header_cols = @{ $para->{columns} };
     my $header_attr = {};
+    my @columns;
     foreach my $col (@header_cols) {
         foreach my $field ( keys %{$col} ) {
 
+            push @columns, $field;
             # Width config is in chars.  Using chars_number x char_width
             # to compute the with in pixels
             my $label_len = length $col->{$field}{label};
@@ -203,6 +192,8 @@ sub search_dialog_gui {
     }
     $self->make_list_header( \@header_cols, $header_attr );
 
+    $self->{_cols} = \@columns; # store column names
+
     $list_sb->Add( $self->{_list}, 1, wxEXPAND, 0 );
     $list_sz->Add( $list_sb, 1, wxALL | wxEXPAND, 5 );
 
@@ -218,7 +209,7 @@ sub search_dialog_gui {
         [ -1, -1 ],
         [ -1, -1 ],
     );
-    $lable_sz->Add( $self->{_flt}, 0, wxALIGN_CENTRE, 0 );
+    $lable_sz->Add( $self->{_flt}, 0, wxALIGN_RIGHT | wxRIGHT, 10 );
     $self->refresh_filter('filter is off', 'orange') if !defined $filter;
 
     $self->{_msg} = Wx::StaticText->new(
@@ -228,7 +219,7 @@ sub search_dialog_gui {
         [ -1, -1 ],
         [ -1, -1 ],
     );
-    $lable_sz->Add( $self->{_msg}, 0, wxALIGN_CENTRE, 0 );
+    $lable_sz->Add( $self->{_msg}, 0, wxALIGN_LEFT | wxLEFT, 10 );
 
     # A dividing line before the OK and Cancel buttons
     my $line = Wx::StaticLine->new(
@@ -249,15 +240,12 @@ sub search_dialog_gui {
     my $ok_btn = Wx::Button->new(
         $dlg,
         wxID_OK,
-        "&Load",
+        "&OK",
         [ -1, -1 ],
         [ -1, -1 ],
         0,
     );
     $button_sz->Add( $ok_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-
-    # EVT_BUTTON $dlg, $ok_btn, sub {
-    # };
 
     # The Cancel button
     my $cancel_btn = Wx::Button->new(
@@ -272,6 +260,11 @@ sub search_dialog_gui {
 
     $dlg->SetSizer($top_sz);
     $dlg->Fit;
+
+    EVT_LIST_ITEM_ACTIVATED $dlg, $self->{_list}, sub {
+        # TODO: Invoking the button would be better here
+        $ok_btn->SetFocus();
+    };
 
     $dlg->ShowModal();                       # or just Show(1) ???
 
@@ -321,6 +314,40 @@ sub search_command {
     }
 
     return;
+}
+
+=head2 get_selected_item
+
+Return the selected record to caller.
+
+Record is a hashref:
+
+  {
+   fieldname1 => value1,
+   fieldname2 => value2,
+  }
+
+If Cancel is pressed than the hash values are undef.
+
+=cut
+
+sub get_selected_item {
+    my $self = shift;
+
+    my $empty;
+    my $sel_no = $self->{_list}->GetSelectedItemCount();
+    $empty = 1 if ($sel_no <= 0);
+
+    my $row = $self->{_list}->GetSelection();
+
+    my $row_data = {};
+    for ( my $j = 0 ; $j < @{ $self->{_cols} } ; $j++ ) {
+        my $item_text = $empty ? undef
+                               : $self->{_list}->GetItemText( $row, $j );
+        $row_data->{ $self->{_cols}->[$j] } = $item_text;
+    }
+
+    return $row_data;
 }
 
 =head2 refresh_mesg

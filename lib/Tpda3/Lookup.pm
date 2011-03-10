@@ -37,13 +37,14 @@ sub new {
     bless( $self, $type );
 
     my $cfg = Tpda3::Config->instance();
-    my $widgetset = $cfg->application->{widgetset};
+    my $ws  = $cfg->application->{widgetset};
+    $self->{_ws} = $ws;
 
-    if ( $widgetset =~ m{wx}ix ) {
+    if ( $ws =~ m{wx}ix ) {
         require Tpda3::Wx::Dialog::Search;
         $self->{dlg} = Tpda3::Wx::Dialog::Search->new();
     }
-    elsif ( $widgetset =~ m{tk}ix ) {
+    elsif ( $ws =~ m{tk}ix ) {
         require Tpda3::Tk::Dialog::Search;
         $self->{dlg} = Tpda3::Tk::Dialog::Search->new();
     }
@@ -65,6 +66,11 @@ sub lookup {
     my ($self, $view, $para, $filter) = @_;
 
     my $record = $self->{dlg}->search( $view, $para, $filter );
+
+    if ($self->{_ws} =~ m{wx}ix ) {
+        # Workaround for Wx
+        $record = $self->{dlg}->get_selected_item();
+    }
 
     return $record;
 }
