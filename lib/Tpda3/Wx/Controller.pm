@@ -452,7 +452,6 @@ sub setup_lookup_bindings {
 
         EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$lookup}[1], sub {
             my $record = $dict->lookup( $self->_view, $para );
-            print " $record is returned\n";
             # $self->screen_write($record, 'fields');
         };
     }

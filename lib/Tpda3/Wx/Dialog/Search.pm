@@ -18,7 +18,17 @@ Constructor method.
 sub new {
     my $class = shift;
 
-    return bless( {}, $class );
+    my $self = {};
+
+    $self->{choices} = {
+        'contains'    => 'C',
+        'starts with' => 'S',
+        'ends with'   => 'E',
+    };
+
+    bless $self, $class;
+
+    return $self;
 }
 
 =head2 search
@@ -44,10 +54,12 @@ Search dialog GUI
 sub search_dialog_gui {
     my ( $self, $view, $para, $filter ) = @_;
 
+    my $field_name = $para->{lookup} || q{};
+
     my $dlg = $self->SUPER::new(
         $view,
         -1,
-        'Dictionary Search',
+        $field_name,
         [-1, -1],
         [-1, -1],
         wxDEFAULT_DIALOG_STYLE | wxCAPTION,
@@ -66,18 +78,17 @@ sub search_dialog_gui {
     $box_sz->Add( $search_sz, 0, wxGROW | wxALL, 5 );
 
     # The searched field name
-    my $field_lb = Wx::StaticText->new(
-        $dlg,
-        -1,
-        q{[ null ]},
-        [ -1, -1 ],
-        [ -1, -1 ],
-    );
-    $search_sz->Add( $field_lb, 0, wxALIGN_LEFT | wxALL, 5 );
+    # my $field_lb = Wx::StaticText->new(
+    #     $dlg,
+    #     -1,
+    #     q{[ null ]},
+    #     [ -1, -1 ],
+    #     [ -1, -1 ],
+    # );
+    # $search_sz->Add( $field_lb, 0, wxALIGN_LEFT | wxALL, 5 );
 
     # Search in field ...
-    my $den_label = $para->{lookup} || q{};    # label name or empty string
-    $field_lb->SetLabel("[ $den_label ]");
+    # $field_lb->SetLabel("[ $den_label ]");
 
     # Options for search
     my $option = Wx::Choice->new(
@@ -89,7 +100,7 @@ sub search_dialog_gui {
     );
     $option->SetStringSelection('contains');
     $search_sz->Add( $option, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-    my $selected;
+    my $selected = 'contains';  # default
 
     EVT_CHOICE $dlg, $option, sub {
         my $choice = $_[1]->GetSelection;
@@ -116,7 +127,7 @@ sub search_dialog_gui {
             $para,
             $selected,
             $filter
-        );                             # selected is hardwired !!! ???
+        );
         $self->{_list}->SetFocus();
         $self->{_list}->Select(0,1);
     };
@@ -133,7 +144,7 @@ sub search_dialog_gui {
     $search_sz->Add( $find_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
     # Enter in search control and Find button both call the
-    # search_command, is there something like 'invoke' in Tk?
+    # search_command sub, is there something like 'Tk invoke'?
 
     EVT_BUTTON $dlg, $find_btn, sub {
         $self->search_command(
@@ -142,7 +153,7 @@ sub search_dialog_gui {
             $para,
             $selected,
             $filter
-        );                             # selected is hardwired !!! ???
+        );
         $self->{_list}->SetFocus();
         $self->{_list}->Select(0,1);
     };
@@ -181,6 +192,7 @@ sub search_dialog_gui {
             my $label_len = length $col->{$field}{label};
             my $width = $col->{$field}{width};
             $width = $label_len >= $width ? $label_len + 2 : $width;
+            $width = 30 if $width >= 30;
             my $char_width = $view->GetCharWidth();
             $header_attr->{$col} = {
                 label => $col->{$field}{label},
@@ -197,27 +209,26 @@ sub search_dialog_gui {
     #-- Status
 
     my $lable_sz = Wx::BoxSizer->new(wxVERTICAL);
-    $box_sz->Add( $lable_sz, 0, wxGROW | wxALL, 5 );
+    $box_sz->Add( $lable_sz, 0, wxEXPAND | wxALL, 5 );
 
-    my $flt_status = Wx::TextCtrl->new(
+    $self->{_flt} = Wx::StaticText->new(
         $dlg,
         -1,
-        "Emma",
+        q{},
         [ -1, -1 ],
         [ -1, -1 ],
-        0,
     );
-    $lable_sz->Add( $flt_status, 0, wxGROW | wxALL, 5 );
+    $lable_sz->Add( $self->{_flt}, 0, wxALIGN_CENTRE, 0 );
+    $self->refresh_filter('filter is off', 'orange') if !defined $filter;
 
-    my $msg_status = Wx::TextCtrl->new(
+    $self->{_msg} = Wx::StaticText->new(
         $dlg,
         -1,
-        "Emma",
+        q{},
         [ -1, -1 ],
         [ -1, -1 ],
-        0,
     );
-    $lable_sz->Add( $msg_status, 0, wxGROW | wxALL, 5 );
+    $lable_sz->Add( $self->{_msg}, 0, wxALIGN_CENTRE, 0 );
 
     # A dividing line before the OK and Cancel buttons
     my $line = Wx::StaticLine->new(
@@ -245,9 +256,8 @@ sub search_dialog_gui {
     );
     $button_sz->Add( $ok_btn, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
-    EVT_BUTTON $dlg, $ok_btn, sub {
-        print "what?\n";
-    };
+    # EVT_BUTTON $dlg, $ok_btn, sub {
+    # };
 
     # The Cancel button
     my $cancel_btn = Wx::Button->new(
@@ -294,9 +304,10 @@ sub search_command {
     my $rowcnt = 0;
     if ($records) {
         my $record_cnt = scalar @{$records};
-        my $mesaj = $record_cnt == 1 ? "one record" : "$record_cnt records";
+        my $msg = $record_cnt == 1 ? q{one record} : qq{$record_cnt records};
+        $msg = q{limited to } . $msg if $record_cnt >= 50;
 
-        # $self->refresh_mesg( $mesaj, 'darkgreen' );
+        $self->refresh_message( $msg, 'darkgreen' );
         foreach my $record ( @{$records} ) {
             my $colmax = scalar @{ $para->{columns} };
 
@@ -314,30 +325,30 @@ sub search_command {
 
 =head2 refresh_mesg
 
-Refresh the message on the screen
+Refresh the message on the screen.
 
 =cut
 
-sub refresh_mesg {
+sub refresh_message {
     my ( $self, $text, $color ) = @_;
 
-    $self->{mesg}->configure( -textvariable => \$text ) if defined $text;
-    $self->{mesg}->configure( -foreground   => $color ) if defined $color;
+    $self->{_msg}->SetLabel($text) if defined $text;
+    $self->{_msg}->SetForegroundColour( Wx::Colour->new($color) ) if $color;
 
     return;
 }
 
-=head2 refresh_filt
+=head2 refresh_filter
 
-Refresh the filter message on the screen
+Refresh the filter message on the screen.
 
 =cut
 
-sub refresh_filt {
+sub refresh_filter {
     my ( $self, $text, $color ) = @_;
 
-    $self->{filt}->configure( -textvariable => \$text ) if defined $text;
-    $self->{filt}->configure( -foreground   => $color ) if defined $color;
+    $self->{_flt}->SetLabel($text) if defined $text;
+    $self->{_flt}->SetForegroundColour( Wx::Colour->new($color) ) if $color;
 
     return;
 }
@@ -374,20 +385,14 @@ sub make_list_header {
 
 =head2 choices
 
-TODO: refactor this.
+Return choice.
 
 =cut
 
 sub choices {
     my ($self, $choice) = @_;
 
-    my $choices = {
-        'contains'    => 'C',
-        'starts with' => 'S',
-        'ends with'   => 'E',
-    };
-
-    return $choices->{$choice};
+    return $self->{choices}{$choice};
 }
 
 1;    # End of Tpda3::Wx::Dialog::Search
