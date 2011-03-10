@@ -32,27 +32,13 @@ sub new {
     return $self;
 }
 
-=head2 search
-
-
-
-=cut
-
-sub search {
-    my ( $self, $view, $para, $filter ) = @_;
-
-    my $dlg = $self->search_dialog_gui($view, $para, $filter);
-
-    return;
-}
-
-=head2 search_dialog_gui
+=head2 search_dialog
 
 Search dialog GUI
 
 =cut
 
-sub search_dialog_gui {
+sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
 
     my $field_name = $para->{lookup} || q{};
@@ -266,9 +252,7 @@ sub search_dialog_gui {
         $ok_btn->SetFocus();
     };
 
-    $dlg->ShowModal();                       # or just Show(1) ???
-
-    return;
+    return $dlg;
 }
 
 =head2 search_command
@@ -412,7 +396,7 @@ sub make_list_header {
 
 =head2 choices
 
-Return choice.
+Return codified choice.
 
 =cut
 

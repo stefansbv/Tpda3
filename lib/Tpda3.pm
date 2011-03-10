@@ -120,7 +120,7 @@ sub _init {
         exit;
     }
 
-    $self->{gui}->start();
+    $self->{gui}->start();                   # stuff to run at start
 
     return;
 }
@@ -134,11 +134,11 @@ Execute the application
 sub run {
     my $self = shift;
 
-    # $self->{_log}->info('Run ...');
+    # $self->{_log}->trace('Run ...');
 
     $self->{gui}{_app}->MainLoop();
 
-    # $self->{_log}->info('Stop.');
+    # $self->{_log}->trace('Stop.');
 
     return;
 }

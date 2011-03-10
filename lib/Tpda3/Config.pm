@@ -112,8 +112,6 @@ sub config_main_load {
     Log::Log4perl->init($log_qfn);
 
     $self->{_log} = get_logger();
-    $self->{_log}->level($TRACE);            # initial log level
-
     $self->{_log}->info('-------------------------');
     $self->{_log}->info('*** NEW SESSION BEGIN ***');
 

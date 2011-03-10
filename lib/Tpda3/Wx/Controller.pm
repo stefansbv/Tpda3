@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Wx q{:everything};
-use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
                  EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED);
 
 use Class::Unload;
@@ -16,7 +16,6 @@ use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Wx::App;
 use Tpda3::Wx::View;
-use Tpda3::Wx::Dialog::Login;
 use Tpda3::Lookup;
 
 =head1 NAME
@@ -86,35 +85,50 @@ sub new {
 
 =head2 start
 
-Check if we have user and pass, if not, show dialog.
-
-Connect to the database.
+This will run before the main loop.
 
 =cut
 
 sub start {
     my $self = shift;
 
+    # nothing here, yet
+
+    return;
+}
+
+=head2 start_delayed
+
+Check if we have user and pass, if not, show dialog.
+
+Connect to the database.
+
+=cut
+
+sub start_delayed {
+    my $self = shift;
+
     $self->_log->trace('Starting ...');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        my $dlg = Tpda3::Wx::Dialog::Login->new($self->_view);
-        if ( $dlg->login() == wxID_CANCEL ) {
 
-            # Close the application ...
+        require Tpda3::Wx::Dialog::Login;
+        $self->{dlg} = Tpda3::Wx::Dialog::Login->new();
 
-            return;
+        my $dialog = $self->{dlg}->login_dialog($self->_view);
+        if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
+            my ($user, $pass) = $dialog->get_login();
+            $self->_cfg->user($user);
+            $self->_cfg->pass($pass);
         }
     }
 
-    # Check again ...
     if ( $self->_cfg->user and $self->_cfg->pass ) {
-
         # Connect to database
         $self->_model->toggle_db_connect();
     }
     else {
-        $self->_view->on_quit;  # does not work! because no main loop yet?
+        $self->_view->on_quit;
     }
 
     $self->_log->trace('Started');
@@ -153,6 +167,12 @@ sub _set_event_handlers {
     $self->_log->trace('Setup event handlers');
 
     #- Frame
+
+    $self->{timer} = Wx::Timer->new( $self->_view, 1 );
+    $self->{timer}->Start(1000, 1); # one shot
+
+    EVT_TIMER $self->_view, 1, sub { $self->start_delayed(); };
+
     # Deep recursion on subroutine "Tpda3::Wx::View::on_quit" ???
     # Wx::Event::EVT_CLOSE $self->_view, sub {
     #     $self->_view->on_quit;

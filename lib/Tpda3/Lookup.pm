@@ -15,7 +15,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -65,11 +65,18 @@ Show dialog and return selected record.
 sub lookup {
     my ($self, $view, $para, $filter) = @_;
 
-    my $record = $self->{dlg}->search( $view, $para, $filter );
-
-    if ($self->{_ws} =~ m{wx}ix ) {
-        # Workaround for Wx
-        $record = $self->{dlg}->get_selected_item();
+    my $record;
+    if ( $self->{_ws} =~ m{tk}ix ) {
+        $record = $self->{dlg}->search( $view, $para, $filter );
+    }
+    elsif ( $self->{_ws} =~ m{wx}ix ) {
+        my $dialog = $self->{dlg}->search_dialog( $view, $para, $filter );
+        if ( $dialog->ShowModal == &Wx::wxID_CANCEL ) {
+            print "Dialog cancelled\n";
+        }
+        else {
+            $record = $self->{dlg}->get_selected_item();
+        }
     }
 
     return $record;
