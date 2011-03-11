@@ -3,6 +3,8 @@ package Tpda3::Wx::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
                  EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
@@ -274,6 +276,16 @@ sub _set_event_handlers {
         }
     };
 
+    #-- Reload
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_rr')->GetId, sub {
+        if ( $self->_model->is_mode('edit') ) {
+            $self->record_reload();
+        }
+        else {
+            print "WARN: Not in edit mode\n";
+        }
+    };
+
     #-- Add mode
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId, sub {
         $self->toggle_mode_add();
@@ -319,7 +331,7 @@ sub _set_event_handler_nb {
             $self->set_app_mode('sele');
         }
         else {
-            if ( $self->record_load ) {
+            if ( $self->record_load_new ) {
                 $self->set_app_mode('edit');
             }
             else {
@@ -344,22 +356,23 @@ sub _set_event_handler_screen {
     my $self = shift;
 
     $self->_log->trace('Setup event handler for screen');
-    #- screen ToolBar
 
     #-- Enter on list item activates record page
     EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
         $self->_view->get_notebook->SetSelection(0); # 'rec'
     };
 
+    #- screen ToolBar
+
     # #-- Add row button
-    # $self->{_scrobj}->get_toolbar_btn('tb2ad')->bind(
+    # $self->_screen->get_toolbar_btn('tb2ad')->bind(
     #     '<ButtonRelease-1>' => sub {
     #         $self->add_tmatrix_row();
     #     }
     # );
 
     # #-- Remove row button
-    # $self->{_scrobj}->get_toolbar_btn('tb2rm')->bind(
+    # $self->_screen->get_toolbar_btn('tb2rm')->bind(
     #     '<ButtonRelease-1>' => sub {
     #         $self->remove_tmatrix_row();
     #     }
@@ -433,7 +446,7 @@ sub setup_lookup_bindings {
     my $self = shift;
 
     my $dict     = Tpda3::Lookup->new;
-    my $ctrl_ref = $self->{_scrobj}->get_controls();
+    my $ctrl_ref = $self->_screen->get_controls();
     my $bindings = $self->_scrcfg->bindings;
 
     $self->_log->trace('Setup binding for configured widgets');
@@ -524,7 +537,7 @@ sub set_app_mode {
 
     $self->toggle_interface_controls;
 
-    return unless ref $self->{_scrobj};
+    return unless ref $self->_screen;
 
     # TODO: Should this be called on all screens?
     # $self->toggle_screen_interface_controls;
@@ -835,7 +848,7 @@ sub screen_module_load {
     $self->{_scrobj}->run_screen($nb);
     $self->_log->trace("Show screen $module");
 
-    my $screen_type = $self->_scrcfg->screen->{type};
+    my $screen_type = $self->_scrcfg->{screen}{type};
 
     # Load instance config
     $self->_cfg->config_load_instance();
@@ -846,11 +859,11 @@ sub screen_module_load {
     if ( $self->_cfg->can('geometry') ) {
         $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
         unless ($geom) {
-            $geom = $self->_scrcfg->screen->{geom};
+            $geom = $self->_scrcfg->{screen}{geom};
         }
     }
     else {
-        $geom = $self->_scrcfg->screen->{geom};
+        $geom = $self->_scrcfg->{screen}{geom};
     }
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
@@ -924,7 +937,7 @@ sub screen_lists_populate {
     my $self = shift;
 
     # Entry objects hash
-    my $ctrl_ref = $self->{_scrobj}->get_controls();
+    my $ctrl_ref = $self->_screen->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
@@ -1016,8 +1029,66 @@ sub toggle_screen_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $state = $attribs->{$name}{state}{$mode};
-        $self->{_scrobj}->enable_tool($name, $state);
+        $self->_screen->enable_tool($name, $state);
     }
+
+    return;
+}
+
+=head2 record_load_new
+
+Load a new record.
+
+The (primary) key field value is col0 from the selected item in the
+list control on the I<List> page.
+
+=cut
+
+sub record_load_new {
+    my $self = shift;
+
+
+    my $pk_id = $self->_view->list_read_selected();
+    if ( ! defined $pk_id ) {
+        $self->_view->set_status('Nothing selected','ms');
+        return;
+    }
+
+    my $ret = $self->record_load($pk_id);
+
+    return $ret;
+}
+
+=head2 record_reload
+
+Reload the curent record.
+
+Reads the contents of the (primary) key field, retrieves the record from
+the database table and loads the record data in the controls.
+
+The control that holds the key record has to be readonly, so the user
+can't delete it's content.
+
+=cut
+
+sub record_reload {
+    my $self = shift;
+
+    # Table metadata
+    my $table_hr = $self->_scrcfg->maintable;
+    my $pk_col   = $table_hr->{pkcol}{name};
+
+    my $ctrl_ref = $self->_screen->get_controls();
+    $self->control_read_e($ctrl_ref, $pk_col);
+
+    my $pk_id = $self->{scrdata}{$pk_col};
+    if ( ! defined $pk_id ) {
+        $self->_view->set_status('Reload failed!','ms');
+        return;
+    }
+
+    $self->screen_write(undef, 'clear'); # clear the controls
+    $self->record_load($pk_id);
 
     return;
 }
@@ -1029,14 +1100,7 @@ Load the selected record in screen
 =cut
 
 sub record_load {
-    my $self = shift;
-
-    # Retrieve col0 from the selected value
-    my $value = $self->_view->list_read_selected();
-    if ( ! defined $value ) {
-        $self->_view->set_status('Nothing selected','ms');
-        return;
-    }
+    my ($self, $pk_id) = @_;
 
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
@@ -1046,28 +1110,28 @@ sub record_load {
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $table_hr->{view};   # use view instead of table
-    $params->{where}{$pk_col} = [ $value, $fields_hr->{$pk_col}{findtype} ];
+    $params->{where}{$pk_col} = [ $pk_id, $fields_hr->{$pk_col}{findtype} ];
     $params->{pkcol} = $pk_col;
 
     my $record = $self->_model->query_record($params);
 
     $self->screen_write($record);
 
-    my $screen_type = $self->_scrcfg->screen->{type};
-    if ($screen_type eq 'tablematrix') {
+    # my $screen_type = $self->_scrcfg->{screen}{type};
+    # if ($screen_type eq 'tablematrix') {
 
-        # Table metadata
-        my $table_hr  = $self->_scrcfg->table;
-        my $fields_hr = $table_hr->{columns};
+    #     # Table metadata
+    #     my $table_hr  = $self->_scrcfg->table;
+    #     my $fields_hr = $table_hr->{columns};
 
-        # Construct where, add findtype info
-        $params->{table} = $table_hr->{view};
-        $params->{fkcol} = $table_hr->{fkcol}{name};
+    #     # Construct where, add findtype info
+    #     $params->{table} = $table_hr->{view};
+    #     $params->{fkcol} = $table_hr->{fkcol}{name};
 
-        my $records = $self->_model->query_record_batch($params);
+    #     my $records = $self->_model->query_record_batch($params);
 
-        $self->control_tmatrix_write($records);
-    }
+    #     $self->control_tmatrix_write($records);
+    # }
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
@@ -1184,7 +1248,7 @@ sub screen_read {
      # Initialize
      $self->{scrdata} = {};
 
-     my $ctrl_ref = $self->{_scrobj}->get_controls();
+     my $ctrl_ref = $self->_screen->get_controls();
      return unless scalar keys %{$ctrl_ref};
 
      # Scan and write to controls
@@ -1454,7 +1518,7 @@ sub screen_write {
 
     # $self->_log->trace("Write '$option' screen controls");
 
-    my $ctrl_ref = $self->{_scrobj}->get_controls();
+    my $ctrl_ref = $self->_screen->get_controls();
 
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
@@ -1529,7 +1593,7 @@ Write data to TableMatrix widget
 # sub control_tmatrix_write {
 #     my ( $self, $records ) = @_;
 
-#     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $tm_object = $self->_screen->get_tm_controls('tm1');
 #     my $xtvar;
 #     if ($tm_object) {
 #         $xtvar = $tm_object->cget( -variable );
@@ -1634,7 +1698,7 @@ sub controls_state_set {
 
     $self->_log->trace("Screen controls state is '$state'");
 
-    my $ctrl_ref = $self->{_scrobj}->get_controls();
+    my $ctrl_ref = $self->_screen->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
     my $control_states = $self->control_states($state);
@@ -1653,14 +1717,14 @@ sub controls_state_set {
         my $bg_color = $bkground;
         $bg_color = $fld_cfg->{bgcolor}
             if $bkground eq 'from_config';
-        $bg_color = $self->{_scrobj}->get_bgcolor()
+        $bg_color = $self->_screen->get_bgcolor()
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
                 $ctrl_state = 0;             # 'disabled'
-                $bg_color   = $self->{_scrobj}->get_bgcolor();
+                $bg_color   = $self->_screen->get_bgcolor();
             }
         }
 
@@ -1797,7 +1861,7 @@ Table matrix methods.  Add TableMatrix row.
 # sub add_tmatrix_row {
 #     my ($self, $valori_ref) = @_;
 
-#     my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xt = $self->_screen->get_tm_controls('tm1');
 
 #     unless ( $self->_model->is_mode('add')
 #                  || $self->_model->is_mode('edit') ) {
@@ -1839,7 +1903,7 @@ Delete TableMatrix row
 # sub remove_tmatrix_row {
 #     my $self = shift;
 
-#     my $xt = $self->{_scrobj}->get_tm_controls('tm1');
+#     my $xt = $self->_screen->get_tm_controls('tm1');
 
 #     unless ( $self->_model->is_mode('add')
 #                  || $self->_model->is_mode('edit') ) {
