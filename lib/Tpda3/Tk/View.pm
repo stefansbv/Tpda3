@@ -799,9 +799,10 @@ sub list_populate {
     $self->{_rc}->see('active');
     $self->{progres} = 0;
 
-    # Raise List tab if found
+    # Raise List tab if found and set focus to list
     if ($record_count > 0) {
         $self->{_nb}->raise('lst');
+        $self->{_rc}->focus;
     }
 
     return $record_count;

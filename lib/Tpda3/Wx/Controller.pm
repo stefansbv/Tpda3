@@ -266,7 +266,7 @@ sub _set_event_handlers {
         }
     };
 
-    #-- Count
+    #-- Find count
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId, sub {
         if ( $self->_model->is_mode('find') ) {
             $self->record_find_count;
@@ -340,6 +340,11 @@ sub _set_event_handler_nb {
         }
     };
 
+    #-- Enter on list item activates record page
+    EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
+        $self->_view->get_notebook->SetSelection(0); # 'rec'
+    };
+
     return;
 }
 
@@ -356,11 +361,6 @@ sub _set_event_handler_screen {
     my $self = shift;
 
     $self->_log->trace('Setup event handler for screen');
-
-    #-- Enter on list item activates record page
-    EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
-        $self->_view->get_notebook->SetSelection(0); # 'rec'
-    };
 
     #- screen ToolBar
 
