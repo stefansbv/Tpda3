@@ -198,7 +198,6 @@ sub _set_event_handlers {
     };
 
     #-- Toggle mode find
-
     EVT_MENU $self->_view, 50011, sub {
         if ( !$self->_model->is_mode('add') ) {
             $self->toggle_mode_find();
@@ -206,7 +205,6 @@ sub _set_event_handlers {
     };
 
     #-- Execute search
-
     EVT_MENU $self->_view, 50012, sub {
         if ( $self->_model->is_mode('find') ) {
             $self->record_find_execute;
@@ -215,6 +213,17 @@ sub _set_event_handlers {
             print "WARN: Not in find mode\n";
         }
     };
+
+    #-- Execute count
+    EVT_MENU $self->_view, 50013, sub {
+        if ( $self->_model->is_mode('find') ) {
+            $self->record_find_count;
+        }
+        else {
+            print "WARN: Not in find mode\n";
+        }
+    };
+
 
     #- Custom application menu from menu.yml
 
@@ -274,12 +283,6 @@ sub _set_event_handlers {
     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, sub {
         $self->_view->on_quit;
     };
-
-    #-- List activate record
-    # Doesn't work !!!
-    # EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
-    #     print "activated\n";
-    # };
 
     #-- Make more key bindings (alternative to the menu entries)
 
@@ -343,19 +346,24 @@ sub _set_event_handler_screen {
     $self->_log->trace('Setup event handler for screen');
     #- screen ToolBar
 
-    #-- Add row button
-    $self->{_scrobj}->get_toolbar_btn('tb2ad')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->add_tmatrix_row();
-        }
-    );
+    #-- Enter on list item activates record page
+    EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
+        $self->_view->get_notebook->SetSelection(0); # 'rec'
+    };
 
-    #-- Remove row button
-    $self->{_scrobj}->get_toolbar_btn('tb2rm')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->remove_tmatrix_row();
-        }
-    );
+    # #-- Add row button
+    # $self->{_scrobj}->get_toolbar_btn('tb2ad')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->add_tmatrix_row();
+    #     }
+    # );
+
+    # #-- Remove row button
+    # $self->{_scrobj}->get_toolbar_btn('tb2rm')->bind(
+    #     '<ButtonRelease-1>' => sub {
+    #         $self->remove_tmatrix_row();
+    #     }
+    # );
 
     return;
 }
@@ -850,7 +858,7 @@ sub screen_module_load {
     # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
 
     # Event handlers
-    $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    $self->_set_event_handler_screen(); # if $screen_type eq 'tablematrix';
     #-- Lookup bindings
     $self->setup_lookup_bindings();
 
@@ -1159,7 +1167,7 @@ sub record_find_count {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_model->count_records($params);
+    $self->_model->records_count($params);
 
     return;
 }

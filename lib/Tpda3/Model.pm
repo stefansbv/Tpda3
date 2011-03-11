@@ -222,13 +222,13 @@ sub get_appmode {
     return $self->get_appmode_observable->get;
 }
 
-=head2 count_records
+=head2 records_count
 
 Count records in table
 
 =cut
 
-sub count_records {
+sub records_count {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
