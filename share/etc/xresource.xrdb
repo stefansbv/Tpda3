@@ -1,7 +1,7 @@
 !----------------------------------------------------
 ! Common settings
 !----------------------------------------------------
-!*font								: Helvetica -12
+*font								: Helvetica -14
 !*font								: {Nimbus Sans L} -12
 !*font								: Arvo 10
 !*font								: {dejavu serif} -13
