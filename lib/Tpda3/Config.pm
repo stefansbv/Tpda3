@@ -129,6 +129,7 @@ sub config_main_load {
     my $main_hr = {
         cfpath  => $configpath,
         cfapps  => catdir( $configpath, 'apps' ),
+        cfetc   => catdir( $configpath, 'etc' ),
         cfiface => $maincfg->{interface},
         cfapp   => $maincfg->{application},
         cfgen   => $maincfg->{general},

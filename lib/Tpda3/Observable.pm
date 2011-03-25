@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Tpda3::Observable - Obrserver patern implementation
+Tpda3::Observable - Observer patern implementation
 
 =head1 VERSION
 

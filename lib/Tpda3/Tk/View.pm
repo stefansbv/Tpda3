@@ -8,7 +8,7 @@ use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
 
-use File::Spec::Functions qw(abs2rel);
+use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog Checkbutton
                    LabFrame MListbox JComboBox Font);
@@ -60,7 +60,18 @@ sub new {
     $self->{_cfg} = Tpda3::Config->instance();
 
     $self->title(" Tpda3 ");
-    $self->optionReadfile('./xresource.xrdb', 'userDefault');
+
+    # Load resource file, if found
+    my $resource = catfile($self->{_cfg}->cfetc, 'xresource.xrdb');
+    if ($resource) {
+        if (-f $resource) {
+            $self->log_msg("II: Reading resource from '$resource'");
+            $self->optionReadfile($resource, 'widgetDefault');
+        }
+        else {
+            $self->log_msg("II: Resource not found: '$resource'");
+        }
+    }
 
     #-- Menu
     $self->_create_menu();
@@ -207,7 +218,9 @@ sub set_geometry {
 
 =head2 log_msg
 
-Log messages
+Log messages.
+
+TODO: get_logger only once.
 
 =cut
 
