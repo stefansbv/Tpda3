@@ -222,13 +222,13 @@ sub get_appmode {
     return $self->get_appmode_observable->get;
 }
 
-=head2 records_count
+=head2 query_records_count
 
 Count records in table
 
 =cut
 
-sub records_count {
+sub query_records_count {
     my ( $self, $data_hr ) = @_;
 
     my $table = $data_hr->{table};
@@ -488,7 +488,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

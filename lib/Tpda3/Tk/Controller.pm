@@ -1211,7 +1211,7 @@ sub record_find_count {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_model->records_count($params);
+    $self->_model->query_records_count($params);
 
     return;
 }

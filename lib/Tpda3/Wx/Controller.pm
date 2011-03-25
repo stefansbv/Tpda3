@@ -1231,7 +1231,7 @@ sub record_find_count {
     $params->{table} = $table_hr->{view};   # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
-    $self->_model->records_count($params);
+    $self->_model->query_records_count($params);
 
     return;
 }
@@ -1975,7 +1975,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 - 2011 Stefan Suciu.
+Copyright 2010-2011 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
