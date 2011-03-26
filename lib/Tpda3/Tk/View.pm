@@ -87,6 +87,8 @@ sub new {
 
     $self->set_geometry_main();
 
+    $self->define_dialogs();
+
     return $self;
 }
 
@@ -603,6 +605,34 @@ sub destroy_notebook {
     my $self = shift;
 
     $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
+
+    return;
+}
+
+=head2 define_dialogs
+
+Define some dialogs
+
+=cut
+
+sub define_dialogs {
+    my $self = shift;
+
+    $self->{dialog1} = $self->Dialog(
+        -text           => 'Nothing to search for!',
+        -bitmap         => 'info',
+        -title          => 'Info',
+        -default_button => 'Ok',
+        -buttons        => [qw/Ok/]
+    );
+
+    $self->{dialog2} = $self->Dialog(
+        -text           => 'Add record?',
+        -bitmap         => 'question',
+        -title          => 'Insert record',
+        -default_button => 'Ok',
+        -buttons        => [qw/Ok Cancel/]
+    );
 
     return;
 }

@@ -5,18 +5,24 @@
 appmenubar:
   menu_user:
     id:    1001
-    label: Sample
-    underline: 0
+    label: Test
+    underline: 2
     popup:
       1:
-        name: Menu1
-        label: Menu 1
+        name: Products
+        label: Products
         underline: 0
         sep: none
         key: ~
       2:
-        name: Menu2
-        label: Menu 2
+        name: Customers
+        label: Customers
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: Orders
+        label: Orders
         underline: 0
         sep: none
         key: ~

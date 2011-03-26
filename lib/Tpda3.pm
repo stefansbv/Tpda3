@@ -100,6 +100,11 @@ sub _init {
 
     my $widgetset = $cfg->application->{widgetset};
 
+    unless ($widgetset) {
+        print "Required configuration not found: 'widgetset'\n";
+        exit;
+    }
+
     if ( $widgetset =~ m{wx}ix ) {
         require Tpda3::Wx::Controller;
         $self->{gui} = Tpda3::Wx::Controller->new();

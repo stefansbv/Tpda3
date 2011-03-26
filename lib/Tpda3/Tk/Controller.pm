@@ -3,6 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -246,6 +248,13 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_ad')->bind(
         '<ButtonRelease-1>' => sub {
             $self->toggle_mode_add();
+        }
+    );
+
+    #-- Save record
+    $self->_view->get_toolbar_btn('tb_sv')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->save_record();
         }
     );
 
@@ -546,7 +555,15 @@ Return true if a record is loaded in screen.
 sub is_record {
     my $self = shift;
 
-    return;
+    # Check screen
+    $self->screen_read();
+
+    my $is_record = scalar keys %{ $self->{scrdata} };
+
+    # my $yesno = $is_record ? "Yes" : "No";
+    # print "Has records? $yesno!\n";
+
+    return $is_record;
 }
 
 =head2 on_screen_mode_idle
@@ -1049,6 +1066,8 @@ can't delete it's content.
 sub record_reload {
     my $self = shift;
 
+    $self->screen_read();
+
     # Table metadata
     my $table_hr = $self->_scrcfg->maintable;
     my $pk_col   = $table_hr->{pkcol}{name};
@@ -1079,7 +1098,7 @@ sub record_load {
 
     my $value = $self->_view->list_read_selected();
 
-    if ( ! defined $value ) {
+    if ( !defined $value ) {
         print "No value selected in list";
         return;
     }
@@ -1937,6 +1956,91 @@ sub renum_tmatrix_row {
             $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
         }
     }
+
+    return;
+}
+
+=head2
+
+Save record.
+
+=cut
+
+sub save_record {
+    my $self = shift;
+
+    if ( !$self->is_record() ) {
+        print "Empty screen!\n";
+        return;
+    }
+
+    # Table metadata
+    my $table_hr  = $self->_scrcfg->maintable;
+    my $fields_hr = $table_hr->{columns};
+    my $pk_col    = $table_hr->{pkcol}{name};
+
+    # Construct where, add findtype info
+    my $params = {};
+    $params->{table} = $table_hr->{name};    # table name
+    $params->{pkcol} = $pk_col;
+
+    if ($self->_model->is_mode('add')) {
+
+        # Ask first
+        my $answer = $self->_view->{dialog2}->Show();
+        if ( $answer !~ /Ok/i ) {
+            $self->_view->set_status('Canceled','ms','blue');
+            return;
+        }
+
+        my $pk_id =
+          $self->_model->table_record_insert( $params, $self->{scrdata} );
+
+        if ($pk_id) {
+            $self->screen_write( { $pk_col => $pk_id }, 'fields' ); # update ID
+            $self->set_app_mode('edit');
+            $self->_view->set_status('New record','ms','darkgreen');
+        }
+        else {
+            $self->_view->set_status('Failed','ms','darkred');
+            return;
+        }
+
+        # TODO: Insert in List
+    }
+    elsif ( $self->_model->is_mode('edit') ) {
+
+        my $pk_id = $self->{scrdata}{$pk_col};
+        if ( ! defined $pk_id ) {
+            $self->_view->set_status('No screen data?','ms');
+            return;
+        }
+
+        $params->{where}{$pk_col} = [ $pk_id, $fields_hr->{$pk_col}{findtype} ];
+
+        my $pk_ref =
+          $self->_model->table_record_update( $params, $self->{scrdata} );
+    }
+    else {
+        $self->_view->set_status('Not in edit or add mode!','ms','darkred');
+        return;
+    }
+
+    # my $screen_type = $self->_scrcfg->screen->{type};
+    # if ($screen_type eq 'tablematrix') {
+
+    #     # Table metadata
+    #     my $table_hr  = $self->_scrcfg->table;
+    #     my $fields_hr = $table_hr->{columns};
+
+    #     # Construct where, add findtype info
+    #     $params->{table} = $table_hr->{view};
+    #     $params->{fkcol} = $table_hr->{fkcol}{name};
+
+    #     my $records = $self->_model->query_record_batch($params);
+
+    #     $self->control_tmatrix_write($records);
+    # }
 
     return;
 }

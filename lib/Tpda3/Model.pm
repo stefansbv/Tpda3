@@ -2,6 +2,8 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -474,6 +476,88 @@ sub get_codes {
     my $codes   = $codings->get_coding_init($field, $para);
 
     return $codes;
+}
+
+=head2 table_record_save
+
+Save screen data to a record in the DB.
+
+=cut
+
+sub table_record_update {
+    my ( $self, $data_hr, $record ) = @_;
+
+    my $table = $data_hr->{table};
+    my $pkcol = $data_hr->{pkcol};
+
+    my $where = $self->build_where($data_hr);
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
+
+    # print "SQL : $stmt\n";
+    # print Dumper( \@bind);
+
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return 1;
+}
+
+=head2 table_record_insert
+
+Insert new record in the DB.
+
+=cut
+
+sub table_record_insert {
+    my ( $self, $data_hr, $record ) = @_;
+
+    my $table = $data_hr->{table};
+    my $pkcol = $data_hr->{pkcol};
+
+    print Dumper( $data_hr);
+    my $sql = SQL::Abstract->new();
+
+    # Postgres version 8.2 or greater: RETURNING
+    # Firebird version 2.1 or greater: RETURNING ???
+
+    my ( $stmt, @bind ) = $sql->insert( $table, $record, {returning => $pkcol} );
+
+    print "SQL : $stmt\n";
+    print Dumper( \@bind);
+
+    my $pk_id;
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+        $pk_id = $sth->fetch()->[0];
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $pk_id;
+}
+
+=head2 table_record_insert_batch
+
+Save records from Table widget into DB
+
+=cut
+
+sub table_record_insert_batch {
+    my ( $self, $data_hr, $records ) = @_;
+
+    return;
 }
 
 =head1 AUTHOR

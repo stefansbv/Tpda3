@@ -773,11 +773,11 @@ Return screen module class and file name.
 =cut
 
 sub screen_module_class {
-    my ($self, $module) = @_;
+    my ($self, $screen_module) = @_;
 
-    my $app_name  = $self->_cfg->application->{module};
+    my $app_module = $self->_cfg->application->{module};
 
-    my $module_class = "Tpda3::Wx::App::${app_name}::${module}";
+    my $module_class = "Tpda3::Wx::App::${app_module}::${screen_module}";
 
     (my $module_file = "$module_class.pm") =~ s{::}{/}g;
 

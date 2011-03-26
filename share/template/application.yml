@@ -3,4 +3,5 @@
 # Don't touch!, not for users ;)
 ---
 application:
-  module: Test
+  widgetset: Wx
+  module:    Test
