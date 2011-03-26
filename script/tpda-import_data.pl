@@ -43,7 +43,7 @@ my ($dbname, $file, $batch);
 # Some (legacy) defaults
 my $module = 'fb';          # Database type fb=Firebird is default
 my $server = 'localhost';
-my $user   = 'SYSDBA';      # Default user ;)
+my $user;
 my $pass   = 'secret';      # This works for Postgresql if password not set
 
 # Process options.

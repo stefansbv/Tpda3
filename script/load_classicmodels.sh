@@ -30,9 +30,15 @@ echo
 #--
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 <fb|pg|my|si>"
+    echo "Usage: $0 <fb|pg|my|si> [user]"
     echo
     exit 1
+fi
+
+if [ -z "$2" ]; then
+    USER=sysdba
+else
+    USER=$2
 fi
 
 SEARCH_STR=FBPGMYSI
@@ -63,17 +69,19 @@ if [ $DBD == "si" ]; then
     fi
 fi
 
+# echo $PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR
+
 # Load data ... [ I know it needs a loop ;) ]
 
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/country.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/offices.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/employees.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/customers.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/productlines.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/products.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/orders.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -f $DATA_DIR/orderdetails.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD"  -f $DATA_DIR/payments.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD"  -f $DATA_DIR/status.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/country.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/offices.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/employees.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/customers.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/productlines.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/products.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orders.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orderdetails.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/payments.dat;
+$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/status.dat;
 
 echo Finished.
