@@ -2,12 +2,14 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+use Carp;
 
 use Data::Dumper;
 
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
+use Storable qw (store retrieve);
 
 use Tpda3::Utils;
 use Tpda3::Config;
@@ -16,6 +18,8 @@ use Tpda3::Model;
 use Tpda3::Tk::View;
 use Tpda3::Tk::Dialog::Login;
 use Tpda3::Lookup;
+
+use File::Spec::Functions qw(catfile);
 
 =head1 NAME
 
@@ -228,6 +232,47 @@ sub _set_event_handlers {
             }
             else {
                 print "WARN: Not in find mode\n";
+            }
+        }
+    );
+
+
+    #-- Take note
+    $self->_view->get_toolbar_btn('tb_tn')->bind(
+        '<ButtonRelease-1>' => sub {
+            if (   $self->_model->is_mode('edit')
+                or $self->_model->is_mode('add') )
+            {
+                $self->save_screendata();
+            }
+            else {
+                print "WW: Not in edit or add mode\n";
+            }
+        }
+    );
+
+    #-- Restore note
+    $self->_view->get_toolbar_btn('tb_tr')->bind(
+        '<ButtonRelease-1>' => sub {
+            if (   $self->_model->is_mode('add') ) {
+                $self->restore_screendata();
+            }
+            else {
+                print "WARN: Not in add mode\n";
+            }
+        }
+    );
+
+    #-- Clear screen
+    $self->_view->get_toolbar_btn('tb_cl')->bind(
+        '<ButtonRelease-1>' => sub {
+            if (   $self->_model->is_mode('edit')
+                or $self->_model->is_mode('add') )
+            {
+                $self->screen_clear();
+            }
+            else {
+                print "WARN: Not in edit or add mode\n";
             }
         }
     );
@@ -994,6 +1039,38 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$mode};
+
+        # Take note button
+        if ($name eq 'tb_tn') {
+            if ( $self->{_scrstr} ) {
+                if ( $self->_model->is_mode('add') ) {
+                    $status = 'normal';
+                }
+            }
+        }
+
+        # Restore note
+        if ( ( $name eq 'tb_tr' ) && $self->{_scrstr} ) {
+
+            my $data_file = catfile(
+                $self->_cfg->cfapps,
+                $self->{_scrstr} . q{.dat},
+            );
+
+            if ( -f $data_file ) {
+                print "file = $data_file\n";
+                if ( $self->_model->is_mode('add') ) {
+                    $status = 'normal';
+                }
+                else {
+                    $status = 'disabled';
+                }
+            }
+            else {
+                $status = 'disabled';
+            }
+        }
+
         $self->_view->enable_tool( $name, $status );
     }
 
@@ -1049,6 +1126,26 @@ sub record_load_new {
     my $ret = $self->record_load($pk_id);
 
     return $ret;
+}
+
+=head2 screen_clear
+
+Clear the screen: empty all controls.
+
+=cut
+
+sub screen_clear {
+    my $self = shift;
+
+    return unless ref $self->{_scrobj};
+
+    $self->screen_write(undef, 'clear');      # Empty the main controls
+
+    if ($self->_model->is_mode('edit')) {
+        $self->set_app_mode('idle');
+    }
+
+    return;
 }
 
 =head2 record_reload
@@ -2041,6 +2138,73 @@ sub save_record {
 
     #     $self->control_tmatrix_write($records);
     # }
+
+    return;
+}
+
+=head2 save_screendata
+
+Save screen data to temp file with Storable.
+
+=cut
+
+sub save_screendata {
+    my $self = shift;
+
+    if ( !$self->is_record() ) {
+        $self->_view->set_status('Empty screen', 'ms', 'yellow' );
+        return;
+    }
+
+    # Table metadata
+    my $table_hr  = $self->_scrcfg->maintable;
+    my $pk_col    = $table_hr->{pkcol}{name};
+
+    my $record_href = {};
+    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+        next if $field eq $pk_col; # skip ID, is a new record
+        $record_href->{$field} = $value;
+    }
+
+    # Store record data to file
+    my $data_file = catfile(
+        $self->_cfg->cfapps,
+        $self->{_scrstr} . q{.dat},
+    );
+
+    store( $record_href, $data_file )
+        or carp "Can't store record to $data_file!\n";
+
+    $self->_view->set_status('Noted', 'ms', 'blue' );
+
+    return;
+}
+
+=head2 restore_screendata
+
+Restore screen data from file saved with Storable.
+
+=cut
+
+sub restore_screendata {
+    my $self = shift;
+
+    my $data_file = catfile(
+        $self->_cfg->cfapps,
+        $self->{_scrstr} . q{.dat},
+    );
+
+    if ( -f $data_file ) {
+        my $colref = retrieve($data_file);
+        carp "Unable to retrieve from $data_file!\n"
+            unless defined $colref;
+
+        # Debug
+        # while ( my ( $key, $value ) = each( %{$colref} ) ) {
+        #     print " -> $key: $value\n" if defined $value;
+        # }
+        $self->screen_write( $colref, 'record' );
+    }
 
     return;
 }
