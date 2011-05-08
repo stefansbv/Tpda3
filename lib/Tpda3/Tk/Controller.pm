@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use Carp;
 
-use Data::Dumper;
-
 use Tk;
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -236,6 +234,17 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Print (preview) default report button
+    $self->_view->get_toolbar_btn('tb_pr')->bind(
+        '<ButtonRelease-1>' => sub {
+            if (   $self->_model->is_mode('edit') ) {
+                $self->screen_report_print();
+            }
+            else {
+                print "WARN: Not in edit mode\n";
+            }
+        }
+    );
 
     #-- Take note
     $self->_view->get_toolbar_btn('tb_tn')->bind(
@@ -1052,13 +1061,12 @@ sub toggle_interface_controls {
         # Restore note
         if ( ( $name eq 'tb_tr' ) && $self->{_scrstr} ) {
 
-            my $data_file = catfile(
+            my $data_file = catfile(         # TODO: move this to a sub
                 $self->_cfg->cfapps,
                 $self->{_scrstr} . q{.dat},
             );
 
             if ( -f $data_file ) {
-                print "file = $data_file\n";
                 if ( $self->_model->is_mode('add') ) {
                     $status = 'normal';
                 }
@@ -1070,6 +1078,9 @@ sub toggle_interface_controls {
                 $status = 'disabled';
             }
         }
+
+        # Print preview
+        # Activate only if default report configured for screen
 
         $self->_view->enable_tool( $name, $status );
     }
@@ -1137,7 +1148,7 @@ Clear the screen: empty all controls.
 sub screen_clear {
     my $self = shift;
 
-    return unless ref $self->{_scrobj};
+    return unless ref $self->_screen;
 
     $self->screen_write(undef, 'clear');      # Empty the main controls
 
@@ -1238,24 +1249,62 @@ sub record_load {
 
 Execute search.
 
-Searching by DATE
+In the screen configuration file, there is an attribute named
+I<findtype>, defined for every field of the table associated with the
+screen and used to control the behavior of count and search.
 
-Date type entry fields are a special case. Note that type_of_entry='d'
-and the variable name begins with a 'd'. If the user enters a year
-like '2009' (four digits) in a date field than the WHERE Clause will
-look like this:
+All controls from the screen with I<findtype> configured other than
+I<none>, are read. The values are used to create a perl data structure
+used by the SQL::Alstract module to build a SQL WHERE clause.
 
-  WHERE (EXTRACT YEAR FROM b_date) = 2009
+The accepted values for I<findtype> are:
+
+=over
+
+=item contains - like
+
+=item allstr   - field = value
+
+=item date     - Used for date widgets, see below
+
+=item none     - Counting and searching for the field is disabled
+
+=back
+
+A special form is used for the date fields, to allow to search by year
+and month.
+
+=over
+
+=item year       - yyyy
+
+=item year-month - yyyy<sep>mm or yyyy<sep>m or mm<sep>yyyy or m<sep>yyyy
+
+The separator <sep> can be a point (.), a dash (-) or a slash (/).
+
+=item date       - full date string
+
+=back
+
+A I<special_ops> sub is used to teach SQL::Abstract to create the
+required SQL WHERE clause.
+
+EXAMPLES:
+
+If the user enters a year like '2009' (four digits) in a date field
+than the generated WHERE Clause will look like this:
+
+    WHERE (EXTRACT YEAR FROM b_date) = 2009
 
 Another case is where the user enters a year and a month separated by
 a slash, a point or a dash. The order can be reversed too: month-year
 
-  2009.12 or 2009/12 or 2009-12
-  12.2009 or 12/2009 or 12-2009
+    2009.12 or 2009/12 or 2009-12
+    12.2009 or 12/2009 or 12-2009
 
 The result WHERE Clause has to be the same:
 
-  WHERE EXTRACT (YEAR FROM b_date) = 2009 AND
+    WHERE EXTRACT (YEAR FROM b_date) = 2009 AND
         EXTRACT (MONTH FROM b_date) = 12
 
 The case when an entire date is entered is treated as a whole string
@@ -1283,7 +1332,10 @@ sub record_find_execute {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+        my $findtype = $fields_hr->{$field}{findtype};
+        $findtype = q{contains} if $value eq q{%}; # allow search by
+                                                   # field contents
+        $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
@@ -1303,7 +1355,9 @@ sub record_find_execute {
 
 =head2 record_find_count
 
-Execute find: count
+Execute count.
+
+Same as for I<record_find_execute>.
 
 =cut
 
@@ -1320,7 +1374,10 @@ sub record_find_count {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+        my $findtype = $fields_hr->{$field}{findtype};
+        $findtype = q{contains} if $value eq q{%}; # allow count by
+                                                   # field contents
+        $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
@@ -1328,6 +1385,71 @@ sub record_find_count {
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_model->query_records_count($params);
+
+    return;
+}
+
+=head2 screen_report_print
+
+Printing report configured as default with Report Manager.
+
+=cut
+
+sub screen_report_print {
+    my $self = shift;
+
+    return unless ref $self->_screen;
+
+    # my $script = $self->{tpda}{conf}->get_screen_conf_raport('script');
+    # my $report = $self->{tpda}{conf}->get_screen_conf_raport('content');
+    # print "report ($script) = $report\n";
+
+    # # ID (name, width)
+    # my $pk_href = $self->{tpda}{conf}->get_screen_conf_table('pk_col');
+    # my $pk_col = $pk_href->{name};
+    # my $eobj = $self->_screen->get_eobj_rec();
+    # my $id_val = $eobj->{$pk_col}[3]->get;
+    # # print "$pk_col = $id_val\n";
+
+    # if ($id_val) {
+    #     # Default paramneter ID
+    #     $param = "$pk_col=$id_val";
+    # } else {
+    #     # Atentie
+    #     my $textstr = "Load a record first";
+    #     $self->{mw}{dialog1}->configure( -text => $textstr );
+    #     $self->{mw}{dialog1}->Show();
+    #     return;
+    # }
+
+    # Configurari
+    my $repxp   = $self->_cfg->cfextapps->{repmanexe};
+    my $reppath = $self->_cfg->cfextapps->{reportspath};
+    print " $repxp\n";
+    print " $reppath\n";
+
+    # $report_name =
+    #     $self->{tpda}{cfg_ref}{conf_dir} .'/'. $reppath .'/'. $report;
+
+    # # Metaviewxp
+    # if (defined($param) and defined($param2) and defined($param3)) {
+    #     # print "3 parameters!\n";
+    #     $cmd = "$repxp -preview -param$param -param$param2 -param$param3 $report_name";
+    # } elsif (defined($param) and defined($param2)) {
+    #     # print "2 parameters!\n";
+    #     $cmd = "$repxp -preview -param$param -param$param2 $report_name";
+    # } elsif (defined($param)) {
+    #     # print "1 parameter!\n";
+    #     $cmd = "$repxp -preview -param$param $report_name";
+    # } else {
+    #     # print "0 parameters?\n";
+    #     return;
+    # }
+
+    # # print $cmd."\n";
+    # if (system($cmd)) {
+    #     print "Raportare esuata\n";
+    # }
 
     return;
 }

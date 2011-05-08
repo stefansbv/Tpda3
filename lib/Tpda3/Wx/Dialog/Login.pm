@@ -158,7 +158,14 @@ sub login_dialog {
     EVT_TEXT_ENTER(
         $dlg,
         -1,
-        sub { $ok_btn->SetFocus() },
+        sub {
+            # Simulate button click (like Tk invoke)
+            my $event = Wx::CommandEvent->new(
+                &Wx::wxEVT_COMMAND_BUTTON_CLICKED,
+                $ok_btn->GetId(),
+            );
+            $ok_btn->GetEventHandler->ProcessEvent( $event );
+        },
     );
 
     return $dlg;

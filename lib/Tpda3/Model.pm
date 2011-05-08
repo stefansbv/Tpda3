@@ -243,7 +243,7 @@ sub query_records_count {
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
 
-    # print "SQL : $stmt\n";
+    print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
     my $record_count;

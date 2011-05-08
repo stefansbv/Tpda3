@@ -228,7 +228,7 @@ eval {
     $dbh->commit;    # commit the changes if we get this far
 };
 if ($@) {
-    print "$@ -> $line\n";
+    # print "$@ -> $line\n";
     $dbh->rollback;    # undo the incomplete changes
 }
 

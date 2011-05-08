@@ -248,8 +248,12 @@ sub search_dialog {
     $dlg->Fit;
 
     EVT_LIST_ITEM_ACTIVATED $dlg, $self->{_list}, sub {
-        # TODO: Invoking the button would be better here
-        $ok_btn->SetFocus();
+        # Invoking the button
+        my $event = Wx::CommandEvent->new(
+            &Wx::wxEVT_COMMAND_BUTTON_CLICKED,
+            $ok_btn->GetId(),
+        );
+        $ok_btn->GetEventHandler->ProcessEvent($event);
     };
 
     return $dlg;

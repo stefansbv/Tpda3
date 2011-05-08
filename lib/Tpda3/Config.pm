@@ -138,6 +138,7 @@ sub config_main_load {
         user      => $args->{user},           # make accessors for user and pass
         pass      => $args->{pass},
         widgetset => $maincfg->{widgetset},   # Wx or Tk
+        cfextapps => $maincfg->{externalapps},
     };
 
     # Setup when GUI runtime
