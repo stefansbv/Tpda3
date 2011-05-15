@@ -45,19 +45,52 @@ sub run_screen {
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
-    #-- Frame 1 - Order
+    #- Frame bottom
+
+    my $frm_bl = $inreg_p->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Bottom',
+        -labelside  => 'acrosstop'
+    )->pack(
+        -side   => 'bottom',
+        -expand => 0,
+        -fill   => 'both'
+    );
+
+    #- Frame t => Tabel
+
+    my $frm_t = $inreg_p->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Bottom',
+        -labelside  => 'acrosstop'
+    )->pack(
+        -side   => 'bottom',
+        -expand => 1,
+        -fill   => 'both'
+    );
+
+    #- Top Left Frame
 
     my $frame1 = $inreg_p->LabFrame(
         -foreground => 'blue',
-        -label      => 'Order',
-        -labelside  => 'acrosstop',
+        -label      => 'Top Left',
+        -labelside  => 'acrosstop'
+    )->pack(
+        -side   => 'left',
+        -expand => 1,
+        -fill   => 'both'
     );
-    $frame1->grid(
-        $frame1,
-        -row     => 0, -column  => 0,
-        -ipadx   => 3, -ipady   => 3,
-        -rowspan => 2,
-        -sticky  => 'nsew',
+
+    #- Top Right Frame
+
+    my $frame2 = $inreg_p->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Comments',
+        -labelside  => 'acrosstop'
+    )->pack(
+        -side   => 'right',
+        -expand => 1,
+        -fill   => 'both'
     );
 
     #- Customers
@@ -86,7 +119,8 @@ sub run_screen {
     );
     $ecustomernumber->form(
         -top  => [ '&',            $lcustomername, 0 ],
-        -left => [ $ecustomername, 5 ]
+        -left => [ $ecustomername, 5 ],
+        -padright => 5,
     );
 
     #- Ordernumber (ordernumber)
@@ -126,8 +160,8 @@ sub run_screen {
     );
 
     $dorderdate->form(
-        -top   => [ '&', $eordernumber,   -2 ],
-        -right => [ '&', $ecustomernumber, 0 ],
+        -top   => [ '&', $eordernumber,   0 ],
+        -right => [ %100, -5 ],
     );
 
     my $lorderdate = $frame1->Label( -text => 'Order date' );
@@ -162,7 +196,7 @@ sub run_screen {
     );
 
     $drequireddate->form(
-        -top  => [ '&', $lrequireddate, -2 ],
+        -top  => [ '&', $lrequireddate, 0 ],
         -left => [ %0,  110 ],
     );
 
@@ -170,7 +204,7 @@ sub run_screen {
 
     my $lshippeddate = $frame1->Label( -text => 'Shipped date' );
     $lshippeddate->form(
-        -top  => [ '&', $lrequireddate, -2 ],
+        -top  => [ '&', $lrequireddate,  0 ],
         -left => [ '&', $lorderdate,     0 ],
         -padleft => 5,
     );
@@ -192,7 +226,7 @@ sub run_screen {
 
     $dshippeddate->form(
         -top   => [ '&', $lshippeddate,    0 ],
-        -right => [ '&', $ecustomernumber, 0 ],
+        -right => [ %100, -5 ],
     );
 
     #- Status code (statuscode)
@@ -216,6 +250,7 @@ sub run_screen {
     $bstatuscode->form(
         -top  => [ '&', $lstatuscode, 0 ],
         -left => [ %0,  110 ],
+        -padbottom => 5,
     );
 
     # my $vstatuscode;
@@ -228,25 +263,10 @@ sub run_screen {
     #     -labels_and_values  => $lvstatuscode,
     #     -value_variable     => \$vstatuscode,
     # );
-
     # $bstatuscode->form(
     #     -top  => [ '&', $lstatuscode, 0 ],
     #     -left => [ %0,  110 ],
     # );
-
-    #-- Frame2 - Comments
-
-    my $frame2 = $inreg_p->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Comments',
-        -labelside  => 'acrosstop',
-    );
-    $frame2->grid(
-        $frame2,
-        -row     => 0, -column  => 1,
-        -rowspan => 2,
-        -sticky  => 'nsew',
-    );
 
     #-- Font
     my $my_font = $eordernumber->cget('-font');
@@ -255,8 +275,8 @@ sub run_screen {
 
     my $tcomments = $frame2->Scrolled(
         'Text',
-        -width      => 30,
-        -height     => 8,
+        -width      => 33,
+        -height     => 7,
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
@@ -272,26 +292,12 @@ sub run_screen {
     #-
     #
 
-    #-- Frame t => Table
-
-    my $frm_t = $inreg_p->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Order Items',
-        -labelside  => 'acrosstop',
-    );
-    $frm_t->grid(
-        $frm_t,
-        -row        => 2, -column     => 0,
-        -columnspan => 2,
-        -sticky     => 'nsew',
-    );
-
     #-- Toolbar
 
     my $tbf1 = $frm_t->Frame();
     $tbf1->pack(
         -anchor => 'n',
-        -expand =>  1,
+        -expand => 'n',
         -fill   => 'x',
     );
 
@@ -339,23 +345,6 @@ sub run_screen {
     $xtable->bind( 'Tk::TableMatrix',
                    '<Return>' => [ \&callback, $self, $params ] );
 
-
-    #-- Frame Bottom Right
-
-    my $frm_bl = $inreg_p->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Total',
-        -labelside  => 'acrosstop',
-    );
-
-    $frm_bl->grid(
-        $frm_bl,
-        -row        => 3, -column     => 0,
-        -ipady      => 3,
-        -columnspan => 2,
-        -sticky     => 'nsew',
-    );
-
     #- Ordertotal (ordertotal)
 
     my $eordertotal = $frm_bl->Entry(
@@ -365,6 +354,7 @@ sub run_screen {
     $eordertotal->form(
         -top   => [ %0,   0 ],
         -right => [ %100, -5 ],
+        -padbottom => 5,
     );
 
     my $lordertotal = $frm_bl->Label( -text => 'Order total' );

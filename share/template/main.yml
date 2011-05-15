@@ -1,0 +1,23 @@
+# tpda3
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+interface:
+  toolbar: etc/interfaces/toolbar.yml
+  menubar: etc/interfaces/menubar.yml
+application:
+  appmain:  etc/application.yml
+  conninfo: etc/connection.yml
+  appmenu:  etc/menu.yml
+runtime:
+  instance: etc/instance.yml
+general:
+  # Connections template path
+  conntmpl: template/connection.yml
+  menutmpl: template/menu.yml
+  apptmpl:  template/application.yml
+resource:
+  icons: etc/interfaces/icons
+externalapps:
+  repmanexe: /opt/repman/repman/printrep.bin
+  reportspath: reports

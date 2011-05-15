@@ -248,13 +248,17 @@ sub search_dialog {
     $dlg->Fit;
 
     EVT_LIST_ITEM_ACTIVATED $dlg, $self->{_list}, sub {
-        # Invoking the button
+        # $ok_btn->SetFocus();
+        # Invoking the button, but no visual feedback ...
         my $event = Wx::CommandEvent->new(
             &Wx::wxEVT_COMMAND_BUTTON_CLICKED,
             $ok_btn->GetId(),
         );
         $ok_btn->GetEventHandler->ProcessEvent($event);
     };
+
+    # $ok_btn->SetDefault();                  # does not work
+    # $find_btn->SetDefault();                # does not work
 
     return $dlg;
 }
