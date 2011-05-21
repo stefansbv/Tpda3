@@ -475,20 +475,86 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings
 
-Create bindings for widgets as defined in the configuration file in
-the I<bindings> section.
+NOT FINISHED, only ideas!
+
+Create bindings for widgets with the related table columns as defined
+in the configuration file in the I<bindings> section, to lookup for
+key -> value translations.
 
 For example in orders.conf:
 
-  <bindings>
-    <customername>
-      table = customers
-      field = customernumber
-    </customername>
-  </bindings>
+ <bindings>
+   <customername>
+     table = customers
+     field = customernumber
+   </customername>
+ </bindings>
+
+This configuration allows to lookup for a I<customernumber> in the
+I<customers> table when knowing the I<customername>.
+
+Sometimes we need to lookup the key -> values for more than one field
+from the same table, for example ...
+
+ <bindings>
+   <localitate>
+    table = localitati
+    field = id_judet
+    field = cod_p
+    field = id_loc
+   </localitate>
+ </bindings>
+
+The most complex situation is when the name of the field is not the
+same as the name of the control ...
 
 This will create a binding for the I<customername> widget, alowing the
 user to lookup the I<customernumber> in the I<customer> table.
+
+The I<customername> and I<customernumber> fields must be defined in
+the current table, with properties like width, label and order.
+
+Or
+
+ <bindings>
+   <customername>
+     table = customers
+     field = customernumber
+   </customername>
+ </bindings>
+
+This will create a binding for the I<customername> widget, alowing the
+user to lookup the I<customernumber> and I<customerwhatever> in the
+I<customer> table.
+
+Case when the field name the same as the control name, but with
+multiple values to lookup for.
+
+Case when the field name is different than the control name, and with
+multiple values to lookup for.
+
+We need to map the name of the fields with the name of the controls.
+
+In the simpler forms of the config, we skip that, other ways
+there will be double columns in the Search dialog.
+
+ <bindings>
+   <loc_ds>
+    table                = localitati
+    <field localitate>
+      name               = loc_ds
+    </field>
+    <field id_judet>
+      name               = id_jud_ds
+    </field>
+    <field cod_p>
+      name               = cod_p_ds
+    </field>
+    <field id_loc>
+      name               = id_loc_ds
+    </field>
+   </loc_ds>
+ </bindings>
 
 =cut
 
@@ -499,71 +565,141 @@ sub setup_lookup_bindings {
     my $ctrl_ref = $self->_screen->get_controls();
     my $bindings = $self->_scrcfg->bindings;
 
-    $self->_log->trace("Setup binding for configured widgets");
+    $self->_log->info("Setup binding for configured widgets");
 
-    foreach my $lookup ( keys %{$bindings} ) {
-        unless ( $ctrl_ref->{$lookup}[1] ) {
-            # Skip nonexistent
-            $self->_log->trace("Wrong binding config for '$lookup'");
-            next;
+    foreach my $binding ( keys %{$bindings} ) {
+
+        # Check if we have bindings
+        next unless $binding;
+
+        my $lookup;
+        if ( exists $bindings->{$binding}{lookup} ) {
+            $lookup = $bindings->{$binding}{lookup};
+        }
+        else {
+            $lookup = $binding;
         }
 
-        $self->_log->trace("Setup binding for '$lookup'");
+        $self->_log->trace("Setup binding for '$binding'");
 
-        my $para = {                     # parameter for Search dialog
-            table  => $bindings->{$lookup}{table},
+        # Parameter for Search dialog
+        my $para = {
+            table  => $bindings->{$binding}{table},
             lookup => $lookup,
         };
 
         # Add lookup field to columns
-        my $field_cfg = $self->_scrcfg->maintable->{columns}{$lookup};
+        # the 'search in' field name like 'denumire' ;)
+        my $field_cfg = $self->_scrcfg->maintable->{columns}{$binding};
         my @cols;
         my $rec = {};
-        $rec->{$lookup} = {
+        $rec->{$binding} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
         };
-        push @cols, $rec;
 
-        if ( ref $bindings->{$lookup}{field} ) {
-
-            # Multiple fields returned as array
-            foreach my $fld ( @{ $bindings->{$lookup}{field} } ) {
-                my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-                my $rec = {};
-                $rec->{$fld} = {
-                    width => $field_cfg->{width},
-                    label => $field_cfg->{label},
-                    order => $field_cfg->{order},
-                };
-                push @cols, $rec;
-            }
+        # The fields to return like 'cod'
+        # Support different styles for config
+        my ( $other_cols, $newlookup );
+        if ( ref $bindings->{$binding}{field} eq 'ARRAY' ) {
+            print " Array\n";
+            $other_cols  = $self->bindings_field_multi( $bindings, $binding );
+            push @cols, $rec;
+        }
+        elsif ( ref $bindings->{$binding}{field} eq 'HASH' ) {
+            print " Complex\n";
+            $other_cols = $self->bindings_field_complex( $bindings, $binding );
         }
         else {
-            # One field, no array
-            my $fld       = $bindings->{$lookup}{field};
-            my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-            my $rec = {};
-            $rec->{$fld} = {
-                width => $field_cfg->{width},
-                label => $field_cfg->{label},
-                order => $field_cfg->{order},
-            };
+            print " Simplest\n";
+            $other_cols = $self->bindings_field_single( $bindings, $binding );
             push @cols, $rec;
         }
 
+        push @cols, @{$other_cols};
         $para->{columns} = [@cols];
 
-        $ctrl_ref->{$lookup}[1]->bind(
+        $ctrl_ref->{$binding}[1]->bind(
             '<KeyPress-Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para );
-                $self->screen_write($record, 'fields');
+                $self->screen_write( $record, 'fields' );
             }
         );
     }
 
     return;
+}
+
+=head2 simple_bindings
+
+=cut
+
+sub bindings_field_single {
+    my ( $self, $bindings, $binding ) = @_;
+
+    # One field, no array
+    my @cols;
+    my $fld       = $bindings->{$binding}{field};
+    my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
+    my $rec       = {};
+    $rec->{$fld} = {
+        width => $field_cfg->{width},
+        label => $field_cfg->{label},
+        order => $field_cfg->{order},
+    };
+    push @cols, $rec;
+
+    return \@cols;
+}
+
+=head2 bindings_field_multi
+
+=cut
+
+sub bindings_field_multi {
+    my ( $self, $bindings, $binding ) = @_;
+
+    my @cols;
+
+    # Multiple fields returned as array
+    foreach my $fld ( @{ $bindings->{$binding}{field} } ) {
+        my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
+        my $rec       = {};
+        $rec->{$fld} = {
+            width => $field_cfg->{width},
+            label => $field_cfg->{label},
+            order => $field_cfg->{order},
+        };
+        push @cols, $rec;
+    }
+
+    return \@cols;
+}
+
+=head2 bindings_field_complex
+
+=cut
+
+sub bindings_field_complex {
+    my ( $self, $bindings, $binding ) = @_;
+
+    my @cols;
+    # Multiple fields returned as array
+    foreach my $fld ( keys %{ $bindings->{$binding}{field} } ) {
+        my $name      = $bindings->{$binding}{field}{$fld}{name};
+        my $field_cfg = $self->_scrcfg->maintable->{columns}{$name};
+        my $rec       = {};
+        $rec->{$fld} = {
+            width => $field_cfg->{width},
+            label => $field_cfg->{label},
+            order => $field_cfg->{order},
+            name  => $name,
+        };
+        push @cols, $rec;
+    }
+
+    return \@cols;
 }
 
 =head2 set_app_mode
@@ -1706,6 +1842,38 @@ sub control_read_l {
     return;
 }
 
+=head2 control_read_c
+
+Read state of a Checkbox.
+
+=cut
+
+sub control_read_c {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [c] $field\n";
+        return;
+    }
+
+    my $value = ${$ctrl_ref->{$field}[0]};
+
+    if ( $value == 1 ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (c): $field = $value\n";
+    }
+    else {
+
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{$field} = $value;
+            print "Screen (c): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
 =head2 screen_write
 
 Write record to screen.  It first turns controls I<on> to allow write.
@@ -1745,7 +1913,14 @@ sub screen_write {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
-        my $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
+        my $ctrl_state;
+        eval {
+            $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
+        };
+        if ($@) {
+            print "ERR: Undefined field '$field', check your configuration!\n";
+            next FIELD;
+        }
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
 
         # Control config attributes
@@ -1949,8 +2124,13 @@ sub controls_state_set {
         }
 
         # Configure controls
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
-        $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+        eval {
+            $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
+            $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+        };
+        if ($@) {
+            # print "Problems with '$field'\n";
+        }
     }
 
     return;
@@ -2054,6 +2234,32 @@ sub control_write_l {
     $ctrl_ref->{$field}[1]->set_selected_value($value);
 
     return;
+}
+
+=head2 control_write_c
+
+Write to a Tk::Checkbox widget.
+
+=cut
+
+sub control_write_c {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    $value = 0 unless $value;
+    if ( $value == 1 ) {
+       $ctrl_ref->{$field}[1]->select;
+    }
+    else {
+        $ctrl_ref->{$field}[1]->deselect;
+    }
+
+    # # Execute sub defined in screen bound to checkbox
+    # # Sub name must be: 'sw_' + 'field_name'
+    # # Check if sub exists is defined first
+    # my $sub_name = "sw_$field";
+    # if ( $self->{scrobj}->can($sub_name) ) {
+    #     $self->{scrobj}->$sub_name;
+    # }
 }
 
 =head2 control_states

@@ -164,9 +164,16 @@ sub search {
     my @columns;
     my $colcnt = 0;
     foreach my $rec ( @{ $para->{columns} } ) {
-
         foreach my $field ( keys %{$rec} ) {
-            push @columns, $field;
+
+            # Use maping of name instead of 'field' if exists
+            if (exists $rec->{$field}{name}) {
+                push @columns, $rec->{$field}{name};
+            }
+            else {
+                push @columns, $field;
+            }
+
             $self->{box}->columnInsert( 'end', -text => $rec->{$field}{label} );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
               ->configure( -background => 'tan' );
