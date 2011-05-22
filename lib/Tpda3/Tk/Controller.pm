@@ -475,13 +475,24 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings
 
-NOT FINISHED, only ideas!
+DOC NOT FINISHED, only ideas!
 
-Create bindings for widgets with the related table columns as defined
-in the configuration file in the I<bindings> section, to lookup for
-key -> value translations.
+Creates bindings for widgets that use the L<Tpda3::Tk::Dialog::Search>
+module to look-up value key translations from a table and put them in
+one or more widgets.
 
-For example in orders.conf:
+For example, if we have two Tk::Entry widgets for I<customername> and
+I<customernumber>, a configuration like the following in
+L<orders.conf> will make a binding for the I<customername> widget to
+the L<Return> key. When the user presses the L<Return key>, asuming
+that the I<customername> widget has the focus, a dialog window wil pop
+up and can be used to serch the I<customernumber> coresponding to a
+I<customername>.
+
+This configuration allows to lookup for a I<customernumber> in the
+I<customers> table when knowing the I<customername>.
+The I<customername> and I<customernumber> fields must be defined in
+the current table, with properties like width, label and order.
 
  <bindings>
    <customername>
@@ -489,9 +500,6 @@ For example in orders.conf:
      field = customernumber
    </customername>
  </bindings>
-
-This configuration allows to lookup for a I<customernumber> in the
-I<customers> table when knowing the I<customername>.
 
 Sometimes we need to lookup the key -> values for more than one field
 from the same table, for example ...
@@ -508,12 +516,6 @@ from the same table, for example ...
 The most complex situation is when the name of the field is not the
 same as the name of the control ...
 
-This will create a binding for the I<customername> widget, alowing the
-user to lookup the I<customernumber> in the I<customer> table.
-
-The I<customername> and I<customernumber> fields must be defined in
-the current table, with properties like width, label and order.
-
 Or
 
  <bindings>
@@ -522,10 +524,6 @@ Or
      field = customernumber
    </customername>
  </bindings>
-
-This will create a binding for the I<customername> widget, alowing the
-user to lookup the I<customernumber> and I<customerwhatever> in the
-I<customer> table.
 
 Case when the field name the same as the control name, but with
 multiple values to lookup for.
@@ -603,16 +601,13 @@ sub setup_lookup_bindings {
         # Support different styles for config
         my ( $other_cols, $newlookup );
         if ( ref $bindings->{$binding}{field} eq 'ARRAY' ) {
-            print " Array\n";
             $other_cols  = $self->bindings_field_multi( $bindings, $binding );
             push @cols, $rec;
         }
         elsif ( ref $bindings->{$binding}{field} eq 'HASH' ) {
-            print " Complex\n";
             $other_cols = $self->bindings_field_complex( $bindings, $binding );
         }
         else {
-            print " Simplest\n";
             $other_cols = $self->bindings_field_single( $bindings, $binding );
             push @cols, $rec;
         }

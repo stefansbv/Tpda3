@@ -9,3 +9,5 @@ inc/
 *.sqlite
 *.log
 classicmodels
+.#*
+\#*#

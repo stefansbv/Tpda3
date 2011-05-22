@@ -13,7 +13,7 @@ use Date::Calc qw(check_date);
 
 =head1 NAME
 
-Tpda3::App::Fpimm::Localitati screen
+Tpda3::App::Test::WidgetsAll screen
 
 =head1 VERSION
 
@@ -25,9 +25,9 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    require Tpda3::App::Fpimm::WidgetsAll;
+    require Tpda3::App::Test::WidgetsAll;
 
-    my $scr = Tpda3::App::Fpimm::WidgetsAll->new;
+    my $scr = Tpda3::App::Test::WidgetsAll->new;
 
     $scr->run_screen($args);
 
@@ -104,9 +104,7 @@ sub run_screen {
         -padleft => 5,
     );
 
-    $ecnp->bind( '<KeyPress-Return>' => sub { $self->cnp_ok(); } );
-
-    #- Nume (nume)
+    #-- Nume (nume)
 
     my $lnume = $frame1->Label( -text => 'Nume' );
     $lnume->form(
@@ -138,42 +136,14 @@ sub run_screen {
         -padleft => 5,
     );
 
-    #-- prenume_t
-
-    my $lprenume_t = $frame1->Label( -text => 'Prenume, tată', );
-    $lprenume_t->form(
-        -top     => [ $lprenume, 8 ],
-        -left    => [ %0,        0 ],
-        -padleft => 5,
-    );
-    my $eprenume_t = $frame1->Entry( -width => 25, );
-    $eprenume_t->form(
-        -top  => [ '&', $lprenume_t, 0 ],
-        -left => [ %0,  $f1d ],
-    );
-
-    #-+ prenume_m
-
-    my $eprenume_m = $frame1->Entry( -width => 25, );
-    $eprenume_m->form(
-        -top   => [ '&',  $lprenume_t, 0 ],
-        -right => [ %100, -5 ],
-    );
-    my $lprenume_m = $frame1->Label( -text => 'Mamă', );
-    $lprenume_m->form(
-        -top     => [ '&',         $lprenume_t, 0 ],
-        -right   => [ $eprenume_m, -10 ],
-        -padleft => 5,
-    );
-
-    #-- data_nas
+    #-- Data nasterii
 
     my $vdata_nas;
     my $ldata_nas = $frame1->Label(
         -text => 'Data nașterii',
     );
     $ldata_nas->form(
-        -top  => [ $lprenume_m, 8 ],
+        -top  => [ $lnume, 8 ],
         -left => [ %0, 0 ],
         -padleft => 5,
     );
@@ -197,65 +167,97 @@ sub run_screen {
 
     my $my_font = $enume->cget('-font');    # font
 
-    #-- localitate - Localitate domiciliu stabil
+    #-- Localitate domiciliu stabil
 
-    my $llocalitate = $frame1->Label( -text => 'Localitate' );
-    $llocalitate->form(
+    my $lloc_ds = $frame1->Label( -text => 'Localitate' );
+    $lloc_ds->form(
         -top     => [ $ldata_nas, 8 ],
         -left    => [ %0,         0 ],
         -padleft => 5
     );
 
-    my $elocalitate = $frame1->Entry(
+    my $eloc_ds = $frame1->Entry(
         -width    => 30,
     );
-    my ($eid_judet, $ecod_p);
-    $elocalitate->form(
-        -top  => [ '&', $llocalitate, 0 ],
+    my ($eid_jud_ds, $ecod_p_ds);
+    $eloc_ds->form(
+        -top  => [ '&', $lloc_ds, 0 ],
         -left => [ %0, $f1d ],
     );
 
-    #-+ id_jud
+    #-+ id_jud_ds
 
-    $eid_judet = $frame1->Entry(
+    $eid_jud_ds = $frame1->Entry(
         -width              => 3,
         -disabledbackground => 'lightgrey',
         -disabledforeground => 'black',
 
     );
-    $eid_judet->form(
-        -top  => [ '&',      $llocalitate, 0 ],
-        -left => [ $elocalitate, 6 ]
+    $eid_jud_ds->form(
+        -top  => [ '&',      $lloc_ds, 0 ],
+        -left => [ $eloc_ds, 6 ]
     );
 
-    #-+ cod_p (Cod postal localitate domiciliu stabil)
+    #-+ cod_p_ds (Cod postal localitate domiciliu stabil)
 
-    $ecod_p = $frame1->Entry(
+    $ecod_p_ds = $frame1->Entry(
         -width              => 6,
         -disabledbackground => 'lightgrey',
         -disabledforeground => 'black'
     );
-    $ecod_p->form(
-        -top  => [ '&',         $llocalitate, 0 ],
-        -left => [ $eid_judet, 5 ]
+    $ecod_p_ds->form(
+        -top  => [ '&',         $lloc_ds, 0 ],
+        -left => [ $eid_jud_ds, 5 ]
     );
 
-    #-+ id_loc
+    #-+ id_loc_ds
 
-    my $eid_loc = $frame1->Entry(
+    my $eid_loc_ds = $frame1->Entry(
         -width              => 5,
         -disabledbackground => 'lightgrey',
         -disabledforeground => 'black'
     );
-    $eid_loc->form(
-        -top  => [ '&',        $llocalitate, 0 ],
-        -left => [ $ecod_p, 5 ],
+    $eid_loc_ds->form(
+        -top  => [ '&',        $lloc_ds, 0 ],
+        -left => [ $ecod_p_ds, 5 ],
     );
 
-    #- Adresa (adresa)
+    #-- Judet (judet)
+
+    my $ljudet = $frame1->Label(
+        -text => 'Judet',
+    );
+    $ljudet->form(
+        -left => [ %0,       0 ],
+        -top  => [ $lloc_ds, 8 ],
+        -padleft => 5,
+    );
+
+    my $ejudet = $frame1->Entry(
+        -width => 25,
+    );
+    $ejudet->form(
+        -top  => [ '&', $ljudet, 0 ],
+        -left => [ %0, 80 ],
+    );
+
+    #-- id_judet (SMALLINT)
+
+    my $eid_judet = $frame1->Entry(
+        -width              => 3,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black'
+    );
+    $eid_judet->form(
+        -top => [ '&', $ljudet, 0 ],
+        -left => [ $ejudet, 6 ],
+    );
+
+    #-- Adresa (adresa)
+
     my $ladresa = $frame1->Label( -text => 'Adresă' );
     $ladresa->form(
-        -top     => [ $llocalitate, 10 ],
+        -top     => [ $ljudet, 10 ],
         -left    => [ %0,        0 ],
         -padleft => 5
     );
@@ -277,18 +279,18 @@ sub run_screen {
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'persoane.conf'
     $self->{controls} = {
-        id_pers    => [ undef,       $eid_pers ],
-        cnp        => [ undef,       $ecnp ],
-        nume       => [ undef,       $enume ],
-        prenume    => [ undef,       $eprenume ],
-        prenume_t  => [ undef,       $eprenume_t ],
-        prenume_m  => [ undef,       $eprenume_m ],
-        data_nas   => [ \$vdata_nas, $ddata_nas ],
-        localitate => [ undef,       $elocalitate ],
-        cod_p      => [ undef,       $ecod_p ],
-        id_judet   => [ undef,       $eid_judet ],
-        id_loc     => [ undef,       $eid_loc ],
-        adresa     => [ undef,       $tadresa ],
+        id_pers   => [ undef,       $eid_pers ],
+        cnp       => [ undef,       $ecnp ],
+        nume      => [ undef,       $enume ],
+        prenume   => [ undef,       $eprenume ],
+        data_nas  => [ \$vdata_nas, $ddata_nas ],
+        loc_ds    => [ undef,       $eloc_ds ],
+        id_jud_ds => [ undef,       $eid_jud_ds ],
+        cod_p_ds  => [ undef,       $ecod_p_ds ],
+        id_loc_ds => [ undef,       $eid_loc_ds ],
+        judet     => [ undef,       $ejudet ],
+        id_judet  => [ undef,       $eid_judet ],
+        adresa    => [ undef,       $tadresa ],
     };
 
     # Required fields: fld_name => [#, Label] If there is no value in
@@ -300,123 +302,6 @@ sub run_screen {
         adresa    => [ 4, '  Adresa' ],
         gen       => [ 5, '  Gen' ],
     };
-
-    return;
-}
-
-sub cnp_ok {
-    my $self = shift;
-
-    my $cnp = $self->{eobj_rec}{cnp}[3]->get;    # valoare CNP
-
-    return unless ($cnp);
-
-    # Trim spaces to be safe
-    $cnp =~ s/^\s+//;
-    $cnp =~ s/\s+$//;
-
-    if ( length($cnp) != 13 ) {
-        $self->{tpda}{gui}->refresh_sb( 'll', 'CNP Eronat! != 13', 'red');
-        print "CNP Eronat!\n";
-        return;
-    }
-
-    my @cnp = split( //, $cnp );
-    my @prd = split( //, '279146358279' );
-
-    # Check first digit
-    if ( $cnp[0] < 1 or $cnp[0] > 6 and $cnp[0] != 9 ) {
-        $self->{tpda}{gui}->refresh_sb( 'll', 'CNP Eronat!', 'red');
-        print " Prima cifra eronata!\n";
-        return;
-    }
-    else {
-        # Preset gen
-        my $gen;
-        $gen = 'Masculin' if $cnp[0] == 1;
-        $gen = 'Feminin'  if $cnp[0] == 2;
-        ${ $self->{eobj_rec}{gen}[2] } = $gen;
-    }
-
-
-    # Check date
-    my $yy    = substr($cnp,1,2);
-    my $month = substr($cnp,3,2);
-    my $day   = substr($cnp,5,2);
-
-    my $year = "19$yy";                # TODO: algorithm to guess year
-
-    if ( check_date($year,$month,$day) ) {
-        my $date = $self->{utils}->dateentry_format_date(
-            $self->{dstyle}, $year, $month, $day);
-        print "Valid date: $date\n";
-
-        # Preset date
-        $self->{eobj_rec}{data_nas}[3]->delete( 0, 'end' );
-        $self->{eobj_rec}{data_nas}[3]->insert(0, $date);
-    }
-    else {
-        $self->{tpda}{gui}->refresh_sb( 'll', 'CNP Eronat!', 'red');
-        print "Data din CNP Eronata!\n";
-        return;
-    }
-
-    my $suma = 0;
-    foreach ( 0 .. $#prd ) {
-        $suma += $cnp[$_] * $prd[$_];
-    }
-
-    # print "Suma     = $suma\n";
-    my $m11 = $suma % 11;
-
-    # print "Modulo11 = $m11\n";
-    # print "CNP(13)  = $cnp[12]\n";
-
-    my $cc;
-    if ( $m11 < 10 ) {
-        $cc = $m11;
-    }
-    else {
-        if ( $m11 == 10 ) {
-            $cc = 1;
-        }
-        else {
-            $cc = -1; # Imposible?
-        }
-    }
-
-    # Final chech
-    if ( $cnp[12] == $cc ) {
-        $self->{tpda}{gui}->refresh_sb( 'll', 'CNP Ok!', 'darkgreen');
-        print "CNP Ok!\n";
-    }
-    else {
-        $self->{tpda}{gui}->refresh_sb( 'll', 'CNP Eronat!', 'red');
-        print "CNP Eronat!\n";
-    }
-
-    return;
-}
-
-sub email_ok {
-    my $self = shift;
-
-    if ( eval { require Email::Valid } ) {
-        my $email = $self->{eobj_rec}{email}[3]->get; #  E-mail
-        my ($msg, $color) = ('Adresa de E-mail pare ', 'darkgreen');
-        if ( Email::Valid->address($email) ) {
-            $msg  .= 'valida';
-        }
-        else {
-            $msg  .= 'invalida';
-            $color = 'red';
-        }
-        print "$msg\n";
-        $self->{tpda}{gui}->refresh_sb( 'll', $msg, $color );
-    }
-    else {
-        print "Validare E-mail indisponibila.\n";
-    }
 
     return;
 }
@@ -441,4 +326,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::App::Fpimm::WidgetsAll
+1; # End of Tpda3::Tk::App::Test::WidgetsAll
