@@ -597,9 +597,8 @@ sub setup_lookup_bindings {
             order => $field_cfg->{order},
         };
 
-        # The fields to return like 'cod'
-        # Support different styles for config
-        my ( $other_cols, $newlookup );
+        # Detect the configuration style
+        my $other_cols;
         if ( ref $bindings->{$binding}{field} eq 'ARRAY' ) {
             $other_cols  = $self->bindings_field_multi( $bindings, $binding );
             push @cols, $rec;
@@ -1851,7 +1850,7 @@ sub control_read_c {
         return;
     }
 
-    my $value = ${$ctrl_ref->{$field}[0]};
+    my $value = ${ $ctrl_ref->{$field}[0] };
 
     if ( $value == 1 ) {
         $self->{scrdata}{$field} = $value;
@@ -1863,6 +1862,39 @@ sub control_read_c {
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = $value;
             print "Screen (c): $field = undef\n";
+        }
+    }
+
+    return;
+}
+
+=head2 control_read_r
+
+Read RadiobuttonGroup.
+
+=cut
+
+sub control_read_r {
+    my ( $self, $ctrl_ref, $field ) = @_;
+
+    unless ( $ctrl_ref->{$field}[1] ) {
+        warn "Undefined: [r] $field\n";
+        return;
+    }
+
+    my $value = ${ $ctrl_ref->{$field}[0] };
+    $value = q{} if !defined $value; # empty string
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+        $self->{scrdata}{$field} = $value;
+        print "Screen (r): $field = $value\n";
+    }
+    else {
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{scrdata}{"$field:r"} = undef;
+            print "Screen (r): $field = undef\n";
         }
     }
 
@@ -2255,6 +2287,25 @@ sub control_write_c {
     # if ( $self->{scrobj}->can($sub_name) ) {
     #     $self->{scrobj}->$sub_name;
     # }
+}
+
+=head2 control_write_r
+
+Write to a Tk::RadiobuttonGroup widget.
+
+=cut
+
+sub control_write_r {
+    my ( $self, $ctrl_ref, $field, $value ) = @_;
+
+    if ( $value ) {
+        ${ $ctrl_ref->{$field}[0] } = $value;
+    }
+    else {
+        ${ $ctrl_ref->{$field}[0] } = undef;
+    }
+
+    return;
 }
 
 =head2 control_states
