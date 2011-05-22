@@ -135,6 +135,64 @@ sub start {
     return;
 }
 
+sub about {
+    my $self = shift;
+
+    my $gui = $self->_view;
+
+    # Create a dialog.
+    my $dbox = $gui->DialogBox(
+        -title   => 'Despre ... ',
+        -buttons => ['Inchide'],
+    );
+
+    # Windows has the annoying habit of setting the background color
+    # for the Text widget differently from the rest of the window.  So
+    # get the dialog box background color for later use.
+    my $bg = $dbox->cget('-background');
+
+    # Insert a text widget to display the information.
+    my $text = $dbox->add(
+        'Text',
+        -height     => 8,
+        -width      => 35,
+        -background => $bg
+    );
+
+    # Define some fonts.
+    my $textfont = $text->cget('-font')->Clone( -family => 'Helvetica' );
+    my $italicfont = $textfont->Clone( -slant => 'italic' );
+    $text->tag(
+        'configure', 'italic',
+        -font    => $italicfont,
+        -justify => 'center'
+    );
+    $text->tag(
+        'configure', 'normal',
+        -font    => $textfont,
+        -justify => 'center'
+    );
+
+    my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
+    my $PROGRAM_VER  = $Tpda3::VERSION;
+
+    # Add the about text.
+    $text->insert( 'end', "\n" );
+    $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
+    $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
+    $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
+    $text->insert( 'end', "Copyright 2004 - 2011\n", 'normal' );
+    $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
+    $text->insert( 'end', "stefansbv at users . sourceforge . net",
+        'italic' );
+    $text->configure( -state => 'disabled' );
+    $text->pack(
+        -expand => 1,
+        -fill   => 'both'
+    );
+    $dbox->Show();
+}
+
 =head2 _set_event_handlers
 
 Setup event handlers for the interface.
@@ -152,6 +210,13 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
             $self->_view->on_quit;
+        }
+    );
+
+    #-- About
+    $self->_view->get_menu_popup_item('mn_ab')->configure(
+        -command => sub {
+            $self->about;
         }
     );
 
@@ -2582,6 +2647,7 @@ sub restore_screendata {
 
     return;
 }
+
 
 =head1 AUTHOR
 
