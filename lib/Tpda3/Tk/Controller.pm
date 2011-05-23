@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -540,71 +542,38 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings
 
-DOC NOT FINISHED, only ideas!
-
-Creates bindings for widgets that use the L<Tpda3::Tk::Dialog::Search>
+Creates widget bindings that use the L<Tpda3::Tk::Dialog::Search>
 module to look-up value key translations from a table and put them in
 one or more widgets.
 
-For example, if we have two Tk::Entry widgets for I<customername> and
-I<customernumber>, a configuration like the following in
-L<orders.conf> will make a binding for the I<customername> widget to
-the L<Return> key. When the user presses the L<Return key>, asuming
-that the I<customername> widget has the focus, a dialog window wil pop
-up and can be used to serch the I<customernumber> coresponding to a
-I<customername>.
+The simplest configuration, with one lookup field and one return
+field, looks like this:
+
+ <bindings>
+   <customer>
+     table               = customers
+     lookup              = customername
+     field               = customernumber
+   </customer>
+ </bindings>
 
 This configuration allows to lookup for a I<customernumber> in the
-I<customers> table when knowing the I<customername>.
-The I<customername> and I<customernumber> fields must be defined in
-the current table, with properties like width, label and order.
+I<customers> table when knowing the I<customername>.  The
+I<customername> and I<customernumber> fields must be defined in the
+current table, with properties like width, label and order. this are
+also the names of the widgets in the screen I<Orders>.  Multiple
+I<field> items can be added to the configuration, to return more than
+one value, and write its contents to the screen.
+
+When the field names are different than the control names we need to
+map the name of the fields with the name of the controls and the
+configuration will be a little more complicated:
 
  <bindings>
-   <customername>
-     table = customers
-     field = customernumber
-   </customername>
- </bindings>
-
-Sometimes we need to lookup the key -> values for more than one field
-from the same table, for example ...
-
- <bindings>
-   <localitate>
-    table = localitati
-    field = id_judet
-    field = cod_p
-    field = id_loc
-   </localitate>
- </bindings>
-
-The most complex situation is when the name of the field is not the
-same as the name of the control ...
-
-Or
-
- <bindings>
-   <customername>
-     table = customers
-     field = customernumber
-   </customername>
- </bindings>
-
-Case when the field name the same as the control name, but with
-multiple values to lookup for.
-
-Case when the field name is different than the control name, and with
-multiple values to lookup for.
-
-We need to map the name of the fields with the name of the controls.
-
-In the simpler forms of the config, we skip that, other ways
-there will be double columns in the Search dialog.
-
- <bindings>
+   # Localitate domiciliu stabil
    <loc_ds>
-    table                = localitati
-    <field localitate>
+     table               = localitati
+    <lookup localitate>
       name               = loc_ds
     </field>
     <field id_judet>
@@ -630,57 +599,66 @@ sub setup_lookup_bindings {
 
     $self->_log->info("Setup binding for configured widgets");
 
-    foreach my $binding ( keys %{$bindings} ) {
+    foreach my $bind_name ( keys %{$bindings} ) {
 
-        # Check if we have bindings
-        next unless $binding;
+        # Skip if just an empty tag
+        next unless $bind_name;
 
-        my $lookup;
-        if ( exists $bindings->{$binding}{lookup} ) {
-            $lookup = $bindings->{$binding}{lookup};
-        }
-        else {
-            $lookup = $binding;
-        }
+        # 'lookup' can be a hashref, we get the first key, or a value
+        my $lookup = ref $bindings->{$bind_name}{lookup}
+                   ? (keys %{ $bindings->{$bind_name}{lookup} })[0]
+                   : $bindings->{$bind_name}{lookup};
 
-        $self->_log->trace("Setup binding for '$binding'");
+        my $column = ref $bindings->{$bind_name}{lookup}
+                   ? $bindings->{$bind_name}{lookup}{$lookup}{name}
+                   : $lookup ;
+
+        $self->_log->trace("Setup binding for '$bind_name'");
 
         # Parameter for Search dialog
         my $para = {
-            table  => $bindings->{$binding}{table},
+            table  => $bindings->{$bind_name}{table},
             lookup => $lookup,
         };
 
-        # Add lookup field to columns
-        # the 'search in' field name like 'denumire' ;)
-        my $field_cfg = $self->_scrcfg->maintable->{columns}{$binding};
+        # Add the lookup field to columns
+        my $field_cfg = $self->_scrcfg->maintable->{columns}{$column};
         my @cols;
         my $rec = {};
-        $rec->{$binding} = {
+        $rec->{$lookup} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
         };
+        $rec->{$lookup}{name} = $column if $column; # add name attribute
 
-        # Detect the configuration style
-        my $other_cols;
-        if ( ref $bindings->{$binding}{field} eq 'ARRAY' ) {
-            $other_cols  = $self->bindings_field_multi( $bindings, $binding );
-            push @cols, $rec;
-        }
-        elsif ( ref $bindings->{$binding}{field} eq 'HASH' ) {
-            $other_cols = $self->bindings_field_complex( $bindings, $binding );
-        }
-        else {
-            $other_cols = $self->bindings_field_single( $bindings, $binding );
-            push @cols, $rec;
-        }
+        push @cols, $rec;
 
-        push @cols, @{$other_cols};
-        $para->{columns} = [@cols];
+        # Detect the configuration style, add the 'fields' to the
+        # columns list
+        my $flds;
+      SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
+            /^$/     && do {
+                $flds = $self->bindings_field_single( $bindings, $bind_name );
+                last SWITCH;
+            };
+            /array/i && do {
+                $flds = $self->bindings_field_multi( $bindings, $bind_name );
+                last SWITCH;
+            };
+            /hash/i  && do {
+                $flds = $self->bindings_field_complex( $bindings, $bind_name );
+                last SWITCH;
+            };
+            print "WARN: Bindigs configuration style?\n";
+            return;
+        }
+        push @cols, @{$flds};
 
-        $ctrl_ref->{$binding}[1]->bind(
-            '<KeyPress-Return>' => sub {
+        $para->{columns} = [@cols];    # add columns info to parameters
+
+        $ctrl_ref->{$column}[1]->bind(
+            '<Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para );
                 $self->screen_write( $record, 'fields' );
             }
@@ -692,14 +670,16 @@ sub setup_lookup_bindings {
 
 =head2 simple_bindings
 
+Just one field atribute.
+
 =cut
 
 sub bindings_field_single {
-    my ( $self, $bindings, $binding ) = @_;
+    my ( $self, $bindings, $bind_name ) = @_;
 
     # One field, no array
     my @cols;
-    my $fld       = $bindings->{$binding}{field};
+    my $fld       = $bindings->{$bind_name}{field};
     my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
     my $rec       = {};
     $rec->{$fld} = {
@@ -714,15 +694,17 @@ sub bindings_field_single {
 
 =head2 bindings_field_multi
 
+Multiple return fields.
+
 =cut
 
 sub bindings_field_multi {
-    my ( $self, $bindings, $binding ) = @_;
+    my ( $self, $bindings, $bind_name ) = @_;
 
     my @cols;
 
     # Multiple fields returned as array
-    foreach my $fld ( @{ $bindings->{$binding}{field} } ) {
+    foreach my $fld ( @{ $bindings->{$bind_name}{field} } ) {
         my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
         my $rec       = {};
         $rec->{$fld} = {
@@ -738,15 +720,17 @@ sub bindings_field_multi {
 
 =head2 bindings_field_complex
 
+Multiple return fields, widget name different from field name.
+
 =cut
 
 sub bindings_field_complex {
-    my ( $self, $bindings, $binding ) = @_;
+    my ( $self, $bindings, $bind_name ) = @_;
 
     my @cols;
     # Multiple fields returned as array
-    foreach my $fld ( keys %{ $bindings->{$binding}{field} } ) {
-        my $name      = $bindings->{$binding}{field}{$fld}{name};
+    foreach my $fld ( keys %{ $bindings->{$bind_name}{field} } ) {
+        my $name      = $bindings->{$bind_name}{field}{$fld}{name};
         my $field_cfg = $self->_scrcfg->maintable->{columns}{$name};
         my $rec       = {};
         $rec->{$fld} = {
@@ -760,6 +744,130 @@ sub bindings_field_complex {
 
     return \@cols;
 }
+
+# =head2 setup_lookup_bindings_table
+
+# Use Search dialog to lookup values in tables.
+
+# =cut
+
+# sub setup_lookup_bindings_table {
+#     my $self = shift;
+
+#     my $ctrl_ref = $self->_screen->get_controls();
+#     my $bindings = $self->_scrcfg->tablebindings;
+
+#     $self->_log->info("Setup binding for table widgets");
+
+#     foreach my $bind_name ( keys %{$bindings} ) {
+
+#         # Check if not just an empty tag
+#         next unless $bind_name;
+
+#         my $lookup;
+#         if ( exists $bindings->{$bind_name}{lookup} ) {
+#             $lookup = $bindings->{$bind_name}{lookup};
+#         }
+#         else {
+#             $lookup = $bind_name;
+#         }
+
+#         $self->_log->trace("Setup binding for '$bind_name'");
+
+#         # Parameter for Search dialog
+#         my $para = {
+#             table  => $bindings->{$bind_name}{table},
+#             lookup => $lookup,
+#         };
+
+#         # Add lookup field to columns
+#         # the 'search in' field name like 'denumire' ;)
+#         my $field_cfg = $self->_scrcfg->maintable->{columns}{$bind_name};
+#         my @cols;
+#         my $rec = {};
+#         $rec->{$bind_name} = {
+#             width => $field_cfg->{width},
+#             label => $field_cfg->{label},
+#             order => $field_cfg->{order},
+#         };
+#         push @cols, $rec;
+
+#         # Detect the configuration style
+#         my $fields;
+#         if ( ref $bindings->{$bind_name}{field} eq 'ARRAY' ) {
+#             $fields  = $self->bindings_field_multi( $bindings, $bind_name );
+#         }
+#         elsif ( ref $bindings->{$bind_name}{field} eq 'HASH' ) {
+#             $fields = $self->bindings_field_complex( $bindings, $bind_name );
+#         }
+#         else {
+#             $fields = $self->bindings_field_single( $bindings, $bind_name );
+#         }
+#         push @cols, @{$fields};
+
+#         $para->{columns} = [@cols];
+
+#         my $tm_object = $self->_screen->get_tm_controls('tm1');
+
+#         # Bindings:
+#         # Make the active area move after we press return:
+#         # We Have to use class binding here so that we override
+#         #  the default return binding
+#         my $t1     = $tm_object;
+#         my $params = {
+#             $t1    => 'T1',
+#             'conn' => '$conn',
+#             'gui'  => '$gui',
+#             'add1' => '$add_button',
+#         };
+
+#         $tm_object->bind( 'Tk::TableMatrix',
+#                           '<Return>' => [ \&tm_callback, $self, $params, $para ] );
+#     }
+
+#     return;
+# }
+
+# sub tm_callback {
+
+#     my ( $w1, $self, $p2, $para ) = @_;
+
+#     my $r = $w1->index( 'active', 'row' );
+#     my $c = $w1->index( 'active', 'col' );
+
+#     my $dict = Tpda3::Lookup->new;
+
+#     # Table refresh
+#     $w1->activate('origin');
+#     $w1->activate("$r,$c");
+#     $w1->reread();
+
+#     if ( $p2->{$w1} eq 'T1' ) {
+#         if ( $c == 1 ) {
+#             print " binding?\n";
+#             my $record = $dict->lookup( $self->_view, $para );
+#             # my $cols_skip = $self->{cautare}->tDict(
+#             #     $p2->{gui},
+#             #     'products',
+#             #     $r, $c,
+#             #     $w1 );
+#             # $cols_skip++;
+#             # $w1->activate("$r,$cols_skip");
+#         }
+#         elsif ( $c == 4 ) {
+#             # $self->calculate_order_line( $w1, $r );
+#             # $self->calculate_order( $w1, $r );
+#             $p2->{add1}->focus;
+#             $w1->activate( ++$r . ",0" );
+#         }
+#         else {
+#             $w1->activate( "$r," . ++$c );
+#         }
+
+#         # Tk->break;
+#     }
+#     $w1->see('active');
+# }
 
 =head2 set_app_mode
 
@@ -1120,6 +1228,8 @@ sub screen_module_load {
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
     #-- Lookup bindings
     $self->setup_lookup_bindings();
+    #-- Lookup bindings in tables (TableMatrix)
+#    $self->setup_lookup_bindings_table();
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
