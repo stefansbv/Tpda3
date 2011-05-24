@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -2184,6 +2186,63 @@ sub screen_write {
     return;
 }
 
+=head2 control_tmatrix_read
+
+Read data from a table matrix widget.
+
+=cut
+
+sub control_tmatrix_read {
+    my ($self, $tm_n) = @_;
+
+    $tm_n ||= 'tm1';             # default table label is 'tm1'
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_n);
+    my $xtvar;
+    if ($tm_object) {
+        $xtvar = $tm_object->cget( -variable );
+    }
+    else {
+        print "EE: Can't find '$tm_n' table\n";
+        return;
+    }
+
+    my $rows_no  = $tm_object->cget( -rows );
+    my $cols_no  = $tm_object->cget( -cols );
+    my $rows_idx = $rows_no - 1;
+    my $cols_idx = $cols_no - 1;
+
+    my $fields_cfg = $self->_scrcfg->table->{columns};
+    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+
+    # Read table data and create an AoH
+    my @tabledata;
+
+    # The first row is the header
+    for my $row ( 1 .. $rows_idx ) {
+
+        my $rowdata = {};
+        for my $col ( 0 .. $cols_idx ) {
+
+            my $cell_value = $tm_object->get("$row,$col");
+            my $col_name = $cols_ref->[$col];
+
+            my $fld_cfg = $fields_cfg->{$col_name};
+            my ($type, $width, $places, $rw ) =
+                @$fld_cfg{'content','width','decimals', 'rw'}; # hash slice
+
+            next if $rw eq 'ro'; # skip ro cols
+
+            # print "$row: $col_name => $cell_value\n";
+            $rowdata->{$row}{$col_name} = $cell_value;
+        }
+
+        push @tabledata, $rowdata;
+    }
+
+    return \@tabledata;
+}
+
 =head2 control_tmatrix_write
 
 Write data to TableMatrix widget
@@ -2723,21 +2782,29 @@ sub save_record {
         return;
     }
 
-    # my $screen_type = $self->_scrcfg->screen->{type};
-    # if ($screen_type eq 'tablematrix') {
+    # Save dependent data
 
-    #     # Table metadata
-    #     my $table_hr  = $self->_scrcfg->table;
-    #     my $fields_hr = $table_hr->{columns};
+    my $screen_type = $self->_scrcfg->screen->{type};
 
-    #     # Construct where, add findtype info
-    #     $params->{table} = $table_hr->{view};
-    #     $params->{fkcol} = $table_hr->{fkcol}{name};
+    if ( $screen_type eq 'tablematrix' ) {
 
-    #     my $records = $self->_model->query_record_batch($params);
+        my $tabledata = $self->control_tmatrix_read();
 
-    #     $self->control_tmatrix_write($records);
-    # }
+        my $depparams = {};
+        # Table metadata
+        my $table_hr  = $self->_scrcfg->table; # which table? TODO
+        my $fields_hr = $table_hr->{columns};
+
+        # Construct where, add findtype info
+        my $ctrl_ref = $self->_screen->get_controls();
+        $self->control_read_e($ctrl_ref, $pk_col);
+        my $pk_id = $self->{scrdata}{$pk_col};
+
+        $depparams->{table} = $table_hr->{name};
+        $depparams->{pkcol} = { $pk_col => $pk_id };
+
+        $self->_model->table_record_insert_batch($depparams, $tabledata);
+    }
 
     return;
 }

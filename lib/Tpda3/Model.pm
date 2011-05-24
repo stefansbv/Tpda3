@@ -550,12 +550,46 @@ sub table_record_insert {
 
 =head2 table_record_insert_batch
 
-Save records from Table widget into DB
+Save records from Table widget into DB.
+
+Prepares the statement for every record, not only once!
+
+TODO: Experiment with the example code from the I<PERFORMANCE> section
+      in SQL::Abstract manual.
 
 =cut
 
 sub table_record_insert_batch {
     my ( $self, $data_hr, $records ) = @_;
+
+    my $table = $data_hr->{table};
+    my $pkref = $data_hr->{pkcol};           # pk field name and value
+    my ( $pk_fld, $pk_value ) = each( %{$pkref} );
+
+    my $sql = SQL::Abstract->new();
+
+    # AoH refs
+    foreach my $row ( @{$records} ) {
+        while ( my ( $id, $rec ) = each( %{$row} ) ) {
+
+            # Add pk_col to record data
+            $rec->{$pk_fld} = $pk_value;
+
+            my ( $stmt, @bind ) = $sql->insert( $table, $rec );
+
+            print "SQL : $stmt\n";
+            print Dumper( \@bind);
+
+            try {
+                my $sth = $self->{_dbh}->prepare($stmt);
+                $sth->execute(@bind);
+            }
+            catch {
+                $self->_print("Database error!") ;
+                croak("Transaction aborted: $_");
+            };
+        }
+    }
 
     return;
 }
