@@ -604,24 +604,25 @@ sub setup_lookup_bindings {
         # Skip if just an empty tag
         next unless $bind_name;
 
-        # 'lookup' can be a hashref, we get the first key, or a value
+        # If 'lookup' is a hashref, get the first key, else the value
         my $lookup = ref $bindings->{$bind_name}{lookup}
                    ? (keys %{ $bindings->{$bind_name}{lookup} })[0]
                    : $bindings->{$bind_name}{lookup};
 
+        # If 'lookup' is a hashref, get the first keys name attribute
         my $column = ref $bindings->{$bind_name}{lookup}
                    ? $bindings->{$bind_name}{lookup}{$lookup}{name}
                    : $lookup ;
 
         $self->_log->trace("Setup binding for '$bind_name'");
 
-        # Parameter for Search dialog
+        # Compose the parameter for the 'Search' dialog
         my $para = {
             table  => $bindings->{$bind_name}{table},
             lookup => $lookup,
         };
 
-        # Add the lookup field to columns
+        # Add the lookup field to the columns list
         my $field_cfg = $self->_scrcfg->maintable->{columns}{$column};
         my @cols;
         my $rec = {};
@@ -634,7 +635,7 @@ sub setup_lookup_bindings {
 
         push @cols, $rec;
 
-        # Detect the configuration style, add the 'fields' to the
+        # Detect the configuration style and add the 'fields' to the
         # columns list
         my $flds;
       SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
@@ -720,7 +721,7 @@ sub bindings_field_multi {
 
 =head2 bindings_field_complex
 
-Multiple return fields, widget name different from field name.
+Multiple return fields and widget name different from field name.
 
 =cut
 
