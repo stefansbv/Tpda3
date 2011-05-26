@@ -1237,7 +1237,7 @@ sub screen_module_load {
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry();
     #-- Lookup bindings for tables (TableMatrix)
-    $self->setup_lookup_bindings_table();
+    $self->setup_lookup_bindings_table() if $screen_type eq 'tablematrix';
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
