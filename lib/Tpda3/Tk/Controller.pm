@@ -704,7 +704,7 @@ sub setup_lookup_bindings_table {
         };
 
         # Add the lookup field to the columns list
-        my $field_cfg = $self->_scrcfg->table->{columns}{$column};
+        my $field_cfg = $self->_scrcfg->deptable->{columns}{$column};
         my @cols;
         my $rec = {};
         $rec->{$lookup} = {
@@ -721,15 +721,15 @@ sub setup_lookup_bindings_table {
         my $flds;
       SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
             /^$/     && do {
-                $flds = $self->fields_cfg_one('table', $bindings, $bind_name);
+                $flds = $self->fields_cfg_one('deptable', $bindings, $bind_name);
                 last SWITCH;
             };
             /array/i && do {
-                $flds = $self->fields_cfg_many('table', $bindings, $bind_name);
+                $flds = $self->fields_cfg_many('deptable', $bindings, $bind_name);
                 last SWITCH;
             };
             /hash/i  && do {
-                $flds = $self->fields_cfg_named('table', $bindings, $bind_name);
+ $flds = $self->fields_cfg_named('deptable', $bindings, $bind_name);
                 last SWITCH;
             };
             print "WARN: Bindigs configuration style?\n";
@@ -1260,7 +1260,7 @@ sub screen_module_load {
 
     if ($screen_type eq 'tablematrix') {
         # TableMatrix header
-        my $tm_fields = $self->_scrcfg->table->{columns};
+        my $tm_fields = $self->_scrcfg->deptable->{columns};
         my $tm_object = $self->_screen->get_tm_controls('tm1');
         $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
     }
@@ -1517,22 +1517,16 @@ Load the selected record in screen
 sub record_load {
     my ($self, $pk_id) = @_;
 
-    my $value = $self->_view->list_read_selected();
-
-    if ( !defined $value ) {
-        print "No value selected in list";
-        return;
-    }
-
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
     my $fields_hr = $table_hr->{columns};
     my $pk_col    = $table_hr->{pkcol}{name};
+    my $pk_col_ft = $fields_hr->{$pk_col}{findtype};
 
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $table_hr->{view};   # use view instead of table
-    $params->{where}{$pk_col} = [ $pk_id, $fields_hr->{$pk_col}{findtype} ];
+    $params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
     $params->{pkcol} = $pk_col;
 
     my $record = $self->_model->query_record($params);
@@ -1542,15 +1536,21 @@ sub record_load {
     my $screen_type = $self->_scrcfg->screen->{type};
     if ($screen_type eq 'tablematrix') {
 
+        my $tm_params = {};
+
         # Table metadata
-        my $table_hr  = $self->_scrcfg->table;
+        my $table_hr  = $self->_scrcfg->deptable;
         my $fields_hr = $table_hr->{columns};
 
-        # Construct where, add findtype info
-        $params->{table} = $table_hr->{view};
-        $params->{fkcol} = $table_hr->{fkcol}{name};
+        print "\nC:", join ' ', keys %$fields_hr,"\n\n";
 
-        my $records = $self->_model->query_record_batch($params);
+        # Construct where, add findtype info
+        $tm_params->{table} = $table_hr->{view};
+        $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
+        $tm_params->{fkcol} = $table_hr->{fkcol}{name};
+        $tm_params->{cols}  = Tpda3::Utils->sort_hash_by_id($fields_hr);
+
+        my $records = $self->_model->query_record_batch($tm_params);
 
         $self->control_tmatrix_write($records);
     }
@@ -1738,8 +1738,6 @@ sub screen_report_print {
     # Configurari
     my $repxp   = $self->_cfg->cfextapps->{repmanexe};
     my $reppath = $self->_cfg->cfextapps->{reportspath};
-    print " $repxp\n";
-    print " $reppath\n";
 
     # $report_name =
     #     $self->{tpda}{cfg_ref}{conf_dir} .'/'. $reppath .'/'. $report;
@@ -1797,7 +1795,7 @@ sub screen_read {
          # Read ALL if $all == true (don't skip)
          if ( ! ( $all or $self->_model->is_mode('find') ) ) {
              if ($ctrlrw eq 'r') {
-                 print " skiping RO field '$field'\n";
+                 # print " skiping RO field '$field'\n";
                  next;
              }
          }
@@ -1838,14 +1836,14 @@ sub control_read_e {
         $value =~ s/\n$//mg;    # m=multiline
 
         $self->{scrdata}{$field} = $value;
-        print "Screen (e): $field = $value\n";
+        # print "Screen (e): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (e): $field = undef\n";
+            # print "Screen (e): $field = undef\n";
         }
     }
 
@@ -1875,14 +1873,14 @@ sub control_read_t {
         $value =~ s/\n$//mg;    # m=multiline
 
         $self->{scrdata}{$field} = $value;
-        print "Screen (t): $field = $value\n";
+        # print "Screen (t): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (t): $field = undef\n";
+            # print "Screen (t): $field = undef\n";
         }
     }
 
@@ -1931,14 +1929,14 @@ sub control_read_d {
         $value =~ s/\n$//mg;        # m=multiline
 
         $self->{scrdata}{$field} = $value;
-        print "Screen (d): $field = $value\n";
+        # print "Screen (d): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (d): $field = undef\n";
+            # print "Screen (d): $field = undef\n";
         }
     }
 
@@ -1968,14 +1966,14 @@ sub control_read_m {
         $value =~ s/\n$//mg;        # m=multiline
 
         $self->{scrdata}{$field} = $value;
-        print "Screen (m): $field = $value\n";
+        # print "Screen (m): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (m): $field = undef\n";
+            # print "Screen (m): $field = undef\n";
         }
     }
 
@@ -2005,14 +2003,14 @@ sub control_read_l {
         $value =~ s/\n$//mg;        # m=multiline
 
         $self->{scrdata}{$field} = $value;
-        print "Screen (l): $field = $value\n";
+        # print "Screen (l): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = undef;
-            print "Screen (l): $field = undef\n";
+            # print "Screen (l): $field = undef\n";
         }
     }
 
@@ -2037,14 +2035,14 @@ sub control_read_c {
 
     if ( $value == 1 ) {
         $self->{scrdata}{$field} = $value;
-        print "Screen (c): $field = $value\n";
+        # print "Screen (c): $field = $value\n";
     }
     else {
 
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{$field} = $value;
-            print "Screen (c): $field = undef\n";
+            # print "Screen (c): $field = undef\n";
         }
     }
 
@@ -2071,13 +2069,13 @@ sub control_read_r {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
         $self->{scrdata}{$field} = $value;
-        print "Screen (r): $field = $value\n";
+        # print "Screen (r): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{scrdata}{"$field:r"} = undef;
-            print "Screen (r): $field = undef\n";
+            # print "Screen (r): $field = undef\n";
         }
     }
 
@@ -2212,7 +2210,7 @@ sub control_tmatrix_read {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    my $fields_cfg = $self->_scrcfg->table->{columns};
+    my $fields_cfg = $self->_scrcfg->deptable->{columns};
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
     # Read table data and create an AoH
@@ -2258,8 +2256,6 @@ sub control_tmatrix_write {
         $xtvar = $tm_object->cget( -variable );
     }
     else {
-
-        # Just ignore :)
         return;
     }
 
@@ -2268,22 +2264,24 @@ sub control_tmatrix_write {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
-            my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
+        foreach my $field ( keys %{ $self->_scrcfg->deptable->{columns} } ) {
+            my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
+
+            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
             my $value = $record->{$field};
             $value = q{} unless defined $value;    # Empty
             $value =~ s/[\n\t]//g;                 # Delete control chars
 
-            my ( $col, $type, $width, $places ) =
+            my ( $col, $type, $width, $decimals ) =
               @$fld_cfg{'id','content','width','decimals'}; # hash slice
 
-            if ( $type =~ /digit/ ) {
+            if ( $type eq 'numeric' ) {
                 $value = 0 unless $value;
-                if ( defined $places ) {
+                if ( defined $decimals ) {
 
                     # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
+                    $value = sprintf( "%.${decimals}f", $value );
                 }
                 else {
                     $value = sprintf( "%.0f", $value );
@@ -2332,9 +2330,8 @@ sub control_tmatrix_write_row {
 
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
-        print " $field: \n";
 
-        my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
+        my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
         my $value = $record_ref->{$field};
 
         my ( $col, $type, $width, $places ) =
@@ -2701,11 +2698,7 @@ Renumber TableMatrix rows
 sub renum_tmatrix_row {
     my ($self, $xt) = @_;
 
-    # print " renum\n";
-
     my $r = $xt->index( 'end', 'row' );
-
-    # print "# randuri = $r\n";
 
     if ( $r >= 1 ) {
         foreach my $i ( 1 .. $r ) {
@@ -2734,6 +2727,7 @@ sub save_record {
     my $table_hr  = $self->_scrcfg->maintable;
     my $fields_hr = $table_hr->{columns};
     my $pk_col    = $table_hr->{pkcol}{name};
+    my $pk_col_ft = $fields_hr->{$pk_col}{findtype};
 
     # Construct where, add findtype info
     my $params = {};
@@ -2772,7 +2766,7 @@ sub save_record {
             return;
         }
 
-        $params->{where}{$pk_col} = [ $pk_id, $fields_hr->{$pk_col}{findtype} ];
+        $params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
 
         my $pk_ref =
           $self->_model->table_record_update( $params, $self->{scrdata} );
@@ -2790,9 +2784,9 @@ sub save_record {
 
         my $tabledata = $self->control_tmatrix_read();
 
-        my $depparams = {};
+        my $tm_params = {};
         # Table metadata
-        my $table_hr  = $self->_scrcfg->table; # which table? TODO
+        my $table_hr  = $self->_scrcfg->deptable; # which table? TODO
         my $fields_hr = $table_hr->{columns};
 
         # Construct where, add findtype info
@@ -2800,10 +2794,13 @@ sub save_record {
         $self->control_read_e($ctrl_ref, $pk_col);
         my $pk_id = $self->{scrdata}{$pk_col};
 
-        $depparams->{table} = $table_hr->{name};
-        $depparams->{pkcol} = { $pk_col => $pk_id };
+        $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
+        $tm_params->{table} = $table_hr->{name};
+        $tm_params->{pkcol} = { $pk_col => $pk_id };
 
-        $self->_model->table_record_insert_batch($depparams, $tabledata);
+        # Delete all articles and reinsert from TM
+        $self->_model->table_record_delete_batch($tm_params);
+        $self->_model->table_record_insert_batch($tm_params, $tabledata);
     }
 
     return;

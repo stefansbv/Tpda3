@@ -133,7 +133,8 @@ sub dateentry_format_date {
 
 =head2 sort_hash_by_id
 
-Use ST to sort hash by value (Id)
+Use ST to sort hash by value (Id), returns an array ref of the sorted
+items.
 
 =cut
 

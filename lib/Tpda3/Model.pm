@@ -345,17 +345,18 @@ Query records.
 sub query_record_batch {
     my ( $self, $data_hr ) = @_;
 
-    my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};       # print " pkcol is $pkcol\n";
-    my $order = $data_hr->{fkcol};       # print " fkcol is $fkcol\n";
+    my $table  = $data_hr->{table};
+    my $pkcol  = $data_hr->{pkcol};
+    my $order  = $data_hr->{fkcol};
+    my $fields = $data_hr->{cols};
 
     my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select( $table, undef, $where, $order );
+    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
 
-    # print "SQL : $stmt\n";
+    print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
     my @records;
@@ -437,26 +438,32 @@ Second parameter 'option' is passed to quote4like.
 
 sub build_where {
     my ( $self, $data_hr, $opt ) = @_;
-
+    print "build where\n";
+    print Dumper($data_hr);
     my $where = {};
+
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
-        if ( $attrib->[1] eq 'contains' ) {
+        my $find_type = $attrib->[1];
+
+        unless ($find_type) {
+            warn "Unknown 'findtype' configured for '$field', using 'allstr'";
+            $find_type = 'allstr';
+        }
+
+        if ( $find_type eq 'contains' ) {
             $where->{$field} =
                 { -like => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
         }
-        elsif ( $attrib->[1] eq 'allstr' ) {
+        elsif ( $find_type eq 'allstr' ) {
             $where->{$field} = $attrib->[0];
         }
-        elsif ( $attrib->[1] eq 'date' ) {
+        elsif ( $find_type eq 'date' ) {
             $where->{$field} =
               Tpda3::Utils->process_date_string( $attrib->[0] );
         }
-        elsif ( $attrib->[1] eq 'none' ) {
+        elsif ( $find_type eq 'none' ) {
 
             # just skip
-        }
-        else {
-            warn "Unknown 'find type' configured for '$field'";
         }
     }
 
@@ -488,8 +495,6 @@ sub table_record_update {
     my ( $self, $data_hr, $record ) = @_;
 
     my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};
-
     my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
@@ -523,7 +528,6 @@ sub table_record_insert {
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
 
-    print Dumper( $data_hr);
     my $sql = SQL::Abstract->new();
 
     # Postgres version 8.2 or greater: RETURNING
@@ -564,7 +568,6 @@ sub table_record_insert_batch {
 
     my $table = $data_hr->{table};
     my $pkref = $data_hr->{pkcol};           # pk field name and value
-    my ( $pk_fld, $pk_value ) = each( %{$pkref} );
 
     my $sql = SQL::Abstract->new();
 
@@ -572,13 +575,13 @@ sub table_record_insert_batch {
     foreach my $row ( @{$records} ) {
         while ( my ( $id, $rec ) = each( %{$row} ) ) {
 
-            # Add pk_col to record data
-            $rec->{$pk_fld} = $pk_value;
+            # Add pk_col to record data (merge hash refs)
+            @{$rec}{ keys %{$pkref} } = values %{$pkref};
 
             my ( $stmt, @bind ) = $sql->insert( $table, $rec );
 
             print "SQL : $stmt\n";
-            print Dumper( \@bind);
+            # print Dumper( \@bind);
 
             try {
                 my $sth = $self->{_dbh}->prepare($stmt);
@@ -590,6 +593,35 @@ sub table_record_insert_batch {
             };
         }
     }
+
+    return;
+}
+
+sub table_record_delete_batch {
+    my ( $self, $data_hr, $records ) = @_;
+
+    my $table = $data_hr->{table};
+
+    my $sql = SQL::Abstract->new();
+
+    my $where = $self->build_where($data_hr);
+
+    croak "Empty SQL WHERE in DELETE command!"
+        unless ( %{$where} );                # safety net
+
+    my ( $stmt, @bind ) = $sql->delete( $table, $where );
+
+    print "SQL : $stmt\n";
+    # print Dumper( \@bind);
+
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
 
     return;
 }
