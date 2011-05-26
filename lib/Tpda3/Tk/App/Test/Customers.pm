@@ -66,9 +66,9 @@ sub run_screen {
     my $ecustomername = $frame1->Entry(
         -width    => 35,
         -validate => 'key',
-        # -vcmd     => sub {
-        #     $self->{elimits}->entry_limit( '_anychar:35', @_ );
-        # }
+        -vcmd     => sub {
+            Tpda3::Utils->validate( 'anychar:35', @_ );
+        },
     );
     $ecustomername->form(
         -top  => [ '&', $lcustomername, 0 ],
@@ -258,9 +258,9 @@ sub run_screen {
         -width    => 10,
         -justify  => 'right',
         -validate => 'key',
-        # -vcmd     => sub {
-        #     $self->{elimits}->entry_limit( '_digit_prec:10:2', @_ );
-        # }
+        -vcmd     => sub {
+            Tpda3::Utils->validate( 'numeric:10:2', @_ );
+        },
     );
 
     $ecreditlimit->form(

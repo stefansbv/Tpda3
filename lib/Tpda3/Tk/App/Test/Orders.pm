@@ -328,6 +328,8 @@ sub run_screen {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
+        -autoclear      => 1,
+        -vcmd           => sub { Tpda3::Utils->entry_limit_tbl },
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 
