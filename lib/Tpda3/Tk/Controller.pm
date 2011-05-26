@@ -1542,8 +1542,6 @@ sub record_load {
         my $table_hr  = $self->_scrcfg->deptable;
         my $fields_hr = $table_hr->{columns};
 
-        print "\nC:", join ' ', keys %$fields_hr,"\n\n";
-
         # Construct where, add findtype info
         $tm_params->{table} = $table_hr->{view};
         $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
@@ -2798,7 +2796,7 @@ sub save_record {
         $tm_params->{table} = $table_hr->{name};
         $tm_params->{pkcol} = { $pk_col => $pk_id };
 
-        # Delete all articles and reinsert from TM
+        # Delete all articles and reinsert from TM ;)
         $self->_model->table_record_delete_batch($tm_params);
         $self->_model->table_record_insert_batch($tm_params, $tabledata);
     }

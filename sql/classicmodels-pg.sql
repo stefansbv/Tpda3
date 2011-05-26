@@ -39,7 +39,7 @@ Database: classicmodels
 
 DROP DATABASE classicmodels;
 
-createdb -E LATIN1 -O username -U postgres classicmodels
+createdb -E UTF8 -O username -U postgres -T template0 classicmodels
 
 or
 

@@ -243,7 +243,7 @@ sub query_records_count {
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
 
-    print "SQL : $stmt\n";
+    # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
     my $record_count;
@@ -356,8 +356,7 @@ sub query_record_batch {
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
 
-    print "SQL : $stmt\n";
-    # print "bind: @bind\n";
+    # print "SQL : $stmt\    # print "bind: @bind\n";
 
     my @records;
     try {
@@ -438,16 +437,14 @@ Second parameter 'option' is passed to quote4like.
 
 sub build_where {
     my ( $self, $data_hr, $opt ) = @_;
-    print "build where\n";
-    print Dumper($data_hr);
+
     my $where = {};
 
     while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
-            warn "Unknown 'findtype' configured for '$field', using 'allstr'";
-            $find_type = 'allstr';
+            croak "Config error: unknown 'findtype' configured for '$field'";
         }
 
         if ( $find_type eq 'contains' ) {
@@ -535,8 +532,8 @@ sub table_record_insert {
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, {returning => $pkcol} );
 
-    print "SQL : $stmt\n";
-    print Dumper( \@bind);
+    # print "SQL : $stmt\n";
+    # print Dumper( \@bind);
 
     my $pk_id;
     try {
@@ -580,7 +577,7 @@ sub table_record_insert_batch {
 
             my ( $stmt, @bind ) = $sql->insert( $table, $rec );
 
-            print "SQL : $stmt\n";
+            # print "SQL : $stmt\n";
             # print Dumper( \@bind);
 
             try {
@@ -611,7 +608,7 @@ sub table_record_delete_batch {
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
-    print "SQL : $stmt\n";
+    # print "SQL : $stmt\n";
     # print Dumper( \@bind);
 
     try {
