@@ -50,7 +50,7 @@ if ! echo "$SEARCH_STR" | grep -i -q "$SEARCH_FOR"; then
 fi
 
 # Variables
-IMPORT_SCRIPT=script/tpda-import_data.pl
+IMPORT_SCRIPT=import-csv.pl
 DATA_DIR=data
 DBNAME=classicmodels
 DBD=$1
@@ -73,15 +73,15 @@ fi
 
 # Load data ... [ I know it needs a loop ;) ]
 
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/country.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/offices.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/employees.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/customers.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/productlines.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/products.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orders.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orderdetails.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/payments.dat;
-$PERL $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/status.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/country.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/offices.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/employees.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/customers.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/productlines.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/products.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orders.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orderdetails.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/payments.dat;
+$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/status.dat;
 
 echo Finished.
