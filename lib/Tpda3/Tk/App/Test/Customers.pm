@@ -40,6 +40,8 @@ sub run_screen {
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
+    my $validation = Tpda3::Tk::Validation->new();
+
     #-- Frame1 - Customer
 
     my $frame1 = $inreg_p->LabFrame(
@@ -67,7 +69,7 @@ sub run_screen {
         -width    => 35,
         -validate => 'key',
         -vcmd     => sub {
-            Tpda3::Utils->validate( 'anychar:35', @_ );
+            $validation->validate( 'anychar:35', @_ );
         },
     );
     $ecustomername->form(
@@ -259,7 +261,7 @@ sub run_screen {
         -justify  => 'right',
         -validate => 'key',
         -vcmd     => sub {
-            Tpda3::Utils->validate( 'numeric:10:2', @_ );
+            $validation->validate( 'numeric:10:2', @_ );
         },
     );
 
