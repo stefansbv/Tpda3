@@ -1173,7 +1173,6 @@ sub screen_module_load {
     # Unload current screen
     if ( $self->{_scrcls} ) {
         Class::Unload->unload( $self->{_scrcls} );
-        # Class::Unload->unload( 'Tpda3::Config::Screen' );
 
         if ( ! Class::Inspector->loaded( $self->{_scrcls} ) ) {
             $self->_log->trace("Unloaded '$self->{_scrcls}' screen");
@@ -1210,8 +1209,7 @@ sub screen_module_load {
 
     # Show screen
     my $nb = $self->_view->get_notebook('rec');
-    $self->{_scrobj}->run_screen($nb);
-    $self->_log->trace("Show screen $module");
+    $self->{_scrobj}->run_screen( $nb, $self->{_scrcfg} );
 
     my $screen_type = $self->_scrcfg->screen->{type};
 
@@ -1779,6 +1777,7 @@ sub screen_read {
      return unless scalar keys %{$ctrl_ref};
 
      # Scan and write to controls
+   FIELD:
      foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
          my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
@@ -1801,10 +1800,14 @@ sub screen_read {
          # Run appropriate sub according to control (entry widget) type
          my $sub_name = "control_read_$ctrltype";
          if ( $self->can($sub_name) ) {
+             unless ( $ctrl_ref->{$field}[1] ) {
+                 print "WW: Undefined field '$field', check configuration!\n";
+                 next FIELD;
+             }
              $self->$sub_name( $ctrl_ref, $field );
          }
          else {
-             print "WARN: No '$ctrltype' ctrl type for reading '$field'!\n";
+             print "WW: No '$ctrltype' ctrl type for reading '$field'!\n";
          }
      }
 
@@ -1819,11 +1822,6 @@ Read contents of a Tk::Entry control.
 
 sub control_read_e {
     my ( $self, $ctrl_ref, $field ) = @_;
-
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [e] $field\n";
-        return;
-    }
 
     my $value = $ctrl_ref->{$field}[1]->get;
 
@@ -1857,11 +1855,6 @@ Read contents of a Tk::Text control.
 sub control_read_t {
     my ( $self, $ctrl_ref, $field ) = @_;
 
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [t] $field\n";
-        return;
-    }
-
     my $value = $ctrl_ref->{$field}[1]->get( '0.0', 'end' );
 
     # Add value if not empty
@@ -1893,11 +1886,6 @@ Read contents of a Tk::DateEntry control.
 
 sub control_read_d {
     my ( $self, $ctrl_ref, $field ) = @_;
-
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [d] $field\n";
-        return;
-    }
 
     # Value from variable or empty string
     my $value = ${ $ctrl_ref->{$field}[0] } || q{};
@@ -1950,11 +1938,6 @@ Read contents of a Tk::JComboBox control.
 sub control_read_m {
     my ( $self, $ctrl_ref, $field ) = @_;
 
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [m] $field\n";
-        return;
-    }
-
     my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
 
     # Add value if not empty
@@ -1986,11 +1969,6 @@ Read contents of a Tk::MatchingBE control.
 
 sub control_read_l {
     my ( $self, $ctrl_ref, $field ) = @_;
-
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [l] $field\n";
-        return;
-    }
 
     my $value = $ctrl_ref->{$field}[1]->get_selected_value() || q{};
 
@@ -2024,11 +2002,6 @@ Read state of a Checkbox.
 sub control_read_c {
     my ( $self, $ctrl_ref, $field ) = @_;
 
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [c] $field\n";
-        return;
-    }
-
     my $value = ${ $ctrl_ref->{$field}[0] };
 
     if ( $value == 1 ) {
@@ -2055,11 +2028,6 @@ Read RadiobuttonGroup.
 
 sub control_read_r {
     my ( $self, $ctrl_ref, $field ) = @_;
-
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [r] $field\n";
-        return;
-    }
 
     my $value = ${ $ctrl_ref->{$field}[0] };
     $value = q{} if !defined $value; # empty string
@@ -2124,7 +2092,7 @@ sub screen_write {
             $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
         };
         if ($@) {
-            print "ERR: Undefined field '$field', check your configuration!\n";
+            print "WW: Undefined field '$field', check configuration!\n";
             next FIELD;
         }
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
@@ -2154,12 +2122,12 @@ sub screen_write {
             $value = Tpda3::Utils->trim($value);
 
             # Should make $value = 0, than format as number ?
-            my $decimals = $fld_cfg->{decimals};
-            if ($decimals) {
-                if ( $decimals > 0 ) {
+            my $places = $fld_cfg->{places};
+            if ($places) {
+                if ( $places > 0 ) {
 
-                    # if decimals > 0, format as number
-                    $value = sprintf( "%.${decimals}f", $value );
+                    # if places > 0, format as number
+                    $value = sprintf( "%.${places}f", $value );
                 }
             }
         }
@@ -2225,7 +2193,7 @@ sub control_tmatrix_read {
 
             my $fld_cfg = $fields_cfg->{$col_name};
             my ($type, $width, $places, $rw ) =
-                @$fld_cfg{'content','width','decimals', 'rw'}; # hash slice
+                @$fld_cfg{'type','width','places', 'rw'}; # hash slice
 
             next if $rw eq 'ro'; # skip ro cols
 
@@ -2271,15 +2239,15 @@ sub control_tmatrix_write {
             $value = q{} unless defined $value;    # Empty
             $value =~ s/[\n\t]//g;                 # Delete control chars
 
-            my ( $col, $type, $width, $decimals ) =
-              @$fld_cfg{'id','content','width','decimals'}; # hash slice
+            my ( $col, $type, $width, $places ) =
+              @$fld_cfg{'id','type','width','places'}; # hash slice
 
             if ( $type eq 'numeric' ) {
                 $value = 0 unless $value;
-                if ( defined $decimals ) {
+                if ( defined $places ) {
 
                     # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${decimals}f", $value );
+                    $value = sprintf( "%.${places}f", $value );
                 }
                 else {
                     $value = sprintf( "%.0f", $value );
@@ -2333,7 +2301,7 @@ sub control_tmatrix_write_row {
         my $value = $record_ref->{$field};
 
         my ( $col, $type, $width, $places ) =
-            @$fld_cfg{'id','content','width','decimals'}; # hash slice
+            @$fld_cfg{'id','type','width','places'}; # hash slice
 
         if ( $type =~ /digit/ ) {
             $value = 0 unless $value;

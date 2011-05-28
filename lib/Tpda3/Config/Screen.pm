@@ -52,18 +52,6 @@ sub new {
     return $self;
 }
 
-=head2 cfg
-
-Accessor for config object
-
-=cut
-
-# sub _cfg {
-#     my $self = shift;
-
-#     return $self->{_cfg};
-# }
-
 =head2 _make_accessors
 
 Automatically make accessors for the hash keys.

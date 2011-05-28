@@ -34,11 +34,13 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $inreg_p, $scr_cfg ) = @_;
 
     my $gui     = $inreg_p->toplevel;
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
+
+    my $validation = Tpda3::Tk::Validation->new($scr_cfg);
 
     #- Frame1 - Products
 

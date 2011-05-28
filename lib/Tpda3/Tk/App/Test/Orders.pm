@@ -39,11 +39,13 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $inreg_p, $scr_cfg ) = @_;
 
     my $gui     = $inreg_p->toplevel;
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
+
+    my $validation = Tpda3::Tk::Validation->new($scr_cfg);
 
     #- Frame bottom
 
@@ -328,8 +330,8 @@ sub run_screen {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
-        -autoclear      => 1,
-        -vcmd           => sub { Tpda3::Utils->entry_limit_tbl },
+        # -autoclear      => 1,
+        -vcmd           => sub { $validation->validate_table_cell(@_) },
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 

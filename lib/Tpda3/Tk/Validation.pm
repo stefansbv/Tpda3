@@ -9,22 +9,35 @@ Tpda3::Tk::Validation - The great new Tpda3::Tk::Validation!
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Tpda3::Tk::Validation;
 
-    my $foo = Tpda3::Tk::Validation->new();
-    ...
+    my $validation = Tpda3::Tk::Validation->new();
+
+    # In 'run_screen' method of a screen module:
+
+    my $efieldname = $frame->Entry(
+        -validate => 'key',
+        -vcmd     => sub {
+            $validation->validate_entry( 'anychar:35', @_ );
+        },
+    );
+
+    # For TableMatrix widgets:
+
+    my $xtable = $frm_t->Scrolled(
+        'TableMatrix',
+        ...
+        -validate       => 1,
+        -vcmd           => sub { $validation->validate_table_cell(@_) },
+    );
 
 =head1 METHODS
 
@@ -35,36 +48,113 @@ Constructor method
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $scrcfg) = @_;
 
-    return bless {
+    my $self = {};
+
+    $self->{procs} = {
         alpha        => \&alpha,
         alphanum     => \&alphanum,
-        alphanumplus => \&alphanum,
+        alphanumplus => \&alphanumplus,
         integer      => \&integer,
         numeric      => \&numeric,
         anychar      => \&anychar,
-        email => \&email,
-        data => \&data,
-    }, $class;
+        email        => \&email,
+        data         => \&data,
+    };
+
+    bless $self, $class;
+
+    $self->{_cfg} = $scrcfg;
+
+    # Prepare screen configuration data for tables
+    $self->_init_cfgdata('deptable');
+
+    return $self;
+}
+
+=head2 _init_cfg_data
+
+Prepare configuration data for the I<column_name_from_idx> sub.  Data
+is a hashref with column names as keys and column index as values.
+
+=cut
+
+sub _init_cfgdata {
+    my ($self, $table) = @_;
+
+    my $table_cfg = $self->{_cfg}{$table}{columns};
+    my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
+    my %cols      = map { $_ => $cols->[$_] } 0 .. $#{$cols};
+
+    $self->{$table} = \%cols;
+
+    return;
+}
+
+=head2 column_name_from_idx
+
+Return column name for a table configuration when knowing its index
+from the TableMatrix widget.
+
+=cut
+
+sub column_name_from_idx {
+    my ($self, $table, $col_idx) = @_;
+
+    return $self->{$table}{$col_idx};
 }
 
 =head2 validate
 
 Entry validation for Tk::Entry widgets.
 
+TODO: Change I<proc> to I<anychar> when in find mode, to allow
+searching for 'NULL' string to be entered. This would be than be
+interpreted as a 'column IS NULL' SQL WHERE clause.
+
+=cut
+
+sub validate_entry {
+    my ( $self, $text_param, $p1 ) = @_;
+
+    my ( $proc, $maxlen, $places ) = split /:/, $text_param;
+
+    return $self->validate( $proc, $p1, $maxlen, $places );
+}
+
+=head2 validate_table
+
+Entry validation for tables.
+
+Get I<type>, I<width> and I<places> from the table's configuration.
+
+=cut
+
+sub validate_table_cell {
+    my ($self, $row, $col, $old, $new, $cidx) = @_;
+
+    my $table_cfg = $self->{_cfg}{deptable}{columns};
+    my $column    = $self->column_name_from_idx( 'deptable', $col );
+    my $type      = $table_cfg->{$column}{type};
+    my $width     = $table_cfg->{$column}{width};
+    my $places    = $table_cfg->{$column}{places};
+
+    return $self->validate( $type, $new, $width, $places );
+}
+
+=head2 validate
+
+Validate.
+
 =cut
 
 sub validate {
-    my ($self, $text_param, $p1, $p2, $p3, $myindex, $p5) = @_;
-
-    my ( $proc, $maxlen, $zecim ) = split /:/, $text_param;
-
-    # $proc = 'anychar' if $find_mode;# allow 'NULL' string to be entered
+    my ( $self, $proc, $p1, $maxlen, $places ) = @_;
 
     my $retval;
-    if ( exists $self->{$proc} ) {
-        $retval = $self->{$proc}->( $self, $p1, $maxlen, $zecim );
+    if ( exists $self->{procs}{$proc} ) {
+        $retval = $self->{procs}{$proc}->( $self, $p1, $maxlen, $places );
     }
     else {
         print "WW: Validation for '$proc' not yet implemented!";
@@ -135,15 +225,15 @@ sub integer {
 }
 
 sub numeric {
-    my ($self, $myvar, $maxlen, $zecim) = @_;
+    my ($self, $myvar, $maxlen, $places) = @_;
 
-    $zecim = 0 unless ( defined $zecim );
+    $places = 0 unless ( defined $places );
 
     my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
-        $maxlen - $zecim - 1, $zecim;
+        $maxlen - $places - 1, $places;
 
     # my $pattern =
-    #   qr/^\-?\p{IsDigit}{0,$maxlen -$zecim -1}(\.\p{IsDigit}{0,$zecim})?$/x;
+    #   qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
 
 
     if ( $myvar =~ m/$pattern/ ) {
@@ -151,7 +241,7 @@ sub numeric {
         return 1;
     }
     else {
-        # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen:$zecim", "red");
+        # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen:$places", "red");
         return 0;
     }
 }
@@ -200,45 +290,6 @@ sub data {
         return 0;
     }
 }
-
-# sub entry_limit_tbl {
-
-#     # Description: Entry validation for tables                                |
-
-#     my $self    = $_[0];
-#     my $eobjtab = $_[1];
-
-#     # my $eobjtab = $screen_name->get_eobj_tab();
-
-#     # my $row  = $_[0];    # print "r   = $row\n";
-#     # my $col  = $_[1];    # print "c   = $col\n";
-#     # my $old  = $_[2];    # print "old = $old\n";
-#     # my $new  = $_[3];    # print "new = $new\n";
-#     # my $cidx = $_[4];    # print "ind = $cidx\n";
-
-#     my $text_param = '';
-
-#     # Cam scumpa procedura ...
-#     foreach my $camp ( keys %{$eobjtab} ) {
-
-#         # print "Camp = $camp\n";
-#         my $indice = $eobjtab->{$camp}[0];
-#         if ( $indice == $col ) {
-#             $text_param = $eobjtab->{$camp}[6];
-#             last;
-#         }
-#     }
-
-#     # print "Text param = $text_param\n";
-#     my ( $proc, $maxlen, $zecim ) = split( ':', $text_param );
-
-#     no strict 'refs';
-#     my $retval = &{$proc}( $self, $new, $maxlen, $zecim );
-
-#     # $retval =~ s/\n$//; Nu mere sa curat de aici stringul de \n
-
-#     return $retval;
-# }
 
 =head1 AUTHOR
 

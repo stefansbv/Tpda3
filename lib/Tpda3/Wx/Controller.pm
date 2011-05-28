@@ -1617,7 +1617,7 @@ Write data to TableMatrix widget
 #             $value =~ s/[\n\t]//g;                 # Delete control chars
 
 #             my ( $col, $type, $width, $places ) =
-#               @$fld_cfg{'id','content','width','decimals'}; # hash slice
+#               @$fld_cfg{'id','type','width','decimals'}; # hash slice
 
 #             if ( $type =~ /digit/ ) {
 #                 $value = 0 unless $value;

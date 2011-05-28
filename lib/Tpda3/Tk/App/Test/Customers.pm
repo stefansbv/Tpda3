@@ -34,13 +34,13 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $inreg_p, $scr_cfg ) = @_;
 
     my $gui     = $inreg_p->toplevel;
     my $main_p  = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
-    my $validation = Tpda3::Tk::Validation->new();
+    my $validation = Tpda3::Tk::Validation->new($scr_cfg);
 
     #-- Frame1 - Customer
 
@@ -69,7 +69,7 @@ sub run_screen {
         -width    => 35,
         -validate => 'key',
         -vcmd     => sub {
-            $validation->validate( 'anychar:35', @_ );
+            $validation->validate_entry( 'anychar:35', @_ );
         },
     );
     $ecustomername->form(
@@ -261,7 +261,7 @@ sub run_screen {
         -justify  => 'right',
         -validate => 'key',
         -vcmd     => sub {
-            $validation->validate( 'numeric:10:2', @_ );
+            $validation->validate_entry( 'numeric:10:2', @_ );
         },
     );
 
