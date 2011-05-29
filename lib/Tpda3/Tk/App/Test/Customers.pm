@@ -69,7 +69,7 @@ sub run_screen {
         -width    => 35,
         -validate => 'key',
         -vcmd     => sub {
-            $validation->validate_entry( 'anychar:35', @_ );
+            $validation->validate_entry( 'customername', @_ );
         },
     );
     $ecustomername->form(
@@ -261,7 +261,7 @@ sub run_screen {
         -justify  => 'right',
         -validate => 'key',
         -vcmd     => sub {
-            $validation->validate_entry( 'numeric:10:2', @_ );
+            $validation->validate_entry( 'creditlimit', @_ );
         },
     );
 

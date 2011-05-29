@@ -19,14 +19,14 @@ our $VERSION = '0.02';
 
     use Tpda3::Tk::Validation;
 
-    my $validation = Tpda3::Tk::Validation->new();
+    my $validation = Tpda3::Tk::Validation->new($scr_cfg_ref);
 
     # In 'run_screen' method of a screen module:
 
     my $efieldname = $frame->Entry(
         -validate => 'key',
         -vcmd     => sub {
-            $validation->validate_entry( 'anychar:35', @_ );
+            $validation->validate_entry( 'fieldname', @_ );
         },
     );
 
@@ -105,9 +105,24 @@ sub column_name_from_idx {
     return $self->{$table}{$col_idx};
 }
 
-=head2 validate
+=head2 column_attribs
 
-Entry validation for Tk::Entry widgets.
+Return column attributes for I<type>, I<width> and I<place>, from the
+screen configuration, for the main table.
+
+=cut
+
+sub column_attribs {
+    my ($self, $table, $column) = @_;
+
+    my $table_cfg = $self->{_cfg}{$table}{columns}{$column};
+
+    return @{$table_cfg}{ qw(type width places) }; # hash slice
+}
+
+=head2 validate_entry
+
+Validation for Tk::Entry widgets.
 
 TODO: Change I<proc> to I<anychar> when in find mode, to allow
 searching for 'NULL' string to be entered. This would be than be
@@ -116,11 +131,11 @@ interpreted as a 'column IS NULL' SQL WHERE clause.
 =cut
 
 sub validate_entry {
-    my ( $self, $text_param, $p1 ) = @_;
+    my ( $self, $column, $p1 ) = @_;
 
-    my ( $proc, $maxlen, $places ) = split /:/, $text_param;
+    my ($type, $width, $places) = $self->column_attribs('maintable', $column);
 
-    return $self->validate( $proc, $p1, $maxlen, $places );
+    return $self->validate( $type, $p1, $width, $places );
 }
 
 =head2 validate_table
@@ -134,11 +149,9 @@ Get I<type>, I<width> and I<places> from the table's configuration.
 sub validate_table_cell {
     my ($self, $row, $col, $old, $new, $cidx) = @_;
 
-    my $table_cfg = $self->{_cfg}{deptable}{columns};
-    my $column    = $self->column_name_from_idx( 'deptable', $col );
-    my $type      = $table_cfg->{$column}{type};
-    my $width     = $table_cfg->{$column}{width};
-    my $places    = $table_cfg->{$column}{places};
+    my $column = $self->column_name_from_idx( 'deptable', $col );
+
+    my ($type, $width, $places) = $self->column_attribs('deptable', $column);
 
     return $self->validate( $type, $new, $width, $places );
 }
