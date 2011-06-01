@@ -27,11 +27,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.07
+Version 0.09
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.09';
 
 =head1 SYNOPSIS
 
@@ -284,7 +284,7 @@ sub _set_event_handlers {
                 $self->record_find_execute;
             }
             else {
-                print "WARN: Not in find mode\n";
+                print "WW: Not in find mode\n";
             }
         }
     );
@@ -296,7 +296,7 @@ sub _set_event_handlers {
                 $self->record_find_count;
             }
             else {
-                print "WARN: Not in find mode\n";
+                print "WW: Not in find mode\n";
             }
         }
     );
@@ -308,7 +308,7 @@ sub _set_event_handlers {
                 $self->screen_report_print();
             }
             else {
-                print "WARN: Not in edit mode\n";
+                print "WW: Not in edit mode\n";
             }
         }
     );
@@ -334,7 +334,7 @@ sub _set_event_handlers {
                 $self->restore_screendata();
             }
             else {
-                print "WARN: Not in add mode\n";
+                print "WW: Not in add mode\n";
             }
         }
     );
@@ -348,7 +348,7 @@ sub _set_event_handlers {
                 $self->screen_clear();
             }
             else {
-                print "WARN: Not in edit or add mode\n";
+                print "WW: Not in edit or add mode\n";
             }
         }
     );
@@ -360,7 +360,7 @@ sub _set_event_handlers {
                 $self->record_reload();
             }
             else {
-                print "WARN: Not in edit mode\n";
+                print "WW: Not in edit mode\n";
             }
         }
     );
@@ -390,6 +390,17 @@ sub _set_event_handlers {
 
     $self->_view->bind( '<Control-q>' => sub { $self->_view->on_quit } );
     $self->_view->bind(
+        '<F5>' => sub {
+            if ( $self->_model->is_mode('edit') ) {
+                print "Reloading\n";
+                $self->record_reload();
+            }
+            else {
+                print "WW: Not in edit mode\n";
+            }
+        }
+    );
+    $self->_view->bind(
         '<F7>' => sub {
             # From add mode forbid find mode
             if ( !$self->_model->is_mode('add') ) {
@@ -403,7 +414,7 @@ sub _set_event_handlers {
                 $self->record_find_execute;
             }
             else {
-                print "WARN: Not in find mode\n";
+                print "WW: Not in find mode\n";
             }
         }
     );
@@ -413,7 +424,7 @@ sub _set_event_handlers {
                 $self->record_find_count;
             }
             else {
-                print "WARN: Not in find mode\n";
+                print "WW: Not in find mode\n";
             }
         }
     );
@@ -950,7 +961,7 @@ sub get_lookup_setings {
             $flds = $self->fields_cfg_named('deptable', $bindings);
             last SWITCH;
         };
-        print "WARN: Bindigs configuration style?\n";
+        print "WW: Bindigs configuration style?\n";
         return;
     }
     push @cols, @{$flds};
@@ -2307,7 +2318,7 @@ sub screen_write {
             $self->$sub_name( $ctrl_ref, $field, $value );
         }
         else {
-            print "WARN: No '$ctrltype' ctrl type for writing '$field'!\n";
+            print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
         }
 
         # Restore state
