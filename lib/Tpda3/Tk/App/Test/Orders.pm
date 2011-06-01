@@ -330,24 +330,9 @@ sub run_screen {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
-        # -autoclear      => 1,
         -vcmd           => sub { $validation->validate_table_cell(@_) },
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
-
-    #- Bindings
-
-    # Make the active area move after we press return: Have to use
-    # class binding here so that we override the default return
-    # binding
-    my $t1     = $xtable->Subwidget('scrolled');
-    my $params = {
-        $t1 => 'T1',
-        gui => $gui,
-    };
-
-    $xtable->bind( 'Tk::TableMatrix',
-                   '<Return>' => [ \&callback, $self, $params ] );
 
     #- Ordertotal (ordertotal)
 
@@ -402,48 +387,6 @@ sub run_screen {
     $xtable->update;
 
     return;
-}
-
-=head2 callback
-
-Callback for table matrix.
-
-=cut
-
-sub callback {
-    my ( $w1, $self, $p2 ) = @_;
-
-    my $r = $w1->index( 'active', 'row' );
-    my $c = $w1->index( 'active', 'col' );
-
-    # Table refresh
-    $w1->activate('origin');
-    $w1->activate("$r,$c");
-    $w1->reread();
-
-    if ( $p2->{$w1} eq 'T1' ) {
-        if ( $c == 1 ) {
-            # my $cols_skip = $self->{cautare}->tDict(
-            #     $p2->{gui},
-            #     'products',
-            #     $r, $c,
-            #     $w1 );
-            # $cols_skip++;
-            # $w1->activate("$r,$cols_skip");
-        }
-        elsif ( $c == 4 ) {
-            # $self->calculate_order_line( $w1, $r );
-            # $self->calculate_order( $w1, $r );
-            # $p2->{add1}->focus;
-            $w1->activate( ++$r . ",0" );
-        }
-        else {
-            $w1->activate( "$r," . ++$c );
-        }
-
-        # Tk->break;
-    }
-    $w1->see('active');
 }
 
 =head2 calculate_order_line

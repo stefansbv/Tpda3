@@ -3,6 +3,8 @@ package Tpda3::Tk::Validation;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Tpda3::Tk::Validation - The great new Tpda3::Tk::Validation!
@@ -117,7 +119,7 @@ sub column_attribs {
 
     my $table_cfg = $self->{_cfg}{$table}{columns}{$column};
 
-    return @{$table_cfg}{ qw(type width places) }; # hash slice
+    return @{$table_cfg}{ qw(validation width places) }; # hash slice
 }
 
 =head2 validate_entry

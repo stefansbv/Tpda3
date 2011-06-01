@@ -195,7 +195,7 @@ sub search {
     }
 
     # Search in field ...
-    my $den_label = $para->{lookup} || q{}; # label name or empty string
+    my $den_label = $para->{search} || q{}; # label name or empty string
     $lblcamp->configure( -text => "[ $den_label ]", -foreground => 'blue' );
 
     $search_ctrl->bind(
@@ -324,10 +324,10 @@ sub search_command {
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $para->{table};
-    $params->{where}{ $para->{lookup} } = [ $srcstr, 'contains' ];
+    $params->{where}{ $para->{search} } = [ $srcstr, 'contains' ];
     $params->{options} = $options;
     $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
-    $params->{order} = $para->{lookup};      # order by lookup field
+    $params->{order} = $para->{search};      # order by lookup field
 
     my $records = $model->query_dictionary($params);
 

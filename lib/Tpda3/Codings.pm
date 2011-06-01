@@ -71,9 +71,16 @@ sub get_coding_init {
         $self->{_code}{ $field } = $self->tbl_dict_query($para);
     }
 
-    # Add the default
-    if ( ! exists $self->{_code}{ $field }{ $para->{default} } ) {
-        $self->{_code}{ $field }{ $para->{default} } = $para->{default};
+    if (   $para->{default} =~ m{null}i
+        or $para->{default} eq q{} )    # compatible with old configs
+    {
+
+        # Add and empty option
+        unshift @{ $self->{_code}{ $field } },
+          {
+            -name  => ' ',
+            -value => ' ',
+          };
     }
 
     return $self->{_code}{ $field };
@@ -93,13 +100,13 @@ sub get_coding {
 
 =head2 tbl_dict_query
 
-Query a table for codes.  Return key -> value, pairs used as the
-'choices' of widgets like Tk::JComboBox.
+Query a table for codes.  Return S<< key -> value >>, pairs used to
+fill the I<choices> attributes of widgets like L<Tk::JComboBox>.
 
 There is a default table for codes named 'codificari' (named so, in
 the first version of TPDA).
 
-The 'codificari' table has the following structure:
+The I<codificari> table has the following structure:
 
    id_ord    INTEGER NOT NULL
    variabila VARCHAR(15)
@@ -107,14 +114,17 @@ The 'codificari' table has the following structure:
    cod       VARCHAR(5)
    denumire  VARCHAR(25) NOT NULL
 
-The 'variabila' columns contains the name of the field, because this
+The I<variabila> columns contains the name of the field, because this
 is a table used for many different codings.  When this table is used,
 a where clause is constructed to filter only the values coresponding
-to 'variabila'.
+to I<variabila>.
 
-There is another column named 'filtru' than can be used to restrict
+There is another column named I<filtru> than can be used to restrict
 the values listed when they depend on the value of another widget in
 the current screen (not yet used!).
+
+If the configuration has an I<orderby> field use it else order by
+description (name).
 
 TODO: Change the field names
 
@@ -130,15 +140,16 @@ sub tbl_dict_query {
 
     my $table  = $para->{table};
     my $fields = [ $para->{code}, $para->{name} ];
+    my $order  = $para->{orderby} || $para->{name};
 
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
+    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $rez;
+    my @dictrows;#    my $rez;
     try {
 
         # Batch fetching
@@ -150,10 +161,9 @@ sub tbl_dict_query {
             $sth->execute();
         }
 
-        while ( my $hashref = $sth->fetchrow_hashref('NAME_lc') ) {
-            my $key = $hashref->{ $para->{code} };
-            my $val = $hashref->{ $para->{name} };
-            $rez->{$key} = $val;
+        while ( my $row_rf = $sth->fetchrow_arrayref() ) {
+            # JComboBox specific data structure
+            push @dictrows, { -name => $row_rf->[1], -value => $row_rf->[0] };
         }
     }
     catch {
@@ -161,7 +171,7 @@ sub tbl_dict_query {
         croak("Transaction aborted: $_");
     };
 
-    return $rez;
+    return \@dictrows;
 }
 
 1;

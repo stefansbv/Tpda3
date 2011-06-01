@@ -91,9 +91,9 @@ sub new {
 
     $self->_log->trace('Controller new');
 
-    $self->_control_states_init;
+    $self->_control_states_init();
 
-    $self->_set_event_handlers;
+    $self->_set_event_handlers();
 
     $self->_set_menus_enable('disabled');    # disable find mode menus
 
@@ -575,7 +575,7 @@ configuration will be a little more complicated:
      table               = localitati
     <lookup localitate>
       name               = loc_ds
-    </field>
+    </lookup>
     <field id_judet>
       name               = id_jud_ds
     </field>
@@ -605,34 +605,34 @@ sub setup_lookup_bindings_entry {
         # Skip if just an empty tag
         next unless $bind_name;
 
-        # If 'lookup' is a hashref, get the first key, else the value
-        my $lookup = ref $bindings->{$bind_name}{lookup}
-                   ? (keys %{ $bindings->{$bind_name}{lookup} })[0]
-                   : $bindings->{$bind_name}{lookup};
+        # If 'search' is a hashref, get the first key, else the value
+        my $search = ref $bindings->{$bind_name}{search}
+                   ? (keys %{ $bindings->{$bind_name}{search} })[0]
+                   : $bindings->{$bind_name}{search};
 
-        # If 'lookup' is a hashref, get the first keys name attribute
-        my $column = ref $bindings->{$bind_name}{lookup}
-                   ? $bindings->{$bind_name}{lookup}{$lookup}{name}
-                   : $lookup ;
+        # If 'search' is a hashref, get the first keys name attribute
+        my $column = ref $bindings->{$bind_name}{search}
+                   ? $bindings->{$bind_name}{search}{$search}{name}
+                   : $search ;
 
         $self->_log->trace("Setup binding for '$bind_name'");
 
         # Compose the parameter for the 'Search' dialog
         my $para = {
             table  => $bindings->{$bind_name}{table},
-            lookup => $lookup,
+            search => $search,
         };
 
-        # Add the lookup field to the columns list
+        # Add the search field to the columns list
         my $field_cfg = $self->_scrcfg->maintable->{columns}{$column};
         my @cols;
         my $rec = {};
-        $rec->{$lookup} = {
+        $rec->{$search} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
         };
-        $rec->{$lookup}{name} = $column if $column; # add name attribute
+        $rec->{$search}{name} = $column if $column; # add name attribute
 
         push @cols, $rec;
 
@@ -641,18 +641,21 @@ sub setup_lookup_bindings_entry {
         my $flds;
       SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
             /^$/     && do {
-                $flds = $self->fields_cfg_one('maintable',$bindings,$bind_name);
+                $flds =
+                  $self->fields_cfg_one( 'maintable', $bindings->{$bind_name} );
                 last SWITCH;
             };
             /array/i && do {
-                $flds = $self->fields_cfg_many('maintable',$bindings,$bind_name );
+                $flds =
+                  $self->fields_cfg_many( 'maintable', $bindings->{$bind_name} );
                 last SWITCH;
             };
             /hash/i  && do {
-                $flds = $self->fields_cfg_named('maintable',$bindings,$bind_name);
+                $flds =
+                  $self->fields_cfg_named( 'maintable', $bindings->{$bind_name} );
                 last SWITCH;
             };
-            print "WARN: Bindigs configuration style?\n";
+            print "WW: Bindigs configuration style not recognised!\n";
             return;
         }
         push @cols, @{$flds};
@@ -670,92 +673,291 @@ sub setup_lookup_bindings_entry {
     return;
 }
 
-sub setup_lookup_bindings_table {
+=head2 setup_bindings_table
+
+Creates column bindings for table widgets created with
+L<Tk::TableMatrix> using the information from the I<tablebindings>
+section of the screen configuration.
+
+This is a configuration example from the L<Orders> screen:
+
+ <tablebindings>
+   <lookup>
+     <products>
+       bindcol           = 1
+       table             = products
+       search            = productname
+       field             = productcode
+     </products>
+   </lookup>
+   <method>
+     <article>
+       bindcol           = 4
+       subname           = calculate_article
+     </article>
+   </method>
+ </tablebindings>
+
+First it creates a dispatch table:
+
+ my $dispatch = {
+     colsub1 => \&lookup,
+     colsub4 => \&method,
+ };
+
+Then creates a class binding for I<do_something_with> subroutine to
+override the default return binding.  I<do_something_with> than uses
+the dispatch table to execute the appropriate function when the return
+key is pressed inside a cell.
+
+There are two functions defined, I<lookup> and I<method>.  The first
+activates the L<Tpda3::Tk::Dialog::Search> module, to look-up value
+key translations from a database table and fill the configured cells
+with the results.  The second can call a method in the current screen.
+
+=cut
+
+sub setup_bindings_table {
     my $self = shift;
 
     my $dict     = Tpda3::Lookup->new;
-    my $ctrl_ref = $self->_screen->get_controls();
-
     my $bindings = $self->_scrcfg->tablebindings;
 
-    $self->_log->info("Setup binding for configured widgets");
+    my $dispatch = {};
+    foreach my $bind_type ( keys %{$bindings} ) {
+        next unless $bind_type;            # skip if just an empty tag
 
-    foreach my $bind_name ( keys %{$bindings} ) {
-
-        # Skip if just an empty tag
-        next unless $bind_name;
-
-        # If 'lookup' is a hashref, get the first key, else the value
-        my $lookup = ref $bindings->{$bind_name}{lookup}
-                   ? (keys %{ $bindings->{$bind_name}{lookup} })[0]
-                   : $bindings->{$bind_name}{lookup};
-
-        # If 'lookup' is a hashref, get the first keys name attribute
-        my $column = ref $bindings->{$bind_name}{lookup}
-                   ? $bindings->{$bind_name}{lookup}{$lookup}{name}
-                   : $lookup ;
-
-        $self->_log->trace("Setup binding for '$bind_name'");
-
-        # Compose the parameter for the 'Search' dialog
-        my $lk_para = {
-            table  => $bindings->{$bind_name}{table},
-            lookup => $lookup,
-        };
-
-        # Add the lookup field to the columns list
-        my $field_cfg = $self->_scrcfg->deptable->{columns}{$column};
-        my @cols;
-        my $rec = {};
-        $rec->{$lookup} = {
-            width => $field_cfg->{width},
-            label => $field_cfg->{label},
-            order => $field_cfg->{order},
-        };
-        $rec->{$lookup}{name} = $column if $column; # add name attribute
-
-        push @cols, $rec;
-
-        # Detect the configuration style and add the 'fields' to the
-        # columns list
-        my $flds;
-      SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
-            /^$/     && do {
-                $flds = $self->fields_cfg_one('deptable', $bindings, $bind_name);
-                last SWITCH;
-            };
-            /array/i && do {
-                $flds = $self->fields_cfg_many('deptable', $bindings, $bind_name);
-                last SWITCH;
-            };
-            /hash/i  && do {
- $flds = $self->fields_cfg_named('deptable', $bindings, $bind_name);
-                last SWITCH;
-            };
-            print "WARN: Bindigs configuration style?\n";
+        my $bnd = $bindings->{$bind_type};
+        if ($bind_type eq 'lookup') {
+            foreach my $bind_name ( keys %{$bnd} ) {
+                next unless $bind_name;    # skip if just an empty tag
+                my $lk_bind = $bnd->{$bind_name};
+                my $lookups = $self->add_dispatch_for_lookup($lk_bind);
+                @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
+            }
+        }
+        elsif ($bind_type eq 'method') {
+            foreach my $bind_name ( keys %{$bnd} ) {
+                next unless $bind_name;    # skip if just an empty tag
+                my $mt_bind = $bnd->{$bind_name};
+                my $methods = $self->add_dispatch_for_method($mt_bind);
+                @{$dispatch}{ keys %{$methods} } = values %{$methods};
+            }
+        }
+        else {
+            print "WW: bindings type '$bind_type' not implemented\n";
             return;
         }
-        push @cols, @{$flds};
-
-        $lk_para->{columns} = [@cols];    # add columns info to parameters
-
-        my $tm_object = $self->_screen->get_tm_controls('tm1');
-
-        # Parameters, add a label for the TM
-        my $t1     = $tm_object;
-        my $tm_para = {
-            $t1    => 'T1',
-            # add1   => $add_button,
-        };
-        # Have to use class binding here so that we override the
-        # default return binding
-        $tm_object->bind(
-            'Tk::TableMatrix',
-            '<Return>' => [ \&tm_callback, $self, $tm_para, $lk_para ],
-        );
     }
 
+    # Bindings:
+    my $tm = $self->_screen->get_tm_controls('tm1');
+    $tm->bind(
+        'Tk::TableMatrix','<Return>', sub{
+            my $r = $tm->index('active', 'row');
+            my $c = $tm->index('active', 'col');
+
+            $self->do_something_with($dispatch, $bindings, $r,$c);
+
+            if( $c == 5){
+                $tm->activate(++$r.",1");
+            }
+            else{
+                $tm->activate("$r,".++$c);
+            }
+            $tm->see('active');
+            Tk->break;
+        });
+
     return;
+}
+
+=head2 add_dispatch_for_lookup
+
+Return an entry in the dispatch table for a I<lookup> type binding.
+
+=cut
+
+sub add_dispatch_for_lookup {
+    my ($self, $bnd) = @_;
+
+    my $bindcol = 'colsub' . $bnd->{bindcol};
+
+    return { $bindcol => \&lookup };
+}
+
+=head2 add_dispatch_for_method
+
+Return an entry in the dispatch table for a I<method> type binding.
+
+=cut
+
+sub add_dispatch_for_method {
+    my ( $self, $bnd ) = @_;
+
+    my $bindcol = 'colsub' . $bnd->{bindcol};
+
+    return { $bindcol => \&method };
+}
+
+=head2 do_something_with
+
+This is bound to the Return key, and executes a function as defined in
+the configuration, using a dispatch table.
+
+=cut
+
+sub do_something_with {
+    my ($self, $dispatch, $bindings, $r,$c) = @_;
+
+    my $proc = "colsub$c";
+    if ( exists $dispatch->{$proc} ) {
+        $dispatch->{$proc}->($self, $bindings, $r,$c);
+    }
+    # else {
+    #     print "col $c not bound\n";
+    # }
+
+    return;
+}
+
+=head2 lookup
+
+Activates the L<Tpda3::Tk::Dialog::Search> module, to look-up value
+key translations from a database table and fill the configured cells
+with the results.
+
+=cut
+
+sub lookup {
+    my ($self, $bnd, $r, $c) = @_;
+
+    my $lk_para = $self->get_lookup_setings($bnd, $r, $c);
+
+    my $dict      = Tpda3::Lookup->new;
+    my $record    = $dict->lookup( $self->_view, $lk_para );
+    my $cols_skip = $self->control_tmatrix_write_row( $r, $c, $record );
+
+    return $cols_skip;                       # TODO
+}
+
+=head2 method
+
+Call a method from the Screen module on I<Return> key.
+
+=cut
+
+sub method {
+    my ($self, $bnd, $r, $c) = @_;
+    print "execute sub $r, $c\n";
+}
+
+=head2 get_lookup_setings
+
+Return the data structure used by the L<Tpda3::Tk::Dialog::Search>
+module.  Uses the I<tablebindings> section of the screen configuration
+and the related field attributes from the I<deptable> section.
+
+=over
+
+=item I<search>  - field name to be searched for a substring
+
+=item I<columns> - columns to be displayed in the list, with attributes
+
+=item I<table>   - name of the look-up table
+
+=back
+
+An example data structure, for the Orders screen:
+
+ {
+    'search'  => 'productname',
+    'columns' => [
+        {
+            'productname' => {
+                'width' => 36,
+                'order' => 'A',
+                'name'  => 'productname',
+                'label' => 'Product',
+            }
+        },
+        {
+            'productcode' => {
+                'width' => 15,
+                'order' => 'A',
+                'label' => 'Code',
+            }
+        },
+    ],
+    'table' => 'products',
+ }
+
+=cut
+
+sub get_lookup_setings {
+    my ($self, $bnd, $r, $c) = @_;
+
+    # Filter on bindcol = $c
+    my @names = grep { $bnd->{lookup}{$_}{bindcol} == $c }
+                keys %{ $bnd->{lookup} };
+    my $bindings = $bnd->{lookup}{ $names[0] };
+
+    # If 'search' is a hashref, get the first key, else the value
+    my $search = ref $bindings->{search}
+               ? (keys %{ $bindings->{search} })[0]
+               : $bindings->{search};
+
+    # If 'search' is a hashref, get the first keys name attribute
+    my $column = ref $bindings->{search}
+               ? $bindings->{search}{$search}{name}
+               : $search;
+
+    $self->_log->trace("Setup binding for $search:$column");
+
+    # Compose the parameter for the 'Search' dialog
+    my $lk_para = {
+        table  => $bindings->{table},
+        # bndcol => $bindings->{bndcol},
+        search => $search,
+    };
+
+    # Add the search field to the columns list
+    my $field_cfg = $self->_scrcfg->deptable->{columns}{$column};
+    my @cols;
+    my $rec = {};
+    $rec->{$search} = {
+        width => $field_cfg->{width},
+        label => $field_cfg->{label},
+        order => $field_cfg->{order},
+    };
+    $rec->{$search}{name} = $column if $column; # add name attribute
+
+    push @cols, $rec;
+
+    # Detect the configuration style and add the 'fields' to the
+    # columns list
+    my $flds;
+  SWITCH: for ( ref $bindings->{field} ) {
+        /^$/     && do {
+            $flds = $self->fields_cfg_one('deptable', $bindings);
+            last SWITCH;
+        };
+        /array/i && do {
+            $flds = $self->fields_cfg_many('deptable', $bindings);
+            last SWITCH;
+        };
+        /hash/i  && do {
+            $flds = $self->fields_cfg_named('deptable', $bindings);
+            last SWITCH;
+        };
+        print "WARN: Bindigs configuration style?\n";
+        return;
+    }
+    push @cols, @{$flds};
+
+    $lk_para->{columns} = [@cols];    # add columns info to parameters
+
+    return $lk_para;
 }
 
 =head2 fields_cfg_one
@@ -765,11 +967,11 @@ Just one field atribute.
 =cut
 
 sub fields_cfg_one {
-    my ( $self, $table, $bindings, $bind_name ) = @_;
+    my ( $self, $table, $bindings ) = @_;
 
     # One field, no array
     my @cols;
-    my $fld       = $bindings->{$bind_name}{field};
+    my $fld       = $bindings->{field};
     my $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
     my $rec       = {};
     $rec->{$fld} = {
@@ -789,12 +991,12 @@ Multiple return fields.
 =cut
 
 sub fields_cfg_many {
-    my ( $self, $table, $bindings, $bind_name ) = @_;
+    my ( $self, $table, $bindings ) = @_;
 
     my @cols;
 
     # Multiple fields returned as array
-    foreach my $fld ( @{ $bindings->{$bind_name}{field} } ) {
+    foreach my $fld ( @{ $bindings->{field} } ) {
         my $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
         my $rec       = {};
         $rec->{$fld} = {
@@ -815,12 +1017,12 @@ Multiple return fields and widget name different from field name.
 =cut
 
 sub fields_cfg_named {
-    my ( $self, $table, $bindings, $bind_name ) = @_;
+    my ( $self, $table, $bindings ) = @_;
 
     my @cols;
     # Multiple fields returned as array
-    foreach my $fld ( keys %{ $bindings->{$bind_name}{field} } ) {
-        my $name      = $bindings->{$bind_name}{field}{$fld}{name};
+    foreach my $fld ( keys %{ $bindings->{field} } ) {
+        my $name      = $bindings->{field}{$fld}{name};
         my $field_cfg = $self->_scrcfg->{$table}{columns}{$name};
         my $rec       = {};
         $rec->{$fld} = {
@@ -835,48 +1037,6 @@ sub fields_cfg_named {
     return \@cols;
 }
 
-=head2 tm_callback
-
-Callback for table cells. Only lookup is implemnted.
-
-TODO: Other bindings for functions defined in the screen.
-TODO: Work with more than one table matrix widget in the screen.
-
-=cut
-
-sub tm_callback {
-    my ( $w1, $self, $p2, $lk_para ) = @_;
-
-    my $r = $w1->index( 'active', 'row' );
-    my $c = $w1->index( 'active', 'col' );
-
-    my $dict = Tpda3::Lookup->new;
-
-    # Table refresh
-    $w1->activate('origin');
-    $w1->activate("$r,$c");
-    $w1->reread();
-
-    if ( $p2->{$w1} eq 'T1' ) {
-        if ( $c == 1 ) {
-            my $record = $dict->lookup( $self->_view, $lk_para );
-            my $cols_skip = $self->control_tmatrix_write_row($r, $c, $record);
-            $cols_skip++;
-            $w1->activate("$r,$cols_skip");
-        }
-        elsif ( $c == 4 ) {
-            # $self->calculate_order_line( $w1, $r );
-            # $self->calculate_order( $w1, $r );
-            # $p2->{add1}->focus;
-            $w1->activate( ++$r . ",0" );
-        }
-        else {
-            $w1->activate( "$r," . ++$c );
-        }
-    }
-    $w1->see('active');
-}
-
 =head2 set_app_mode
 
 Set application mode
@@ -888,14 +1048,6 @@ sub set_app_mode {
 
     $self->_model->set_mode($mode);
 
-    my %method_for = (
-        add  => 'on_screen_mode_add',
-        find => 'on_screen_mode_find',
-        idle => 'on_screen_mode_idle',
-        edit => 'on_screen_mode_edit',
-        sele => 'on_screen_mode_sele',
-    );
-
     $self->toggle_interface_controls;
 
     return unless ref $self->_screen;
@@ -903,8 +1055,11 @@ sub set_app_mode {
     # TODO: Should this be called on all screens?
     $self->toggle_screen_interface_controls;
 
-    if ( my $method_name = $method_for{$mode} ) {
+    if ( my $method_name = $self->{method_for}->{$mode} ) {
         $self->$method_name();
+    }
+    else {
+        print "WW: '$mode' not implemented!\n";
     }
 
     return 1;                       # to make ok from Test::More happy
@@ -1057,6 +1212,14 @@ sub _control_states_init {
             state      => 'from_config',
             background => 'from_config',
         },
+    };
+
+    $self->{method_for} = {
+        add  => 'on_screen_mode_add',
+        find => 'on_screen_mode_find',
+        idle => 'on_screen_mode_idle',
+        edit => 'on_screen_mode_edit',
+        sele => 'on_screen_mode_sele',
     };
 
     return;
@@ -1235,7 +1398,7 @@ sub screen_module_load {
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry();
     #-- Lookup bindings for tables (TableMatrix)
-    $self->setup_lookup_bindings_table() if $screen_type eq 'tablematrix';
+    $self->setup_bindings_table() if $screen_type eq 'tablematrix';
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
@@ -1267,6 +1430,8 @@ sub screen_module_load {
     $self->screen_init();
 
     $self->_set_menus_enable('normal');
+
+    $self->_view->set_status('','ms');
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
@@ -1311,32 +1476,36 @@ sub screen_init {
         next unless ref $para eq 'HASH';   # Undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_h_ref = $self->{_model}->get_codes($field, $para);
+        my $cod_a_ref = $self->{_model}->get_codes($field, $para);
 
         if ( $ctrltype eq 'm' ) {
 
             # JComboBox
+            # if ( $ctrl_ref->{$field}[1] ) {
+            #     $ctrl_ref->{$field}[1]->removeAllItems();
+            #     while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
+            #         $ctrl_ref->{$field}[1]
+            #             ->insertItemAt( 'end', $label, -value => $code );
+            #     }
+            # }
             if ( $ctrl_ref->{$field}[1] ) {
                 $ctrl_ref->{$field}[1]->removeAllItems();
-                while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-                    $ctrl_ref->{$field}[1]
-                        ->insertItemAt( 'end', $label, -value => $code );
-                }
+                $ctrl_ref->{$field}[1]->configure(-choices => $cod_a_ref);
             }
         }
         elsif ( $ctrltype eq 'l' ) {
 
-            my @lvpairs;
-            while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-                push( @lvpairs,{ value => $code, label => $label });
-            }
+            # my @lvpairs;
+            # while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
+            #     push( @lvpairs,{ value => $code, label => $label });
+            # }
 
-            # MatchingBE
-            if ( $ctrl_ref->{$field}[1] ) {
-                $ctrl_ref->{$field}[1]->configure(
-                    -labels_and_values => \@lvpairs,
-                );
-            }
+            # # MatchingBE
+            # if ( $ctrl_ref->{$field}[1] ) {
+            #     $ctrl_ref->{$field}[1]->configure(
+            #         -labels_and_values => \@lvpairs,
+            #     );
+            # }
         }
     }
 
@@ -2192,8 +2361,7 @@ sub control_tmatrix_read {
             my $col_name = $cols_ref->[$col];
 
             my $fld_cfg = $fields_cfg->{$col_name};
-            my ($type, $width, $places, $rw ) =
-                @$fld_cfg{'type','width','places', 'rw'}; # hash slice
+            my ($rw ) = @$fld_cfg{'rw'};     # hash slice
 
             next if $rw eq 'ro'; # skip ro cols
 
@@ -2239,10 +2407,10 @@ sub control_tmatrix_write {
             $value = q{} unless defined $value;    # Empty
             $value =~ s/[\n\t]//g;                 # Delete control chars
 
-            my ( $col, $type, $width, $places ) =
-              @$fld_cfg{'id','type','width','places'}; # hash slice
+            my ( $col, $validtype, $width, $places ) =
+              @$fld_cfg{'id','validation','width','places'}; # hash slice
 
-            if ( $type eq 'numeric' ) {
+            if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
                 if ( defined $places ) {
 
@@ -2300,10 +2468,10 @@ sub control_tmatrix_write_row {
         my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
         my $value = $record_ref->{$field};
 
-        my ( $col, $type, $width, $places ) =
-            @$fld_cfg{'id','type','width','places'}; # hash slice
+        my ( $col, $validtype, $width, $places ) =
+            @$fld_cfg{'id','validation','width','places'}; # hash slice
 
-        if ( $type =~ /digit/ ) {
+        if ( $validtype =~ /digit/ ) {
             $value = 0 unless $value;
             if ( defined $places ) {
 
