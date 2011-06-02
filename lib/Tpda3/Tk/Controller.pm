@@ -769,17 +769,11 @@ sub setup_bindings_table {
         sub {
             my $r  = $tm->index( 'active', 'row' );
             my $c  = $tm->index( 'active', 'col' );
-            my $cn = $tm->cget( -cols ) - 1;
-            my $cs = $self->do_something_with( $dispatch, $bindings, $r, $c );
-            # TODO: fix this :)
-            if ( $c == $cn ) {
-                # add row
-                $tm->activate( ++$r . ",1" );
-            }
-            else {
-                $cs = $cn -1 if $cs >= ($cn -1);
-                $tm->activate( "$r," . ++$cs );
-                print "cs is $cs\n";
+            my $ci = $tm->cget( -cols ) - 1; # max col index
+            my $sc = $self->do_something_with( $dispatch, $bindings, $r, $c );
+            if ($sc) {
+                my $ac = $c + $sc; # new active col
+                $tm->activate( "$r,$ac" );
             }
             $tm->see('active');
             Tk->break;
