@@ -769,12 +769,17 @@ sub setup_bindings_table {
         sub {
             my $r  = $tm->index( 'active', 'row' );
             my $c  = $tm->index( 'active', 'col' );
+            # Table refresh
+            $tm->activate('origin');
+            $tm->activate("$r,$c");
+            $tm->reread();
+
             my $ci = $tm->cget( -cols ) - 1; # max col index
             my $sc = $self->do_something_with( $dispatch, $bindings, $r, $c );
-            if ($sc) {
-                my $ac = $c + $sc; # new active col
-                $tm->activate( "$r,$ac" );
-            }
+            my $ac = $c;
+            $sc ||= 1;          # skip cols
+            $ac += $sc;         # new active col
+            $tm->activate( "$r,$ac" );
             $tm->see('active');
             Tk->break;
         }
@@ -869,18 +874,22 @@ Call a method from the Screen module on I<Return> key.
 
 sub method {
     my ($self, $bnd, $r, $c) = @_;
-    print "execute sub $r, $c\n";
 
     # Filter on bindcol = $c
     my @names = grep { $bnd->{method}{$_}{bindcol} == $c }
                 keys %{ $bnd->{method} };
     my $bindings = $bnd->{method}{ $names[0] };
 
-    print Dumper($bindings);
     my $method = $bindings->{subname};
-#    $self->{_scrobj}->$method->{$r};
+    if ( $self->{_scrobj}->can($method) ) {
+        $self->{_scrobj}->$method($r);
+        #$self->{_scrobj}->calculate_order_line($r);
+    }
+    else {
+        print "WW: '$method' not implemented!\n";
+    }
 
-    return 1;                                # skip_cols
+    return 1;                   # skip_cols
 }
 
 =head2 get_lookup_setings
@@ -947,7 +956,7 @@ sub get_lookup_setings {
     my $filter = $bindings->{filter}
                ? $bindings->{filter}
                : q{};
-    print "Filter setting = $filter \n";
+    print "WW: Filter setting = $filter \n";
 
     $self->_log->trace("Setup binding for $search:$column");
 
@@ -1391,7 +1400,7 @@ sub screen_module_load {
     eval {require $module_file };
     if ($@) {
         # TODO: Decide what is optimal to do here?
-        print "Can't load '$module_file'\n";
+        print "WW: Can't load '$module_file'\n";
         return;
     }
 
@@ -2917,7 +2926,7 @@ sub save_record {
     my $self = shift;
 
     if ( !$self->is_record() ) {
-        print "Empty screen!\n";
+        print "WW: Empty screen!\n";
         return;
     }
 

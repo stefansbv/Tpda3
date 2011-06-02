@@ -3,6 +3,8 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
@@ -396,17 +398,18 @@ Calculate order line.
 =cut
 
 sub calculate_order_line {
-    my ($self, $xt, $rand) = @_;
+    my ($self, $row) = @_;
 
-    print "Row = $rand\n";
-    my $cant = $xt->get("$rand,3");    # print "Cant = $cant\n";
-    my $pret = $xt->get("$rand,4");    # print "Pret = $pret\n";
+    my $xt = ${ $self->{tm_controls}{rec}{tm1} }->Subwidget('scrolled');
+
+    my $cant = $xt->get("$row,3"); # print "Cant = $cant\n";
+    my $pret = $xt->get("$row,4"); # print "Pret = $pret\n";
 
     eval {
-        if ( defined($cant) and defined($pret) ) {
+        if ( $cant and $pret ) {
             my $valoare = sprintf( "%.2f", ( $cant * $pret ) );
-            $xt->set( "$rand,5", $valoare );
-            print "Valoare = $valoare\n";
+            $xt->set( "$row,5", $valoare );
+            # print "Valoare = $valoare\n";
         }
         else {
             warn "Nu am valori!\n";
