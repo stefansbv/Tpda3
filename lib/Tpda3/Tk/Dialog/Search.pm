@@ -3,6 +3,8 @@ package Tpda3::Tk::Dialog::Search;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::LabFrame;
 use Tk::MListbox;
 use Tk::StatusBar;
@@ -48,7 +50,7 @@ Show dialog
 
 =cut
 
-sub search {
+sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
 
     #--- Dialog Box
@@ -266,18 +268,19 @@ sub search {
 
     # Filter?
 
-    # if ($filter) {
-    #     my $mesg = '';
-    #     my ( $fltcmp, $fltval );
-    #     my @filtre = split( /:/, $filter );
-    #     foreach (@filtre) {
-    #         ( $fltcmp, $fltval ) = split( /=/, $_ );
-    #         $mesg .= "$fltcmp=$fltval ";
-    #     }
-    #     if ($fltval) {
-    #         $self->refresh_filt( $mesg, 'red' );
-    #     }
-    # }
+    if (ref $filter) {
+        my $message;
+        while ( my ( $key, $value ) = each( %{$filter} ) ) {
+            print "$key: $value\n";
+            $message .= "$key = $value ";
+        }
+        if ($message) {
+            $self->refresh_filter_message( $message, 'darkgreen' );
+        }
+        else {
+            $self->refresh_filter_message('');
+        }
+    }
 
     #---
 
@@ -321,6 +324,8 @@ Lookup in dictionary and display result in list box
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
 
+    # $self->refresh_filter_message( $filter, 'green' );
+
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $para->{table};
@@ -328,6 +333,13 @@ sub search_command {
     $params->{options} = $options;
     $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
     $params->{order} = $para->{search};      # order by lookup field
+
+    if ( ref $filter ) {
+
+        # Add the filter to the WHERE (merge hash refs)
+        @{ $params->{where} }{ keys %{$filter} } =
+          [ values %{$filter}, 'allstr' ];
+    }
 
     my $records = $model->query_dictionary($params);
 
@@ -340,7 +352,7 @@ sub search_command {
         my $nrinreg = scalar @{$records};
         my $mesaj = $nrinreg == 1 ? "one record" : "$nrinreg records";
 
-        $self->refresh_mesg( $mesaj, 'darkgreen' );
+        $self->refresh_message( $mesaj, 'darkgreen' );
         foreach my $array_ref ( @{$records} ) {
             $self->{box}->insert( 'end', $array_ref );
             $rowcnt++;
@@ -355,13 +367,13 @@ sub search_command {
     return;
 }
 
-=head2 refresh_mesg
+=head2 refresh_message
 
 Refresh the message on the screen
 
 =cut
 
-sub refresh_mesg {
+sub refresh_message {
     my ( $self, $text, $color ) = @_;
 
     $self->{mesg}->configure( -textvariable => \$text ) if defined $text;
@@ -370,13 +382,13 @@ sub refresh_mesg {
     return;
 }
 
-=head2 refresh_filt
+=head2 refresh_filter_message
 
 Refresh the filter message on the screen
 
 =cut
 
-sub refresh_filt {
+sub refresh_filter_message {
     my ( $self, $text, $color ) = @_;
 
     $self->{filt}->configure( -textvariable => \$text ) if defined $text;

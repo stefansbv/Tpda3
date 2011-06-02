@@ -398,7 +398,7 @@ Calculate order line.
 sub calculate_order_line {
     my ($self, $xt, $rand) = @_;
 
-    # print "Row = $rand\n";
+    print "Row = $rand\n";
     my $cant = $xt->get("$rand,3");    # print "Cant = $cant\n";
     my $pret = $xt->get("$rand,4");    # print "Pret = $pret\n";
 

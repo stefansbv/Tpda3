@@ -67,7 +67,7 @@ sub lookup {
 
     my $record;
     if ( $self->{_ws} =~ m{tk}ix ) {
-        $record = $self->{dlg}->search( $view, $para, $filter );
+        $record = $self->{dlg}->search_dialog( $view, $para, $filter );
     }
     elsif ( $self->{_ws} =~ m{wx}ix ) {
         my $dialog = $self->{dlg}->search_dialog( $view, $para, $filter );

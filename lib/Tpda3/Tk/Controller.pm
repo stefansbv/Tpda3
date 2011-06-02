@@ -392,7 +392,6 @@ sub _set_event_handlers {
     $self->_view->bind(
         '<F5>' => sub {
             if ( $self->_model->is_mode('edit') ) {
-                print "Reloading\n";
                 $self->record_reload();
             }
             else {
@@ -673,9 +672,10 @@ sub setup_lookup_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
+        my $filter;
         $ctrl_ref->{$column}[1]->bind(
             '<Return>' => sub {
-                my $record = $dict->lookup( $self->_view, $para );
+                my $record = $dict->lookup( $self->_view, $para, $filter );
                 $self->screen_write( $record, 'fields' );
             }
         );
@@ -756,7 +756,7 @@ sub setup_bindings_table {
             }
         }
         else {
-            print "WW: bindings type '$bind_type' not implemented\n";
+            print "WW: Binding type '$bind_type' not implemented\n";
             return;
         }
     }
@@ -764,21 +764,27 @@ sub setup_bindings_table {
     # Bindings:
     my $tm = $self->_screen->get_tm_controls('tm1');
     $tm->bind(
-        'Tk::TableMatrix','<Return>', sub{
-            my $r = $tm->index('active', 'row');
-            my $c = $tm->index('active', 'col');
-
-            $self->do_something_with($dispatch, $bindings, $r,$c);
-
-            if( $c == 5){
-                $tm->activate(++$r.",1");
+        'Tk::TableMatrix',
+        '<Return>',
+        sub {
+            my $r  = $tm->index( 'active', 'row' );
+            my $c  = $tm->index( 'active', 'col' );
+            my $cn = $tm->cget( -cols ) - 1;
+            my $cs = $self->do_something_with( $dispatch, $bindings, $r, $c );
+            # TODO: fix this :)
+            if ( $c == $cn ) {
+                # add row
+                $tm->activate( ++$r . ",1" );
             }
-            else{
-                $tm->activate("$r,".++$c);
+            else {
+                $cs = $cn -1 if $cs >= ($cn -1);
+                $tm->activate( "$r," . ++$cs );
+                print "cs is $cs\n";
             }
             $tm->see('active');
             Tk->break;
-        });
+        }
+    );
 
     return;
 }
@@ -819,17 +825,15 @@ the configuration, using a dispatch table.
 =cut
 
 sub do_something_with {
-    my ($self, $dispatch, $bindings, $r,$c) = @_;
+    my ($self, $dispatch, $bindings, $r, $c) = @_;
 
+    my $skip_cols;
     my $proc = "colsub$c";
     if ( exists $dispatch->{$proc} ) {
-        $dispatch->{$proc}->($self, $bindings, $r,$c);
+        $skip_cols = $dispatch->{$proc}->($self, $bindings, $r, $c);
     }
-    # else {
-    #     print "col $c not bound\n";
-    # }
 
-    return;
+    return $skip_cols;
 }
 
 =head2 lookup
@@ -845,11 +849,22 @@ sub lookup {
 
     my $lk_para = $self->get_lookup_setings($bnd, $r, $c);
 
-    my $dict      = Tpda3::Lookup->new;
-    my $record    = $dict->lookup( $self->_view, $lk_para );
-    my $cols_skip = $self->control_tmatrix_write_row( $r, $c, $record );
+    # Check and set filter
+    my $filter;
+    if ( $lk_para->{filter} ) {
+        my $fld = $lk_para->{filter};
+        my $col = $self->_scrcfg->deptable->{columns}{$fld}{id};
+        $filter = $self->control_tmatrix_read_cell($r, $col);
+    }
 
-    return $cols_skip;                       # TODO
+    my $dict   = Tpda3::Lookup->new;
+    my $record = $dict->lookup( $self->_view, $lk_para, $filter );
+
+    $self->control_tmatrix_write_row( $r, $c, $record );
+
+    my $skip_cols = scalar @{ $lk_para->{columns} }; # skip ahead cols number
+
+    return $skip_cols;
 }
 
 =head2 method
@@ -861,6 +876,17 @@ Call a method from the Screen module on I<Return> key.
 sub method {
     my ($self, $bnd, $r, $c) = @_;
     print "execute sub $r, $c\n";
+
+    # Filter on bindcol = $c
+    my @names = grep { $bnd->{method}{$_}{bindcol} == $c }
+                keys %{ $bnd->{method} };
+    my $bindings = $bnd->{method}{ $names[0] };
+
+    print Dumper($bindings);
+    my $method = $bindings->{subname};
+#    $self->{_scrobj}->$method->{$r};
+
+    return 1;                                # skip_cols
 }
 
 =head2 get_lookup_setings
@@ -923,12 +949,18 @@ sub get_lookup_setings {
                ? $bindings->{search}{$search}{name}
                : $search;
 
+    # If 'filter'
+    my $filter = $bindings->{filter}
+               ? $bindings->{filter}
+               : q{};
+    print "Filter setting = $filter \n";
+
     $self->_log->trace("Setup binding for $search:$column");
 
     # Compose the parameter for the 'Search' dialog
     my $lk_para = {
         table  => $bindings->{table},
-        # bndcol => $bindings->{bndcol},
+        filter => $filter,
         search => $search,
     };
 
@@ -1618,7 +1650,6 @@ list control on the I<List> page.
 sub record_load_new {
     my $self = shift;
 
-
     my $pk_id = $self->_view->list_read_selected();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Nothing selected','ms');
@@ -1626,6 +1657,10 @@ sub record_load_new {
     }
 
     my $ret = $self->record_load($pk_id);
+
+    if ($ret) {
+        $self->_view->set_status("Record '$pk_id' loaded",'ms');
+    }
 
     return $ret;
 }
@@ -1682,6 +1717,8 @@ sub record_reload {
 
     $self->screen_write(undef, 'clear'); # clear the controls
     $self->record_load($pk_id);
+
+    $self->_view->set_status("Record '$pk_id' reloaded",'ms');
 
     return;
 }
@@ -2384,6 +2421,28 @@ sub control_tmatrix_read {
     }
 
     return \@tabledata;
+}
+
+sub control_tmatrix_read_cell {
+    my ($self, $row, $col) = @_;
+
+    my $tm_object = $self->_screen->get_tm_controls('tm1');
+    my $xtvar;
+    if ($tm_object) {
+        $xtvar = $tm_object->cget( -variable );
+    }
+    else {
+
+        # Just ignore :)
+        return;
+    }
+
+    my $fields_cfg = $self->_scrcfg->deptable->{columns};
+    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+    my $cell_value = $tm_object->get("$row,$col");
+    my $col_name   = $cols_ref->[$col];
+
+    return {$col_name => $cell_value};
 }
 
 =head2 control_tmatrix_write
