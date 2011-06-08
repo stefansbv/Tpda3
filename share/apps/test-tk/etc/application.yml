@@ -5,3 +5,7 @@
 application:
   widgetset: Tk
   module:    Test
+  limits:
+    search: 100
+    lookup: 50
+

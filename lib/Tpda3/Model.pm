@@ -48,11 +48,24 @@ sub new {
         _connected => Tpda3::Observable->new(),
         _stdout    => Tpda3::Observable->new(),
         _appmode   => Tpda3::Observable->new(),
+        _cfg       => Tpda3::Config->instance(),
     };
 
     bless $self, $class;
 
     return $self;
+}
+
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{_cfg};
 }
 
 =head2 toggle_db_connect
@@ -287,7 +300,8 @@ sub query_records_find {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $args = { MaxRows => 100 }; # Limit search result to max 100 rows
+    my $search_limit = $self->_cfg->application->{limits}{search};
+    my $args = { MaxRows => $search_limit }; # limit search result
     my $ary_ref;
     try {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
@@ -398,7 +412,8 @@ sub query_dictionary {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $args = { MaxRows => 50 }; # Limit search result to max 50 rows
+    my $lookup_limit = $self->_cfg->application->{limits}{lookup};
+    my $args = { MaxRows => $lookup_limit }; # limit search result
     my $ary_ref;
     try {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
