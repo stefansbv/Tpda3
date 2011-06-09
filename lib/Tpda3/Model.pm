@@ -300,7 +300,7 @@ sub query_records_find {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $search_limit = $self->_cfg->application->{limits}{search};
+    my $search_limit = $self->_cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit }; # limit search result
     my $ary_ref;
     try {
@@ -412,7 +412,7 @@ sub query_dictionary {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my $lookup_limit = $self->_cfg->application->{limits}{lookup};
+    my $lookup_limit = $self->_cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit }; # limit search result
     my $ary_ref;
     try {
