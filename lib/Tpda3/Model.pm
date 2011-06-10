@@ -48,6 +48,7 @@ sub new {
         _connected => Tpda3::Observable->new(),
         _stdout    => Tpda3::Observable->new(),
         _appmode   => Tpda3::Observable->new(),
+        _modified  => Tpda3::Observable->new(),
         _cfg       => Tpda3::Config->instance(),
     };
 
@@ -235,6 +236,49 @@ sub get_appmode {
     my $self = shift;
 
     return $self->get_appmode_observable->get;
+}
+
+=head2 set_modified
+
+Set modified
+
+=cut
+
+sub set_modified {
+    my ($self, $state) = @_;
+
+    $self->get_modified_observable->set($state);
+
+    return;
+}
+
+=head2 get_modified_observable
+
+Return add mode observable status
+
+=cut
+
+sub get_modified_observable {
+    my $self = shift;
+
+    return $self->{_modified};
+}
+
+=head2 is_modified
+
+Return true if record is modified
+
+=cut
+
+sub is_modified {
+    my $self = shift;
+
+    if ($self->get_modified_observable->get) {
+        return 1;
+    }
+    else {
+        return;
+    }
 }
 
 =head2 query_records_count

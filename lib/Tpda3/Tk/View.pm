@@ -128,19 +128,18 @@ sub _set_model_callbacks {
     my $self = shift;
 
     my $co = $self->_model->get_connection_observable;
-    $co->add_callback(
-        sub {
-            $self->toggle_status_cn( $_[0] );
-        }
-    );
+    $co->add_callback( sub { $self->toggle_status_cn( $_[0] ); } );
 
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
-    $apm->add_callback(
-        sub { $self->update_gui_components(); } );
+    $apm->add_callback( sub { $self->update_gui_components(); } );
+
+    # When the modified status changes, update statusbar
+    my $svs = $self->_model->get_modified_observable;
+    $svs->add_callback( sub{ $self->set_status( $_[0], 'ss') } );
 
     return;
 }
@@ -400,7 +399,7 @@ sub _create_statusbar {
 
     # Database name
     $self->{_sb}{db} = $sb->addLabel(
-        -width      => 15,
+        -width      => 13,
         -anchor     => 'center',
         -side       => 'right',
         -background => 'lightyellow',
@@ -416,9 +415,18 @@ sub _create_statusbar {
         -foreground => 'blue',
     );
 
+    # Second label for modified status
+    $self->{_sb}{ss} = $sb->addLabel(
+        -width  => 3,
+        -relief => 'sunken',
+        -anchor     => 'center',
+        -side       => 'right',
+        -background => 'lightyellow',
+    );
+
     # Mode
     $self->{_sb}{md} = $sb->addLabel(
-        -width      => 6,
+        -width      => 4,
         -anchor     => 'center',
         -side       => 'right',
         -foreground => 'blue',

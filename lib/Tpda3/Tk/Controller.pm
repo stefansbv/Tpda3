@@ -1662,7 +1662,8 @@ sub record_load_new {
     my $ret = $self->record_load($pk_id);
 
     if ($ret) {
-        $self->_view->set_status("Record '$pk_id' loaded",'ms');
+        $self->_view->set_status('Record loaded', 'ms', 'blue');
+        $self->_model->set_modified(q{});    # empty
     }
 
     return $ret;
@@ -2572,9 +2573,13 @@ Toggle find mode
 sub toggle_mode_find {
     my $self = shift;
 
-    $self->_model->is_mode('find')
-        ? $self->set_app_mode('idle')
-        : $self->set_app_mode('find');
+    if ( $self->_model->is_mode('find') ) {
+        $self->set_app_mode('idle');
+    }
+    else {
+        $self->ask_to_save() if $self->_model->is_modified;
+        $self->set_app_mode('find');
+    }
 
     return;
 }
@@ -2588,9 +2593,14 @@ Toggle add mode
 sub toggle_mode_add {
     my $self = shift;
 
-    $self->_model->is_mode('add')
-        ? $self->set_app_mode('idle')
-        : $self->set_app_mode('add');
+    if ( $self->_model->is_mode('add') ) {
+        $self->ask_to_save() if $self->_model->is_modified;
+        $self->set_app_mode('idle');
+    }
+    else {
+        $self->set_app_mode('add');
+        $self->_model->set_modified(q{});       # empty
+    }
 
     return;
 }
@@ -2877,9 +2887,7 @@ sub remove_tmatrix_row {
             $xt->deleteRows( $r, 1 );
         }
         else {
-            # my $textstr = "Select a row, first";
-            # $self->{mw}->{dialog1}->configure( -text => $textstr );
-            # $self->{mw}->{dialog1}->Show();
+            $self->_view->set_status('Select a row','ms','orange');
         }
     };
     if ($@) {
@@ -2911,6 +2919,26 @@ sub renum_tmatrix_row {
         foreach my $i ( 1 .. $r ) {
             $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
         }
+    }
+
+    return;
+}
+
+=head2 ask_to_save
+
+If in I<add> or I<edit> mode show dialog and ask to save or
+cancel. Reset modified status.
+
+=cut
+
+sub ask_to_save {
+    my $self = shift;
+
+    if (   $self->_model->is_mode('edit')
+        or $self->_model->is_mode('add') )
+    {
+        print "Save record?\n";
+        $self->_model->set_modified(q{});       # empty
     }
 
     return;
@@ -3010,6 +3038,8 @@ sub save_record {
         $self->_model->table_record_insert_batch($tm_params, $tabledata);
     }
 
+    $self->_model->set_modified(q{});        # empty
+
     return;
 }
 
@@ -3033,7 +3063,7 @@ sub save_screendata {
 
     my $record_href = {};
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        next if $field eq $pk_col; # skip ID, is a new record
+        next if $field eq $pk_col; # skip ID
         $record_href->{$field} = $value;
     }
 
@@ -3070,10 +3100,6 @@ sub restore_screendata {
         carp "Unable to retrieve from $data_file!\n"
             unless defined $colref;
 
-        # Debug
-        # while ( my ( $key, $value ) = each( %{$colref} ) ) {
-        #     print " -> $key: $value\n" if defined $value;
-        # }
         $self->screen_write( $colref, 'record' );
     }
 
