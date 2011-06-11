@@ -3,19 +3,18 @@ package Tpda3::Tk::Validation;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 =head1 NAME
 
-Tpda3::Tk::Validation - The great new Tpda3::Tk::Validation!
+Tpda3::Tk::Validation - Validation functions for data in Entry widgets
+and Tablematrix cells.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -160,7 +159,7 @@ sub validate_table_cell {
 
 =head2 validate
 
-Validate.
+Validate sub calls the appropriate function for data validation.
 
 =cut
 
@@ -179,6 +178,12 @@ sub validate {
     return $retval;
 }
 
+=head2 alpha
+
+Function to validate strings containing only alphabetical characters.
+
+=cut
+
 sub alpha {
     my ($self, $myvar, $maxlen) = @_;
 
@@ -193,6 +198,13 @@ sub alpha {
         return 0;
     }
 }
+
+=head2 alphanum
+
+Function to validate strings containing only alphabetical and digit
+characters.
+
+=cut
 
 sub alphanum {
     my ($self, $myvar, $maxlen) = @_;
@@ -209,6 +221,13 @@ sub alphanum {
     }
 }
 
+=head2 alphanumplus
+
+Function to validate strings containing only alphabetical, digit and
+some commonly used symbol characters.
+
+=cut
+
 sub alphanumplus {
     my ($self, $myvar, $maxlen) = @_;
 
@@ -223,6 +242,13 @@ sub alphanumplus {
         return 0;
     }
 }
+
+=head2 integer
+
+Function to validate strings containing only digit characters as
+integers.
+
+=cut
 
 sub integer {
     my ($self, $myvar, $maxlen) = @_;
@@ -239,6 +265,15 @@ sub integer {
     }
 }
 
+=head2 numeric
+
+Function to validate strings containing only digit and dot characters
+for decimal numbers.
+
+TODO: Allow comma as decimal separator?
+
+=cut
+
 sub numeric {
     my ($self, $myvar, $maxlen, $places) = @_;
 
@@ -250,7 +285,6 @@ sub numeric {
     # my $pattern =
     #   qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
 
-
     if ( $myvar =~ m/$pattern/ ) {
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
@@ -260,6 +294,12 @@ sub numeric {
         return 0;
     }
 }
+
+=head2 anychar
+
+Function to validate strings containing only printable character.
+
+=cut
 
 sub anychar {
     my ($self, $myvar, $maxlen) = @_;
@@ -276,6 +316,14 @@ sub anychar {
     }
 }
 
+=head2 email
+
+Function to validate characters allowed in e-mail addresses.
+
+Better use the L<Email::Valid> module!
+
+=cut
+
 sub email {
     my ($self, $myvar, $maxlen) = @_;
 
@@ -291,7 +339,13 @@ sub email {
     }
 }
 
-sub data {
+=head2 date
+
+Function to validate date strings, (only in I<dd.mm.yyyy> format).
+
+=cut
+
+sub date {
     my ($self, $myvar, $maxlen) = @_;
 
     my $pattern = sprintf "\^[0-9]{2}\.[0-9]{2}\.[0-9]{4}\$", $maxlen;
