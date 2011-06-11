@@ -2567,41 +2567,36 @@ sub control_tmatrix_write_row {
 
 =head2 toggle_mode_find
 
-Toggle find mode
+Toggle find mode, ask to save record if modified.
 
 =cut
 
 sub toggle_mode_find {
     my $self = shift;
 
-    if ( $self->_model->is_mode('find') ) {
-        $self->set_app_mode('idle');
-    }
-    else {
-        $self->ask_to_save() if $self->_model->is_modified;
-        $self->set_app_mode('find');
-    }
+    $self->ask_to_save() if $self->_model->is_modified;
+
+    $self->_model->is_mode('find')
+        ? $self->set_app_mode('idle')
+        : $self->set_app_mode('find');
 
     return;
 }
 
 =head2 toggle_mode_add
 
-Toggle add mode
+Toggle add mode, ask to save record if modified.
 
 =cut
 
 sub toggle_mode_add {
     my $self = shift;
 
-    if ( $self->_model->is_mode('add') ) {
-        $self->ask_to_save() if $self->_model->is_modified;
-        $self->set_app_mode('idle');
-    }
-    else {
-        $self->set_app_mode('add');
-        $self->_model->set_modified(q{});       # empty
-    }
+    $self->ask_to_save() if $self->_model->is_modified;
+
+    $self->_model->is_mode('add')
+        ? $self->set_app_mode('idle')
+        : $self->set_app_mode('add');
 
     return;
 }

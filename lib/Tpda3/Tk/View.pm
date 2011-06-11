@@ -144,6 +144,25 @@ sub _set_model_callbacks {
     return;
 }
 
+=head2 set_modified_record
+
+Set modified to 'M' if not already set but only if in I<edit> or
+I<add> mode.
+
+=cut
+
+sub set_modified_record {
+    my $self = shift;
+
+    if (   $self->_model->is_mode('edit')
+        or $self->_model->is_mode('add') )
+    {
+        $self->_model->set_modified(q{M}) if !$self->_model->is_modified;
+    }
+
+    return;
+}
+
 =head2 update_gui_components
 
 When the application status (mode) changes, update gui components.

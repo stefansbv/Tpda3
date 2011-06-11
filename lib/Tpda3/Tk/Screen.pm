@@ -4,11 +4,12 @@ use strict;
 use warnings;
 use Carp;
 
+use Tpda3::Tk::Entry;
 use Tpda3::Tk::Validation;
 
 =head1 NAME
 
-Tpda3::Tk::Screen - Tpda Screen base class.
+Tpda3::Tk::Screen - Tpda3 Screen base class.
 
 =head1 VERSION
 
