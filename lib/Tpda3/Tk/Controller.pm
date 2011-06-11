@@ -453,6 +453,7 @@ sub _set_event_handler_nb {
         -raisecmd => sub {
             if ($page eq 'lst') {
                 $self->set_app_mode('sele');
+                $self->_view->get_recordlist->focus;
             }
             else {
                 if ( $self->record_load_new ) {

@@ -758,24 +758,24 @@ sub make_list_header {
     my ($self, $header_cols, $header_attr) = @_;
 
     # Delete existing columns
-    $self->{_rc}->selectionClear( 0, 'end' );
-    $self->{_rc}->columnDelete( 0, 'end' );
+    $self->get_recordlist->selectionClear( 0, 'end' );
+    $self->get_recordlist->columnDelete( 0, 'end' );
 
     # Header
     my $colcnt = 0;
     foreach my $col ( @{$header_cols} ) {
         my $attr = $header_attr->{$col};
 
-        $self->{_rc}->columnInsert( 'end', -text => $attr->{label} );
-        $self->{_rc}->columnGet($colcnt)
+        $self->get_recordlist->columnInsert( 'end', -text => $attr->{label} );
+        $self->get_recordlist->columnGet($colcnt)
             ->Subwidget('heading')
             ->configure( -background => 'tan' );
-        $self->{_rc}->columnGet($colcnt)
+        $self->get_recordlist->columnGet($colcnt)
             ->Subwidget('heading')
             ->configure( -width => $attr->{width} );
         if ( defined $attr->{order} ) {
             if ($attr->{order} eq 'N') {
-                $self->{_rc}->columnGet($colcnt)
+                $self->get_recordlist->columnGet($colcnt)
                     ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
             }
         }
@@ -798,8 +798,8 @@ Delete the rows of the list.
 sub list_init {
     my $self = shift;
 
-    $self->{_rc}->selectionClear( 0, 'end' );
-    $self->{_rc}->delete( 0, 'end' );
+    $self->get_recordlist->selectionClear( 0, 'end' );
+    $self->get_recordlist->delete( 0, 'end' );
 
     return;
 }
@@ -815,8 +815,8 @@ sub list_populate {
 
     my $row_count;
 
-    if ( Exists( $self->{_rc} ) ) {
-        eval { $row_count = $self->{_rc}->size(); };
+    if ( Exists( $self->get_recordlist ) ) {
+        eval { $row_count = $self->get_recordlist->size(); };
         if ($@) {
             warn "Error: $@";
             $row_count = 0;
@@ -832,11 +832,11 @@ sub list_populate {
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-        $self->{_rc}->insert( 'end', $record );
-        $self->{_rc}->see('end');
+        $self->get_recordlist->insert( 'end', $record );
+        $self->get_recordlist->see('end');
         $row_count++;
         $self->set_status("$row_count records fetched", 'ms');
-        $self->{_rc}->update;
+        $self->get_recordlist->update;
 
         # Progress bar
         my $p = floor( $row_count * 10 / $record_count ) * 10;
@@ -846,16 +846,16 @@ sub list_populate {
     $self->set_status("$row_count records listed", 'ms');
 
     # Activate and select last
-    $self->{_rc}->selectionClear( 0, 'end' );
-    $self->{_rc}->activate('end');
-    $self->{_rc}->selectionSet('end');
-    $self->{_rc}->see('active');
+    $self->get_recordlist->selectionClear( 0, 'end' );
+    $self->get_recordlist->activate('end');
+    $self->get_recordlist->selectionSet('end');
+    $self->get_recordlist->see('active');
     $self->{progres} = 0;
 
     # Raise List tab if found and set focus to list
     if ($record_count > 0) {
         $self->{_nb}->raise('lst');
-        $self->{_rc}->focus;
+        $self->get_recordlist->focus;
     }
 
     return $record_count;
@@ -872,8 +872,8 @@ sub has_list_records {
 
     my $row_count;
 
-    if ( Exists( $self->{_rc} ) ) {
-        eval { $row_count = $self->{_rc}->size(); };
+    if ( Exists( $self->get_recordlist ) ) {
+        eval { $row_count = $self->get_recordlist->size(); };
         if ($@) {
             warn "Error: $@";
             $row_count = 0;
@@ -902,7 +902,7 @@ sub list_read_selected {
     }
 
     my (@selected, $sel);
-    eval { @selected = $self->{_rc}->curselection(); };
+    eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected' );
@@ -919,10 +919,10 @@ sub list_read_selected {
                 $sel = 0;
 
                 # Selecteaza si activeaza
-                $self->{_rc}->selectionClear( 0, 'end' );
-                $self->{_rc}->activate(0);
-                $self->{_rc}->selectionSet(0);
-                $self->{_rc}->see('active');
+                $self->get_recordlist->selectionClear( 0, 'end' );
+                $self->get_recordlist->activate(0);
+                $self->get_recordlist->selectionSet(0);
+                $self->get_recordlist->see('active');
             }
         }
     }
@@ -930,7 +930,7 @@ sub list_read_selected {
     # In scalar context, getRow returns the value of column 0
     # Column 0 has to be a Pk ...
     my $selected_value;
-    eval { $selected_value = $self->{_rc}->getRow($sel); };
+    eval { $selected_value = $self->get_recordlist->getRow($sel); };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
