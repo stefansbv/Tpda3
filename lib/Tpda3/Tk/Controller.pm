@@ -763,7 +763,7 @@ sub setup_bindings_table {
     }
 
     # Bindings:
-    my $tm = $self->_screen->get_tm_controls('tm1');
+    my $tm = $self->_screen->get_tm_controls('tm1'); # TODO: Generalize!
     $tm->bind(
         'Tk::TableMatrix',
         '<Return>',
@@ -1466,6 +1466,7 @@ sub screen_module_load {
 
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
+    # TODO: Generalize!
     if ($screen_type eq 'tablematrix') {
         # TableMatrix header
         my $tm_fields = $self->_scrcfg->deptable->{columns};
@@ -2364,17 +2365,17 @@ Read data from a table matrix widget.
 =cut
 
 sub control_tmatrix_read {
-    my ($self, $tm_n) = @_;
+    my ($self, $tm_ds) = @_;
 
-    $tm_n ||= 'tm1';             # default table label is 'tm1'
+    $tm_ds ||= q{tm1};           # default table matrix designator
 
-    my $tm_object = $self->_screen->get_tm_controls($tm_n);
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
     my $xtvar;
     if ($tm_object) {
         $xtvar = $tm_object->cget( -variable );
     }
     else {
-        print "EE: Can't find '$tm_n' table\n";
+        print "EE: Can't find '$tm_ds' table\n";
         return;
     }
 
@@ -2404,7 +2405,7 @@ sub control_tmatrix_read {
             next if $rw eq 'ro'; # skip ro cols
 
             # print "$row: $col_name => $cell_value\n";
-            $rowdata->{$row}{$col_name} = $cell_value;
+            $rowdata->{$col_name} = $cell_value;
         }
 
         push @tabledata, $rowdata;
@@ -2414,9 +2415,11 @@ sub control_tmatrix_read {
 }
 
 sub control_tmatrix_read_cell {
-    my ($self, $row, $col) = @_;
+    my ($self, $row, $col, $tm_ds) = @_;
 
-    my $tm_object = $self->_screen->get_tm_controls('tm1');
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
     my $xtvar;
     if ($tm_object) {
         $xtvar = $tm_object->cget( -variable );
@@ -2442,9 +2445,11 @@ Write data to TableMatrix widget
 =cut
 
 sub control_tmatrix_write {
-    my ($self, $record_ref) = @_;
+    my ($self, $record_ref, $tm_ds) = @_;
 
-    my $tm_object = $self->_screen->get_tm_controls('tm1');
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
     my $xtvar;
     if ($tm_object) {
         $xtvar = $tm_object->cget( -variable );
@@ -2458,14 +2463,15 @@ sub control_tmatrix_write {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
+#        print Dumper( $record);
         foreach my $field ( keys %{ $self->_scrcfg->deptable->{columns} } ) {
             my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
             my $value = $record->{$field};
-            $value = q{} unless defined $value;    # Empty
-            $value =~ s/[\n\t]//g;                 # Delete control chars
+            $value = q{} unless defined $value;    # empty
+            $value =~ s/[\n\t]//g;                 # delete control chars
 
             my ( $col, $validtype, $width, $places ) =
               @$fld_cfg{'id','validation','width','places'}; # hash slice
@@ -2507,11 +2513,13 @@ sub control_tmatrix_write {
 }
 
 sub control_tmatrix_write_row {
-    my ($self, $row, $col, $record_ref) = @_;
+    my ($self, $row, $col, $record_ref, $tm_ds) = @_;
 
     return unless ref $record_ref;     # No results
 
-    my $tm_object = $self->_screen->get_tm_controls('tm1');
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
     my $xtvar;
     if ($tm_object) {
         $xtvar = $tm_object->cget( -variable );
@@ -2807,9 +2815,11 @@ Table matrix methods.  Add TableMatrix row.
 =cut
 
 sub add_tmatrix_row {
-    my ($self, $valori_ref) = @_;
+    my ($self, $valori_ref, $tm_ds) = @_;
 
-    my $xt = $self->_screen->get_tm_controls('tm1');
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $xt = $self->_screen->get_tm_controls($tm_ds);
 
     unless ( $self->_model->is_mode('add')
                  || $self->_model->is_mode('edit') ) {
@@ -2849,9 +2859,11 @@ Delete TableMatrix row
 =cut
 
 sub remove_tmatrix_row {
-    my $self = shift;
+    my ($self, $tm_ds) = @_;
 
-    my $xt = $self->_screen->get_tm_controls('tm1');
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $xt = $self->_screen->get_tm_controls($tm_ds);
 
     unless ( $self->_model->is_mode('add')
                  || $self->_model->is_mode('edit') ) {
@@ -3096,14 +3108,24 @@ sub save_screendata {
         return;
     }
 
-    # Table metadata
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $pk_col    = $table_hr->{pkcol}{name};
+    #-  Main table
+
+    #-- Table metadata
+    my $table_hr = $self->_scrcfg->maintable;
+    my $pk_col   = $table_hr->{pkcol}{name};
 
     my $record_href = {};
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
         next if $field eq $pk_col; # skip ID
         $record_href->{maintable}{$field} = $value;
+    }
+
+    #-  Dependent table(s), if any
+
+    my $tmxs = $self->_screen->get_tm_controls();
+    foreach my $tmx ( keys %{$tmxs} ) {
+        my $rec = $self->control_tmatrix_read($tmx);
+        $record_href->{deptable}{$tmx} = $rec;
     }
 
     return store( $record_href, $data_file );
@@ -3129,7 +3151,16 @@ sub restore_screendata {
         return;
     }
 
+    #- Main table
+
     $self->screen_write( $record->{maintable}, 'record' );
+
+    #- Dependent table(s), if any
+
+    my $tmxs = $self->_screen->get_tm_controls();
+    foreach my $tmx ( keys %{$tmxs} ) {
+        $self->control_tmatrix_write($record->{deptable}{$tmx}, $tmx);
+    }
 
     return 1;
 }

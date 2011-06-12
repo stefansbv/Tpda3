@@ -628,26 +628,24 @@ sub table_record_insert_batch {
     my $sql = SQL::Abstract->new();
 
     # AoH refs
-    foreach my $row ( @{$records} ) {
-        while ( my ( $id, $rec ) = each( %{$row} ) ) {
+    foreach my $rec ( @{$records} ) {
 
-            # Add pk_col to record data (merge hash refs)
-            @{$rec}{ keys %{$pkref} } = values %{$pkref};
+        # Add pk_col to record data (merge hash refs)
+        @{$rec}{ keys %{$pkref} } = values %{$pkref};
 
-            my ( $stmt, @bind ) = $sql->insert( $table, $rec );
+        my ( $stmt, @bind ) = $sql->insert( $table, $rec );
 
-            # print "SQL : $stmt\n";
-            # print Dumper( \@bind);
+        # print "SQL : $stmt\n";
+        # print Dumper( \@bind);
 
-            try {
-                my $sth = $self->{_dbh}->prepare($stmt);
-                $sth->execute(@bind);
-            }
-            catch {
-                $self->_print("Database error!") ;
-                croak("Transaction aborted: $_");
-            };
+        try {
+            my $sth = $self->{_dbh}->prepare($stmt);
+            $sth->execute(@bind);
         }
+        catch {
+            $self->_print("Database error!");
+            croak("Transaction aborted: $_");
+        };
     }
 
     return;

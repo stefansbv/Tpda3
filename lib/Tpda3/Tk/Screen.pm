@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
-use Tpda3::Tk::Text;
+#use Tpda3::Tk::Text;
 
 use Tpda3::Tk::Validation;
 
@@ -70,6 +70,7 @@ sub get_controls {
 =head2 get_tm_controls
 
 Get a data structure containing references to table matrix widgets.
+If TM Id parameter is provided return a reference to that TM object.
 
 =cut
 
@@ -77,7 +78,12 @@ sub get_tm_controls {
     my ( $self, $tm ) = @_;
 
     if ( exists $self->{tm_controls} ) {
-        return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+        if ($tm) {
+            return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+        }
+        else {
+            return $self->{tm_controls}{rec};
+        }
     }
 }
 
