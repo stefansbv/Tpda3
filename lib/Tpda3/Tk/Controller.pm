@@ -86,9 +86,6 @@ sub new {
 
     my $loglevel_old = $self->_log->level();
 
-    # Set log level to trace in this
-    $self->_log->level($TRACE);
-
     $self->_log->trace('Controller new');
 
     $self->_control_states_init();
@@ -271,97 +268,70 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_fm')->bind(
         '<ButtonRelease-1>' => sub {
             # From add mode forbid find mode
-            if ( !$self->_model->is_mode('add') ) {
-                $self->toggle_mode_find();
-            }
+            $self->toggle_mode_find() if !$self->_model->is_mode('add');
         }
     );
 
     #-- Find execute
     $self->_view->get_toolbar_btn('tb_fe')->bind(
         '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_execute;
-            }
-            else {
-                print "WW: Not in find mode\n";
-            }
+            $self->_model->is_mode('find')
+              ? $self->record_find_execute
+              : $self->_view->set_status( 'Not find mode','ms','orange' );
         }
     );
 
     #-- Find count
     $self->_view->get_toolbar_btn('tb_fc')->bind(
         '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_count;
-            }
-            else {
-                print "WW: Not in find mode\n";
-            }
+            $self->_model->is_mode('find')
+              ? $self->record_find_count
+              : $self->_view->set_status( 'Not find mode','ms','orange' );
         }
     );
 
     #-- Print (preview) default report button
     $self->_view->get_toolbar_btn('tb_pr')->bind(
         '<ButtonRelease-1>' => sub {
-            if (   $self->_model->is_mode('edit') ) {
-                $self->screen_report_print();
-            }
-            else {
-                print "WW: Not in edit mode\n";
-            }
+            $self->_model->is_mode('edit')
+              ? $self->screen_report_print()
+              : $self->_view->set_status( 'Not edit mode','ms','orange' );
         }
     );
 
     #-- Take note
     $self->_view->get_toolbar_btn('tb_tn')->bind(
         '<ButtonRelease-1>' => sub {
-            if (   $self->_model->is_mode('edit')
-                or $self->_model->is_mode('add') )
-            {
-                $self->take_note();
-            }
-            else {
-                print "WW: Not in edit or add mode\n";
-            }
+            ( $self->_model->is_mode('edit') or $self->_model->is_mode('add') )
+              ? $self->take_note()
+              : $self->_view->set_status( 'Not add|edit mode','ms','orange' );
         }
     );
 
     #-- Restore note
     $self->_view->get_toolbar_btn('tb_tr')->bind(
         '<ButtonRelease-1>' => sub {
-            if (   $self->_model->is_mode('add') ) {
-                $self->restore_note();
-            }
-            else {
-                print "WW: Not in add mode\n";
-            }
+            $self->_model->is_mode('add')
+              ? $self->restore_note()
+              : $self->_view->set_status( 'Not add mode','ms','orange' );
         }
     );
 
     #-- Clear screen
     $self->_view->get_toolbar_btn('tb_cl')->bind(
         '<ButtonRelease-1>' => sub {
-            if (   $self->_model->is_mode('edit')
-                or $self->_model->is_mode('add') )
-            {
-                $self->screen_clear();
-            }
-            else {
-                print "WW: Not in edit or add mode\n";
-            }
+            ( $self->_model->is_mode('edit') or $self->_model->is_mode('add') )
+              ? $self->screen_clear()
+              : $self->_view->set_status( 'Not add|edit mode','ms','orange' );
         }
     );
 
     #-- Reload
     $self->_view->get_toolbar_btn('tb_rr')->bind(
         '<ButtonRelease-1>' => sub {
-            if ( $self->_model->is_mode('edit') ) {
-                $self->record_reload();
-            }
-            else {
-                print "WW: Not in edit mode\n";
-            }
+            $self->_model->is_mode('edit')
+              ? $self->record_reload()
+              : $self->_view->set_status( 'Not edit mode','ms','orange' );
         }
     );
 
@@ -391,40 +361,29 @@ sub _set_event_handlers {
     $self->_view->bind( '<Control-q>' => sub { $self->_view->on_quit } );
     $self->_view->bind(
         '<F5>' => sub {
-            if ( $self->_model->is_mode('edit') ) {
-                $self->record_reload();
-            }
-            else {
-                print "WW: Not in edit mode\n";
-            }
+            $self->_model->is_mode('edit')
+              ? $self->record_reload()
+              : $self->_view->set_status( 'Not edit mode','ms','orange' );
         }
     );
     $self->_view->bind(
         '<F7>' => sub {
             # From add mode forbid find mode
-            if ( !$self->_model->is_mode('add') ) {
-                $self->toggle_mode_find();
-            }
+            $self->toggle_mode_find() if !$self->_model->is_mode('add');
         }
     );
     $self->_view->bind(
         '<F8>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_execute;
-            }
-            else {
-                print "WW: Not in find mode\n";
-            }
+            $self->_model->is_mode('find')
+              ? $self->record_find_execute
+              : $self->_view->set_status( 'Not find mode','ms','orange' );
         }
     );
     $self->_view->bind(
         '<F9>' => sub {
-            if ( $self->_model->is_mode('find') ) {
-                $self->record_find_count;
-            }
-            else {
-                print "WW: Not in find mode\n";
-            }
+            $self->_model->is_mode('find')
+              ? $self->record_find_count
+              : $self->_view->set_status( 'Not find mode','ms','orange' );
         }
     );
 
@@ -1642,14 +1601,14 @@ sub record_load_new {
 
     my $pk_id = $self->_view->list_read_selected();
     if ( ! defined $pk_id ) {
-        $self->_view->set_status('Nothing selected','ms');
+        $self->_view->set_status('Nothing selected','ms','orange');
         return;
     }
 
     my $ret = $self->record_load($pk_id);
 
     if ($ret) {
-        $self->_view->set_status('Record loaded', 'ms', 'blue');
+        $self->_view->set_status('Record loaded','ms','blue');
         $self->_model->set_modified(q{});    # empty
     }
 
@@ -1672,6 +1631,8 @@ sub screen_clear {
     if ($self->_model->is_mode('edit')) {
         $self->set_app_mode('idle');
     }
+
+    $self->_view->set_status( 'Cleared','ms','orange' );
 
     return;
 }
@@ -1702,14 +1663,14 @@ sub record_reload {
 
     my $pk_id = $self->{scrdata}{$pk_col};
     if ( ! defined $pk_id ) {
-        $self->_view->set_status('Reload failed!','ms');
+        $self->_view->set_status('Reload failed!','ms','red');
         return;
     }
 
     $self->screen_write(undef, 'clear'); # clear the controls
     $self->record_load($pk_id);
 
-    $self->_view->set_status("Record '$pk_id' reloaded",'ms');
+    $self->_view->set_status("Record reloaded",'ms','blue');
 
     return;
 }
@@ -2573,6 +2534,8 @@ sub toggle_mode_find {
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('find');
 
+    $self->_view->set_status( '','ms' ); # clear messages
+
     return;
 }
 
@@ -2590,6 +2553,8 @@ sub toggle_mode_add {
     $self->_model->is_mode('add')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('add');
+
+    $self->_view->set_status( '','ms' ); # clear messages
 
     return;
 }
@@ -2910,7 +2875,7 @@ sub renum_tmatrix_row {
 
     if ( $r >= 1 ) {
         foreach my $i ( 1 .. $r ) {
-            $xt->set( "$i,0", $i );    # !!!! ????  method causing leaks?
+            $xt->set( "$i,0", $i );
         }
     }
 
@@ -2990,7 +2955,7 @@ sub save_record {
 
         my $pk_id = $self->{scrdata}{$pk_col};
         if ( ! defined $pk_id ) {
-            $self->_view->set_status('No screen data?','ms');
+            $self->_view->set_status('No screen data?','ms','orange');
             return;
         }
 
@@ -3050,7 +3015,7 @@ sub take_note {
             ? 'Note taken'
             : 'Note take failed';
 
-    $self->_view->set_status( $msg, 'ms', 'blue' );
+    $self->_view->set_status( $msg, 'ms','blue' );
 
     return;
 }
@@ -3069,7 +3034,7 @@ sub restore_note {
             ? 'Note restored'
             : 'Note restore failed';
 
-    $self->_view->set_status( $msg, 'ms', 'blue' );
+    $self->_view->set_status( $msg, 'ms','blue' );
 
     return;
 }
@@ -3104,7 +3069,7 @@ sub save_screendata {
     my ($self, $data_file) = @_;
 
     if ( !$self->is_record() ) {
-        $self->_view->set_status('Empty screen', 'ms', 'orange' );
+        $self->_view->set_status('Empty screen','ms','orange' );
         return;
     }
 
