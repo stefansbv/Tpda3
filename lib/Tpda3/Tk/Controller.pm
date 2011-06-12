@@ -27,11 +27,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.09
+Version 0.12
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = '0.12';
 
 =head1 SYNOPSIS
 
@@ -180,7 +180,7 @@ sub about {
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
     $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2004 - 2011\n", 'normal' );
+    $text->insert( 'end', "Copyright 2010-2011\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', "stefansbv at users . sourceforge . net",
         'italic' );
@@ -227,20 +227,6 @@ sub _set_event_handlers {
                 $scr_name, $self->_view->w_geometry() );
         }
     );
-
-    #-- Connect / disconnect
-    # $self->_view->get_menu_popup_item('mn_cn')->configure(
-    #     -command => sub {
-    #         $self->_model->toggle_db_connect;
-    #     }
-    # );
-
-    # Config dialog
-    # $self->_view->get_menu_popup_item('mn_fn')->configure(
-    #     -command => sub {
-    #         $self->_view->show_config_dialog;
-    #     }
-    # );
 
     #- Custom application menu from menu.yml
 
@@ -652,7 +638,7 @@ section of the screen configuration.
 
 This is a configuration example from the L<Orders> screen:
 
- <tablebindings>
+ <tablebindings tm1>
    <lookup>
      <products>
        bindcol           = 1
@@ -676,10 +662,10 @@ First it creates a dispatch table:
      colsub4 => \&method,
  };
 
-Then creates a class binding for I<do_something_with> subroutine to
-override the default return binding.  I<do_something_with> than uses
-the dispatch table to execute the appropriate function when the return
-key is pressed inside a cell.
+Then creates a class binding for I<method_for> subroutine to override
+the default return binding.  I<method_for> than uses the dispatch
+table to execute the appropriate function when the return key is
+pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
 activates the L<Tpda3::Tk::Dialog::Search> module, to look-up value
@@ -691,59 +677,61 @@ with the results.  The second can call a method in the current screen.
 sub setup_bindings_table {
     my $self = shift;
 
-    my $dict     = Tpda3::Lookup->new;
-    my $bindings = $self->_scrcfg->tablebindings;
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
 
-    my $dispatch = {};
-    foreach my $bind_type ( keys %{$bindings} ) {
-        next unless $bind_type;            # skip if just an empty tag
+        my $bindings = $self->_scrcfg->tablebindings->{$tm_ds};
 
-        my $bnd = $bindings->{$bind_type};
-        if ($bind_type eq 'lookup') {
-            foreach my $bind_name ( keys %{$bnd} ) {
-                next unless $bind_name;    # skip if just an empty tag
-                my $lk_bind = $bnd->{$bind_name};
-                my $lookups = $self->add_dispatch_for_lookup($lk_bind);
-                @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
+        my $dispatch = {};
+        foreach my $bind_type ( keys %{$bindings} ) {
+            next unless $bind_type;            # skip if just an empty tag
+
+            my $bnd = $bindings->{$bind_type};
+            if ($bind_type eq 'lookup') {
+                foreach my $bind_name ( keys %{$bnd} ) {
+                    next unless $bind_name;    # skip if just an empty tag
+                    my $lk_bind = $bnd->{$bind_name};
+                    my $lookups = $self->add_dispatch_for_lookup($lk_bind);
+                    @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
+                }
+            }
+            elsif ($bind_type eq 'method') {
+                foreach my $bind_name ( keys %{$bnd} ) {
+                    next unless $bind_name;    # skip if just an empty tag
+                    my $mt_bind = $bnd->{$bind_name};
+                    my $methods = $self->add_dispatch_for_method($mt_bind);
+                    @{$dispatch}{ keys %{$methods} } = values %{$methods};
+                }
+            }
+            else {
+                print "WW: Binding type '$bind_type' not implemented\n";
+                return;
             }
         }
-        elsif ($bind_type eq 'method') {
-            foreach my $bind_name ( keys %{$bnd} ) {
-                next unless $bind_name;    # skip if just an empty tag
-                my $mt_bind = $bnd->{$bind_name};
-                my $methods = $self->add_dispatch_for_method($mt_bind);
-                @{$dispatch}{ keys %{$methods} } = values %{$methods};
+
+        # Bindings:
+        my $tm = $self->_screen->get_tm_controls($tm_ds);
+        $tm->bind(
+            'Tk::TableMatrix',
+            '<Return>',
+            sub {
+                my $r  = $tm->index( 'active', 'row' );
+                my $c  = $tm->index( 'active', 'col' );
+                # Table refresh
+                $tm->activate('origin');
+                $tm->activate("$r,$c");
+                $tm->reread();
+
+                my $ci = $tm->cget( -cols ) - 1; # max col index
+                my $sc = $self->method_for( $dispatch, $bindings, $r,$c, $tm_ds );
+                my $ac = $c;
+                $sc ||= 1;          # skip cols
+                $ac += $sc;         # new active col
+                $tm->activate( "$r,$ac" );
+                $tm->see('active');
+                Tk->break;
             }
-        }
-        else {
-            print "WW: Binding type '$bind_type' not implemented\n";
-            return;
-        }
+        );
     }
-
-    # Bindings:
-    my $tm = $self->_screen->get_tm_controls('tm1'); # TODO: Generalize!
-    $tm->bind(
-        'Tk::TableMatrix',
-        '<Return>',
-        sub {
-            my $r  = $tm->index( 'active', 'row' );
-            my $c  = $tm->index( 'active', 'col' );
-            # Table refresh
-            $tm->activate('origin');
-            $tm->activate("$r,$c");
-            $tm->reread();
-
-            my $ci = $tm->cget( -cols ) - 1; # max col index
-            my $sc = $self->do_something_with( $dispatch, $bindings, $r, $c );
-            my $ac = $c;
-            $sc ||= 1;          # skip cols
-            $ac += $sc;         # new active col
-            $tm->activate( "$r,$ac" );
-            $tm->see('active');
-            Tk->break;
-        }
-    );
 
     return;
 }
@@ -776,20 +764,20 @@ sub add_dispatch_for_method {
     return { $bindcol => \&method };
 }
 
-=head2 do_something_with
+=head2 method_for
 
 This is bound to the Return key, and executes a function as defined in
 the configuration, using a dispatch table.
 
 =cut
 
-sub do_something_with {
-    my ($self, $dispatch, $bindings, $r, $c) = @_;
+sub method_for {
+    my ($self, $dispatch, $bindings, $r, $c, $tm_ds) = @_;
 
     my $skip_cols;
     my $proc = "colsub$c";
     if ( exists $dispatch->{$proc} ) {
-        $skip_cols = $dispatch->{$proc}->($self, $bindings, $r, $c);
+        $skip_cols = $dispatch->{$proc}->($self, $bindings, $r, $c, $tm_ds);
     }
 
     return $skip_cols;
@@ -804,22 +792,22 @@ with the results.
 =cut
 
 sub lookup {
-    my ($self, $bnd, $r, $c) = @_;
+    my ($self, $bnd, $r, $c, $tm_ds) = @_;
 
-    my $lk_para = $self->get_lookup_setings($bnd, $r, $c);
+    my $lk_para = $self->get_lookup_setings($bnd, $r, $c, $tm_ds);
 
     # Check and set filter
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->_scrcfg->deptable->{columns}{$fld}{id};
+        my $col = $self->_scrcfg->deptable->{$tm_ds}{columns}{$fld}{id};
         $filter = $self->control_tmatrix_read_cell($r, $col);
     }
 
     my $dict   = Tpda3::Lookup->new;
     my $record = $dict->lookup( $self->_view, $lk_para, $filter );
 
-    $self->control_tmatrix_write_row( $r, $c, $record );
+    $self->control_tmatrix_write_row( $r, $c, $record, $tm_ds );
 
     my $skip_cols = scalar @{ $lk_para->{columns} }; # skip ahead cols number
 
@@ -895,7 +883,7 @@ An example data structure, for the Orders screen:
 =cut
 
 sub get_lookup_setings {
-    my ($self, $bnd, $r, $c) = @_;
+    my ($self, $bnd, $r, $c, $tm_ds) = @_;
 
     # Filter on bindcol = $c
     my @names = grep { $bnd->{lookup}{$_}{bindcol} == $c }
@@ -916,7 +904,7 @@ sub get_lookup_setings {
     my $filter = $bindings->{filter}
                ? $bindings->{filter}
                : q{};
-    print "WW: Filter setting = $filter \n";
+    # print "WW: Filter setting = $filter \n";
 
     $self->_log->trace("Setup binding for $search:$column");
 
@@ -928,7 +916,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->_scrcfg->deptable->{columns}{$column};
+    my $field_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns}{$column};
     my @cols;
     my $rec = {};
     $rec->{$search} = {
@@ -945,15 +933,15 @@ sub get_lookup_setings {
     my $flds;
   SWITCH: for ( ref $bindings->{field} ) {
         /^$/     && do {
-            $flds = $self->fields_cfg_one('deptable', $bindings);
+            $flds = $self->fields_cfg_one('deptable', $bindings, $tm_ds);
             last SWITCH;
         };
         /array/i && do {
-            $flds = $self->fields_cfg_many('deptable', $bindings);
+            $flds = $self->fields_cfg_many('deptable', $bindings, $tm_ds);
             last SWITCH;
         };
         /hash/i  && do {
-            $flds = $self->fields_cfg_named('deptable', $bindings);
+            $flds = $self->fields_cfg_named('deptable', $bindings, $tm_ds);
             last SWITCH;
         };
         print "WW: Bindigs configuration style?\n";
@@ -973,13 +961,19 @@ Just one field atribute.
 =cut
 
 sub fields_cfg_one {
-    my ( $self, $table, $bindings ) = @_;
+    my ( $self, $table, $bindings, $tm_ds ) = @_;
 
     # One field, no array
     my @cols;
-    my $fld       = $bindings->{field};
-    my $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
-    my $rec       = {};
+    my $fld = $bindings->{field};
+    my $field_cfg;
+    if ($tm_ds) {
+        $field_cfg = $self->_scrcfg->{$table}{$tm_ds}{columns}{$fld};
+    }
+    else {
+        $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
+    }
+    my $rec = {};
     $rec->{$fld} = {
         width => $field_cfg->{width},
         label => $field_cfg->{label},
@@ -997,14 +991,20 @@ Multiple return fields.
 =cut
 
 sub fields_cfg_many {
-    my ( $self, $table, $bindings ) = @_;
+    my ( $self, $table, $bindings, $tm_ds ) = @_;
 
     my @cols;
 
     # Multiple fields returned as array
     foreach my $fld ( @{ $bindings->{field} } ) {
-        my $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
-        my $rec       = {};
+        my $field_cfg;
+        if ($tm_ds) {
+            $field_cfg = $self->_scrcfg->{$table}{$tm_ds}{columns}{$fld};
+        }
+        else {
+            $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
+        }
+        my $rec = {};
         $rec->{$fld} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
@@ -1023,14 +1023,20 @@ Multiple return fields and widget name different from field name.
 =cut
 
 sub fields_cfg_named {
-    my ( $self, $table, $bindings ) = @_;
+    my ( $self, $table, $bindings, $tm_ds ) = @_;
 
     my @cols;
     # Multiple fields returned as array
     foreach my $fld ( keys %{ $bindings->{field} } ) {
-        my $name      = $bindings->{field}{$fld}{name};
-        my $field_cfg = $self->_scrcfg->{$table}{columns}{$name};
-        my $rec       = {};
+        my $name = $bindings->{field}{$fld}{name};
+        my $field_cfg;
+        if ($tm_ds) {
+            $field_cfg = $self->_scrcfg->{$table}{$tm_ds}{columns}{$fld};
+        }
+        else {
+            $field_cfg = $self->_scrcfg->{$table}{columns}{$fld};
+        }
+        my $rec = {};
         $rec->{$fld} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
@@ -1404,7 +1410,7 @@ sub screen_module_load {
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry();
     #-- Lookup bindings for tables (TableMatrix)
-    $self->setup_bindings_table() if $screen_type eq 'tablematrix';
+    $self->setup_bindings_table();
 
     # Store currently loaded screen class
     $self->{_scrcls} = $class;
@@ -1425,11 +1431,10 @@ sub screen_module_load {
 
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
-    # TODO: Generalize!
-    if ($screen_type eq 'tablematrix') {
-        # TableMatrix header
-        my $tm_fields = $self->_scrcfg->deptable->{columns};
-        my $tm_object = $self->_screen->get_tm_controls('tm1');
+    # TableMatrix header(s), if any
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        my $tm_object = $self->_screen->get_tm_controls($tm_ds);
+        my $tm_fields = $self->_scrcfg->deptable->{$tm_ds}{columns};
         $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
     }
 
@@ -1684,6 +1689,8 @@ Load the selected record in screen
 sub record_load {
     my ($self, $pk_id) = @_;
 
+    #-  Main table
+
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
     my $fields_hr = $table_hr->{columns};
@@ -1700,13 +1707,13 @@ sub record_load {
 
     $self->screen_write($record);
 
-    my $screen_type = $self->_scrcfg->screen->{type};
-    if ($screen_type eq 'tablematrix') {
+    #- Dependent table(s), if any
 
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
         my $tm_params = {};
 
         # Table metadata
-        my $table_hr  = $self->_scrcfg->deptable;
+        my $table_hr  = $self->_scrcfg->deptable->{$tm_ds};
         my $fields_hr = $table_hr->{columns};
 
         # Construct where, add findtype info
@@ -2345,7 +2352,7 @@ sub control_tmatrix_read {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    my $fields_cfg = $self->_scrcfg->deptable->{columns};
+    my $fields_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns};
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
     # Read table data and create an AoH
@@ -2391,7 +2398,7 @@ sub control_tmatrix_read_cell {
         return;
     }
 
-    my $fields_cfg = $self->_scrcfg->deptable->{columns};
+    my $fields_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns};
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
     my $cell_value = $tm_object->get("$row,$col");
     my $col_name   = $cols_ref->[$col];
@@ -2425,8 +2432,8 @@ sub control_tmatrix_write {
 
     foreach my $record ( @{$record_ref} ) {
 #        print Dumper( $record);
-        foreach my $field ( keys %{ $self->_scrcfg->deptable->{columns} } ) {
-            my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
+        foreach my $field ( keys %{ $self->_scrcfg->deptable->{$tm_ds}{columns} } ) {
+            my $fld_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns}{$field};
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
@@ -2494,7 +2501,7 @@ sub control_tmatrix_write_row {
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
 
-        my $fld_cfg = $self->_scrcfg->deptable->{columns}{$field};
+        my $fld_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns}{$field};
         my $value = $record_ref->{$field};
 
         my ( $col, $validtype, $width, $places ) =
@@ -2969,17 +2976,12 @@ sub save_record {
         return;
     }
 
-    # Save dependent data
+    #- Dependent table(s), if any
 
-    my $screen_type = $self->_scrcfg->screen->{type};
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
 
-    if ( $screen_type eq 'tablematrix' ) {
-
-        my $tabledata = $self->control_tmatrix_read();
-
-        my $tm_params = {};
         # Table metadata
-        my $table_hr  = $self->_scrcfg->deptable; # which table? TODO
+        my $table_hr  = $self->_scrcfg->deptable->{$tm_ds};
         my $fields_hr = $table_hr->{columns};
 
         # Construct where, add findtype info
@@ -2987,9 +2989,12 @@ sub save_record {
         $self->control_read_e($ctrl_ref, $pk_col);
         my $pk_id = $self->{scrdata}{$pk_col};
 
+        my $tm_params = {};
         $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
         $tm_params->{table} = $table_hr->{name};
         $tm_params->{pkcol} = { $pk_col => $pk_id };
+
+        my $tabledata = $self->control_tmatrix_read($tm_ds);
 
         # Delete all articles and reinsert from TM ;)
         $self->_model->table_record_delete_batch($tm_params);
@@ -3087,10 +3092,10 @@ sub save_screendata {
 
     #-  Dependent table(s), if any
 
-    my $tmxs = $self->_screen->get_tm_controls();
-    foreach my $tmx ( keys %{$tmxs} ) {
-        my $rec = $self->control_tmatrix_read($tmx);
-        $record_href->{deptable}{$tmx} = $rec;
+    my $tm_dss = $self->_screen->get_tm_controls();
+    foreach my $tm_ds ( keys %{$tm_dss} ) {
+        my $rec = $self->control_tmatrix_read($tm_ds);
+        $record_href->{deptable}{$tm_ds} = $rec;
     }
 
     return store( $record_href, $data_file );
@@ -3122,9 +3127,8 @@ sub restore_screendata {
 
     #- Dependent table(s), if any
 
-    my $tmxs = $self->_screen->get_tm_controls();
-    foreach my $tmx ( keys %{$tmxs} ) {
-        $self->control_tmatrix_write($record->{deptable}{$tmx}, $tmx);
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        $self->control_tmatrix_write($record->{deptable}{$tm_ds}, $tm_ds);
     }
 
     return 1;
