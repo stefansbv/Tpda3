@@ -319,7 +319,7 @@ sub _set_event_handlers {
             if (   $self->_model->is_mode('edit')
                 or $self->_model->is_mode('add') )
             {
-                $self->save_screendata();
+                $self->take_note();
             }
             else {
                 print "WW: Not in edit or add mode\n";
@@ -331,7 +331,7 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_tr')->bind(
         '<ButtonRelease-1>' => sub {
             if (   $self->_model->is_mode('add') ) {
-                $self->restore_screendata();
+                $self->restore_note();
             }
             else {
                 print "WW: Not in add mode\n";
@@ -1577,33 +1577,18 @@ sub toggle_interface_controls {
         my $status = $attribs->{$name}{state}{$mode};
 
         # Take note button
-        if ($name eq 'tb_tn') {
-            if ( $self->{_scrstr} ) {
-                if ( $self->_model->is_mode('add') ) {
-                    $status = 'normal';
-                }
-            }
+        if ( $name eq 'tb_tn' and $self->{_scrstr} ) {
+            $status = 'normal'   if $self->_model->is_mode('add');
+            $status = 'disabled' if !$self->is_record();
         }
 
         # Restore note
-        if ( ( $name eq 'tb_tr' ) && $self->{_scrstr} ) {
-
-            my $data_file = catfile(         # TODO: move this to a sub
-                $self->_cfg->cfapps,
-                $self->{_scrstr} . q{.dat},
-            );
-
-            if ( -f $data_file ) {
-                if ( $self->_model->is_mode('add') ) {
-                    $status = 'normal';
-                }
-                else {
-                    $status = 'disabled';
-                }
-            }
-            else {
-                $status = 'disabled';
-            }
+        if ( $name eq 'tb_tr' and $self->{_scrstr} ) {
+            my $data_file = $self->note_file_name();
+            $status = $self->_model->is_mode('add')
+                    ? 'normal'
+                    : 'disabled';
+            $status = 'disabled' if !-f $data_file;
         }
 
         # Print preview
@@ -3039,6 +3024,64 @@ sub save_record {
     return;
 }
 
+=head2 take_note
+
+Save record to a temporary file on disk.  Can be restored into a new
+record.  An easy way of making multiple records based on a template.
+
+=cut
+
+sub take_note {
+    my $self = shift;
+
+    my $msg = $self->save_screendata( $self->note_file_name )
+            ? 'Note taken'
+            : 'Note take failed';
+
+    $self->_view->set_status( $msg, 'ms', 'blue' );
+
+    return;
+}
+
+=head2 restore_note
+
+Restore record from a temporary file on disk into a new record.  An
+easy way of making multiple records based on a template.
+
+=cut
+
+sub restore_note {
+    my $self = shift;
+
+    my $msg = $self->restore_screendata( $self->note_file_name )
+            ? 'Note restored'
+            : 'Note restore failed';
+
+    $self->_view->set_status( $msg, 'ms', 'blue' );
+
+    return;
+}
+
+=head2 note_file_name
+
+Note file name defaults to the name of the screen with a I<dat>
+extension.
+
+=cut
+
+sub note_file_name {
+    my $self = shift;
+
+    # Store record data to file
+    my $data_file = catfile(
+        $self->_cfg->cfapps,
+        $self->_cfg->cfname,
+        $self->{_scrstr} . q{.dat},
+    );
+
+    return $data_file;
+}
+
 =head2 save_screendata
 
 Save screen data to temp file with Storable.
@@ -3046,10 +3089,10 @@ Save screen data to temp file with Storable.
 =cut
 
 sub save_screendata {
-    my $self = shift;
+    my ($self, $data_file) = @_;
 
     if ( !$self->is_record() ) {
-        $self->_view->set_status('Empty screen', 'ms', 'yellow' );
+        $self->_view->set_status('Empty screen', 'ms', 'orange' );
         return;
     }
 
@@ -3060,21 +3103,10 @@ sub save_screendata {
     my $record_href = {};
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
         next if $field eq $pk_col; # skip ID
-        $record_href->{$field} = $value;
+        $record_href->{maintable}{$field} = $value;
     }
 
-    # Store record data to file
-    my $data_file = catfile(
-        $self->_cfg->cfapps,
-        $self->{_scrstr} . q{.dat},
-    );
-
-    store( $record_href, $data_file )
-        or carp "Can't store record to $data_file!\n";
-
-    $self->_view->set_status('Noted', 'ms', 'blue' );
-
-    return;
+    return store( $record_href, $data_file );
 }
 
 =head2 restore_screendata
@@ -3084,24 +3116,23 @@ Restore screen data from file saved with Storable.
 =cut
 
 sub restore_screendata {
-    my $self = shift;
+    my ($self, $data_file) = @_;
 
-    my $data_file = catfile(
-        $self->_cfg->cfapps,
-        $self->{_scrstr} . q{.dat},
-    );
-
-    if ( -f $data_file ) {
-        my $colref = retrieve($data_file);
-        carp "Unable to retrieve from $data_file!\n"
-            unless defined $colref;
-
-        $self->screen_write( $colref, 'record' );
+    unless ( -f $data_file ) {
+        print "$data_file not found!\n";
+        return;
     }
 
-    return;
-}
+    my $record = retrieve($data_file);
+    unless (defined $record) {
+        carp "Unable to retrieve from $data_file!\n";
+        return;
+    }
 
+    $self->screen_write( $record->{maintable}, 'record' );
+
+    return 1;
+}
 
 =head1 AUTHOR
 

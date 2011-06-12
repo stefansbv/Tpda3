@@ -5,6 +5,8 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
+use Tpda3::Tk::Text;
+
 use Tpda3::Tk::Validation;
 
 =head1 NAME
