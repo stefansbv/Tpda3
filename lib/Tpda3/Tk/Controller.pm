@@ -1108,10 +1108,15 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->screen_write(undef, 'clear');      # Empty the main controls
-    $self->control_tmatrix_write();
+    # Empty the main controls and TM, if any
+
+    $self->screen_write(undef, 'clear');
+
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        $self->control_tmatrix_write(undef, $tm_ds);
+    }
+
     $self->controls_state_set('off');
-    $self->_log->trace("Mode has changed to 'idle'");
 
     return;
 }
@@ -1127,24 +1132,14 @@ color as specified in the configuration.
 sub on_screen_mode_add {
     my ($self, ) = @_;
 
-    $self->_log->trace("Mode has changed to 'add'");
-
-    # Test record data
-    # my $record_ref = {
-    #     productcode        => 'S700_2047',
-    #     productname        => 'HMS Bounty',
-    #     buyprice           => '39.83',
-    #     msrp               => '90.52',
-    #     productvendor      => 'Unimax Art Galleries',
-    #     productscale       => '1:700',
-    #     quantityinstock    => '3501',
-    #     productline        => 'Ships',
-    #     productlinecode    => '2',
-    #     productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
-    # };
+    # Empty the main controls and TM, if any
 
     $self->screen_write(undef, 'clear');
-    $self->control_tmatrix_write();
+
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        $self->control_tmatrix_write(undef, $tm_ds);
+    }
+
     $self->controls_state_set('edit');
 
     return;
@@ -1160,10 +1155,15 @@ content in the I<Screen> and change the background to light green.
 sub on_screen_mode_find {
     my $self = shift;
 
-    $self->screen_write(undef, 'clear'); # Empty the controls
-    $self->control_tmatrix_write();
+    # Empty the main controls and TM, if any
+
+    $self->screen_write(undef, 'clear');
+
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        $self->control_tmatrix_write(undef, $tm_ds);
+    }
+
     $self->controls_state_set('find');
-    $self->_log->trace("Mode has changed to 'find'");
 
     return;
 }
@@ -2431,7 +2431,6 @@ sub control_tmatrix_write {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
-#        print Dumper( $record);
         foreach my $field ( keys %{ $self->_scrcfg->deptable->{$tm_ds}{columns} } ) {
             my $fld_cfg = $self->_scrcfg->deptable->{$tm_ds}{columns}{$field};
 

@@ -7,6 +7,7 @@ use Carp;
 use Tpda3::Tk::Entry;
 #use Tpda3::Tk::Text;
 
+use Tpda3::Tk::ToolBar;
 use Tpda3::Tk::Validation;
 
 =head1 NAME
@@ -77,19 +78,19 @@ If TM Id parameter is provided return a reference to that TM object.
 sub get_tm_controls {
     my ( $self, $tm ) = @_;
 
-    if ( exists $self->{tm_controls} ) {
-        if ($tm) {
-            return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
-        }
-        else {
-            return $self->{tm_controls}{rec};
-        }
+    return {} if ! exists $self->{tm_controls};
+
+    if ($tm) {
+        return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+    }
+    else {
+        return $self->{tm_controls}{rec};
     }
 }
 
 =head2 get_toolbar_btn
 
-Return a toolbar button when we know the its name
+Return a toolbar button when we know its name.
 
 =cut
 
@@ -131,6 +132,26 @@ sub get_bgcolor {
     my $self = shift;
 
     return $self->{bg};
+}
+
+=head2 make_toolbar_for_table
+
+Make toolbar with add and remove buttons.
+
+=cut
+
+sub make_toolbar_for_table {
+    my ($self, $tb_frame, $toolbar) = @_;
+
+    $self->{tb} = Tpda3::Tk::ToolBar->new($tb_frame);
+
+    my $cfg = Tpda3::Config->instance();
+
+    my $attribs = $cfg->toolbar2;
+
+    $self->{tb}->make_toolbar_buttons($toolbar, $attribs);
+
+    return;
 }
 
 =head1 AUTHOR

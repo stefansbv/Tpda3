@@ -10,7 +10,7 @@ use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
 use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Config;
-use Tpda3::Tk::ToolBar;
+#use Tpda3::Tk::ToolBar;
 
 =head1 NAME
 
@@ -298,25 +298,19 @@ sub run_screen {
 
     #-- Toolbar
 
-    my $tbf1 = $frm_t->Frame();
-    $tbf1->pack(
+    my $tb_frame1 = $frm_t->Frame();
+    $tb_frame1->pack(
         -anchor => 'n',
         -expand => 'n',
         -fill   => 'x',
     );
 
-    # TODO: move this from here
-    $self->{tb} = Tpda3::Tk::ToolBar->new($tbf1);
-
-    my $cfg = Tpda3::Config->instance();
-
-    my $toolbar = [ qw(tb2ad tb2rm) ];       # Order of creation
-    my $attribs = $cfg->toolbar2;
-
-    $self->{tb}->make_toolbar_buttons($toolbar, $attribs);
+    my $tb_names1 = [ qw(tb2ad tb2rm) ];      # order of creation
+    $self->SUPER::make_toolbar_for_table($tb_frame1, $tb_names1);
 
     #- TableMatrix
-    my $xtvar = {};                          # Must init as hash reference!
+
+    my $xtvar = {};                     # must init as hash reference!
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
         -rows           => 5,
@@ -377,15 +371,7 @@ sub run_screen {
         },
     };
 
-    # Required fields: fld_name => [#, Label]
-    # If there is no value in the screen for this fields show a dialog message
-    $self->{req_controls} = {
-        orderdate      => [ 0, '  Order date' ],
-        requireddate   => [ 1, '  Required date' ],
-        customernumber => [ 2, '  Customer number' ],
-    };
-
-    # This makes TableMatrix expand !!! or not :(
+    # This makes TableMatrix expand
     $xtable->update;
 
     return;
