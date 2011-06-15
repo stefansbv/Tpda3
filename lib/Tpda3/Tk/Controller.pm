@@ -1389,24 +1389,15 @@ sub screen_module_load {
     # Load instance config
     $self->_cfg->config_load_instance();
 
-    # Update window geometry from instance config if exists or from
-    # defaults
-    my $geom;
-    if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
-        unless ($geom) {
-            $geom = $self->_scrcfg->screen->{geometry};
-        }
-    }
-    else {
-        $geom = $self->_scrcfg->screen->{geometry};
-    }
-    $self->_view->set_geometry($geom);
+    # Update window geometry
+    $self->update_geometry();
 
     # Event handlers
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry();
+
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
 
@@ -1445,6 +1436,28 @@ sub screen_module_load {
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
+}
+
+=head2 update_geometry
+
+Update window geometry from instance config if exists or from
+defaults.
+
+=cut
+
+sub update_geometry {
+    my $self = shift;
+    my $geom;
+    if ( $self->_cfg->can('geometry') ) {
+        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
+        unless ($geom) {
+            $geom = $self->_scrcfg->screen->{geometry};
+        }
+    }
+    else {
+        $geom = $self->_scrcfg->screen->{geometry};
+    }
+    $self->_view->set_geometry($geom);
 }
 
 =head2 screen_init
@@ -1491,13 +1504,6 @@ sub screen_init {
         if ( $ctrltype eq 'm' ) {
 
             # JComboBox
-            # if ( $ctrl_ref->{$field}[1] ) {
-            #     $ctrl_ref->{$field}[1]->removeAllItems();
-            #     while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-            #         $ctrl_ref->{$field}[1]
-            #             ->insertItemAt( 'end', $label, -value => $code );
-            #     }
-            # }
             if ( $ctrl_ref->{$field}[1] ) {
                 $ctrl_ref->{$field}[1]->removeAllItems();
                 $ctrl_ref->{$field}[1]->configure(-choices => $cod_a_ref);
@@ -2292,6 +2298,15 @@ sub control_tmatrix_read {
     return \@tabledata;
 }
 
+=head2 control_tmatrix_read_cell
+
+Read a cell from a TableMatrix widget and return it as a hash
+reference.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+=cut
+
 sub control_tmatrix_read_cell {
     my ($self, $row, $col, $tm_ds) = @_;
 
@@ -2318,7 +2333,7 @@ sub control_tmatrix_read_cell {
 
 =head2 control_tmatrix_write
 
-Write data to TableMatrix widget
+Write data to TableMatrix widget.
 
 =cut
 
@@ -2375,19 +2390,16 @@ sub control_tmatrix_write {
     # Refreshing the table...
     $tm_object->configure( -rows => $row );
 
-    # TODO: make a more general sub
-    # Execute sub defined in screen Workaround for a DBD::InterBase
-    # problem related to big decimals?  The view doesn't compute
-    # corectly the value and the VAT when accesed from perl but only
-    # from flamerobin ...  Check if sub exists first
-    # Fixed with patch from:
-    # http://github.com/pilcrow/perl-dbd-interbase.git
-    # if ( $self->{screen}->can('recalculare_factura') ) {
-    #     $self->{screen}->recalculare_factura();
-    # }
-
     return;
 }
+
+=head2 control_tmatrix_write_row
+
+Write a row to a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+=cut
 
 sub control_tmatrix_write_row {
     my ($self, $row, $col, $record_ref, $tm_ds) = @_;
@@ -2649,6 +2661,7 @@ sub control_write_c {
         $ctrl_ref->{$field}[1]->deselect;
     }
 
+    # TODO: Bindings for Checkbox
     # # Execute sub defined in screen bound to checkbox
     # # Sub name must be: 'sw_' + 'field_name'
     # # Check if sub exists is defined first
@@ -2735,7 +2748,7 @@ sub add_tmatrix_row {
 
 =head2 remove_tmatrix_row
 
-Delete TableMatrix row
+Delete TableMatrix row.
 
 =cut
 
@@ -2780,7 +2793,7 @@ sub remove_tmatrix_row {
 
 =head2 renum_tmatrix_row
 
-Renumber TableMatrix rows
+Renumber TableMatrix rows.
 
 =cut
 
@@ -2907,7 +2920,7 @@ sub ask_to_save {
 
 =head2
 
-Save record.
+Save record.  Different procedures for different modes.
 
 =cut
 
@@ -2927,32 +2940,7 @@ sub save_record {
         return;
     }
 
-    # #- Dependent table(s), if any
-
-    # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
-
-    #     # # Table metadata
-    #     # my $deptable  = $self->_scrcfg->deptable->{$tm_ds};
-    #     # my $columns = $deptable->{columns};
-
-    #     # # Construct where, add findtype info
-    #     # my $ctrl_ref = $self->_screen->get_controls();
-    #     # $self->control_read_e($ctrl_ref, $pk_col_name);
-    #     # my $pk_id = $self->{scrdata}{$pk_col_name};
-
-    #     # my $tm_params = {};
-    #     # $tm_params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
-    #     # $tm_params->{table} = $deptable->{name};
-    #     # $tm_params->{pkcol} = { $pk_col_name => $pk_id };
-
-    #     my $tabledata = $self->control_tmatrix_read($tm_ds);
-
-    #     # Delete all articles and reinsert from TM ;)
-    #     $self->_model->table_record_delete_batch($tm_params);
-    #     $self->_model->table_record_insert_batch($tm_params, $tabledata);
-    # }
-
-    # $self->_model->set_modified(q{});        # empty
+    $self->_model->set_modified(q{});        # empty
 
     return;
 }
@@ -3073,9 +3061,11 @@ sub note_file_name {
     return $data_file;
 }
 
-=head2 screen_record
+=head2 get_screen_data_as_record
 
-Make a record from screen data.
+Make a record from screen data.  The data structure is an AoH where at
+index 0 there is the main record meta-data and data and at index 1 the
+dependent table(s) data and meta-data.
 
 =cut
 
@@ -3095,7 +3085,7 @@ sub get_screen_data_as_record {
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
-    push @record, $record;
+    push @record, $record;      # index 0
 
     # Get PK field name and value
     my $pk_col_name = $record->{metadata}{pkcol};
@@ -3115,10 +3105,16 @@ sub get_screen_data_as_record {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
     }
-    push @record, $deprec;
+    push @record, $deprec;      # index 1
 
     return \@record;
 }
+
+=head2 maintable_metadata
+
+Retrieve main table meta-data from the screen configuration.
+
+=cut
 
 sub maintable_metadata {
     my ($self, $use_view) = @_;
@@ -3135,6 +3131,12 @@ sub maintable_metadata {
 
     return $metadata;
 }
+
+=head2 deptable_metadata
+
+Retrieve dependent table meta-data from the screen configuration.
+
+=cut
 
 sub deptable_metadata {
     my ($self, $tm_ds, $pk_id, $use_view) = @_;
@@ -3166,7 +3168,7 @@ Save screen data to temp file with Storable.
 sub save_screendata {
     my ($self, $data_file) = @_;
 
-    my $record = $self->screen_record();
+    my $record = $self->get_screen_data_as_record();
 
     return store( $record, $data_file );
 }
