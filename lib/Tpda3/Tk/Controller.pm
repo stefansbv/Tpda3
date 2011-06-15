@@ -435,19 +435,24 @@ sub _set_event_handler_screen {
 
     $self->_log->trace("Setup event handler for screen");
 
+    # TODO: Make this more general
+    my $tm_ds = 'tm1';
+    my $deptable = $self->_scrcfg->deptable->{$tm_ds};
+    my $updstyle = $deptable->{updatestyle};
+
     #- screen ToolBar
 
     #-- Add row button
     $self->_screen->get_toolbar_btn('tb2ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->add_tmatrix_row();
+            $self->add_tmatrix_row(undef, $tm_ds, $updstyle);
         }
     );
 
     #-- Remove row button
     $self->_screen->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->remove_tmatrix_row();
+            $self->remove_tmatrix_row(undef, $tm_ds, $updstyle);
         }
     );
 
@@ -2709,27 +2714,26 @@ Table matrix methods.  Add TableMatrix row.
 =cut
 
 sub add_tmatrix_row {
-    my ($self, $valori_ref, $tm_ds) = @_;
+    my ($self, $valori_ref, $tm_ds, $updstyle) = @_;
 
-    $tm_ds ||= q{tm1};           # default table matrix designator
+    $tm_ds ||= q{tm1};          # default table matrix designator
 
     my $xt = $self->_screen->get_tm_controls($tm_ds);
 
-    unless ( $self->_model->is_mode('add')
-                 || $self->_model->is_mode('edit') ) {
-        return;
-    }
+    return
+      unless $self->_model->is_mode('add')
+          or $self->_model->is_mode('edit');
 
-    $xt->configure( state => 'normal' );     # Stare normala
+    $xt->configure( state => 'normal' ); # normal state
 
     $xt->insertRows('end');
     my $r = $xt->index( 'end', 'row' );
 
-    $xt->set( "$r,0", $r );     # Daca am parametru 2, introduc datele
+    $xt->set( "$r,0", $r );     # insert data if we have a ref
     my $c = 1;
     if ( ref($valori_ref) eq 'ARRAY' ) {
 
-        # Inserez datele
+        # Insert data
         foreach my $valoare ( @{$valori_ref} ) {
             if ( defined $valoare ) {
                 $xt->set( "$r,$c", $valoare );
@@ -2738,7 +2742,7 @@ sub add_tmatrix_row {
         }
     }
 
-    # Focus la randul nou inserat, coloana 1
+    # Focus to newly inserted row, column 1
     $xt->focus;
     $xt->activate("$r,1");
     $xt->see("$r,1");
@@ -2753,7 +2757,7 @@ Delete TableMatrix row.
 =cut
 
 sub remove_tmatrix_row {
-    my ($self, $tm_ds) = @_;
+    my ($self, $tm_ds, $updstyle) = @_;
 
     $tm_ds ||= q{tm1};           # default table matrix designator
 
@@ -2778,15 +2782,18 @@ sub remove_tmatrix_row {
         }
     };
     if ($@) {
-        warn "Warning: $@";
+        warn "WW: $@";
     }
 
-    $self->renum_tmatrix_row($xt);           # renumerotare randuri
+    $self->renum_tmatrix_row($xt)
+      if $updstyle eq 'delete+add';    # renumber rows
 
-    # Calcul total desfasurator; check if sub exists first
-    # if ( $self->{tpda}->{screen_curr}->can('calcul_total_des_tm2') ) {
-    #     $self->{tpda}->{screen_curr}->calcul_total_des_tm2;
-    # }
+    # Refresh table
+    $xt->activate('origin');
+    $xt->activate("$r,1");
+    $xt->reread();
+
+    # TODO: Feature to trigger a method here?
 
     return $r;
 }
