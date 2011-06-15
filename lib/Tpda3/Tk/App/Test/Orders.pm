@@ -3,8 +3,6 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
@@ -108,7 +106,7 @@ sub run_screen {
         -padleft => 5,
     );
 
-    my $ecustomername = $frame1->Entry( -width => 35 );
+    my $ecustomername = $frame1->MEntry( -width => 35 );
     $ecustomername->form(
         -top  => [ '&', $lcustomername, 0 ],
         -left => [ %0,  110 ],
@@ -116,7 +114,7 @@ sub run_screen {
 
     #-+ Customer number (customernumber)
 
-    my $ecustomernumber = $frame1->Entry(
+    my $ecustomernumber = $frame1->MEntry(
         -width              => 6,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -136,7 +134,7 @@ sub run_screen {
         -padleft => 5,
     );
 
-    my $eordernumber = $frame1->Entry(
+    my $eordernumber = $frame1->MEntry(
         -width              => 10,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -332,7 +330,7 @@ sub run_screen {
 
     #- Ordertotal (ordertotal)
 
-    my $eordertotal = $frm_bl->Entry(
+    my $eordertotal = $frm_bl->MEntry(
         -width   => 12,
         -justify => 'right',
     );

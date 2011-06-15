@@ -67,7 +67,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eproductcode = $frame1->Entry(
+    my $eproductcode = $frame1->MEntry(
         -width => 15,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -88,7 +88,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eproductname = $frame1->Entry(
+    my $eproductname = $frame1->MEntry(
         -width => 35,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -109,7 +109,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eproductline = $frame1->Entry(
+    my $eproductline = $frame1->MEntry(
         -width => 28,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -121,7 +121,7 @@ sub run_screen {
 
     #-+ Productlinecode
 
-    my $eproductlinecode = $frame1->Entry(
+    my $eproductlinecode = $frame1->MEntry(
         -width              => 5,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -142,7 +142,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eproductscale = $frame1->Entry(
+    my $eproductscale = $frame1->MEntry(
         -width => 10,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -163,7 +163,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eproductvendor = $frame1->Entry(
+    my $eproductvendor = $frame1->MEntry(
         -width => 35,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -184,7 +184,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $equantityinstock = $frame1->Entry(
+    my $equantityinstock = $frame1->MEntry(
         -width              => 8,
         -justify            => 'right',
         -disabledbackground => $self->{bg},
@@ -206,7 +206,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $ebuyprice = $frame1->Entry(
+    my $ebuyprice = $frame1->MEntry(
         -width              => 8,
         -justify            => 'right',
         -disabledbackground => $self->{bg},
@@ -227,7 +227,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $emsrp = $frame1->Entry(
+    my $emsrp = $frame1->MEntry(
         -width              => 8,
         -justify            => 'right',
         -disabledbackground => $self->{bg},

@@ -65,7 +65,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $ecustomername = $frame1->Entry(
+    my $ecustomername = $frame1->MEntry(
         -width    => 35,
         -validate => 'key',
         -vcmd     => sub {
@@ -79,7 +79,7 @@ sub run_screen {
 
     #-+ Customernumber
 
-    my $ecustomernumber = $frame1->Entry(
+    my $ecustomernumber = $frame1->MEntry(
         -width => 5,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -98,7 +98,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $econtactlastname = $frame1->Entry( -width => 42 );
+    my $econtactlastname = $frame1->MEntry( -width => 42 );
     $econtactlastname->form(
         -top  => [ '&', $lcontactlastname, 0 ],
         -left => [ %0,  110 ],
@@ -113,7 +113,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $econtactfirstname = $frame1->Entry( -width => 42 );
+    my $econtactfirstname = $frame1->MEntry( -width => 42 );
     $econtactfirstname->form(
         -top  => [ '&', $lcontactfirstname, 0 ],
         -left => [ %0,  110 ],
@@ -128,7 +128,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $ephone = $frame1->Entry( -width => 42 );
+    my $ephone = $frame1->MEntry( -width => 42 );
     $ephone->form(
         -top  => [ '&', $lphone, 0 ],
         -left => [ %0,  110 ],
@@ -143,7 +143,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eaddressline1 = $frame1->Entry( -width => 42 );
+    my $eaddressline1 = $frame1->MEntry( -width => 42 );
     $eaddressline1->form(
         -top  => [ '&', $laddressline1, 0 ],
         -left => [ %0,  110 ],
@@ -158,7 +158,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $eaddressline2 = $frame1->Entry( -width => 42 );
+    my $eaddressline2 = $frame1->MEntry( -width => 42 );
     $eaddressline2->form(
         -top  => [ '&', $laddressline2, 0 ],
         -left => [ %0,  110 ],
@@ -173,7 +173,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $ecity = $frame1->Entry( -width => 42 );
+    my $ecity = $frame1->MEntry( -width => 42 );
     $ecity->form(
         -top  => [ '&', $lcity, 0 ],
         -left => [ %0,  110 ],
@@ -188,7 +188,7 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $estate = $frame1->Entry( -width => 42 );
+    my $estate = $frame1->MEntry( -width => 42 );
     $estate->form(
         -top  => [ '&', $lstate, 0 ],
         -left => [ %0,  110 ],
@@ -203,14 +203,14 @@ sub run_screen {
         -padx => 5, -pady => 5,
     );
 
-    my $ecountryname = $frame1->Entry( -width => 35 );
+    my $ecountryname = $frame1->MEntry( -width => 35 );
     $ecountryname->form(
         -top  => [ '&', $lcountryname, 0 ],
         -left => [ %0,  110 ],
     );
 
     #-+ Countrycode
-    my $ecountrycode = $frame1->Entry(
+    my $ecountrycode = $frame1->MEntry(
         -width              => 5,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -229,7 +229,7 @@ sub run_screen {
         -left => [ %0,            0 ],
     );
 
-    my $esalesrepemployee = $frame1->Entry( -width => 35 );
+    my $esalesrepemployee = $frame1->MEntry( -width => 35 );
     $esalesrepemployee->form(
         -top  => [ '&', $lsalesrepemployee, 0 ],
         -left => [ %0,  110 ],
@@ -237,7 +237,7 @@ sub run_screen {
 
     #-+ Eemployeenumber
 
-    my $eemployeenumber = $frame1->Entry(
+    my $eemployeenumber = $frame1->MEntry(
         -width              => 5,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -256,7 +256,7 @@ sub run_screen {
         -padx => 5,
     );
 
-    my $ecreditlimit = $frame1->Entry(
+    my $ecreditlimit = $frame1->MEntry(
         -width    => 10,
         -justify  => 'right',
         -validate => 'key',
@@ -272,7 +272,7 @@ sub run_screen {
 
     #- Postalcode
 
-    my $epostalcode = $frame1->Entry( -width => 15 );
+    my $epostalcode = $frame1->MEntry( -width => 15 );
     $epostalcode->form(
         -top   => [ '&',  $lcreditlimit, 0 ],
         -right => [ %100, -5 ],

@@ -8,7 +8,7 @@ use Data::Dumper;
 use Tk;
 use base qw(Tk::Entry);
 
-Construct Tk::Widget 'Entry';
+Construct Tk::Widget 'MEntry';
 
 =head1 NAME
 
