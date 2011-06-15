@@ -18,7 +18,7 @@ our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Validation;
+    require Tpda3::Tk::Validation;
 
     my $validation = Tpda3::Tk::Validation->new($scr_cfg_ref);
 
@@ -37,7 +37,7 @@ our $VERSION = '0.03';
         'TableMatrix',
         ...
         -validate       => 1,
-        -vcmd           => sub { $validation->validate_table_cell(@_) },
+        -vcmd           => sub { $validation->validate_table_cell('tm1',@_) },
     );
 
 =head1 METHODS
@@ -68,9 +68,6 @@ sub new {
 
     $self->{_cfg} = $scrcfg;
 
-    # Prepare screen configuration data for tables
-    $self->_init_cfgdata('deptable');
-
     return $self;
 }
 
@@ -81,14 +78,14 @@ is a hashref with column names as keys and column index as values.
 
 =cut
 
-sub _init_cfgdata {
-    my ($self, $table) = @_;
+sub init_cfgdata {
+    my ($self, $table, $tm_ds) = @_;
 
-    my $table_cfg = $self->{_cfg}{$table}{columns};
+    my $table_cfg = $self->{_cfg}{$table}{$tm_ds}{columns};
     my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
     my %cols      = map { $_ => $cols->[$_] } 0 .. $#{$cols};
 
-    $self->{$table} = \%cols;
+    $self->{$tm_ds} = \%cols;
 
     return;
 }
@@ -101,9 +98,9 @@ from the TableMatrix widget.
 =cut
 
 sub column_name_from_idx {
-    my ($self, $table, $col_idx) = @_;
+    my ($self, $tm_ds, $col_idx) = @_;
 
-    return $self->{$table}{$col_idx};
+    return $self->{$tm_ds}{$col_idx};
 }
 
 =head2 column_attribs
@@ -113,10 +110,25 @@ screen configuration, for the main table.
 
 =cut
 
-sub column_attribs {
-    my ($self, $table, $column) = @_;
+sub maintable_attribs {
+    my ($self, $column) = @_;
 
-    my $table_cfg = $self->{_cfg}{$table}{columns}{$column};
+    my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
+
+    return @{$table_cfg}{ qw(validation width places) }; # hash slice
+}
+
+=head2 column_attribs
+
+Return column attributes for I<type>, I<width> and I<place>, from the
+screen configuration, for the dependent table(s).
+
+=cut
+
+sub deptable_attribs {
+    my ($self, $tm_ds, $column) = @_;
+
+    my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
 
     return @{$table_cfg}{ qw(validation width places) }; # hash slice
 }
@@ -134,7 +146,7 @@ interpreted as a 'column IS NULL' SQL WHERE clause.
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
 
-    my ($type, $width, $places) = $self->column_attribs('maintable', $column);
+    my ($type, $width, $places) = $self->maintable_attribs($column);
 
     return $self->validate( $type, $p1, $width, $places );
 }
@@ -148,12 +160,12 @@ Get I<type>, I<width> and I<places> from the table's configuration.
 =cut
 
 sub validate_table_cell {
-    my ($self, $row, $col, $old, $new, $cidx) = @_;
+    my ($self, $tm_ds, $row, $col, $old, $new, $cidx) = @_;
 
-    my $column = $self->column_name_from_idx( 'deptable', $col );
+    my $column = $self->column_name_from_idx( $tm_ds, $col );
 
-    my ($type, $width, $places) = $self->column_attribs('deptable', $column);
-
+    my ($type, $width, $places) = $self->deptable_attribs($tm_ds, $column);
+    print "$column: $type($width,$places)\n";
     return $self->validate( $type, $new, $width, $places );
 }
 
@@ -165,6 +177,11 @@ Validate sub calls the appropriate function for data validation.
 
 sub validate {
     my ( $self, $proc, $p1, $maxlen, $places ) = @_;
+
+    if (!$proc) {
+        print "WW: no proc! for validation\n";
+        return;
+    }
 
     my $retval;
     if ( exists $self->{procs}{$proc} ) {

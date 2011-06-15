@@ -326,7 +326,7 @@ sub run_screen {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
-        -vcmd           => sub { $validation->validate_table_cell(@_) },
+        -vcmd           => sub { $validation->validate_table_cell('tm1', @_) },
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 
@@ -373,6 +373,11 @@ sub run_screen {
 
     # This makes TableMatrix expand
     $xtable->update;
+
+    # Prepare screen configuration data for tables
+    foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
+        $validation->init_cfgdata( 'deptable', $tm_ds );
+    }
 
     return;
 }
