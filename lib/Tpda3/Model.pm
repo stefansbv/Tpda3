@@ -658,6 +658,39 @@ sub table_record_delete_batch {
     return;
 }
 
+=head2 table_record_insert_update
+
+
+
+=cut
+
+sub table_record_insert_update {
+    my ( $self, $table, $records, $where ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    my $where = $self->build_where($data_hr);
+
+    my ( $stmt, @bind ) = $sql->select( $table, [qw{}], $where, $order );
+
+    # AoH refs
+    foreach my $rec ( @{$records} ) {
+
+        my ( $stmt, @bind ) = $sql->insert( $table, $rec );
+
+        # try {
+        #     my $sth = $self->{_dbh}->prepare($stmt);
+        #     $sth->execute(@bind);
+        # }
+        # catch {
+        #     $self->_print("Database error!");
+        #     croak("Transaction aborted: $_");
+        # };
+    }
+
+    return;
+}
+
 =head2 store_record
 
 Inserts a record.
@@ -780,6 +813,7 @@ sub store_record_update {
         }
         else {
             print "Complex update, not yet :)\n";
+            $self->table_record_insert_update($table, $depdata, $where);
         }
      }
 

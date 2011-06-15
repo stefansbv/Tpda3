@@ -2386,7 +2386,6 @@ sub control_tmatrix_write {
             }
 
             $xtvar->{"$row,$col"} = $value;
-
         }
 
         $row++;
@@ -2867,16 +2866,11 @@ sub record_load {
 
     #-  Main table
 
-    # Table metadata
-    my $maintable   = $self->_scrcfg->maintable;
-    my $columns     = $maintable->{columns};
-    my $pk_col_name = $maintable->{pkcol}{name};
+    my $params = $self->maintable_metadata('use_view');
+    my $pkcol_name = $params->{pkcol};
 
-    # Construct where, add findtype info
-    my $params = {};
-    $params->{table} = $maintable->{view};   # use view instead of table
-    $params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ]; # column = value
-    $params->{pkcol} = $pk_col_name;
+    # Where: id_column = id_value
+    $params->{where}{ $pkcol_name } = [ $pk_id, 'allstr' ]; # column = value
 
     my $record = $self->_model->query_record($params);
 
@@ -2885,17 +2879,7 @@ sub record_load {
     #- Dependent table(s), if any
 
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
-        my $tm_params = {};
-
-        # Table metadata
-        my $deptable = $self->_scrcfg->deptable->{$tm_ds};
-        my $columns  = $deptable->{columns};
-
-        # Construct where, add findtype info
-        $tm_params->{table} = $deptable->{view};
-        $tm_params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
-        $tm_params->{fkcol} = $deptable->{fkcol}{name};
-        $tm_params->{cols}  = Tpda3::Utils->sort_hash_by_id($columns);
+        my $tm_params = $self->deptable_metadata( $tm_ds, $pk_id, 'use_view' );
 
         my $records = $self->_model->query_record_batch($tm_params);
 
@@ -3162,6 +3146,7 @@ sub deptable_metadata {
     $tm_metadata->{table} = $use_view ? $deptable->{view} : $deptable->{name};
     $tm_metadata->{updstyle} = $deptable->{updatestyle};
     $tm_metadata->{pkcol}    = $pk_col_name;
+    $tm_metadata->{cols}     = Tpda3::Utils->sort_hash_by_id($columns);
 
     return $tm_metadata;
 }
