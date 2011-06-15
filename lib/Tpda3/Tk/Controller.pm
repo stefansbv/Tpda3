@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -1397,11 +1395,11 @@ sub screen_module_load {
     if ( $self->_cfg->can('geometry') ) {
         $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
         unless ($geom) {
-            $geom = $self->_scrcfg->screen->{geom};
+            $geom = $self->_scrcfg->screen->{geometry};
         }
     }
     else {
-        $geom = $self->_scrcfg->screen->{geom};
+        $geom = $self->_scrcfg->screen->{geometry};
     }
     $self->_view->set_geometry($geom);
 
@@ -1642,94 +1640,6 @@ sub screen_clear {
     return;
 }
 
-=head2 record_reload
-
-Reload the curent record.
-
-Reads the contents of the (primary) key field, retrieves the record from
-the database table and loads the record data in the controls.
-
-The control that holds the key record has to be readonly, so the user
-can't delete it's content.
-
-=cut
-
-sub record_reload {
-    my $self = shift;
-
-    $self->screen_read();
-
-    # Table metadata
-    my $table_hr = $self->_scrcfg->maintable;
-    my $pk_col   = $table_hr->{pkcol}{name};
-
-    my $ctrl_ref = $self->_screen->get_controls();
-    $self->control_read_e($ctrl_ref, $pk_col);
-
-    my $pk_id = $self->{scrdata}{$pk_col};
-    if ( ! defined $pk_id ) {
-        $self->_view->set_status('Reload failed!','ms','red');
-        return;
-    }
-
-    $self->screen_write(undef, 'clear'); # clear the controls
-    $self->record_load($pk_id);
-
-    $self->_view->set_status("Record reloaded",'ms','blue');
-
-    return;
-}
-
-=head2 record_load
-
-Load the selected record in screen
-
-=cut
-
-sub record_load {
-    my ($self, $pk_id) = @_;
-
-    #-  Main table
-
-    # Table metadata
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $table_hr->{columns};
-    my $pk_col    = $table_hr->{pkcol}{name};
-    my $pk_col_ft = $fields_hr->{$pk_col}{findtype};
-
-    # Construct where, add findtype info
-    my $params = {};
-    $params->{table} = $table_hr->{view};   # use view instead of table
-    $params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
-    $params->{pkcol} = $pk_col;
-
-    my $record = $self->_model->query_record($params);
-
-    $self->screen_write($record);
-
-    #- Dependent table(s), if any
-
-    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
-        my $tm_params = {};
-
-        # Table metadata
-        my $table_hr  = $self->_scrcfg->deptable->{$tm_ds};
-        my $fields_hr = $table_hr->{columns};
-
-        # Construct where, add findtype info
-        $tm_params->{table} = $table_hr->{view};
-        $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
-        $tm_params->{fkcol} = $table_hr->{fkcol}{name};
-        $tm_params->{cols}  = Tpda3::Utils->sort_hash_by_id($fields_hr);
-
-        my $records = $self->_model->query_record_batch($tm_params);
-
-        $self->control_tmatrix_write($records);
-    }
-
-    return 1;
-}
-
 =head2 record_find_execute
 
 Execute search.
@@ -1807,8 +1717,8 @@ sub record_find_execute {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $self->_scrcfg->maintable->{columns};
+    my $maintable  = $self->_scrcfg->maintable;
+    my $columns = $self->_scrcfg->maintable->{columns};
 
     my $params = {};
 
@@ -1817,15 +1727,15 @@ sub record_find_execute {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        my $findtype = $fields_hr->{$field}{findtype};
+        my $findtype = $columns->{$field}{findtype};
         $findtype = q{contains} if $value eq q{%}; # allow search by
                                                    # field contents
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};   # use view instead of table
-    $params->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $maintable->{view};   # use view instead of table
+    $params->{pkcol} = $maintable->{pkcol}{name};
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
@@ -1852,22 +1762,22 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $self->_scrcfg->maintable->{columns};
+    my $maintable  = $self->_scrcfg->maintable;
+    my $columns = $self->_scrcfg->maintable->{columns};
 
     my $params = {};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        my $findtype = $fields_hr->{$field}{findtype};
+        my $findtype = $columns->{$field}{findtype};
         $findtype = q{contains} if $value eq q{%}; # allow count by
                                                    # field contents
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};   # use view instead of table
-    $params->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $maintable->{view};   # use view instead of table
+    $params->{pkcol} = $maintable->{pkcol}{name};
 
     $self->_model->query_records_count($params);
 
@@ -1891,14 +1801,14 @@ sub screen_report_print {
 
     # # ID (name, width)
     # my $pk_href = $self->{tpda}{conf}->get_screen_conf_table('pk_col');
-    # my $pk_col = $pk_href->{name};
+    # my $pk_col_name = $pk_href->{name};
     # my $eobj = $self->_screen->get_eobj_rec();
-    # my $id_val = $eobj->{$pk_col}[3]->get;
-    # # print "$pk_col = $id_val\n";
+    # my $id_val = $eobj->{$pk_col_name}[3]->get;
+    # # print "$pk_col_name = $id_val\n";
 
     # if ($id_val) {
     #     # Default paramneter ID
-    #     $param = "$pk_col=$id_val";
+    #     $param = "$pk_col_name=$id_val";
     # } else {
     #     # Atentie
     #     my $textstr = "Load a record first";
@@ -2888,6 +2798,93 @@ sub renum_tmatrix_row {
     return;
 }
 
+=head2 record_reload
+
+Reload the curent record.
+
+Reads the contents of the (primary) key field, retrieves the record from
+the database table and loads the record data in the controls.
+
+The control that holds the key record has to be readonly, so the user
+can't delete it's content.
+
+=cut
+
+sub record_reload {
+    my $self = shift;
+
+    $self->screen_read();
+
+    # Table metadata
+    my $maintable   = $self->_scrcfg->maintable;
+    my $pk_col_name = $maintable->{pkcol}{name};
+
+    my $ctrl_ref = $self->_screen->get_controls();
+    $self->control_read_e($ctrl_ref, $pk_col_name);
+
+    my $pk_id = $self->{scrdata}{$pk_col_name};
+    if ( ! defined $pk_id ) {
+        $self->_view->set_status('Reload failed!','ms','red');
+        return;
+    }
+
+    $self->screen_write(undef, 'clear'); # clear the controls
+    $self->record_load($pk_id);
+
+    $self->_view->set_status("Record reloaded",'ms','blue');
+
+    return;
+}
+
+=head2 record_load
+
+Load the selected record in the Screen.
+
+=cut
+
+sub record_load {
+    my ($self, $pk_id) = @_;
+
+    #-  Main table
+
+    # Table metadata
+    my $maintable   = $self->_scrcfg->maintable;
+    my $columns     = $maintable->{columns};
+    my $pk_col_name = $maintable->{pkcol}{name};
+
+    # Construct where, add findtype info
+    my $params = {};
+    $params->{table} = $maintable->{view};   # use view instead of table
+    $params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ]; # column = value
+    $params->{pkcol} = $pk_col_name;
+
+    my $record = $self->_model->query_record($params);
+
+    $self->screen_write($record);
+
+    #- Dependent table(s), if any
+
+    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+        my $tm_params = {};
+
+        # Table metadata
+        my $deptable = $self->_scrcfg->deptable->{$tm_ds};
+        my $columns  = $deptable->{columns};
+
+        # Construct where, add findtype info
+        $tm_params->{table} = $deptable->{view};
+        $tm_params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
+        $tm_params->{fkcol} = $deptable->{fkcol}{name};
+        $tm_params->{cols}  = Tpda3::Utils->sort_hash_by_id($columns);
+
+        my $records = $self->_model->query_record_batch($tm_params);
+
+        $self->control_tmatrix_write($records);
+    }
+
+    return 1;
+}
+
 =head2 ask_to_save
 
 If in I<add> or I<edit> mode show dialog and ask to save or
@@ -2917,90 +2914,103 @@ Save record.
 sub save_record {
     my $self = shift;
 
-    if ( !$self->is_record() ) {
-        print "WW: Empty screen!\n";
-        return;
-    }
+    my $record = $self->get_screen_data_as_record();
 
-    # Table metadata
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $table_hr->{columns};
-    my $pk_col    = $table_hr->{pkcol}{name};
-    my $pk_col_ft = $fields_hr->{$pk_col}{findtype};
-
-    # Construct where, add findtype info
-    my $params = {};
-    $params->{table} = $table_hr->{name};    # table name
-    $params->{pkcol} = $pk_col;
-
-    if ($self->_model->is_mode('add')) {
-
-        # Ask first
-        my $answer = $self->_view->{dialog2}->Show();
-        if ( $answer !~ /Ok/i ) {
-            $self->_view->set_status('Canceled','ms','blue');
-            return;
-        }
-
-        my $pk_id =
-          $self->_model->table_record_insert( $params, $self->{scrdata} );
-
-        if ($pk_id) {
-            $self->screen_write( { $pk_col => $pk_id }, 'fields' ); # update ID
-            $self->set_app_mode('edit');
-            $self->_view->set_status('New record','ms','darkgreen');
-        }
-        else {
-            $self->_view->set_status('Failed','ms','darkred');
-            return;
-        }
-
-        # TODO: Insert in List
+    if ( $self->_model->is_mode('add') ) {
+        $self->save_record_insert($record);
     }
     elsif ( $self->_model->is_mode('edit') ) {
-
-        my $pk_id = $self->{scrdata}{$pk_col};
-        if ( ! defined $pk_id ) {
-            $self->_view->set_status('No screen data?','ms','orange');
-            return;
-        }
-
-        $params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
-
-        my $pk_ref =
-          $self->_model->table_record_update( $params, $self->{scrdata} );
+        $self->save_record_update($record);
     }
     else {
-        $self->_view->set_status('Not in edit or add mode!','ms','darkred');
+        $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
         return;
     }
 
-    #- Dependent table(s), if any
+    # #- Dependent table(s), if any
 
-    foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+    # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
 
-        # Table metadata
-        my $table_hr  = $self->_scrcfg->deptable->{$tm_ds};
-        my $fields_hr = $table_hr->{columns};
+    #     # # Table metadata
+    #     # my $deptable  = $self->_scrcfg->deptable->{$tm_ds};
+    #     # my $columns = $deptable->{columns};
 
-        # Construct where, add findtype info
-        my $ctrl_ref = $self->_screen->get_controls();
-        $self->control_read_e($ctrl_ref, $pk_col);
-        my $pk_id = $self->{scrdata}{$pk_col};
+    #     # # Construct where, add findtype info
+    #     # my $ctrl_ref = $self->_screen->get_controls();
+    #     # $self->control_read_e($ctrl_ref, $pk_col_name);
+    #     # my $pk_id = $self->{scrdata}{$pk_col_name};
 
-        my $tm_params = {};
-        $tm_params->{where}{$pk_col} = [ $pk_id, $pk_col_ft ];
-        $tm_params->{table} = $table_hr->{name};
-        $tm_params->{pkcol} = { $pk_col => $pk_id };
+    #     # my $tm_params = {};
+    #     # $tm_params->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
+    #     # $tm_params->{table} = $deptable->{name};
+    #     # $tm_params->{pkcol} = { $pk_col_name => $pk_id };
 
-        my $tabledata = $self->control_tmatrix_read($tm_ds);
+    #     my $tabledata = $self->control_tmatrix_read($tm_ds);
 
-        # Delete all articles and reinsert from TM ;)
-        $self->_model->table_record_delete_batch($tm_params);
-        $self->_model->table_record_insert_batch($tm_params, $tabledata);
+    #     # Delete all articles and reinsert from TM ;)
+    #     $self->_model->table_record_delete_batch($tm_params);
+    #     $self->_model->table_record_insert_batch($tm_params, $tabledata);
+    # }
+
+    # $self->_model->set_modified(q{});        # empty
+
+    return;
+}
+
+=head2 save_record_insert
+
+Insert record.
+
+=cut
+
+sub save_record_insert {
+    my ($self, $record) = @_;
+
+    # Ask first
+    my $answer = $self->_view->{dialog2}->Show();
+    if ( $answer !~ /Ok/i ) {
+        $self->_view->set_status( 'Canceled', 'ms', 'blue' );
+        return;
     }
 
-    $self->_model->set_modified(q{});        # empty
+    my $pk_id = $self->_model->store_record_insert($record);
+
+    if ($pk_id) {
+        my $pkcol_name = $record->[0]{metadata}{pkcol};
+        $self->screen_write( { $pkcol_name => $pk_id }, 'fields' );
+        $self->set_app_mode('edit');
+        $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
+    }
+    else {
+        $self->_view->set_status( 'Failed', 'ms', 'darkred' );
+        return;
+    }
+
+    # TODO: Insert in List
+
+    return;
+}
+
+=head2 save_record_update
+
+Update record.
+
+=cut
+
+sub save_record_update {
+    my ( $self, $record ) = @_;
+
+    my $pkcol_name = $record->[0]{metadata}{pkcol};
+    my $pk_id      = $self->{scrdata}{$pkcol_name};
+    if ( !defined $pk_id ) {
+        $self->_view->set_status( 'No screen data?', 'ms', 'orange' );
+        return;
+    }
+
+    # Where: id_column = id_value
+    $record->[0]{metadata}{where}{$pkcol_name} = [ $pk_id, 'allstr' ];
+
+    $self->_model->store_record_update($record);
 
     return;
 }
@@ -3063,6 +3073,90 @@ sub note_file_name {
     return $data_file;
 }
 
+=head2 screen_record
+
+Make a record from screen data.
+
+=cut
+
+sub get_screen_data_as_record {
+    my ($self, $use_view) = @_;
+
+    if ( !$self->is_record() ) {
+        $self->_view->set_status('Empty screen','ms','orange' );
+        return;
+    }
+
+    my @record;
+    my $record = {};
+
+    #-  Main table
+    $record->{metadata} =  $self->maintable_metadata();
+    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+        $record->{data}{$field} = $value;
+    }
+    push @record, $record;
+
+    # Get PK field name and value
+    my $pk_col_name = $record->{metadata}{pkcol};
+    my $pk_id = $self->{scrdata}{$pk_col_name};
+
+    #-  Dependent table(s), if any
+    my $deprec = {};
+    my $tm_dss = $self->_screen->get_tm_controls();
+    foreach my $tm_ds ( keys %{$tm_dss} ) {
+        $deprec->{$tm_ds}{metadata} =
+          $self->deptable_metadata( $tm_ds, $pk_id, $use_view );
+        $deprec->{$tm_ds}{data} = $self->control_tmatrix_read($tm_ds);
+
+        # The TMatrix doesn't contain the pkcol => value, add it
+        my $pk_ref = { $pk_col_name => $pk_id };
+        foreach my $rec ( @{ $deprec->{$tm_ds}{data} } ) {
+            @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
+        }
+    }
+    push @record, $deprec;
+
+    return \@record;
+}
+
+sub maintable_metadata {
+    my ($self, $use_view) = @_;
+
+    #-- Table metadata
+    my $maintable   = $self->_scrcfg->maintable;
+    my $columns     = $maintable->{columns};
+    my $pk_col_name = $maintable->{pkcol}{name};
+
+    # Construct where, add findtype info
+    my $metadata = {};
+    $metadata->{table} = $use_view ? $maintable->{view} : $maintable->{name};
+    $metadata->{pkcol} = $pk_col_name;
+
+    return $metadata;
+}
+
+sub deptable_metadata {
+    my ($self, $tm_ds, $pk_id, $use_view) = @_;
+
+    # Table metadata
+
+    my $maintable   = $self->_scrcfg->maintable;
+    my $pk_col_name = $maintable->{pkcol}{name};
+
+    my $deptable = $self->_scrcfg->deptable->{$tm_ds};
+    my $columns  = $deptable->{columns};
+
+    # Construct where, add findtype info
+    my $tm_metadata = {};
+    $tm_metadata->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
+    $tm_metadata->{table} = $use_view ? $deptable->{view} : $deptable->{name};
+    $tm_metadata->{updstyle} = $deptable->{updatestyle};
+    $tm_metadata->{pkcol}    = $pk_col_name;
+
+    return $tm_metadata;
+}
+
 =head2 save_screendata
 
 Save screen data to temp file with Storable.
@@ -3072,32 +3166,9 @@ Save screen data to temp file with Storable.
 sub save_screendata {
     my ($self, $data_file) = @_;
 
-    if ( !$self->is_record() ) {
-        $self->_view->set_status('Empty screen','ms','orange' );
-        return;
-    }
+    my $record = $self->screen_record();
 
-    #-  Main table
-
-    #-- Table metadata
-    my $table_hr = $self->_scrcfg->maintable;
-    my $pk_col   = $table_hr->{pkcol}{name};
-
-    my $record_href = {};
-    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
-        next if $field eq $pk_col; # skip ID
-        $record_href->{maintable}{$field} = $value;
-    }
-
-    #-  Dependent table(s), if any
-
-    my $tm_dss = $self->_screen->get_tm_controls();
-    foreach my $tm_ds ( keys %{$tm_dss} ) {
-        my $rec = $self->control_tmatrix_read($tm_ds);
-        $record_href->{deptable}{$tm_ds} = $rec;
-    }
-
-    return store( $record_href, $data_file );
+    return store( $record, $data_file );
 }
 
 =head2 restore_screendata
@@ -3114,20 +3185,28 @@ sub restore_screendata {
         return;
     }
 
-    my $record = retrieve($data_file);
-    unless (defined $record) {
+    my $rec = retrieve($data_file);
+    unless (defined $rec) {
         carp "Unable to retrieve from $data_file!\n";
         return;
     }
 
     #- Main table
 
-    $self->screen_write( $record->{maintable}, 'record' );
+    my $mainrec = $rec->[0];                 # main record is first
+
+    # Dont't want to restore the Id field, remove it
+    my $pkcol_name = $mainrec->{metadata}{pkcol};
+    delete $mainrec->{data}{ $pkcol_name };
+
+    $self->screen_write( $mainrec->{data}, 'record' );
 
     #- Dependent table(s), if any
 
+    my $deprec = $rec->[1];                 # dependent records follow
+
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
-        $self->control_tmatrix_write($record->{deptable}{$tm_ds}, $tm_ds);
+        $self->control_tmatrix_write($deprec->{$tm_ds}{data}, $tm_ds);
     }
 
     return 1;

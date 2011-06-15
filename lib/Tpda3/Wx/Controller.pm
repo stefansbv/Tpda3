@@ -859,11 +859,11 @@ sub screen_module_load {
     if ( $self->_cfg->can('geometry') ) {
         $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
         unless ($geom) {
-            $geom = $self->_scrcfg->{screen}{geom};
+            $geom = $self->_scrcfg->{screen}{geometry};
         }
     }
     else {
-        $geom = $self->_scrcfg->{screen}{geom};
+        $geom = $self->_scrcfg->{screen}{geometry};
     }
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};

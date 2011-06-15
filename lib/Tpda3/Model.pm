@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -541,58 +539,23 @@ sub get_codes {
     return $codes;
 }
 
-=head2 table_record_save
-
-Save screen data to a record in the DB.
-
-=cut
-
-sub table_record_update {
-    my ( $self, $data_hr, $record ) = @_;
-
-    my $table = $data_hr->{table};
-    my $where = $self->build_where($data_hr);
-
-    my $sql = SQL::Abstract->new();
-
-    my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
-
-    # print "SQL : $stmt\n";
-    # print Dumper( \@bind);
-
-    try {
-        my $sth = $self->{_dbh}->prepare($stmt);
-        $sth->execute(@bind);
-    }
-    catch {
-        $self->_print("Database error!") ;
-        croak("Transaction aborted: $_");
-    };
-
-    return 1;
-}
-
 =head2 table_record_insert
 
 Insert new record in the DB.
 
+Using the RETURNING ...
+
+ Postgres version 8.2 or greater: RETURNING
+ Firebird version 2.1 or greater: RETURNING - NOT tested!
+
 =cut
 
 sub table_record_insert {
-    my ( $self, $data_hr, $record ) = @_;
-
-    my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};
+    my ( $self, $table, $pkcol, $record ) = @_;
 
     my $sql = SQL::Abstract->new();
 
-    # Postgres version 8.2 or greater: RETURNING
-    # Firebird version 2.1 or greater: RETURNING ???
-
     my ( $stmt, @bind ) = $sql->insert( $table, $record, {returning => $pkcol} );
-
-    # print "SQL : $stmt\n";
-    # print Dumper( \@bind);
 
     my $pk_id;
     try {
@@ -608,6 +571,31 @@ sub table_record_insert {
     return $pk_id;
 }
 
+=head2 table_record_update
+
+Save screen data to a record in the DB.
+
+=cut
+
+sub table_record_update {
+    my ( $self, $table, $record, $where ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
+
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        $sth->execute(@bind);
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return 1;
+}
+
 =head2 table_record_insert_batch
 
 Save records from Table widget into DB.
@@ -620,23 +608,14 @@ TODO: Experiment with the example code from the I<PERFORMANCE> section
 =cut
 
 sub table_record_insert_batch {
-    my ( $self, $data_hr, $records ) = @_;
-
-    my $table = $data_hr->{table};
-    my $pkref = $data_hr->{pkcol};           # pk field name and value
+    my ( $self, $table, $records, $where ) = @_;
 
     my $sql = SQL::Abstract->new();
 
     # AoH refs
     foreach my $rec ( @{$records} ) {
 
-        # Add pk_col to record data (merge hash refs)
-        @{$rec}{ keys %{$pkref} } = values %{$pkref};
-
         my ( $stmt, @bind ) = $sql->insert( $table, $rec );
-
-        # print "SQL : $stmt\n";
-        # print Dumper( \@bind);
 
         try {
             my $sth = $self->{_dbh}->prepare($stmt);
@@ -651,22 +630,21 @@ sub table_record_insert_batch {
     return;
 }
 
-sub table_record_delete_batch {
-    my ( $self, $data_hr, $records ) = @_;
+=head2 table_record_delete_batch
 
-    my $table = $data_hr->{table};
+Deletes all records using a required WHERE SQL clause.
+
+=cut
+
+sub table_record_delete_batch {
+    my ( $self, $table, $where ) = @_;
 
     my $sql = SQL::Abstract->new();
 
-    my $where = $self->build_where($data_hr);
-
     croak "Empty SQL WHERE in DELETE command!"
-        unless ( %{$where} );                # safety net
+        unless ( %{$where} );   # safety net, is enough ???
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
-
-    # print "SQL : $stmt\n";
-    # print Dumper( \@bind);
 
     try {
         my $sth = $self->{_dbh}->prepare($stmt);
@@ -678,6 +656,134 @@ sub table_record_delete_batch {
     };
 
     return;
+}
+
+=head2 store_record
+
+Inserts a record.
+
+The I<$record> parameter holds a complex AoH containing data colected
+from the Screen controls (widgets) and the metadata needed to
+construct the SQL commands.
+
+=cut
+
+sub store_record_insert {
+    my ( $self, $record) = @_;
+
+    my $mainrec = $record->[0];              # main record first
+
+    my $mainmeta = $mainrec->{metadata};
+    my $maindata = $mainrec->{data};
+    my $table    = $mainmeta->{table};
+    my $pkcol    = $mainmeta->{pkcol};
+
+    my $where = $self->build_where($mainmeta);
+
+    #- Main record
+
+    my $pk_id = $self->table_record_insert($table, $pkcol, $maindata);
+
+    #- Dependent records
+
+    my $deprec = $record->[1];
+
+    # One table at a time ...
+    foreach my $tm ( keys %{$deprec} ) {
+        my $depmeta = $deprec->{$tm}{metadata};
+        my $depdata = $deprec->{$tm}{data};
+
+        my $updstyle = $depmeta->{updstyle};
+        my $table    = $depmeta->{table};
+        my $pkcol    = $depmeta->{pkcol};
+
+        # Update params for where
+        $depmeta->{where}{$pkcol} = [ $pk_id, 'allstr' ];
+
+        my $where = $self->build_where($depmeta);
+
+        # Update PK column with the new $pk_id
+        foreach my $rec ( @{$depdata} ) {
+            $rec->{$pkcol} = $pk_id;
+        }
+
+        $self->table_record_insert_batch($table, $depdata, $where);
+     }
+
+    return $pk_id;
+}
+
+=head2 store_record_update
+
+Updates a record.
+
+The I<$record> parameter holds a complex AoH containing data colected
+from the Screen controls (widgets) and the metadata needed to
+construct the SQL commands.
+
+There is a new setting in the Screen configuration in the 'deptable'
+section named I<updatestyle>.
+
+=over
+
+=item delete+add Delete all articles followed by re-insert
+
+This is the old style behavior of Tpda. All dependent records are
+deleted first and than reinserted with data from the TableMatrix
+widget.  This has the advantage of automatic renumbering of the
+articles, when an article is deleted - suitable for Orders.
+
+=item update    Update the existing articles, insert new
+
+The articles are not renumbered, as a consequence if an article is
+deleted, the I<artno> of the other articles is preserved and gaps may
+appear.
+
+=back
+
+=cut
+
+sub store_record_update {
+    my ( $self, $record) = @_;
+
+    my $mainrec = $record->[0];              # main record first
+
+    my $mainmeta = $mainrec->{metadata};
+    my $maindata = $mainrec->{data};
+    my $table    = $mainmeta->{table};
+    my $pkcol    = $mainmeta->{pkcol};
+
+    my $where = $self->build_where($mainmeta);
+
+    #- Main record
+
+    $self->table_record_update($table, $maindata, $where);
+
+    #- Dependent records
+
+    my $deprec = $record->[1];
+
+    # One table at a time ...
+    foreach my $tm ( keys %{$deprec} ) {
+        my $depmeta = $deprec->{$tm}{metadata};
+        my $depdata = $deprec->{$tm}{data};
+
+        my $updstyle = $depmeta->{updstyle};
+        my $table    = $depmeta->{table};
+        my $pkcol    = $depmeta->{pkcol};
+        my $where    = $self->build_where($depmeta);
+
+        if ( $updstyle eq 'delete+add' ) {
+            # Delete all articles and reinsert from TM ;)
+            $self->table_record_delete_batch($table, $where);
+            $self->table_record_insert_batch($table, $depdata, $where);
+        }
+        else {
+            print "Complex update, not yet :)\n";
+        }
+     }
+
+    return 1;
 }
 
 =head1 AUTHOR
