@@ -2881,7 +2881,7 @@ sub record_load {
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
         my $tm_params = $self->deptable_metadata( $tm_ds, $pk_id, 'use_view' );
 
-        my $records = $self->_model->query_record_batch($tm_params);
+        my $records = $self->_model->table_batch_query($tm_params);
 
         $self->control_tmatrix_write($records);
     }
@@ -3132,21 +3132,21 @@ Retrieve dependent table meta-data from the screen configuration.
 sub deptable_metadata {
     my ($self, $tm_ds, $pk_id, $use_view) = @_;
 
-    # Table metadata
-
-    my $maintable   = $self->_scrcfg->maintable;
-    my $pk_col_name = $maintable->{pkcol}{name};
+ # Table metadata
 
     my $deptable = $self->_scrcfg->deptable->{$tm_ds};
     my $columns  = $deptable->{columns};
+    my $pkcol    = $deptable->{pkcol}{name};
 
+    print "pkcol is $pkcol\n";
     # Construct where, add findtype info
     my $tm_metadata = {};
-    $tm_metadata->{where}{$pk_col_name} = [ $pk_id, 'allstr' ];
     $tm_metadata->{table} = $use_view ? $deptable->{view} : $deptable->{name};
     $tm_metadata->{updstyle} = $deptable->{updatestyle};
-    $tm_metadata->{pkcol}    = $pk_col_name;
-    $tm_metadata->{cols}     = Tpda3::Utils->sort_hash_by_id($columns);
+    $tm_metadata->{pkcol}    = $pkcol;
+    $tm_metadata->{fkcol}    = $deptable->{fkcol}{name};
+    $tm_metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
+    $tm_metadata->{where}{$pkcol} = [ $pk_id, 'allstr' ];
 
     return $tm_metadata;
 }

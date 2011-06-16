@@ -2,10 +2,13 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
 use SQL::Abstract;
+use List::Compare;
 
 use Tpda3::Config;
 use Tpda3::Observable;
@@ -392,19 +395,19 @@ sub query_record {
     return $hash_ref;
 }
 
-=head2 query_record_batch
+=head2 table_batch_query
 
 Query records.
 
 =cut
 
-sub query_record_batch {
+sub table_batch_query {
     my ( $self, $data_hr ) = @_;
 
     my $table  = $data_hr->{table};
     my $pkcol  = $data_hr->{pkcol};
     my $order  = $data_hr->{fkcol};
-    my $fields = $data_hr->{cols};
+    my $fields = $data_hr->{colslist};
 
     my $where = $self->build_where($data_hr);
 
@@ -596,7 +599,7 @@ sub table_record_update {
     return 1;
 }
 
-=head2 table_record_insert_batch
+=head2 table_batch_insert
 
 Save records from Table widget into DB.
 
@@ -607,8 +610,8 @@ TODO: Experiment with the example code from the I<PERFORMANCE> section
 
 =cut
 
-sub table_record_insert_batch {
-    my ( $self, $table, $records, $where ) = @_;
+sub table_batch_insert {
+    my ( $self, $table, $records ) = @_;
 
     my $sql = SQL::Abstract->new();
 
@@ -630,13 +633,13 @@ sub table_record_insert_batch {
     return;
 }
 
-=head2 table_record_delete_batch
+=head2 table_batch_delete
 
 Deletes all records using a required WHERE SQL clause.
 
 =cut
 
-sub table_record_delete_batch {
+sub table_batch_delete {
     my ( $self, $table, $where ) = @_;
 
     my $sql = SQL::Abstract->new();
@@ -654,39 +657,6 @@ sub table_record_delete_batch {
         $self->_print("Database error!") ;
         croak("Transaction aborted: $_");
     };
-
-    return;
-}
-
-=head2 table_record_insert_update
-
-
-
-=cut
-
-sub table_record_insert_update {
-    my ( $self, $table, $records, $where ) = @_;
-
-    my $sql = SQL::Abstract->new();
-
-    my $where = $self->build_where($data_hr);
-
-    my ( $stmt, @bind ) = $sql->select( $table, [qw{}], $where, $order );
-
-    # AoH refs
-    foreach my $rec ( @{$records} ) {
-
-        my ( $stmt, @bind ) = $sql->insert( $table, $rec );
-
-        # try {
-        #     my $sth = $self->{_dbh}->prepare($stmt);
-        #     $sth->execute(@bind);
-        # }
-        # catch {
-        #     $self->_print("Database error!");
-        #     croak("Transaction aborted: $_");
-        # };
-    }
 
     return;
 }
@@ -740,7 +710,7 @@ sub store_record_insert {
             $rec->{$pkcol} = $pk_id;
         }
 
-        $self->table_record_insert_batch($table, $depdata, $where);
+        $self->table_batch_insert($table, $depdata);
      }
 
     return $pk_id;
@@ -804,20 +774,158 @@ sub store_record_update {
         my $updstyle = $depmeta->{updstyle};
         my $table    = $depmeta->{table};
         my $pkcol    = $depmeta->{pkcol};
+        my $fkcol    = $depmeta->{fkcol};
         my $where    = $self->build_where($depmeta);
 
         if ( $updstyle eq 'delete+add' ) {
             # Delete all articles and reinsert from TM ;)
-            $self->table_record_delete_batch($table, $where);
-            $self->table_record_insert_batch($table, $depdata, $where);
+            $self->table_batch_delete($table, $where);
+            $self->table_batch_insert($table, $depdata);
         }
         else {
-            print "Complex update, not yet :)\n";
-            $self->table_record_insert_update($table, $depdata, $where);
+            # Update based on comparison between the database table
+            # data and TableMatrix data
+            $self->table_batch_update($depmeta, $depdata);
         }
      }
 
     return 1;
+}
+
+sub table_batch_update {
+    my ($self, $depmeta, $depdata) = @_;
+
+    my $compare_col = $depmeta->{fkcol};
+
+    my $tb_data = $self->table_selectcol_as_array($depmeta);
+    my $tm_data = $self->aoh_column_extract($depdata, $compare_col);
+
+    my $lc = List::Compare->new($tm_data, $tb_data);
+
+    my @to_update = $lc->get_intersection;
+    my @to_insert = $lc->get_unique;
+    my @to_delete = $lc->get_complement;
+
+    print "To update: @to_update\n";
+    print "To insert: @to_insert\n";
+    print "To delete: @to_delete\n";
+
+    $self->table_update_prepare(\@to_update, $depmeta, $depdata);
+    $self->table_insert_prepare(\@to_insert, $depmeta, $depdata);
+    $self->table_delete_prepare(\@to_delete, $depmeta);
+
+    return;
+}
+
+sub table_update_prepare {
+    my ( $self, $to_update, $depmeta, $depdata ) = @_;
+
+    return unless scalar( @{$to_update} ) > 0;
+
+    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
+    my $fkcol = $depmeta->{fkcol};
+    my $pk_id = $depmeta->{where}{$pkcol}[0];
+
+    foreach my $fk_id ( @{$to_update} ) {
+        my $where = {
+            $pkcol => $pk_id,
+            $fkcol => $fk_id,
+        };
+
+        # Filter data; record is Aoh
+        my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
+
+        ### delete $record->{$fkcol}; # remove FK col from update data;
+                                      # does NOT work, it's like remmove
+                                      # from the original datastructure?!
+
+        $self->table_record_update( $table, $record, $where );
+    }
+
+    return;
+}
+
+sub table_insert_prepare {
+    my ( $self, $to_insert, $depmeta, $depdata ) = @_;
+
+    return unless scalar( @{$to_insert} ) > 0;
+
+    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
+    my $fkcol = $depmeta->{fkcol};
+    my $pk_id = $depmeta->{where}{$pkcol}[0];
+
+    my @records;
+    foreach my $fk_id ( @{$to_insert} ) {
+
+        # Filter data; record is Aoh
+        my $rec = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
+
+        push @records, $rec;
+    }
+
+    $self->table_batch_insert($table, \@records);
+
+    return;
+}
+
+sub table_delete_prepare {
+    my ($self, $to_delete, $depmeta) = @_;
+
+    return unless scalar( @{$to_delete} ) > 0;
+
+    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
+    my $fkcol = $depmeta->{fkcol};
+    my $pk_id = $depmeta->{where}{$pkcol}[0];
+
+    my $where  = {
+        $pkcol => $pk_id,
+        $fkcol => { -in => $to_delete },
+    };
+
+    $self->table_batch_delete($table, $where);
+
+    return;
+}
+
+sub aoh_column_extract {
+    my ($self, $depdata, $column) = @_;
+
+    my @dep_data;
+    foreach my $rec (@$depdata) {
+        my $data = $rec->{$column};
+        push @dep_data, $data;
+    }
+
+    return \@dep_data;
+}
+
+sub table_selectcol_as_array {
+    my ($self, $data_hr) = @_;
+
+    my $table  = $data_hr->{table};
+    my $pkcol  = $data_hr->{pkcol};
+    my $fields = $data_hr->{fkcol};
+    my $order  = $fields;
+
+    my $where = $self->build_where($data_hr);
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+
+    my $records;
+    try {
+       $records = $self->{_dbh}->selectcol_arrayref($stmt, undef, @bind);
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $records;
 }
 
 =head1 AUTHOR

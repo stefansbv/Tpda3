@@ -24,6 +24,7 @@ requires 'Try::Tiny'                  => '0.07';
 requires 'SQL::Abstract'              => '1.68';
 requires 'Log::Log4perl'              => '0';
 requires 'Number::Compare'            => '0';
+requires 'List::Compare'              => '0';
 requires 'File::UserConfig'           => '0';
 requires 'File::Find::Rule'           => '0.30';
 requires 'File::HomeDir'              => '0.89';
