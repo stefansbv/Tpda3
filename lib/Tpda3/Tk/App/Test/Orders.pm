@@ -51,7 +51,7 @@ sub run_screen {
 
     my $frm_bl = $inreg_p->LabFrame(
         -foreground => 'blue',
-        -label      => 'Bottom',
+        -label      => 'Order total',
         -labelside  => 'acrosstop'
     )->pack(
         -side   => 'bottom',
@@ -63,7 +63,7 @@ sub run_screen {
 
     my $frm_t = $inreg_p->LabFrame(
         -foreground => 'blue',
-        -label      => 'Bottom',
+        -label      => 'Articles',
         -labelside  => 'acrosstop'
     )->pack(
         -side   => 'bottom',
@@ -75,7 +75,7 @@ sub run_screen {
 
     my $frame1 = $inreg_p->LabFrame(
         -foreground => 'blue',
-        -label      => 'Top Left',
+        -label      => 'Order',
         -labelside  => 'acrosstop'
     )->pack(
         -side   => 'left',

@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -1613,13 +1615,14 @@ list control on the I<List> page.
 sub record_load_new {
     my $self = shift;
 
-    my $pk_id = $self->_view->list_read_selected();
+    my ($pk_id, $fk_id) = $self->_view->list_read_selected();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Nothing selected','ms','orange');
         return;
     }
 
-    my $ret = $self->record_load($pk_id);
+    print " $pk_id, $fk_id\n";
+    my $ret = $self->record_load($pk_id, $fk_id);
 
     if ($ret) {
         $self->_view->set_status('Record loaded','ms','blue');
@@ -2726,9 +2729,14 @@ sub add_tmatrix_row {
     $xt->configure( state => 'normal' ); # normal state
 
     $xt->insertRows('end');
-    my $r = $xt->index( 'end', 'row' );
+    my $r = $xt->index( 'end', 'row' );      # get row index
+    $xt->set( "$r,0", $r );                  # set new index for numeric sort
 
-    $xt->set( "$r,0", $r );     # insert data if we have a ref
+    if ($updstyle eq 'delete+add') {
+        $r = (sort {$b <=> $a} $xt->get("1,0","$r,0"))[0] + 1; # max index + 1
+        $xt->set( "$r,0", $r );                                # set new index
+    }
+
     my $c = 1;
     if ( ref($valori_ref) eq 'ARRAY' ) {
 
@@ -2782,6 +2790,7 @@ sub remove_tmatrix_row {
     };
     if ($@) {
         warn "WW: $@";
+        return;
     }
 
     $self->renum_tmatrix_row($xt)
@@ -2862,15 +2871,27 @@ Load the selected record in the Screen.
 =cut
 
 sub record_load {
-    my ($self, $pk_id) = @_;
+    my ($self, $pk_id, $fk_id) = @_;
 
     #-  Main table
 
+    my $screen_style = $self->_scrcfg->screen->{style};
+
     my $params = $self->maintable_metadata('use_view');
     my $pkcol_name = $params->{pkcol};
+    my $fkcol_name = $params->{fkcol};
 
     # Where: id_column = id_value
-    $params->{where}{ $pkcol_name } = [ $pk_id, 'allstr' ]; # column = value
+    # $params->{where}{ $pkcol_name } = [ $pk_id, 'allstr' ]; # column = value
+    if ( $screen_style eq 'dependent' ) {
+        $params->{where} = {
+            $pkcol_name => $pk_id,
+            $fkcol_name => $fk_id,
+        };
+    }
+    else {
+        $params->{where} = { $pkcol_name => $pk_id, };
+    }
 
     my $record = $self->_model->query_record($params);
 
@@ -3114,11 +3135,13 @@ sub maintable_metadata {
     my $maintable   = $self->_scrcfg->maintable;
     my $columns     = $maintable->{columns};
     my $pk_col_name = $maintable->{pkcol}{name};
+    my $fk_col_name = $maintable->{fkcol}{name};
 
     # Construct where, add findtype info
     my $metadata = {};
     $metadata->{table} = $use_view ? $maintable->{view} : $maintable->{name};
     $metadata->{pkcol} = $pk_col_name;
+    $metadata->{fkcol} = $fk_col_name;
 
     return $metadata;
 }
@@ -3138,7 +3161,6 @@ sub deptable_metadata {
     my $columns  = $deptable->{columns};
     my $pkcol    = $deptable->{pkcol}{name};
 
-    print "pkcol is $pkcol\n";
     # Construct where, add findtype info
     my $tm_metadata = {};
     $tm_metadata->{table} = $use_view ? $deptable->{view} : $deptable->{name};

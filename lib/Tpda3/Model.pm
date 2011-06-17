@@ -373,8 +373,9 @@ sub query_record {
 
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
+    my $where = $data_hr->{where};
 
-    my $where = $self->build_where($data_hr);
+    # my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 

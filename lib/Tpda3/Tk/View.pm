@@ -13,7 +13,7 @@ use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog Checkbutton
-                   LabFrame MListbox JComboBox Font);
+                   LabFrame Listbox JComboBox Font);
 
 # require Tk::ErrorDialog;
 
@@ -920,7 +920,7 @@ sub list_read_selected {
         return;
     }
 
-    my (@selected, $sel);
+    my (@selected, $indecs);
     eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
@@ -929,13 +929,11 @@ sub list_read_selected {
     }
     else {
 
-        # Default to the first row
-        $sel = pop @selected;
-        if ($sel) {
-            unless ( $sel > 0 ) {
-
-                # print "Prima inregistrare\n";
-                $sel = 0;
+        # First row in case of multiselect
+        $indecs = pop @selected;
+        if ($indecs) {
+            unless ( $indecs > 0 ) {
+                $indecs = 0;
 
                 # Selecteaza si activeaza
                 $self->get_recordlist->selectionClear( 0, 'end' );
@@ -948,8 +946,10 @@ sub list_read_selected {
 
     # In scalar context, getRow returns the value of column 0
     # Column 0 has to be a Pk ...
-    my $selected_value;
-    eval { $selected_value = $self->get_recordlist->getRow($sel); };
+    my ($pk_id, $fk_id);
+    eval {
+        ($pk_id, $fk_id) = ($self->get_recordlist->getRow($indecs))[0,1];
+    };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
@@ -958,13 +958,17 @@ sub list_read_selected {
     else {
 
         # Trim spaces
-        if ( defined($selected_value) ) {
-            $selected_value =~ s/^\s+//;
-            $selected_value =~ s/\s+$//;
+        if ( defined($pk_id) ) {
+            $pk_id =~ s/^\s+//;
+            $pk_id =~ s/\s+$//;
+        }
+        if ( defined($fk_id) ) {
+            $fk_id =~ s/^\s+//;
+            $fk_id =~ s/\s+$//;
         }
     }
 
-    return $selected_value;
+    return ($pk_id, $fk_id);
 }
 
 =head2 make_tablematrix_header
