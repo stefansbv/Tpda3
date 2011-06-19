@@ -482,6 +482,8 @@ sub _set_menus_enable {
 Check if screen modules from the menu exists and are loadable.
 Disable those which fail the test.
 
+Only for I<menu_user> hardwired menu name for now!
+
 =cut
 
 sub _check_app_menus {
@@ -2730,7 +2732,7 @@ sub add_tmatrix_row {
     $xt->insertRows('end');
     my $new_r = $xt->index( 'end', 'row' ); # get new row index
 
-    if ($updstyle eq 'delete+add') {
+    if (($updstyle eq 'delete+add') or ($old_r == 0)) {
         $xt->set( "$new_r,0", $new_r );     # set new index
         $self->renum_tmatrix_row($xt);
     }
