@@ -454,7 +454,7 @@ sub _set_event_handler_screen {
     #-- Remove row button
     $self->_screen->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->remove_tmatrix_row(undef, $tm_ds, $updstyle);
+            $self->remove_tmatrix_row($tm_ds, $updstyle);
         }
     );
 
@@ -1621,7 +1621,6 @@ sub record_load_new {
         return;
     }
 
-    print " $pk_id, $fk_id\n";
     my $ret = $self->record_load($pk_id, $fk_id);
 
     if ($ret) {
@@ -2726,15 +2725,24 @@ sub add_tmatrix_row {
       unless $self->_model->is_mode('add')
           or $self->_model->is_mode('edit');
 
-    $xt->configure( state => 'normal' ); # normal state
-
+    $xt->configure( state => 'normal' );    # normal state
+    my $old_r = $xt->index( 'end', 'row' ); # get old row index
     $xt->insertRows('end');
-    my $r = $xt->index( 'end', 'row' );      # get row index
-    $xt->set( "$r,0", $r );                  # set new index for numeric sort
+    my $new_r = $xt->index( 'end', 'row' ); # get new row index
 
     if ($updstyle eq 'delete+add') {
-        $r = (sort {$b <=> $a} $xt->get("1,0","$r,0"))[0] + 1; # max index + 1
-        $xt->set( "$r,0", $r );                                # set new index
+        $xt->set( "$new_r,0", $new_r );     # set new index
+        $self->renum_tmatrix_row($xt);
+    }
+    else {
+        # No renumbering ...
+        my $max_r = (sort {$b <=> $a} $xt->get("1,0","$old_r,0"))[0]; # max row
+        if ($max_r >= $new_r) {
+            $xt->set( "$new_r,0", $max_r + 1);
+        }
+        else {
+            $xt->set( "$new_r,0", $new_r);
+        }
     }
 
     my $c = 1;
@@ -2743,7 +2751,7 @@ sub add_tmatrix_row {
         # Insert data
         foreach my $valoare ( @{$valori_ref} ) {
             if ( defined $valoare ) {
-                $xt->set( "$r,$c", $valoare );
+                $xt->set( "$new_r,$c", $valoare );
             }
             $c++;
         }
@@ -2751,8 +2759,8 @@ sub add_tmatrix_row {
 
     # Focus to newly inserted row, column 1
     $xt->focus;
-    $xt->activate("$r,1");
-    $xt->see("$r,1");
+    $xt->activate("$new_r,1");
+    $xt->see("$new_r,1");
 
     return;
 }
@@ -2799,7 +2807,6 @@ sub remove_tmatrix_row {
     # Refresh table
     $xt->activate('origin');
     $xt->activate("$r,1");
-    $xt->reread();
 
     # TODO: Feature to trigger a method here?
 
