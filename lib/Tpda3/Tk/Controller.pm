@@ -78,6 +78,7 @@ sub new {
         _scrobj  => undef,
         _scrcfg  => undef,
         _scrstr  => undef,
+        _dscrstr => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -400,8 +401,16 @@ sub _set_event_handler_nb {
                 $self->set_app_mode('sele');
                 $self->_view->get_recordlist->focus;
             }
-            else {
+            elsif ($page eq 'rec') {
                 if ( $self->record_load_new ) {
+                    $self->set_app_mode('edit');
+                }
+                else {
+                    $self->set_app_mode('idle');
+                }
+            }
+            elsif ($page eq 'det') {
+                if ( $self->screen_load_detail ) {
                     $self->set_app_mode('edit');
                 }
                 else {
@@ -1074,7 +1083,7 @@ sub set_app_mode {
     # TODO: Should this be called on all screens?
     $self->toggle_screen_interface_controls;
 
-    if ( my $method_name = $self->{method_for}->{$mode} ) {
+    if ( my $method_name = $self->{method_for}{$mode} ) {
         $self->$method_name();
     }
     else {
@@ -1125,6 +1134,10 @@ sub on_screen_mode_idle {
 
     $self->controls_state_set('off');
 
+    my $nb = $self->_view->get_notebook();
+    $nb->pageconfigure('det', -state => 'disabled');
+    $nb->pageconfigure('lst', -state => 'normal');
+
     return;
 }
 
@@ -1148,6 +1161,10 @@ sub on_screen_mode_add {
     }
 
     $self->controls_state_set('edit');
+
+    my $nb = $self->_view->get_notebook();
+    $nb->pageconfigure('lst', -state => 'disabled');
+    $nb->pageconfigure('det', -state => 'disabled');
 
     return;
 }
@@ -1188,6 +1205,10 @@ sub on_screen_mode_edit {
     $self->controls_state_set('edit');
     $self->_log->trace("Mode has changed to 'edit'");
 
+    my $nb = $self->_view->get_notebook();
+    $nb->pageconfigure('det', -state => 'normal');
+    $nb->pageconfigure('lst', -state => 'normal');
+
     return;
 }
 
@@ -1201,6 +1222,9 @@ sub on_screen_mode_sele {
     my $self = shift;
 
     $self->_log->trace("Mode has changed to 'sele'");
+
+    my $nb = $self->_view->get_notebook();
+    $nb->pageconfigure('det', -state => 'disabled');
 
     return;
 }
@@ -1368,6 +1392,7 @@ sub screen_module_load {
     $self->_view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
+    $self->_set_event_handler_nb('det');
 
     my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
@@ -1390,7 +1415,7 @@ sub screen_module_load {
     $self->_log->trace("New screen instance: $module");
 
     # Show screen
-    my $nb = $self->_view->get_notebook('rec');
+    my $nb = $self->_view->get_notebook();
     $self->{_scrobj}->run_screen( $nb, $self->{_scrcfg} );
 
     my $screen_type = $self->_scrcfg->screen->{type};
@@ -1445,6 +1470,93 @@ sub screen_module_load {
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
+}
+
+sub screen_module_detail_load {
+    my ( $self, $module ) = @_;
+
+    $self->{_dscrstr} = lc $module;
+
+    # Load the new screen configuration
+    $self->{_dscrcfg} = Tpda3::Config::Screen->new();
+    $self->{_dscrcfg}->config_screen_load($self->{_dscrstr} . '.conf');
+
+    # Destroy existing NoteBook widget
+    # $self->_view->destroy_notebook_page();
+
+    $self->_view->remove_notebook_panel('det');
+    $self->_view->create_notebook_panel('det', 'Details');
+    $self->_view->get_notebook()->raise('det');
+
+    # Unload current screen
+    if ( $self->{_dscrcls} ) {
+        Class::Unload->unload( $self->{_dscrcls} );
+
+        if ( ! Class::Inspector->loaded( $self->{_dscrcls} ) ) {
+            $self->_log->info("Unloaded '$self->{_dscrcls}' screen");
+        }
+        else {
+            $self->_log->info("Error unloading '$self->{_dscrcls}' dscreen");
+        }
+    }
+
+    $self->_set_event_handler_nb('det');
+
+    my ($class, $module_file) = $self->screen_module_class($module);
+    eval {require $module_file };
+    if ($@) {
+        # TODO: Decide what is optimal to do here?
+        print "WW: Can't load '$module_file'\n";
+        return;
+    }
+
+    unless ($class->can('run_screen') ) {
+        my $msg = "Error! Screen '$class' can not 'run_screen'";
+        print "$msg\n";
+        $self->_log->error($msg);
+
+        return;
+    }
+
+    # New screen instance
+    $self->{_dscrobj} = $class->new();
+    $self->_log->trace("New screen instance: $module");
+
+    # Show screen
+    my $nb = $self->_view->get_notebook();
+    $self->{_dscrobj}->run_screen( $nb, $self->{_dscrcfg} );
+
+    my $screen_type = $self->_scrcfg->screen->{type};
+
+    # # Event handlers
+    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+
+    # #-- Lookup bindings for Tk::Entry widgets
+    # $self->setup_lookup_bindings_entry();
+
+    # #-- Lookup bindings for tables (TableMatrix)
+    # $self->setup_bindings_table();
+
+    # Store currently loaded screen class
+    $self->{_dscrcls} = $class;
+
+    $self->set_app_mode('idle');
+
+    # # TableMatrix header(s), if any
+    # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
+    #     my $tm_object = $self->_screen->get_tm_controls($tm_ds);
+    #     my $tm_fields = $self->_scrcfg->deptable->{$tm_ds}{columns};
+    #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    # }
+
+    # # Load lists into JBrowseEntry or JComboBox widgets
+    # $self->screen_init();
+
+    # $self->_set_menus_enable('normal');
+
+    # $self->_view->set_status('','ms');
+
+    return;
 }
 
 =head2 update_geometry
@@ -1571,6 +1683,24 @@ sub toggle_interface_controls {
 
         # Print preview
         # Activate only if default report configured for screen
+        # if ( $name eq 'tb_pr' and $self->{_scrstr} ) {
+        #     $status = $self->_cfg->defaultreport
+        #             ? 'normal'
+        #             : 'disabled';
+        # }
+
+        my $nb = $self->_view->get_notebook();
+        # my $current_page = $nb->raised;
+
+        # Disable some buttons in 'det' page
+        if ($nb->raised eq 'det') {
+            if ( $name eq 'tb_ad' and $self->{_scrstr} ) {
+                $status = 'disabled';
+            }
+            if ( $name eq 'tb_fm' and $self->{_scrstr} ) {
+                $status = 'disabled';
+            }
+        }
 
         $self->_view->enable_tool( $name, $status );
     }
@@ -1617,17 +1747,42 @@ list control on the I<List> page.
 sub record_load_new {
     my $self = shift;
 
-    my ($pk_id, $fk_id) = $self->_view->list_read_selected();
+    my $pk_id = $self->_view->list_read_selected();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Nothing selected','ms','orange');
         return;
     }
 
-    my $ret = $self->record_load($pk_id, $fk_id);
+    my $ret = $self->record_load($pk_id);
 
     if ($ret) {
         $self->_view->set_status('Record loaded','ms','blue');
         $self->_model->set_modified(q{});    # empty
+    }
+
+    return $ret;
+}
+
+sub screen_load_detail {
+    my $self = shift;
+
+    my $detail_screen = $self->_scrcfg->screen->{details}{detail};
+
+    if ( $self->{_dscrstr} ) {
+        if ($self->{_dscrstr} eq lc $detail_screen) {
+            print "Already loaded ($detail_screen)\n";
+            return;
+        }
+    }
+    else {
+        print "Loading detail ($detail_screen)\n";
+        $self->screen_module_detail_load($detail_screen);
+    }
+
+    my $ret = $self->record_load_det();
+    if ($ret) {
+        $self->_view->set_status('Record loaded (d)','ms','blue');
+        # $self->_model->set_modified(q{});    # empty
     }
 
     return $ret;
@@ -2251,6 +2406,85 @@ sub screen_write {
     return;
 }
 
+sub screen_write_det {
+    my ($self, $record_ref, $option) = @_;
+
+    $option ||= 'record';             # default option record
+
+    # $self->_log->trace("Write '$option' screen controls");
+
+    my $ctrl_ref = $self->{_dscrobj}->get_controls();
+
+    return unless scalar keys %{$ctrl_ref};  # no controls?
+
+  FIELD:
+    foreach my $field ( keys %{ $self->{_dscrcfg}->maintable->{columns} } ) {
+
+        my $fld_cfg = $self->{_dscrcfg}->maintable->{columns}{$field};
+
+        my $ctrl_state;
+        eval {
+            $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
+        };
+        if ($@) {
+            print "WW: Undefined field '$field', check configuration!\n";
+            next FIELD;
+        }
+        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
+
+        # Control config attributes
+        my $ctrltype = $fld_cfg->{ctrltype};
+
+        my $value;
+        if ( $option eq 'record' ) {
+            $value = $record_ref->{ lc $field };
+        }
+        elsif ( $option eq 'fields' ) {
+            $value = $record_ref->{ lc $field };
+            next FIELD if !$value;
+        }
+        elsif ( $option eq 'clear' ) {
+
+            # nothing here
+        }
+        else {
+            warn "Should never get here!\n";
+        }
+
+        if ($value) {
+
+            # Trim spaces and '\n' from the end
+            $value = Tpda3::Utils->trim($value);
+
+            # Should make $value = 0, than format as number ?
+            my $places = $fld_cfg->{places};
+            if ($places) {
+                if ( $places > 0 ) {
+
+                    # if places > 0, format as number
+                    $value = sprintf( "%.${places}f", $value );
+                }
+            }
+        }
+
+        # Run appropriate sub according to control (entry widget) type
+        my $sub_name = qq{control_write_$ctrltype};
+        if ( $self->can($sub_name) ) {
+            $self->$sub_name( $ctrl_ref, $field, $value );
+        }
+        else {
+            print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
+        }
+
+        # Restore state
+        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
+    }
+
+    # $self->_log->trace("Write finished (restored controls states)");
+
+    return;
+}
+
 =head2 control_tmatrix_read
 
 Read data from a table matrix widget.
@@ -2396,7 +2630,24 @@ sub control_tmatrix_write {
     }
 
     # Refreshing the table...
-    $tm_object->configure( -rows => $row );
+    $tm_object->configure( -rows => $row);
+
+    return;
+}
+
+sub control_tmatrix_make_selector {
+    my ($self, $tm_ds) = @_;
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
+    my $rows_no  = $tm_object->cget( -rows );
+    my $cols_no  = $tm_object->cget( -cols );
+    my $rows_idx = $rows_no - 1;
+    my $cols_idx = $cols_no - 1;
+
+    print "($rows_idx,$cols_idx)\n";
+    foreach my $r ( 1 .. $rows_idx ) {
+        $self->embeded_buttons( $tm_object, $r, 5 );
+    }
 
     return;
 }
@@ -2759,6 +3010,8 @@ sub add_tmatrix_row {
         }
     }
 
+#    $self->embeded_buttons( $xt, $new_r, 5 ); # add button
+
     # Focus to newly inserted row, column 1
     $xt->focus;
     $xt->activate("$new_r,1");
@@ -2835,6 +3088,25 @@ sub renum_tmatrix_row {
     return;
 }
 
+sub screen_get_pk_value {
+    my $self = shift;
+
+    # Table metadata
+    my $metadata = $self->maintable_metadata('use_view', 'rec');
+    my $pkcol_name = $metadata->{pkcol};
+
+    my $ctrl_ref = $self->_screen->get_controls();
+    $self->control_read_e($ctrl_ref, $pkcol_name);
+
+    return $self->{scrdata}{$pkcol_name};
+}
+
+sub screen_get_fk_value {
+    my $self = shift;
+
+    return 1;                                # HA!
+}
+
 =head2 record_reload
 
 Reload the curent record.
@@ -2850,16 +3122,7 @@ can't delete it's content.
 sub record_reload {
     my $self = shift;
 
-    $self->screen_read();
-
-    # Table metadata
-    my $maintable   = $self->_scrcfg->maintable;
-    my $pk_col_name = $maintable->{pkcol}{name};
-
-    my $ctrl_ref = $self->_screen->get_controls();
-    $self->control_read_e($ctrl_ref, $pk_col_name);
-
-    my $pk_id = $self->{scrdata}{$pk_col_name};
+    my $pk_id = $self->screen_get_pk_value();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Reload failed!','ms','red');
         return;
@@ -2880,27 +3143,15 @@ Load the selected record in the Screen.
 =cut
 
 sub record_load {
-    my ($self, $pk_id, $fk_id) = @_;
+    my ($self, $pk_id) = @_;
 
     #-  Main table
-
-    my $screen_style = $self->_scrcfg->screen->{style};
-
     my $params = $self->maintable_metadata('use_view');
     my $pkcol_name = $params->{pkcol};
     my $fkcol_name = $params->{fkcol};
 
-    # Where: id_column = id_value
-    # $params->{where}{ $pkcol_name } = [ $pk_id, 'allstr' ]; # column = value
-    if ( $screen_style eq 'dependent' ) {
-        $params->{where} = {
-            $pkcol_name => $pk_id,
-            $fkcol_name => $fk_id,
-        };
-    }
-    else {
-        $params->{where} = { $pkcol_name => $pk_id, };
-    }
+    # SQL Where
+    $params->{where} = { $pkcol_name => $pk_id, };
 
     my $record = $self->_model->query_record($params);
 
@@ -2914,7 +3165,30 @@ sub record_load {
         my $records = $self->_model->table_batch_query($tm_params);
 
         $self->control_tmatrix_write($records);
+
+        $self->control_tmatrix_make_selector($tm_ds);
     }
+
+    return 1;
+}
+
+sub record_load_det {
+    my $self = shift;
+
+    my $params = $self->maintable_metadata('use_view');
+    my $pk_id  = $self->screen_get_pk_value();
+    my $fk_id  = $self->screen_get_fk_value();
+    my $pkcol_name = $params->{pkcol};
+    my $fkcol_name = $params->{fkcol};
+
+    $params->{where} = {
+        $pkcol_name => $pk_id,
+        $fkcol_name => $fk_id,
+    };
+
+    my $record = $self->_model->query_record($params);
+
+    $self->screen_write_det($record);
 
     return 1;
 }
@@ -3102,7 +3376,7 @@ sub get_screen_data_as_record {
     my $record = {};
 
     #-  Main table
-    $record->{metadata} =  $self->maintable_metadata();
+    $record->{metadata} = $self->maintable_metadata();
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
@@ -3138,10 +3412,20 @@ Retrieve main table meta-data from the screen configuration.
 =cut
 
 sub maintable_metadata {
-    my ($self, $use_view) = @_;
+    my ($self, $use_view, $page) = @_;
+
+    $page ||= $self->_view->get_nb_current_page();
 
     #-- Table metadata
-    my $maintable   = $self->_scrcfg->maintable;
+    my $maintable;
+
+    if ( $page eq 'rec' ) {
+        $maintable = $self->_scrcfg->maintable;
+    }
+    else {
+        $maintable   = $self->{_dscrcfg}->maintable;
+    }
+
     my $columns     = $maintable->{columns};
     my $pk_col_name = $maintable->{pkcol}{name};
     my $fk_col_name = $maintable->{fkcol}{name};
@@ -3164,8 +3448,7 @@ Retrieve dependent table meta-data from the screen configuration.
 sub deptable_metadata {
     my ($self, $tm_ds, $pk_id, $use_view) = @_;
 
- # Table metadata
-
+    # Dependent table metadata
     my $deptable = $self->_scrcfg->deptable->{$tm_ds};
     my $columns  = $deptable->{columns};
     my $pkcol    = $deptable->{pkcol}{name};
@@ -3235,6 +3518,39 @@ sub restore_screendata {
     }
 
     return 1;
+}
+
+=head2 embeded_buttons
+
+Embeded windows
+
+=cut
+
+sub embeded_buttons {
+    my ($self, $xtable, $row, $col) = @_;
+
+    $xtable->windowConfigure(
+        "$row,$col",
+        -sticky => 's',
+        -window => $self->build_ckbutton(),
+    );
+    print "button: ($row,$col)\n";
+
+    return;
+}
+
+sub build_ckbutton {
+    my ( $self ) = @_;
+
+    my $button = $self->_view->Checkbutton(
+        -image       => 'actcross16',
+        -selectimage => 'actcheck16',
+        -indicatoron => 0,
+        -selectcolor => 'lightgrey',
+        -state       => 'normal',
+    );
+
+    return $button;
 }
 
 =head1 AUTHOR

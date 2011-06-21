@@ -553,7 +553,7 @@ sub create_notebook {
 
     $self->create_notebook_panel('rec', 'Record');
     $self->create_notebook_panel('lst', 'List');
-    # $self->create_notebook_panel('det', 'Details');
+    $self->create_notebook_panel('det', 'Details');
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
@@ -607,6 +607,21 @@ sub create_notebook_panel {
     return;
 }
 
+
+=head2 remove_notebook_panel
+
+Remove a NoteBook panel
+
+=cut
+
+sub remove_notebook_panel {
+    my ($self, $panel) = @_;
+
+    $self->{_nb}->delete($panel);
+
+    return;
+}
+
 =head2 get_notebook
 
 Return the notebook handler
@@ -636,6 +651,12 @@ sub destroy_notebook {
     $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
 
     return;
+}
+
+sub get_nb_current_page {
+    my $self = shift;
+
+    return $self->get_notebook->raised();
 }
 
 =head2 define_dialogs
@@ -946,10 +967,8 @@ sub list_read_selected {
 
     # In scalar context, getRow returns the value of column 0
     # Column 0 has to be a Pk ...
-    my ($pk_id, $fk_id);
-    eval {
-        ($pk_id, $fk_id) = ($self->get_recordlist->getRow($indecs))[0,1];
-    };
+    my $pk_id;
+    eval { $pk_id = ( $self->get_recordlist->getRow($indecs) )[0]; };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
@@ -962,13 +981,9 @@ sub list_read_selected {
             $pk_id =~ s/^\s+//;
             $pk_id =~ s/\s+$//;
         }
-        if ( defined($fk_id) ) {
-            $fk_id =~ s/^\s+//;
-            $fk_id =~ s/\s+$//;
-        }
     }
 
-    return ($pk_id, $fk_id);
+    return $pk_id;
 }
 
 =head2 make_tablematrix_header
@@ -1026,10 +1041,10 @@ sub set_tablematrix_tags {
     # Make enter do the same thing as return:
     $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
 
-    if ($cols) {
-        $xtable->configure( -cols => $cols );
-        $xtable->configure( -rows => 1 ); # Keep table dim in grid
-    }
+    # if ($cols) {
+    #     $xtable->configure( -cols => $cols );
+    #     $xtable->configure( -rows => 1 ); # Keep table dim in grid
+    # }
     $xtable->tagConfigure(
         'active',
         -bg     => 'lightyellow',
@@ -1070,11 +1085,22 @@ sub set_tablematrix_tags {
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
-        $xtable->colWidth( $col, $tm_fields->{$field}{width} );
-        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
+        if ( $tm_fields->{$field}{width} ) {
 
-        my $xtvar  = $xtable->cget( -variable );
+            # If width is 0 then don't set width, and because of the
+            # -colstretchmode => 'unset' setting will be of variable
+            # width
+            $xtable->colWidth( $col, $tm_fields->{$field}{width} );
+        }
+        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
     }
+
+    #if (have selector add new col) {
+    $xtable->insertCols( $cols, 1 );
+    $xtable->tagCol( 'ro_center', $cols );
+    $xtable->colWidth( $cols, 3 );
+    $xtable->set( "0,$cols", 'Sel' );
+    #}
 
     $xtable->tagRow( 'title', 0 );
     if ( $xtable->tagExists('expnd') ) {
