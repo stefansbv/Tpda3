@@ -2541,6 +2541,45 @@ sub control_tmatrix_read {
     return \@tabledata;
 }
 
+sub control_tmatrix_read_selector {
+    my ($self, $tm_ds) = @_;
+
+    my $tm_object = $self->_screen->get_tm_controls($tm_ds);
+    my $rows_no  = $tm_object->cget( -rows );
+    my $rows_idx = $rows_no - 1;
+    my $row;
+
+    # Extrag datele din tabel
+    for my $r ( 1 .. $rows_idx ) {
+
+        # Check checkbutton from col 5 ($c)
+        my $c = 5;
+        my $nm;
+        eval { $nm = $tm_object->windowCget( "$r,$c", -window ); };
+        if ($@) {
+            # warn "Aborted because $@";
+        }
+        else {
+            if ( $nm =~ /Checkbutton/ ) {
+                my $sel = $nm->{'Value'};
+
+                # Skip if not selected
+                next if !defined $sel;
+                if ( $sel == 0 ) {
+                    next;
+                }
+                else {
+                    print " Sel :$r\n";
+                    $row = $r;
+                    last;    # should be only one
+                }
+            }
+        }
+    }
+
+    return $row;
+}
+
 =head2 control_tmatrix_read_cell
 
 Read a cell from a TableMatrix widget and return it as a hash
@@ -3010,7 +3049,7 @@ sub add_tmatrix_row {
         }
     }
 
-#    $self->embeded_buttons( $xt, $new_r, 5 ); # add button
+    $self->embeded_buttons( $xt, $new_r, 5 ); # add button
 
     # Focus to newly inserted row, column 1
     $xt->focus;
@@ -3103,6 +3142,8 @@ sub screen_get_pk_value {
 
 sub screen_get_fk_value {
     my $self = shift;
+
+    $self->control_tmatrix_read_selector('tm1');
 
     return 1;                                # HA!
 }
@@ -3527,9 +3568,9 @@ Embeded windows
 =cut
 
 sub embeded_buttons {
-    my ($self, $xtable, $row, $col) = @_;
+    my ($self, $tm_object, $row, $col) = @_;
 
-    $xtable->windowConfigure(
+    $tm_object->windowConfigure(
         "$row,$col",
         -sticky => 's',
         -window => $self->build_ckbutton(),
