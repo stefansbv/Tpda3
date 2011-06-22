@@ -329,6 +329,13 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Delete
+    $self->_view->get_toolbar_btn('tb_rm')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->record_delete();
+        }
+    );
+
     #-- Save record
     $self->_view->get_toolbar_btn('tb_sv')->bind(
         '<ButtonRelease-1>' => sub {
@@ -398,25 +405,16 @@ sub _set_event_handler_nb {
         $page,
         -raisecmd => sub {
             if ($page eq 'lst') {
-                $self->set_app_mode('sele');
-                $self->_view->get_recordlist->focus;
+                $self->on_page_lst_activate;
             }
             elsif ($page eq 'rec') {
-                if ( $self->record_load_new ) {
-                    $self->set_app_mode('edit');
-                }
-                else {
-                    $self->set_app_mode('idle');
-                }
+                $self->on_page_rec_activate;
             }
             elsif ($page eq 'det') {
-                if ( $self->screen_load_detail ) {
-                    $self->set_app_mode('edit');
-                }
-                else {
-                    $self->set_app_mode('idle');
-                }
+                $self->on_page_det_activate;
             }
+
+            $self->_view->set_status('','ms'); # clear status message
         },
     );
 
@@ -428,6 +426,75 @@ sub _set_event_handler_nb {
             Tk->break;
         }
     );
+
+    return;
+}
+
+=head2 on_page_rec_activate
+
+On page I<rec> activate.
+
+=cut
+
+sub on_page_rec_activate {
+    my $self = shift;
+
+    print "on_page_rec_activate\n";
+    if ( !$self->_model->is_loaded ) {
+        $self->record_load_new;
+        $self->set_app_mode('edit');
+    }
+    else {
+        print " loaded !!!\n";
+        # $self->set_app_mode('idle');
+    }
+
+    return;
+}
+
+=head2 on_page_lst_activate
+
+On page I<lst> activate.
+
+=cut
+
+sub on_page_lst_activate {
+    my $self = shift;
+
+    $self->set_app_mode('sele');
+    $self->_view->get_recordlist->focus;
+
+    return;
+}
+
+=head2 on_page_det_activate
+
+On page I<det> activate.
+
+=cut
+
+sub on_page_det_activate {
+    my $self = shift;
+
+    print " det activated\n";
+
+    # check if screen module is loaded
+    #
+
+    # return $ret;
+
+    if ( $self->screen_load_detail ) {
+        $self->set_app_mode('edit');
+    }
+    # else {
+    #     $self->set_app_mode('idle');
+    # }
+
+    my $ret = $self->record_load_det();
+    if ($ret) {
+        $self->_view->set_status('Record loaded (d)','ms','blue');
+        # $self->_model->set_scrdata_rec(q{});    # empty
+    }
 
     return;
 }
@@ -1126,7 +1193,7 @@ sub on_screen_mode_idle {
 
     # Empty the main controls and TM, if any
 
-    $self->screen_write(undef, 'clear');
+    $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
         $self->control_tmatrix_write(undef, $tm_ds);
@@ -1154,7 +1221,7 @@ sub on_screen_mode_add {
 
     # Empty the main controls and TM, if any
 
-    $self->screen_write(undef, 'clear');
+    $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
         $self->control_tmatrix_write(undef, $tm_ds);
@@ -1181,7 +1248,7 @@ sub on_screen_mode_find {
 
     # Empty the main controls and TM, if any
 
-    $self->screen_write(undef, 'clear');
+    $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
         $self->control_tmatrix_write(undef, $tm_ds);
@@ -1468,6 +1535,8 @@ sub screen_module_load {
 
     $self->_view->set_status('','ms');
 
+    $self->_model->unset_scrdata_rec();
+
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
 }
@@ -1484,9 +1553,10 @@ sub screen_module_detail_load {
     # Destroy existing NoteBook widget
     # $self->_view->destroy_notebook_page();
 
-    $self->_view->remove_notebook_panel('det');
-    $self->_view->create_notebook_panel('det', 'Details');
-    $self->_view->get_notebook()->raise('det');
+    # $self->_view->remove_notebook_panel('det');
+    # $self->_view->create_notebook_panel('det', 'Details');
+    # $self->_view->get_notebook()->raise('det');
+    $self->_view->notebook_page_clean('det');
 
     # Unload current screen
     if ( $self->{_dscrcls} ) {
@@ -1747,20 +1817,21 @@ list control on the I<List> page.
 sub record_load_new {
     my $self = shift;
 
+    print " record_load_new\n";
+
     my $pk_id = $self->_view->list_read_selected();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Nothing selected','ms','orange');
         return;
     }
 
-    my $ret = $self->record_load($pk_id);
+    $self->record_load($pk_id);
 
-    if ($ret) {
+    if ( $self->_model->is_loaded ) {
         $self->_view->set_status('Record loaded','ms','blue');
-        $self->_model->set_modified(q{});    # empty
     }
 
-    return $ret;
+    return;
 }
 
 sub screen_load_detail {
@@ -1779,13 +1850,7 @@ sub screen_load_detail {
         $self->screen_module_detail_load($detail_screen);
     }
 
-    my $ret = $self->record_load_det();
-    if ($ret) {
-        $self->_view->set_status('Record loaded (d)','ms','blue');
-        # $self->_model->set_modified(q{});    # empty
-    }
-
-    return $ret;
+    return;
 }
 
 =head2 screen_clear
@@ -1799,7 +1864,7 @@ sub screen_clear {
 
     return unless ref $self->_screen;
 
-    $self->screen_write(undef, 'clear');      # Empty the main controls
+    $self->record_clear;
 
     if ($self->_model->is_mode('edit')) {
         $self->set_app_mode('idle');
@@ -2541,43 +2606,42 @@ sub control_tmatrix_read {
     return \@tabledata;
 }
 
+=head2 control_tmatrix_read_selector
+
+Scan table rows and read embeded Checkbutton selector state.
+
+=cut
+
 sub control_tmatrix_read_selector {
-    my ($self, $tm_ds) = @_;
+    my ($self, $tm_ds, $col) = @_;
+
+    $col ||= 5;                 # for now !!!
 
     my $tm_object = $self->_screen->get_tm_controls($tm_ds);
     my $rows_no  = $tm_object->cget( -rows );
     my $rows_idx = $rows_no - 1;
-    my $row;
+    my $r;
 
     # Extrag datele din tabel
-    for my $r ( 1 .. $rows_idx ) {
+    for my $row ( 1 .. $rows_idx ) {
 
-        # Check checkbutton from col 5 ($c)
-        my $c = 5;
+        # Scan Checkbutton from column ($col)
         my $nm;
-        eval { $nm = $tm_object->windowCget( "$r,$c", -window ); };
-        if ($@) {
-            # warn "Aborted because $@";
-        }
-        else {
+        eval { $nm = $tm_object->windowCget( "$row,$col", -window ); };
+        unless ($@) {
             if ( $nm =~ /Checkbutton/ ) {
                 my $sel = $nm->{'Value'};
-
-                # Skip if not selected
-                next if !defined $sel;
-                if ( $sel == 0 ) {
-                    next;
-                }
-                else {
-                    print " Sel :$r\n";
-                    $row = $r;
-                    last;    # should be only one
+                next if !defined $sel or $sel == 0; # skip if not selected
+                if ( $sel == 1 ) {
+                    print " Selected :$row\n";
+                    $r = $row;
+                    last;       # should be only one
                 }
             }
         }
     }
 
-    return $row;
+    return $r;
 }
 
 =head2 control_tmatrix_read_cell
@@ -3163,16 +3227,22 @@ can't delete it's content.
 sub record_reload {
     my $self = shift;
 
+    print " record_reload\n";
+
     my $pk_id = $self->screen_get_pk_value();
     if ( ! defined $pk_id ) {
         $self->_view->set_status('Reload failed!','ms','red');
         return;
     }
 
-    $self->screen_write(undef, 'clear'); # clear the controls
+    $self->record_clear;
+
     $self->record_load($pk_id);
 
     $self->_view->set_status("Record reloaded",'ms','blue');
+
+    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
+                                       # undef = unloaded
 
     return;
 }
@@ -3185,6 +3255,8 @@ Load the selected record in the Screen.
 
 sub record_load {
     my ($self, $pk_id) = @_;
+
+    print " record_load\n";
 
     #-  Main table
     my $params = $self->maintable_metadata('use_view');
@@ -3210,7 +3282,10 @@ sub record_load {
         $self->control_tmatrix_make_selector($tm_ds);
     }
 
-    return 1;
+    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
+                                       # undef = unloaded
+
+    return;
 }
 
 sub record_load_det {
@@ -3234,6 +3309,27 @@ sub record_load_det {
     return 1;
 }
 
+sub record_delete {
+    my $self = shift;
+
+    print " delete not implemented\n";
+
+    $self->_model->unset_scrdata_rec(); # false = loaded,  true = modified,
+                                        # undef = unloaded
+
+    return;
+}
+
+sub record_clear {
+    my $self = shift;
+
+    $self->screen_write(undef, 'clear'); # clear the controls
+
+    $self->_model->unset_scrdata_rec();  # false = loaded,  true = modified,
+                                         # undef = unloaded
+    return;
+}
+
 =head2 ask_to_save
 
 If in I<add> or I<edit> mode show dialog and ask to save or
@@ -3248,7 +3344,7 @@ sub ask_to_save {
         or $self->_model->is_mode('add') )
     {
         print "Save record?\n";
-        $self->_model->set_modified(q{});       # empty
+        $self->_model->set_scrdata_rec(0);       # empty
     }
 
     return;
@@ -3276,7 +3372,8 @@ sub save_record {
         return;
     }
 
-    $self->_model->set_modified(q{});        # empty
+    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
+                                       # undef = unloaded
 
     return;
 }

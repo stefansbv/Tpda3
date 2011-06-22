@@ -46,11 +46,12 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _connected => Tpda3::Observable->new(),
-        _stdout    => Tpda3::Observable->new(),
-        _appmode   => Tpda3::Observable->new(),
-        _modified  => Tpda3::Observable->new(),
-        _cfg       => Tpda3::Config->instance(),
+        _connected   => Tpda3::Observable->new(),
+        _stdout      => Tpda3::Observable->new(),
+        _appmode     => Tpda3::Observable->new(),
+        _scrdata_rec => Tpda3::Observable->new(),
+        _scrdata_det => Tpda3::Observable->new(),
+        _cfg         => Tpda3::Config->instance(),
     };
 
     bless $self, $class;
@@ -239,47 +240,63 @@ sub get_appmode {
     return $self->get_appmode_observable->get;
 }
 
-=head2 set_modified
+=head2 set_scrdata_rec
 
-Set modified
+Set scrdata_rec
 
 =cut
 
-sub set_modified {
+sub set_scrdata_rec {
     my ($self, $state) = @_;
 
-    $self->get_modified_observable->set($state);
+    $self->get_scrdata_rec_observable->set($state);
 
     return;
 }
 
-=head2 get_modified_observable
+sub unset_scrdata_rec {
+    my $self = shift;
+
+    $self->get_scrdata_rec_observable->unset();
+
+    return;
+}
+
+=head2 get_scrdata_rec_observable
 
 Return add mode observable status
 
 =cut
 
-sub get_modified_observable {
+sub get_scrdata_rec_observable {
     my $self = shift;
 
-    return $self->{_modified};
+    return $self->{_scrdata_rec};
 }
 
 =head2 is_modified
 
-Return true if record is modified
+Return true if screen data record is modified.
 
 =cut
 
 sub is_modified {
     my $self = shift;
 
-    if ($self->get_modified_observable->get) {
-        return 1;
-    }
-    else {
-        return;
-    }
+    return $self->get_scrdata_rec_observable->get;
+}
+
+=head2 is_loaded
+
+Return true if screen data record is loaded, if is not then the value
+is undef.
+
+=cut
+
+sub is_loaded {
+    my $self = shift;
+
+    return defined $self->get_scrdata_rec_observable->get;
 }
 
 =head2 query_records_count

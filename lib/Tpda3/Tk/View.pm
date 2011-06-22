@@ -138,7 +138,7 @@ sub _set_model_callbacks {
     $apm->add_callback( sub { $self->update_gui_components(); } );
 
     # When the modified status changes, update statusbar
-    my $svs = $self->_model->get_modified_observable;
+    my $svs = $self->_model->get_scrdata_rec_observable;
     $svs->add_callback( sub{ $self->set_status( $_[0], 'ss') } );
 
     return;
@@ -146,8 +146,8 @@ sub _set_model_callbacks {
 
 =head2 set_modified_record
 
-Set modified to 'M' if not already set but only if in I<edit> or
-I<add> mode.
+Set modified to 1 if not already set but only if in I<edit> or I<add>
+mode.
 
 =cut
 
@@ -157,7 +157,7 @@ sub set_modified_record {
     if (   $self->_model->is_mode('edit')
         or $self->_model->is_mode('add') )
     {
-        $self->_model->set_modified(q{M}) if !$self->_model->is_modified;
+        $self->_model->set_scrdata_rec(1) if !$self->_model->is_modified;
     }
 
     return;
@@ -481,6 +481,13 @@ sub set_status {
     if ( $sb_id eq 'cn' ) {
         $sb->configure( -image => $text ) if defined $text;
     }
+    elsif ( $sb_id eq 'ss' ) {
+        #         _scrdata_rec       status text
+        my $str = !defined $text   ? ''
+                : $text            ? 'M'
+                :                    'S';
+        $sb->configure( -textvariable => \$str ) if defined $str;
+    }
     else {
         $sb->configure( -textvariable => \$text ) if defined $text;
         $sb->configure( -foreground   => $color ) if defined $color;
@@ -657,6 +664,22 @@ sub get_nb_current_page {
     my $self = shift;
 
     return $self->get_notebook->raised();
+}
+
+sub notebook_page_clean {
+    my ($self, $page) = @_;
+
+    my $frame = $self->get_notebook($page);
+
+    $frame->Walk(
+        sub {
+            my $widget = shift;
+            print " $widget\n";
+            $widget->destroy;
+        }
+    );
+
+    return;
 }
 
 =head2 define_dialogs
