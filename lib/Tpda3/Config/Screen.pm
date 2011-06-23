@@ -78,11 +78,12 @@ Load a config files at request
 =cut
 
 sub config_screen_load {
-    my ($self, $file_name) = @_;
+    my ($self, $scrcls) = @_;
 
     my $log = get_logger();
 
-    my $cfg_file = $self->config_scr_file_name($file_name);
+    my $file_name = "$scrcls.conf";
+    my $cfg_file  = $self->config_scr_file_name($file_name);
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
