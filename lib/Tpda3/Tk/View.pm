@@ -674,7 +674,6 @@ sub notebook_page_clean {
     $frame->Walk(
         sub {
             my $widget = shift;
-            print " $widget\n";
             $widget->destroy;
         }
     );
