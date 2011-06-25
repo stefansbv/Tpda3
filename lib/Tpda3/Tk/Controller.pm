@@ -332,7 +332,7 @@ sub _set_event_handlers {
     #-- Add mode
     $self->_view->get_toolbar_btn('tb_ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->toggle_mode_add();
+            $self->toggle_mode_add() if $self->{_rscrcls};
         }
     );
 
@@ -370,19 +370,20 @@ sub _set_event_handlers {
     $self->_view->bind(
         '<F7>' => sub {
             # From add mode forbid find mode
-            $self->toggle_mode_find() if !$self->_model->is_mode('add');
+            $self->toggle_mode_find()
+              if $self->{_rscrcls} and !$self->_model->is_mode('add');
         }
     );
     $self->_view->bind(
         '<F8>' => sub {
-            $self->_model->is_mode('find')
+            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
               ? $self->record_find_execute
-              : $self->_view->set_status( 'Not find mode','ms','orange' );
+              : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
     $self->_view->bind(
         '<F9>' => sub {
-            $self->_model->is_mode('find')
+            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
               ? $self->record_find_count
               : $self->_view->set_status( 'Not find mode','ms','orange' );
         }
@@ -1575,6 +1576,9 @@ sub screen_module_load {
 
     $self->_model->unset_scrdata_rec();
 
+    # Set PK column name
+    $self->{_pk} = {  $self->r_table->{pkcol}{name} => undef };
+
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
 }
@@ -1653,6 +1657,9 @@ sub screen_module_detail_load {
     # $self->screen_init();
 
     $self->_view->set_status('','ms');
+
+    # Set FK column name
+    $self->{_fk} = {  $self->r_table->{fkcol}{name} => undef };
 
     return;
 }
@@ -3256,7 +3263,7 @@ sub record_reload {
 
     print " record_reload\n";
 
-    my ($pk_val) = $self->{_pk};
+    my ( $pk_col, $pk_val ) = each %{ $self->{_pk} };
     if ( ! defined $pk_val ) {
         $self->_view->set_status('Reload failed!','ms','red');
         return;
@@ -3283,7 +3290,7 @@ Load the selected record in the Screen.
 sub record_load {
     my ($self, $pk_val) = @_;
 
-    print "Record load (r)\n";
+    print "Record load [r] ($pk_val)\n";
 
     #-  Main table
     my $params = $self->r_table_metadata('use_view');
@@ -3310,7 +3317,7 @@ sub record_load {
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
 
-    $self->screen_set_pk($pk_col, $pk_val); # save PK info
+    $self->screen_set_pk($pk_val); # save PK value
 
     return;
 }
@@ -3363,6 +3370,8 @@ sub record_clear {
     my $self = shift;
 
     $self->screen_write(undef, undef, 'clear'); # clear the controls
+
+    $self->screen_set_pk();
 
     $self->_model->unset_scrdata_rec();  # false = loaded,  true = modified,
                                          # undef = unloaded
@@ -3849,13 +3858,11 @@ sub screen_get_pk {
 }
 
 sub screen_set_pk {
-    my ($self, $pk_col, $pk_val) = @_;
+    my ($self, $pk_val) = @_;
 
-    if ($pk_col and $pk_val) {
+    my ($pk_col) = each %{ $self->{_pk} };
+    if ($pk_col) {
         $self->{_pk} = { $pk_col => $pk_val };
-    }
-    else {
-        croak "No valid PK data to store!";
     }
 
     return;
@@ -3876,7 +3883,7 @@ sub screen_set_fk {
         $self->{_fk} = { $fk_col => $fk_val };
     }
     else {
-        croak "No valid FK data to store!";
+        $self->{_fk} = {};
     }
 
     return;
