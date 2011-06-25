@@ -352,12 +352,14 @@ sub query_records_find {
 
     my $table = $data_hr->{table};
     my $pkcol = $data_hr->{pkcol};
+    my $cols  = $data_hr->{columns};
+    my $order = $pkcol;
 
     my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select( $table, $data_hr->{columns}, $where );
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
