@@ -84,8 +84,10 @@ sub new {
         _dscrcls => undef,
         _dscrobj => undef,
         _dscrcfg => undef,
-        _pk      => {},                             # {pk_field => pk_value}
-        _fk      => {},                             # {fk_field => fk_value}
+        _pk_col  => undef,
+        _pk_val  => undef,
+        _fk_col  => undef,
+        _fk_val  => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -455,14 +457,14 @@ sub on_page_rec_activate {
         return;
     }
 
-    my ($pk_col_old, $pk_val_old) = $self->screen_get_pk();
+    my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
 
-    if ($pk_val_new ne $pk_val_old) {
-        $self->record_load_new($pk_val_new);
-        $self->set_app_mode('edit');
+    if ($pk_val_new eq $pk_val_old) {
+        $self->set_app_mode('edit'); # already loaded
     }
     else {
-        $self->set_app_mode('edit'); # already loaded
+        $self->record_load_new($pk_val_new);
+        $self->set_app_mode('edit');
     }
 
     return;
@@ -531,7 +533,7 @@ sub _set_event_handler_screen {
 
     # TODO: Make this more general
     my $tm_ds = 'tm1';
-    my $updstyle = $self->d_table_updatestyle($tm_ds);
+    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
 
     #- screen ToolBar
 
@@ -652,7 +654,7 @@ sub setup_lookup_bindings_entry {
 
     my $bindings = $self->_rscrcfg->bindings;
 
-    $self->_log->info("Setup binding for configured widgets");
+    $self->_log->info("Setup binding for configured widgets ($page)");
 
     foreach my $bind_name ( keys %{$bindings} ) {
 
@@ -678,7 +680,7 @@ sub setup_lookup_bindings_entry {
         };
 
         # Add the search field to the columns list
-        my $field_cfg = $self->r_table_column(undef, $column);
+        my $field_cfg = $self->_rscrcfg->m_table_column($column);
         my @cols;
         my $rec = {};
         $rec->{$search} = {
@@ -700,13 +702,11 @@ sub setup_lookup_bindings_entry {
                 last SWITCH;
             };
             /array/i && do {
-                $flds =
-                  $self->fields_cfg_many($bindings->{$bind_name} );
+                $flds = $self->fields_cfg_many($bindings->{$bind_name} );
                 last SWITCH;
             };
             /hash/i  && do {
-                $flds =
-                  $self->fields_cfg_named($bindings->{$bind_name} );
+                $flds = $self->fields_cfg_named($bindings->{$bind_name} );
                 last SWITCH;
             };
             print "WW: Bindigs configuration style not recognised!\n";
@@ -720,7 +720,7 @@ sub setup_lookup_bindings_entry {
         $ctrl_ref->{$column}[1]->bind(
             '<Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para, $filter );
-                $self->screen_write( $page, $record, 'fields' );
+                $self->screen_write($record, 'fields' );
             }
         );
     }
@@ -898,7 +898,7 @@ sub lookup {
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->r_table_column_attr($tm_ds, $fld, 'id');
+        my $col = $self->_rscrcfg->d_table_column_attr($tm_ds, $fld, 'id');
         $filter = $self->control_tmatrix_read_cell($r, $col);
     }
 
@@ -1014,7 +1014,8 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->d_table_columns($tm_ds, $column);
+    my $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $column);
+
     my @cols;
     my $rec = {};
     $rec->{$search} = {
@@ -1063,16 +1064,16 @@ sub fields_cfg_one {
 
     # One field, no array
     my @cols;
-    my $fld = $bindings->{field};
+    my $lookup_field = $bindings->{field};
     my $field_cfg;
     if ($tm_ds) {
-        $field_cfg = $self->d_table_column($tm_ds, $fld);
+        $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $lookup_field);
     }
     else {
-        $field_cfg = $self->r_table_column(undef, $fld);
+        $field_cfg = $self->_rscrcfg->m_table_column($lookup_field);
     }
     my $rec = {};
-    $rec->{$fld} = {
+    $rec->{$lookup_field} = {
         width => $field_cfg->{width},
         label => $field_cfg->{label},
         order => $field_cfg->{order},
@@ -1094,16 +1095,16 @@ sub fields_cfg_many {
     my @cols;
 
     # Multiple fields returned as array
-    foreach my $fld ( @{ $bindings->{field} } ) {
+    foreach my $lookup_field ( @{ $bindings->{field} } ) {
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->d_table_column($tm_ds, $fld);
+            $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $lookup_field);
         }
         else {
-            $field_cfg = $self->r_table_column(undef, $fld);
+            $field_cfg = $self->_rscrcfg->m_table_column($lookup_field);
         }
         my $rec = {};
-        $rec->{$fld} = {
+        $rec->{$lookup_field} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
@@ -1125,21 +1126,22 @@ sub fields_cfg_named {
 
     my @cols;
     # Multiple fields returned as array
-    foreach my $fld ( keys %{ $bindings->{field} } ) {
-        my $name = $bindings->{field}{$fld}{name};
+    foreach my $lookup_field ( keys %{ $bindings->{field} } ) {
+        my $scr_field = $bindings->{field}{$lookup_field}{name};
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->d_table_columns($tm_ds, $fld);
+            $field_cfg = $self->_rscrcfg->d_table_columns($tm_ds, $scr_field);
         }
         else {
-            $field_cfg = $self->r_table_column(undef, $fld);
+            $field_cfg = $self->_rscrcfg->m_table_column($scr_field);
         }
+
         my $rec = {};
-        $rec->{$fld} = {
+        $rec->{$lookup_field} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
-            name  => $name,
+            name  => $scr_field,
         };
         push @cols, $rec;
     }
@@ -1533,13 +1535,17 @@ sub screen_module_load {
     $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
 
     #-- Lookup bindings for Tk::Entry widgets
-    $self->setup_lookup_bindings_entry();
+    $self->setup_lookup_bindings_entry('rec');
 
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
 
     # Store currently loaded screen class
     $self->{_rscrcls} = $class;
+
+    # Set PK and FK column names
+    $self->screen_set_pk_col();
+    $self->screen_set_fk_col();
 
     # Update window geometry
     $self->update_geometry();
@@ -1548,7 +1554,7 @@ sub screen_module_load {
 
     # List header
     my @header_cols = @{ $self->_rscrcfg->found_cols->{col} };
-    my $fields = $self->r_table_columns;
+    my $fields = $self->_rscrcfg->m_table_columns;
     my $header_attr = {};
     foreach my $col ( @header_cols ) {
         $header_attr->{$col} = {
@@ -1563,7 +1569,7 @@ sub screen_module_load {
     # TableMatrix header(s), if any
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
         my $tmx    = $self->_rscrobj->get_tm_controls($tm_ds);
-        my $fields = $self->d_table($tm_ds)->{columns};
+        my $fields = $self->_rscrcfg->d_table_columns($tm_ds);
         $self->_view->make_tablematrix_header( $tmx, $fields );
     }
 
@@ -1575,9 +1581,6 @@ sub screen_module_load {
     $self->_view->set_status('','ms');
 
     $self->_model->unset_scrdata_rec();
-
-    # Set PK column name
-    $self->{_pk} = {  $self->r_table->{pkcol}{name} => undef };
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
@@ -1630,13 +1633,13 @@ sub screen_module_detail_load {
     my $nb = $self->_view->get_notebook();
     $self->{_dscrobj}->run_screen( $nb, $self->{_dscrcfg} );
 
-    my $screen_type = $self->_rscrcfg->screen->{type};
+    # my $screen_type = $self->_rscrcfg->screen->{type};
 
     # # Event handlers
     # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
 
     # #-- Lookup bindings for Tk::Entry widgets
-    # $self->setup_lookup_bindings_entry();
+    # $self->setup_lookup_bindings_entry('det');
 
     # #-- Lookup bindings for tables (TableMatrix)
     # $self->setup_bindings_table();
@@ -1659,7 +1662,10 @@ sub screen_module_detail_load {
     $self->_view->set_status('','ms');
 
     # Set FK column name
-    $self->{_fk} = {  $self->r_table->{fkcol}{name} => undef };
+    $self->screen_set_fk_col();
+
+    my $fk_col = $self->screen_get_fk_col('tm1');
+    print "FK_COL is $fk_col \n";
 
     return;
 }
@@ -1734,10 +1740,10 @@ sub screen_init {
     my $ctrl_ref = $self->_rscrobj->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
-    foreach my $field ( keys %{ $self->r_table_columns } ) {
+    foreach my $field ( keys %{ $self->_rscrcfg->m_table_columns } ) {
 
         # Control config attributes
-        my $fld_cfg  = $self->r_table_column(undef, $field);
+        my $fld_cfg  = $self->_rscrcfg->m_table_column($field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
@@ -1983,8 +1989,8 @@ sub record_find_execute {
     $self->screen_read();
 
     # Table configs
-    my $r_table = $self->_rscrcfg->r_table;
-    my $columns = $self->r_table_columns;
+    my $m_table = $self->_rscrcfg->m_table;
+    my $columns = $self->_rscrcfg->m_table_columns;
 
     my $params = {};
 
@@ -2000,8 +2006,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $r_table->{view};   # use view instead of table
-    $params->{pkcol} = $r_table->{pkcol}{name};
+    $params->{table} = $m_table->{view};   # use view instead of table
+    $params->{pkcol} = $m_table->{pkcol}{name};
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
@@ -2028,7 +2034,7 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $columns = $self->r_table_columns;
+    my $columns = $self->_rscrcfg->m_table_columns;
 
     my $params = {};
 
@@ -2041,8 +2047,8 @@ sub record_find_count {
     }
 
     # Table data
-    $params->{table} = $self->r_table_view;   # use view instead of table
-    $params->{pkcol} = $self->r_table->{pkcol}{name};
+    $params->{table} = $self->_rscrcfg->m_table_view;   # use view instead of table
+    $params->{pkcol} = $self->_rscrcfg->m_table_pkcol;
 
     $self->_model->query_records_count($params);
 
@@ -2142,8 +2148,8 @@ sub screen_read {
 
      # Scan and write to controls
    FIELD:
-     foreach my $field ( keys %{ $self->r_table_columns($page) } ) {
-         my $fld_cfg = $self->r_table_column($page, $field);
+     foreach my $field ( keys %{ $self->_rscrcfg->m_table_columns() } ) {
+         my $fld_cfg = $self->_rscrcfg->m_table_column($field);
 
          # Control config attributes
          my $ctrltype = $fld_cfg->{ctrltype};
@@ -2432,20 +2438,25 @@ present to, at least as 'undef'.
 =cut
 
 sub screen_write {
-    my ($self, $page, $record_ref, $option) = @_;
+    my ($self, $record_ref, $option) = @_;
 
     $option ||= 'record';             # default option record
 
     # $self->_log->trace("Write '$option' screen controls");
 
-    # What page?
-    $page ||= $self->_view->get_nb_current_page();
-    my $ctrl_ref;
+    # Current page
+    my $page = $self->_view->get_nb_current_page();
+
+    print "Page is $page\n";
+
+    my ($ctrl_ref, $cfg_ref);
     if ( $page eq 'rec' ) {
         $ctrl_ref = $self->_rscrobj->get_controls();
+        $cfg_ref  = $self->_rscrcfg;
     }
     elsif ( $page eq 'det' ) {
         $ctrl_ref = $self->_dscrobj->get_controls();
+        $cfg_ref  = $self->_dscrcfg;
     }
     else {
         print "Wrong page: $page!\n";
@@ -2455,16 +2466,16 @@ sub screen_write {
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
   FIELD:
-    foreach my $field ( keys %{ $self->r_table_columns($page) } ) {
+    foreach my $field ( keys %{ $cfg_ref->m_table_columns() } ) {
 
-        my $fld_cfg = $self->r_table_column($page, $field);
+        my $fld_cfg = $cfg_ref->m_table_column($field);
 
         my $ctrl_state;
         eval {
             $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
         };
         if ($@) {
-            print "WW: Undefined field '$field', check configuration!\n";
+            print "WW: Undefined field '$field', check configuration (w)!\n";
             next FIELD;
         }
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
@@ -2534,16 +2545,16 @@ sub screen_write_det {
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
   FIELD:
-    foreach my $field ( keys %{ $self->{_dscrcfg}->r_table->{columns} } ) {
+    foreach my $field ( keys %{ $self->{_dscrcfg}->m_table->{columns} } ) {
 
-        my $fld_cfg = $self->{_dscrcfg}->r_table->{columns}{$field};
+        my $fld_cfg = $self->{_dscrcfg}->m_table->{columns}{$field};
 
         my $ctrl_state;
         eval {
             $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
         };
         if ($@) {
-            print "WW: Undefined field '$field', check configuration!\n";
+            print "WW: Undefined field '$field', check configuration (d)!\n";
             next FIELD;
         }
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
@@ -2627,8 +2638,12 @@ sub control_tmatrix_read {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    my $fields_cfg = $self->d_table($tm_ds)->{columns};
+    my $fields_cfg = $self->_rscrcfg->d_table_columns($tm_ds);
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+
+    # Get selectorcol index, if any
+    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
+    $sc = undef if $sc eq 'none';
 
     # Read table data and create an AoH
     my @tabledata;
@@ -2638,6 +2653,8 @@ sub control_tmatrix_read {
 
         my $rowdata = {};
         for my $col ( 0 .. $cols_idx ) {
+
+            next if $col == $sc; # skip selectorcol
 
             my $cell_value = $tmx->get("$row,$col");
             my $col_name = $cols_ref->[$col];
@@ -2666,7 +2683,10 @@ Scan table rows and read embeded Checkbutton selector state.
 sub control_tmatrix_read_selector {
     my ($self, $tm_ds) = @_;
 
-    my $col = $self->d_table_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
+    if ($sc eq 'none') {
+        return;
+    }
 
     my $tmx      = $self->_rscrobj->get_tm_controls($tm_ds);
     my $rows_no  = $tmx->cget( -rows );
@@ -2676,9 +2696,9 @@ sub control_tmatrix_read_selector {
     # Extrag datele din tabel
     for my $row ( 1 .. $rows_idx ) {
 
-        # Scan Checkbutton from column ($col)
+        # Scan Checkbutton from column ($sc)
         my $nm;
-        eval { $nm = $tmx->windowCget( "$row,$col", -window ); };
+        eval { $nm = $tmx->windowCget( "$row,$sc", -window ); };
         unless ($@) {
             if ( $nm =~ /Checkbutton/ ) {
                 my $sel = $nm->{'Value'};
@@ -2720,7 +2740,7 @@ sub control_tmatrix_read_cell {
         return;
     }
 
-    my $fields_cfg = $self->d_table($tm_ds)->{columns};
+    my $fields_cfg = $self->_rscrcfg->d_table_columns($tm_ds);
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
     my $cell_value = $tmx->get("$row,$col");
     my $col_name   = $cols_ref->[$col];
@@ -2753,8 +2773,8 @@ sub control_tmatrix_write {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->d_table($tm_ds)->{columns} } ) {
-            my $fld_cfg = $self->d_table($tm_ds)->{columns}{$field};
+        foreach my $field ( keys %{ $self->_rscrcfg->d_table_columns($tm_ds) } ) {
+            my $fld_cfg = $self->_rscrcfg->d_table_column($tm_ds, $field);
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
@@ -2798,7 +2818,7 @@ sub control_tmatrix_make_selector {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    my $sc = $self->d_table_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
 
     foreach my $r ( 1 .. $rows_idx ) {
         $self->embeded_buttons( $tmx, $r, $sc );
@@ -2836,7 +2856,7 @@ sub control_tmatrix_write_row {
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
 
-        my $fld_cfg = $self->d_table($tm_ds)->{columns}{$field};
+        my $fld_cfg = $self->_rscrcfg->d_table_column($tm_ds, $field);
         my $value = $record_ref->{$field};
 
         my ( $col, $validtype, $width, $places ) =
@@ -2919,9 +2939,9 @@ sub controls_state_set {
 
     return unless defined $self->_rscrcfg;
 
-    foreach my $field ( keys %{ $self->{_rscrcfg}->r_table->{columns} } ) {
+    foreach my $field ( keys %{ $self->{_rscrcfg}->m_table->{columns} } ) {
 
-        my $fld_cfg = $self->{_rscrcfg}->r_table->{columns}{$field};
+        my $fld_cfg = $self->{_rscrcfg}->m_table->{columns}{$field};
 
         # Skip for some control types
         # next if $fld_cfg->{ctrltype} = '';
@@ -3165,8 +3185,8 @@ sub add_tmatrix_row {
         }
     }
 
-    my $sc = $self->d_table_selectorcol($tm_ds);
-    if ($sc) {
+    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
+    if ($sc ne 'none') {
         $self->embeded_buttons( $xt, $new_r, $sc ); # add button
     }
 
@@ -3263,7 +3283,8 @@ sub record_reload {
 
     print " record_reload\n";
 
-    my ( $pk_col, $pk_val ) = each %{ $self->{_pk} };
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
     if ( ! defined $pk_val ) {
         $self->_view->set_status('Reload failed!','ms','red');
         return;
@@ -3293,19 +3314,22 @@ sub record_load {
     print "Record load [r] ($pk_val)\n";
 
     #-  Main table
-    my $params = $self->r_table_metadata('use_view');
-    my $pk_col = $params->{pkcol};
+    my $params = $self->m_table_metadata('use_view');
+    my $pk_col = $self->screen_get_pk_col();
+    print " pk_col is $pk_col\n";
+
+    $self->screen_set_pk_val($pk_val); # save PK value
 
     $params->{where} = { $pk_col => $pk_val }; # SQL where
 
     my $record = $self->_model->query_record($params);
 
-    $self->screen_write(undef, $record); # TODO PAGE ???
+    $self->screen_write($record); # TODO PAGE ???
 
     #- Dependent table(s), (if any)
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        my $tm_params = $self->d_table_metadata( $tm_ds, $pk_val, 'use_view' );
+        my $tm_params = $self->d_table_metadata( $tm_ds, 'use_view' );
 
         my $records = $self->_model->table_batch_query($tm_params);
 
@@ -3317,17 +3341,16 @@ sub record_load {
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
 
-    $self->screen_set_pk($pk_val); # save PK value
-
     return;
 }
 
 sub record_load_detail {
     my $self = shift;
 
-    my $params = $self->r_table_metadata('use_view');
+    my $params = $self->m_table_metadata('use_view');
 
-    my ($pk_col, $pk_val) = $self->screen_get_pk();
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
 
     my $row = $self->control_tmatrix_read_selector('tm1');
     unless ($row) {
@@ -3369,9 +3392,9 @@ sub record_delete {
 sub record_clear {
     my $self = shift;
 
-    $self->screen_write(undef, undef, 'clear'); # clear the controls
+    $self->screen_write(undef, 'clear'); # clear the controls
 
-    $self->screen_set_pk();
+    $self->screen_set_pk_val();
 
     $self->_model->unset_scrdata_rec();  # false = loaded,  true = modified,
                                          # undef = unloaded
@@ -3410,7 +3433,7 @@ sub save_record {
     # What page to save?
     $page ||= $self->_view->get_nb_current_page();
 
-    my $r_table;
+    my $m_table;
     if ( $page eq 'rec' ) {
         print " saving rec\n";
     }
@@ -3461,7 +3484,7 @@ sub save_record_insert {
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
-        $self->screen_write( undef, { $pk_col => $pk_val }, 'fields' );
+        $self->screen_write( { $pk_col => $pk_val }, 'fields' );
         $self->set_app_mode('edit');
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
     }
@@ -3484,8 +3507,8 @@ Update record.
 sub save_record_update {
     my ( $self, $record ) = @_;
 
-    my $pk_col = $record->[0]{metadata}{pkcol};
-    my $pk_val      = $self->{scrdata}{$pk_col};
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
     if ( !defined $pk_val ) {
         $self->_view->set_status( 'No screen data?', 'ms', 'orange' );
         return;
@@ -3566,7 +3589,7 @@ dependent table(s) data and meta-data.
 =cut
 
 sub get_screen_data_as_record {
-    my ($self, $use_view, $page) = @_;
+    my ($self, $page, $use_view) = @_;
 
     if ( !$self->is_record('rec') ) {
         $self->_view->set_status('Empty screen','ms','orange' );
@@ -3577,26 +3600,26 @@ sub get_screen_data_as_record {
     my $record = {};
 
     #-  Main table
-    $record->{metadata} = $self->r_table_metadata();
+    $record->{metadata} = $self->m_table_metadata();
     while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
     push @record, $record;      # index 0
 
     # Get PK field name and value
-    my $pk_col_name = $record->{metadata}{pkcol};
-    my $pk_val = $self->{scrdata}{$pk_col_name};
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
 
     #-  Dependent table(s), if any
     my $deprec = {};
     my $tm_dss = $self->_rscrobj->get_tm_controls();
     foreach my $tm_ds ( keys %{$tm_dss} ) {
         $deprec->{$tm_ds}{metadata} =
-          $self->d_table_metadata( $tm_ds, $pk_val, $use_view );
+          $self->d_table_metadata( $tm_ds, $use_view );
         $deprec->{$tm_ds}{data} = $self->control_tmatrix_read($tm_ds);
 
         # The TMatrix doesn't contain the pkcol => value, add it
-        my $pk_ref = { $pk_col_name => $pk_val };
+        my $pk_ref = { $pk_col => $pk_val };
         foreach my $rec ( @{ $deprec->{$tm_ds}{data} } ) {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
@@ -3606,35 +3629,43 @@ sub get_screen_data_as_record {
     return \@record;
 }
 
-=head2 r_table_metadata
+=head2 m_table_metadata
 
 Retrieve main table meta-data from the screen configuration.
 
 =cut
 
-sub r_table_metadata {
+sub m_table_metadata {
     my ($self, $use_view, $page) = @_;
 
     $page ||= $self->_view->get_nb_current_page();
-
-    #-- Table metadata
-    my $table;
-    if ( $page eq 'rec' ) {
-        $table = $self->_rscrcfg->r_table;
+    my $cfg;
+    if ($page eq 'rec') {
+        $cfg = $self->_rscrcfg;
+    }
+    elsif ($page eq 'det') {
+        $cfg = $self->_dscrcfg;
     }
     else {
-        $table = $self->_dscrcfg->r_table;
+        carp "Wrong page: '$page'!";
+        return;
     }
 
-    my $columns     = $table->{columns};
-    my $pk_col_name = $table->{pkcol}{name};
-    my $fk_col_name = $table->{fkcol}{name};
+    my $table = $cfg->m_table_name();
+
+    # Dependent table metadata
+    my $columns = $cfg->m_table_columns($page);
+
+    my $pk_col = $self->screen_get_pk_col;
 
     # Construct where, add findtype info
     my $metadata = {};
-    $metadata->{table} = $use_view ? $table->{view} : $table->{name};
-    $metadata->{pkcol} = $pk_col_name;
-    $metadata->{fkcol} = $fk_col_name;
+    # Construct where, add findtype info
+    $metadata->{table} =
+        $use_view
+      ? $cfg->m_table_view( $page )
+      : $cfg->m_table_name( $page );
+    $metadata->{pkcol} = $pk_col;
 
     return $metadata;
 }
@@ -3646,21 +3677,26 @@ Retrieve dependent table meta-data from the screen configuration.
 =cut
 
 sub d_table_metadata {
-    my ($self, $tm_ds, $pk_val, $use_view) = @_;
+    my ($self, $tm_ds, $use_view) = @_;
 
-    # Dependent table metadata
-    my $d_table = $self->d_table($tm_ds);
-    my $columns = $d_table->{columns};
-    my $pkcol   = $d_table->{pkcol}{name};
+    my $table   = $self->_rscrcfg->d_table($tm_ds);
+    my $columns = $self->_rscrcfg->d_table_columns($tm_ds);
 
     # Construct where, add findtype info
     my $tm_metadata = {};
-    $tm_metadata->{table}    = $use_view ? $d_table->{view} : $d_table->{name};
-    $tm_metadata->{updstyle} = $d_table->{updatestyle};
-    $tm_metadata->{pkcol}    = $pkcol;
-    $tm_metadata->{fkcol}    = $d_table->{fkcol}{name};
+    $tm_metadata->{table} =
+        $use_view
+      ? $self->_rscrcfg->d_table_view( $tm_ds )
+      : $self->_rscrcfg->d_table_name( $tm_ds );
+
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
+
+    $tm_metadata->{updstyle} = $self->_rscrcfg->d_table_updatestyle($tm_ds);
+    $tm_metadata->{pkcol}    = $pk_col;
+    $tm_metadata->{fkcol}    = $self->screen_get_fk_col($tm_ds);
     $tm_metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $tm_metadata->{where}{$pkcol} = [ $pk_val, 'allstr' ];
+    $tm_metadata->{where}{$pk_col} = [ $pk_val, 'allstr' ];
 
     return $tm_metadata;
 }
@@ -3707,7 +3743,7 @@ sub restore_screendata {
     my $pk_col = $mainrec->{metadata}{pkcol};
     delete $mainrec->{data}{ $pk_col };
 
-    $self->screen_write( undef, $mainrec->{data}, 'record' );
+    $self->screen_write( $mainrec->{data}, 'record' );
 
     #- Dependent table(s), if any
 
@@ -3753,138 +3789,75 @@ sub build_ckbutton {
     return $button;
 }
 
-sub r_table {
-    my ($self, $page) = @_;
-
-    $page ||= $self->_view->get_nb_current_page();
-
-    if ($page eq 'rec') {
-        return $self->_rscrcfg->r_table;
-    }
-    elsif ($page eq 'det') {
-        return $self->_dscrcfg->r_table;
-    }
-    else {
-        carp "PAGE is $page!\n";
-        return;
-    }
-}
-
-sub r_table_columns {
-    my ($self, $page) = @_;
-
-    return $self->r_table($page)->{columns};
-}
-
-sub r_table_column {
-    my ($self, $page, $column) = @_;
-
-    return $self->r_table_columns($page)->{$column};
-}
-
-sub r_table_column_attr {
-    my ($self, $column, $attr) = @_;
-
-    return $self->r_table($column, $attr);
-}
-
-sub d_table {
-    my ($self, $tm_ds) = @_;
-
-    return $self->_rscrcfg->d_table->{$tm_ds};
-}
-
-sub d_table_name {
-    my ($self, $tm_ds) = @_;
-
-    return $self->d_table($tm_ds)->{name};
-}
-
-sub d_table_view {
-    my ($self, $tm_ds) = @_;
-
-    return $self->d_table($tm_ds)->{view};
-}
-
-sub d_table_generator {
-    my ($self, $tm_ds) = @_;
-
-    return $self->d_table($tm_ds)->{generator};
-}
-
-sub d_table_updatestyle {
-    my ($self, $tm_ds) = @_;
-
-    return $self->d_table($tm_ds)->{updatestyle};
-}
-
-sub d_table_selectorcol {
-    my ($self, $tm_ds) = @_;
-
-    return $self->d_table($tm_ds)->{selectorcol};
-}
-
-sub d_table_columns {
-    my ($self, $tm_ds, $column) = @_;
-
-    if ($column) {
-        return $self->d_table($tm_ds)->{columns}{$column};
-    }
-    else {
-        return $self->d_table($tm_ds)->{columns};
-    }
-}
-
-sub d_table_column_attr {
-    my ($self, $tm_ds, $column, $attr) = @_;
-
-    return $self->d_table($tm_ds)->{columns}{$column}{$attr};
-}
-
-=head2 screen_get_pk
-
-Get the current key, value for the PK.
-
-=cut
-
-sub screen_get_pk {
+sub screen_get_pk_col {
     my $self = shift;
 
-    my ( $pk_col, $pk_val ) = each %{ $self->{_pk} };
-
-    $pk_val ||= '';
-
-    return ( $pk_col, $pk_val );
+    return $self->{_pk_col};
 }
 
-sub screen_set_pk {
-    my ($self, $pk_val) = @_;
+sub screen_get_pk_val {
+    my $self = shift;
 
-    my ($pk_col) = each %{ $self->{_pk} };
+    return $self->{_pk_val};
+}
+
+sub screen_set_pk_col {
+    my $self = shift;
+
+    my $pk_col = $self->_rscrcfg->m_table_pkcol();
+
     if ($pk_col) {
-        $self->{_pk} = { $pk_col => $pk_val };
+        $self->{_pk_col} = $pk_col;
+    }
+    else {
+        croak "ERR: Unknown PK column name!\n";
     }
 
     return;
 }
 
-sub screen_get_fk {
-    my $self = shift;
+sub screen_set_pk_val {
+    my ($self, $pk_val) = @_;
 
-    my ( $fk_col, $fk_val ) = each %{ $self->{_fk} };
+    $self->{_pk_val} = $pk_val;
 
-    return ( $fk_col, $fk_val );
+    return;
 }
 
-sub screen_set_fk {
-    my ($self, $fk_col, $fk_val) = @_;
+#---
 
-    if ($fk_col and $fk_val) {
-        $self->{_fk} = { $fk_col => $fk_val };
+sub screen_get_fk_col {
+    my ($self, $tm_ds) = @_;
+
+    return $self->{_fk_col}{$tm_ds};
+}
+
+sub screen_get_fk_val {
+    my ($self, $tm_ds) = @_;
+
+    return $self->{_fk_val}{$tm_ds};
+}
+
+sub screen_set_fk_col {
+    my $self = shift;
+
+    foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
+        my $fk_col = $self->_rscrcfg->d_table_fkcol($tm_ds);
+        if ($fk_col) {
+            $self->{_fk_col}{$tm_ds} = $fk_col;
+        }
+        else {
+            croak "ERR: Unknown FK column name!\n";
+        }
     }
-    else {
-        $self->{_fk} = {};
-    }
+
+    return;
+}
+
+sub screen_set_fk_val {
+    my ($self, $tm_ds, $fk_val) = @_;
+
+    $self->{_fk_val}{$tm_ds} = $fk_val;
 
     return;
 }

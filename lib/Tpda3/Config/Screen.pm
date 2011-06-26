@@ -3,6 +3,8 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
@@ -113,6 +115,124 @@ sub config_scr_file_name {
     my $cfg = Tpda3::Config->instance();
 
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
+}
+
+#---
+
+sub m_table {
+    my $self = shift;
+
+    return $self->maintable if $self->can('maintable');
+}
+
+sub m_table_name {
+    my $self = shift;
+
+    return $self->m_table->{name};
+}
+
+sub m_table_view {
+    my $self = shift;
+
+    return $self->m_table->{view};
+}
+
+sub m_table_generator {
+    my $self = shift;
+
+    return $self->m_table->{generator};
+}
+
+sub m_table_pkcol {
+    my $self = shift;
+
+    return $self->m_table->{pkcol}{name};
+}
+
+sub m_table_columns {
+    my $self = shift;
+
+    return $self->m_table->{columns};
+}
+
+sub m_table_column {
+    my ($self, $column) = @_;
+
+    return $self->m_table_columns->{$column};
+}
+
+sub m_table_column_attr {
+    my ($self, $column, $attr) = @_;
+
+    return $self->m_table_column($column)->{$attr};
+}
+
+#---
+
+sub d_table {
+    my ($self, $tm_ds) = @_;
+
+    return $self->deptable->{$tm_ds} if $self->can('deptable');
+}
+
+sub d_table_name {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{name};
+}
+
+sub d_table_view {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{view};
+}
+
+sub d_table_generator {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{generator};
+}
+
+sub d_table_updatestyle {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{updatestyle};
+}
+
+sub d_table_selectorcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{selectorcol};
+}
+
+sub d_table_pkcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{pkcol}{name};
+}
+
+sub d_table_fkcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{fkcol}{name};
+}
+
+sub d_table_columns {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{columns};
+}
+
+sub d_table_column {
+    my ($self, $tm_ds, $column) = @_;
+
+    return $self->d_table_columns($tm_ds)->{$column};
+}
+
+sub d_table_column_attr {
+    my ($self, $tm_ds, $column, $attr) = @_;
+
+    return $self->d_table($tm_ds)->{columns}{$column}{$attr};
 }
 
 =head1 AUTHOR

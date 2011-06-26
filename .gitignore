@@ -1,6 +1,7 @@
 # Lines starting with '#' are considered comments.
 Makefile
 META.yml
+MYMETA.yml
 pm_to_blib
 blib/
 inc/
