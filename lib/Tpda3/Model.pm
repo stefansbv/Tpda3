@@ -662,6 +662,9 @@ sub table_batch_delete {
 
     my $sql = SQL::Abstract->new();
 
+    croak "Empty TABLE name in DELETE command!"
+        unless $table;
+
     croak "Empty SQL WHERE in DELETE command!"
         unless ( %{$where} );   # safety net, is enough ???
 

@@ -494,21 +494,41 @@ On page I<det> activate.
 sub on_page_det_activate {
     my $self = shift;
 
-    print " det activated\n";
+    print "det tab activated\n";
 
-    #-- Check if detail screen module is loaded
+    my $row = $self->control_tmatrix_read_selector('tm1');
+    unless ($row) {
+        $self->_view->get_notebook()->raise('rec');
+        $self->_view->set_status('Select a row','ms','orange');
+        return;
+    }
 
-    my $detail_screen = $self->_rscrcfg->screen->{details}{detail};
+    # Detail screen module name from config
+    my $screen = $self->_rscrcfg->screen->{details};
 
-    if ( $self->{_dscrstr} && ( $self->{_dscrstr} eq lc $detail_screen ) ) {
-        print "Already loaded ($detail_screen)\n";
+    my $dsm;
+    if ( ref $screen->{detail} eq 'ARRAY' ) {
+        $dsm = $self->get_dsm_name($screen, $row);
     }
     else {
-        print "Loading detail ($detail_screen)\n";
-        $self->screen_module_detail_load($detail_screen);
+        $dsm = $screen;
     }
 
-    my $ret = $self->record_load_detail();
+    # Check if detail screen module is loaded and load it if it's not
+    if ($dsm) {
+        print "Loading $dsm\n";
+        $self->screen_detail_load($dsm);
+    }
+    else {
+        $self->_view->get_notebook()->raise('rec');
+        print "Not selected\n";
+        return;
+    }
+
+    my $col_filter  = $screen->{filter};
+    my $para = $self->control_tmatrix_read_cell($row, $col_filter, 'tm1');
+
+    my $ret = $self->record_load_detail($para);
     if ($ret) {
         $self->_view->set_status('Record loaded (d)','ms','blue');
         # $self->_model->set_scrdata_rec(q{});    # empty
@@ -517,22 +537,71 @@ sub on_page_det_activate {
     return;
 }
 
+=head2 screen_detail_load
+
+Check if the detail screen module is loaded, and load if it's not.
+
+=cut
+
+sub screen_detail_load {
+    my ($self, $dsm) = @_;
+
+    if ( $self->{_dscrstr} && ( $self->{_dscrstr} eq lc $dsm ) ) {
+        print "Already loaded ($dsm)\n";
+    }
+    else {
+        print "Loading detail ($dsm)\n";
+        $self->screen_module_detail_load($dsm);
+    }
+    return;
+}
+
+=head2 get_dsm_name
+
+Find the selected row in the TM. Read it and return the name of the
+detail screen module to load.
+
+  {
+      'detail' => [
+          {
+              'value' => 'CS',
+              'name'  => 'Cursuri'
+          },
+          {
+              'value' => 'CT',
+              'name'  => 'Consult'
+          }
+      ],
+      'filter' => 'id_act',
+      'match'  => 'cod_tip'
+  };
+
+=cut
+
+sub get_dsm_name {
+    my ($self, $detscr, $row) = @_;
+
+    my $col_name  = $detscr->{match};
+    my $rec = $self->control_tmatrix_read_cell($row, $col_name, 'tm1');
+    my $col_value = $rec->{$col_name};
+
+    my @dsm = grep { $_->{value} eq $col_value } @{$detscr->{detail}};
+
+    return $dsm[0]{name};
+}
+
 =head2 _set_event_handler_screen
 
-Setup event handlers for screen controls.
-
-TODO: Should setup event handlers only for widgets that actually exists
-in the screen, regardless of the screen type.
+Setup event handlers for the I<add> and I<delete> buttons attached to
+the TableMatrix widget.
 
 =cut
 
 sub _set_event_handler_screen {
-    my $self = shift;
+    my ($self, $tm_ds) = @_;
 
-    $self->_log->trace("Setup event handler for screen");
+    $self->_log->trace("Setup event handler for TM buttons");
 
-    # TODO: Make this more general
-    my $tm_ds = 'tm1';
     my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
 
     #- screen ToolBar
@@ -1532,7 +1601,10 @@ sub screen_module_load {
     $self->_cfg->config_load_instance();
 
     # Event handlers
-    $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
+    foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
+        $self->_set_event_handler_screen($tm_ds);
+    }
 
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry('rec');
@@ -1663,9 +1735,6 @@ sub screen_module_detail_load {
 
     # Set FK column name
     $self->screen_set_fk_col();
-
-    my $fk_col = $self->screen_get_fk_col('tm1');
-    print "FK_COL is $fk_col \n";
 
     return;
 }
@@ -2722,10 +2791,15 @@ reference.
 
 TableMatrix designator is optional and default to 'tm1'.
 
+The I<col> parameter can be a number - column index or a column name.
+
 =cut
 
 sub control_tmatrix_read_cell {
     my ($self, $row, $col, $tm_ds) = @_;
+
+    my $is_col_name = 0;
+    $is_col_name    = 1 if $col !~ m{\d+};
 
     $tm_ds ||= q{tm1};           # default table matrix designator
 
@@ -2741,9 +2815,18 @@ sub control_tmatrix_read_cell {
     }
 
     my $fields_cfg = $self->_rscrcfg->d_table_columns($tm_ds);
-    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+
+    my $col_name;
+    if ($is_col_name) {
+        $col_name = $col;
+        $col = $fields_cfg->{$col_name}{id};
+    }
+    else {
+        my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+        $col_name = $cols_ref->[$col];
+    }
+
     my $cell_value = $tmx->get("$row,$col");
-    my $col_name   = $cols_ref->[$col];
 
     return {$col_name => $cell_value};
 }
@@ -3345,31 +3428,18 @@ sub record_load {
 }
 
 sub record_load_detail {
-    my $self = shift;
+    my ($self, $args) = @_;
 
     my $params = $self->m_table_metadata('use_view');
 
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
 
-    my $row = $self->control_tmatrix_read_selector('tm1');
-    unless ($row) {
-        print "Select a row!\n";
-        return;
-    }
+    $params->{where} = { $pk_col => $pk_val };
 
-    my $rec = $self->control_tmatrix_read_cell($row, 0, 'tm1');
-    my ( $fk_col, $fk_val ) = each %{ $rec };
-    print " sel is $row:  $fk_col, $fk_val\n";
+    @{ $params->{where} }{ keys %{$args} } = values %{$args};
 
-    # if ($fk_col_old ne $fk_col) {
-    #     print "ERR: Wrong col selected\n";
-    # }
-
-    $params->{where} = {
-        $pk_col => $pk_val,
-        $fk_col => $fk_val,
-    };
+    print Dumper( $params );
 
     my $record = $self->_model->query_record($params);
 
