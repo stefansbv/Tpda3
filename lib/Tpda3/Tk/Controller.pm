@@ -2766,11 +2766,11 @@ sub control_tmatrix_read_selector {
     for my $row ( 1 .. $rows_idx ) {
 
         # Scan Checkbutton from column ($sc)
-        my $nm;
-        eval { $nm = $tmx->windowCget( "$row,$sc", -window ); };
+        my $ckb;
+        eval { $ckb = $tmx->windowCget( "$row,$sc", -window ); };
         unless ($@) {
-            if ( $nm =~ /Checkbutton/ ) {
-                my $sel = $nm->{'Value'};
+            if ( $ckb =~ /Checkbutton/ ) {
+                my $sel = $ckb->{'Value'};
                 next if !defined $sel or $sel == 0; # skip if not selected
                 if ( $sel == 1 ) {
                     print " Selected :$row\n";
@@ -3838,7 +3838,7 @@ sub embeded_buttons {
     $tmx->windowConfigure(
         "$row,$col",
         -sticky => 's',
-        -window => $self->build_ckbutton(),
+        -window => $self->build_ckbutton($tmx, $row, $col),
     );
     print "button: ($row,$col)\n";
 
@@ -3846,7 +3846,7 @@ sub embeded_buttons {
 }
 
 sub build_ckbutton {
-    my ( $self ) = @_;
+    my ( $self, $tmx, $row, $col ) = @_;
 
     my $button = $self->_view->Checkbutton(
         -image       => 'actcross16',
@@ -3854,9 +3854,37 @@ sub build_ckbutton {
         -indicatoron => 0,
         -selectcolor => 'lightgrey',
         -state       => 'normal',
+        -command     => [ \&toggle_ckbuttons, $self, $tmx, $row, $col ],
     );
 
     return $button;
+}
+
+sub toggle_ckbuttons {
+    my ($self, $tmx, $r, $c) = @_;
+
+    my $rows_no  = $tmx->cget( -rows );
+    my $rows_idx = $rows_no - 1;
+
+    print " Selected ($r):";
+    for my $row ( 1 .. $rows_idx ) {
+        my $ckb;
+        eval { $ckb = $tmx->windowCget( "$row,$c", -window ); };
+        unless ($@) {
+            if ( $ckb =~ /Checkbutton/ ) {
+                if ($row == $r) {
+                    $ckb->configure(-state => 'disabled');
+                }
+                else {
+                    $ckb->configure(-state => 'normal');
+                    $ckb->deselect;
+                }
+            }
+        }
+    }
+    print "\n";
+
+    return;
 }
 
 sub screen_get_pk_col {
