@@ -1015,11 +1015,11 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub make_tablematrix_header {
-    my ($self, $tm_table, $tm_fields) = @_;
+    my ($self, $tm_table, $tm_fields, $strech) = @_;
 
     # Set TableMatrix tags
     my $cols = scalar keys %{$tm_fields};
-    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields );
+    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech );
 
     return;
 }
@@ -1031,7 +1031,7 @@ Set tags for the table matrix.
 =cut
 
 sub set_tablematrix_tags {
-    my ($self, $xtable, $cols, $tm_fields) = @_;
+    my ($self, $xtable, $cols, $tm_fields, $strech) = @_;
 
     # TM is SpreadsheetHideRows type increase cols number with 1
     $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
@@ -1107,11 +1107,11 @@ sub set_tablematrix_tags {
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
+        # If have colstretch = 'n' in screen config file, don't set
+        # width and because of the -colstretchmode => 'unset' setting
+        # 'n' will be of variable width
+        next if $strech and $col == $strech;
         if ( $tm_fields->{$field}{width} ) {
-
-            # If width is 0 then don't set width, and because of the
-            # -colstretchmode => 'unset' setting will be of variable
-            # width
             $xtable->colWidth( $col, $tm_fields->{$field}{width} );
         }
         $xtable->set( "0,$col", $tm_fields->{$field}{label} );

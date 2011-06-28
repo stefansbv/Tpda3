@@ -205,6 +205,18 @@ sub d_table_selectorcol {
     return $self->d_table($tm_ds)->{selectorcol};
 }
 
+sub d_table_orderby {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{orderby};
+}
+
+sub d_table_colstretch {
+    my ($self, $tm_ds) = @_;
+
+    return $self->d_table($tm_ds)->{colstretch};
+}
+
 sub d_table_pkcol {
     my ($self, $tm_ds) = @_;
 

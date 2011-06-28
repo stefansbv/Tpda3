@@ -2,11 +2,14 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
 use SQL::Abstract;
 use List::Compare;
+use Data::Compare;
 
 use Tpda3::Config;
 use Tpda3::Observable;
@@ -424,7 +427,7 @@ sub table_batch_query {
 
     my $table  = $data_hr->{table};
     my $pkcol  = $data_hr->{pkcol};
-    my $order  = $data_hr->{fkcol};
+    my $order  = $data_hr->{order};
     my $fields = $data_hr->{colslist};
 
     my $where = $self->build_where($data_hr);
@@ -615,6 +618,25 @@ sub table_record_update {
     };
 
     return 1;
+}
+
+sub table_record_select {
+    my ( $self, $table, $where ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+
+    my $hash_ref;
+    try {
+        $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
+    }
+    catch {
+        $self->_print("Database error!") ;
+        croak("Transaction aborted: $_");
+    };
+
+    return $hash_ref;
 }
 
 =head2 table_batch_insert
@@ -827,15 +849,47 @@ sub table_batch_update {
     my @to_insert = $lc->get_unique;
     my @to_delete = $lc->get_complement;
 
-    print "To update: @to_update\n";
+    my $to_update = $self->table_update_compare(\@to_update, $depmeta, $depdata);
+
+    print "To update: @{$to_update}\n";
     print "To insert: @to_insert\n";
     print "To delete: @to_delete\n";
 
-    $self->table_update_prepare(\@to_update, $depmeta, $depdata);
+    $self->table_update_prepare( $to_update, $depmeta, $depdata);
     $self->table_insert_prepare(\@to_insert, $depmeta, $depdata);
     $self->table_delete_prepare(\@to_delete, $depmeta);
 
     return;
+}
+
+sub table_update_compare {
+    my ( $self, $to_update, $depmeta, $depdata ) = @_;
+
+    return unless scalar( @{$to_update} ) > 0;
+
+    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
+    my $fkcol = $depmeta->{fkcol};
+    my $pk_id = $depmeta->{where}{$pkcol}[0];
+
+    my @toupdate;
+    foreach my $fk_id ( @{$to_update} ) {
+        my $where = {
+            $pkcol => $pk_id,
+            $fkcol => $fk_id,
+        };
+
+        # Filter data; record is Aoh
+        my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
+
+        my $oldrec = $self->table_record_select( $table, $where );
+
+        my $dc = Data::Compare->new($oldrec, $record);
+
+        push @toupdate, $fk_id if !$dc->Cmp;
+    }
+
+    return \@toupdate;
 }
 
 sub table_update_prepare {

@@ -20,6 +20,7 @@ requires 'YAML::Tiny'                 => '0';
 requires 'Class::Unload'              => '0';
 requires 'Class::Singleton'           => '1.4';
 requires 'Class::Accessor'            => '0';
+requires 'Data::Compare'              => '0';
 requires 'Try::Tiny'                  => '0.07';
 requires 'SQL::Abstract'              => '1.68';
 requires 'Log::Log4perl'              => '0';

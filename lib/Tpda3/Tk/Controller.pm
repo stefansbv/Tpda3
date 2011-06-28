@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -449,8 +447,6 @@ On page I<rec> activate.
 sub on_page_rec_activate {
     my $self = shift;
 
-    print "on_page_rec_activate\n";
-
     my $pk_val_new = $self->_view->list_read_selected();
     if ( ! defined $pk_val_new ) {
         $self->_view->set_status('Nothing selected','ms','orange');
@@ -493,8 +489,6 @@ On page I<det> activate.
 
 sub on_page_det_activate {
     my $self = shift;
-
-    print "det tab activated\n";
 
     my $row = $self->control_tmatrix_read_selector('tm1');
     unless ($row) {
@@ -602,21 +596,19 @@ sub _set_event_handler_screen {
 
     $self->_log->trace("Setup event handler for TM buttons");
 
-    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
-
     #- screen ToolBar
 
     #-- Add row button
     $self->_rscrobj->get_toolbar_btn('tb2ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->add_tmatrix_row(undef, $tm_ds, $updstyle);
+            $self->add_tmatrix_row($tm_ds);
         }
     );
 
     #-- Remove row button
     $self->_rscrobj->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->remove_tmatrix_row($tm_ds, $updstyle);
+            $self->remove_tmatrix_row($tm_ds);
         }
     );
 
@@ -1282,7 +1274,7 @@ sub on_screen_mode_idle {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        $self->control_tmatrix_write(undef, $tm_ds);
+        $self->control_tmatrix_clear($tm_ds);
     }
 
     $self->controls_state_set('off');
@@ -1310,7 +1302,7 @@ sub on_screen_mode_add {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        $self->control_tmatrix_write(undef, $tm_ds);
+        $self->control_tmatrix_clear($tm_ds);
     }
 
     $self->controls_state_set('edit');
@@ -1337,7 +1329,7 @@ sub on_screen_mode_find {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        $self->control_tmatrix_write(undef, $tm_ds);
+        $self->control_tmatrix_clear($tm_ds);
     }
 
     $self->controls_state_set('find');
@@ -1642,7 +1634,8 @@ sub screen_module_load {
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
         my $tmx    = $self->_rscrobj->get_tm_controls($tm_ds);
         my $fields = $self->_rscrcfg->d_table_columns($tm_ds);
-        $self->_view->make_tablematrix_header( $tmx, $fields );
+        my $strech = $self->_rscrcfg->d_table_colstretch('tm1');
+        $self->_view->make_tablematrix_header( $tmx, $fields, $strech );
     }
 
     # Load lists into JBrowseEntry or JComboBox widgets
@@ -2516,8 +2509,6 @@ sub screen_write {
     # Current page
     my $page = $self->_view->get_nb_current_page();
 
-    print "Page is $page\n";
-
     my ($ctrl_ref, $cfg_ref);
     if ( $page eq 'rec' ) {
         $ctrl_ref = $self->_rscrobj->get_controls();
@@ -2892,6 +2883,21 @@ sub control_tmatrix_write {
     return;
 }
 
+sub control_tmatrix_clear {
+    my ($self, $tm_ds) = @_;
+
+    my $tmx      = $self->_rscrobj->get_tm_controls($tm_ds);
+    my $rows_no  = $tmx->cget( -rows );
+    my $rows_idx = $rows_no - 1;
+    my $r;
+
+    for my $row ( 1 .. $rows_idx ) {
+            $tmx->deleteRows( $row, 1 );
+    }
+
+    return;
+}
+
 sub control_tmatrix_make_selector {
     my ($self, $tm_ds) = @_;
 
@@ -3226,10 +3232,11 @@ Table matrix methods.  Add TableMatrix row.
 =cut
 
 sub add_tmatrix_row {
-    my ($self, $valori_ref, $tm_ds, $updstyle) = @_;
+    my ($self, $tm_ds, $valori_ref) = @_;
 
     $tm_ds ||= q{tm1};          # default table matrix designator
 
+    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
     my $xt = $self->_rscrobj->get_tm_controls($tm_ds);
 
     return
@@ -3256,17 +3263,21 @@ sub add_tmatrix_row {
         }
     }
 
-    my $c = 1;
-    if ( ref($valori_ref) eq 'ARRAY' ) {
+    # print Dumper( $valori_ref);
+    # my $c = 1;
+    # if ( ref($valori_ref) eq 'ARRAY' ) {
 
-        # Insert data
-        foreach my $valoare ( @{$valori_ref} ) {
-            if ( defined $valoare ) {
-                $xt->set( "$new_r,$c", $valoare );
-            }
-            $c++;
-        }
-    }
+    #     # Insert data
+    #     foreach my $valoare ( @{$valori_ref} ) {
+    #         if ( defined $valoare ) {
+    #             $xt->set( "$new_r,$c", $valoare );
+    #         }
+    #         $c++;
+    #     }
+    # }
+    # else {
+    #     print " NO values\n";
+    # }
 
     my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
     if ($sc ne 'none') {
@@ -3288,10 +3299,11 @@ Delete TableMatrix row.
 =cut
 
 sub remove_tmatrix_row {
-    my ($self, $tm_ds, $updstyle) = @_;
+    my ($self, $tm_ds) = @_;
 
     $tm_ds ||= q{tm1};           # default table matrix designator
 
+    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
     my $xt = $self->_rscrobj->get_tm_controls($tm_ds);
 
     unless ( $self->_model->is_mode('add')
@@ -3399,7 +3411,6 @@ sub record_load {
     #-  Main table
     my $params = $self->m_table_metadata('use_view');
     my $pk_col = $self->screen_get_pk_col();
-    print " pk_col is $pk_col\n";
 
     $self->screen_set_pk_val($pk_val); # save PK value
 
@@ -3416,6 +3427,7 @@ sub record_load {
 
         my $records = $self->_model->table_batch_query($tm_params);
 
+        $self->control_tmatrix_clear($tm_ds);
         $self->control_tmatrix_write($records);
 
         $self->control_tmatrix_make_selector($tm_ds);
@@ -3438,8 +3450,6 @@ sub record_load_detail {
     $params->{where} = { $pk_col => $pk_val };
 
     @{ $params->{where} }{ keys %{$args} } = values %{$args};
-
-    print Dumper( $params );
 
     my $record = $self->_model->query_record($params);
 
@@ -3751,6 +3761,7 @@ sub d_table_metadata {
 
     my $table   = $self->_rscrcfg->d_table($tm_ds);
     my $columns = $self->_rscrcfg->d_table_columns($tm_ds);
+    my $orderby = $self->_rscrcfg->d_table_orderby($tm_ds);
 
     # Construct where, add findtype info
     my $tm_metadata = {};
@@ -3767,6 +3778,7 @@ sub d_table_metadata {
     $tm_metadata->{fkcol}    = $self->screen_get_fk_col($tm_ds);
     $tm_metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
     $tm_metadata->{where}{$pk_col} = [ $pk_val, 'allstr' ];
+    $tm_metadata->{order}    = $orderby;
 
     return $tm_metadata;
 }
@@ -3845,17 +3857,32 @@ sub embeded_buttons {
     return;
 }
 
+=head2 build_ckbutton
+
+Build Checkbutton.
+
+TODO: Better use Radiobutton?
+
+=cut
+
 sub build_ckbutton {
     my ( $self, $tmx, $row, $col ) = @_;
 
     my $button = $self->_view->Checkbutton(
-        -image       => 'actcross16',
-        -selectimage => 'actcheck16',
+        -width       => 3,
+        # -image       => 'playpause16',
+        # -selectimage => 'nav2rightarrow16',
         -indicatoron => 0,
-        -selectcolor => 'lightgrey',
+        -selectcolor => 'lightblue',
         -state       => 'normal',
         -command     => [ \&toggle_ckbuttons, $self, $tmx, $row, $col ],
     );
+
+    # Default selected row 1
+    if ($row == 1) {
+        $button->select;
+        $button->configure( -state => 'disabled');
+    }
 
     return $button;
 }
