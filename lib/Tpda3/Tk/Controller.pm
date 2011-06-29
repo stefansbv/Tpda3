@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -491,6 +493,7 @@ sub on_page_det_activate {
     my $self = shift;
 
     my $row = $self->control_tmatrix_read_selector('tm1');
+    print "read_selector: $row \n";
     unless ($row) {
         $self->_view->get_notebook()->raise('rec');
         $self->_view->set_status('Select a row','ms','orange');
@@ -519,7 +522,7 @@ sub on_page_det_activate {
         return;
     }
 
-    my $col_filter  = $screen->{filter};
+    my $col_filter = $screen->{filter};
     my $para = $self->control_tmatrix_read_cell($row, $col_filter, 'tm1');
 
     my $ret = $self->record_load_detail($para);
@@ -1587,14 +1590,14 @@ sub screen_module_load {
     my $nb = $self->_view->get_notebook();
     $self->{_rscrobj}->run_screen( $nb, $self->{_rscrcfg} );
 
-    my $screen_type = $self->_rscrcfg->screen->{type};
+    # Store currently loaded screen class
+    $self->{_rscrcls} = $class;
 
     # Load instance config
     $self->_cfg->config_load_instance();
 
     # Event handlers
-    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
-    foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
+    foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls } ) {
         $self->_set_event_handler_screen($tm_ds);
     }
 
@@ -1603,9 +1606,6 @@ sub screen_module_load {
 
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
-
-    # Store currently loaded screen class
-    $self->{_rscrcls} = $class;
 
     # Set PK and FK column names
     $self->screen_set_pk_col();
@@ -1674,7 +1674,7 @@ sub screen_module_detail_load {
         }
     }
 
-    $self->_set_event_handler_nb('det');
+    # $self->_set_event_handler_nb('det');
 
     my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
@@ -1698,21 +1698,18 @@ sub screen_module_detail_load {
     my $nb = $self->_view->get_notebook();
     $self->{_dscrobj}->run_screen( $nb, $self->{_dscrcfg} );
 
-    # my $screen_type = $self->_rscrcfg->screen->{type};
-
-    # # Event handlers
-    # $self->_set_event_handler_screen() if $screen_type eq 'tablematrix';
-
-    # #-- Lookup bindings for Tk::Entry widgets
-    # $self->setup_lookup_bindings_entry('det');
-
-    # #-- Lookup bindings for tables (TableMatrix)
-    # $self->setup_bindings_table();
-
     # Store currently loaded screen class
     $self->{_dscrcls} = $class;
 
-    # $self->set_app_mode('idle');
+    # Event handlers
+
+    #-- Lookup bindings for Tk::Entry widgets
+    # $self->setup_lookup_bindings_entry('det');
+
+    #-- Lookup bindings for tables (TableMatrix)
+    # $self->setup_bindings_table();
+
+    $self->set_app_mode('idle');
 
     # # TableMatrix header(s), if any
     # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
@@ -2794,14 +2791,14 @@ sub control_tmatrix_read_cell {
 
     $tm_ds ||= q{tm1};           # default table matrix designator
 
+    print " TM: $tm_ds\n";
     my $tmx = $self->_rscrobj->get_tm_controls($tm_ds);
     my $xtvar;
     if ($tmx) {
         $xtvar = $tmx->cget( -variable );
     }
     else {
-
-        # Just ignore :)
+        carp "No TM!\n";
         return;
     }
 
@@ -2817,7 +2814,10 @@ sub control_tmatrix_read_cell {
         $col_name = $cols_ref->[$col];
     }
 
+    print "reading : $row,$col\n";
     my $cell_value = $tmx->get("$row,$col");
+    print "cell_value: $cell_value\n";
+    print Dumper( $xtvar);
 
     return {$col_name => $cell_value};
 }
@@ -3444,16 +3444,17 @@ sub record_load_detail {
 
     my $params = $self->m_table_metadata('use_view');
 
-    my $pk_col = $self->screen_get_pk_col;
-    my $pk_val = $self->screen_get_pk_val;
+    # my $pk_col = $self->screen_get_pk_col;
+    # my $pk_val = $self->screen_get_pk_val;
 
-    $params->{where} = { $pk_col => $pk_val };
+    # $params->{where} = { $pk_col => $pk_val };
 
     @{ $params->{where} }{ keys %{$args} } = values %{$args};
 
-    my $record = $self->_model->query_record($params);
+     print Dumper($params);
+    # my $record = $self->_model->query_record($params);
 
-    $self->screen_write_det($record);
+    # $self->screen_write_det($record);
 
     return 1;
 }

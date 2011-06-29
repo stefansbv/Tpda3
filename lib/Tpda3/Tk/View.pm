@@ -1107,16 +1107,20 @@ sub set_tablematrix_tags {
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
-        # If have colstretch = 'n' in screen config file, don't set
-        # width and because of the -colstretchmode => 'unset' setting
-        # 'n' will be of variable width
-        next if $strech and $col == $strech;
-        if ( $tm_fields->{$field}{width} ) {
-            $xtable->colWidth( $col, $tm_fields->{$field}{width} );
-        }
         $xtable->set( "0,$col", $tm_fields->{$field}{label} );
+
+        # If colstretch = 'n' in screen config file, don't set width,
+        # because of the -colstretchmode => 'unset' setting, col 'n'
+        # will be of variable width
+        next if $strech and $col == $strech;
+
+        my $width = $tm_fields->{$field}{width};
+        if ( $width and ( $width > 0 ) ) {
+            $xtable->colWidth( $col, $width );
+        }
     }
 
+    # TODO:
     #if (have selector add new col) {
     $xtable->insertCols( $cols, 1 );
     $xtable->tagCol( 'ro_center', $cols );
