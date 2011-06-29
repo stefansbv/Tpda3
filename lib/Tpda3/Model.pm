@@ -319,9 +319,6 @@ sub query_records_count {
     my ( $stmt, @bind ) = $sql->select(
         $table, ["COUNT($pkcol)"], $where );
 
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
-
     my $record_count;
     try {
         my $sth = $self->{_dbh}->prepare($stmt);
@@ -362,9 +359,6 @@ sub query_records_find {
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
-
     my $search_limit = $self->_cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit }; # limit search result
     my $ary_ref;
@@ -401,8 +395,7 @@ sub query_record {
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
+    # print Dumper( $stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -435,8 +428,6 @@ sub table_batch_query {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
-
-    # print "SQL : $stmt\    # print "bind: @bind\n";
 
     my @records;
     try {
@@ -474,9 +465,6 @@ sub query_dictionary {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
 
     my $lookup_limit = $self->_cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit }; # limit search result
@@ -619,6 +607,12 @@ sub table_record_update {
 
     return 1;
 }
+
+=head2 table_record_select
+
+Select record from table.
+
+=cut
 
 sub table_record_select {
     my ( $self, $table, $where ) = @_;
@@ -835,6 +829,13 @@ sub store_record_update {
     return 1;
 }
 
+=head2 table_batch_update
+
+Compare article number for data in TM with data in DB and decide what
+to insert, update or delete.
+
+=cut
+
 sub table_batch_update {
     my ($self, $depmeta, $depdata) = @_;
 
@@ -861,6 +862,13 @@ sub table_batch_update {
 
     return;
 }
+
+=head2 table_update_compare
+
+Compare data in TM with the data in DB row by row and update only if
+different.
+
+=cut
 
 sub table_update_compare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
@@ -892,6 +900,12 @@ sub table_update_compare {
     return \@toupdate;
 }
 
+=head2 table_update_prepare
+
+Prepare data for batch update.
+
+=cut
+
 sub table_update_prepare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
 
@@ -921,6 +935,12 @@ sub table_update_prepare {
     return;
 }
 
+=head2 table_insert_prepare
+
+Prepare data for batch insert.
+
+=cut
+
 sub table_insert_prepare {
     my ( $self, $to_insert, $depmeta, $depdata ) = @_;
 
@@ -945,6 +965,12 @@ sub table_insert_prepare {
     return;
 }
 
+=head2 table_delete_prepare
+
+Prepare data for batch delete.
+
+=cut
+
 sub table_delete_prepare {
     my ($self, $to_delete, $depmeta) = @_;
 
@@ -965,17 +991,29 @@ sub table_delete_prepare {
     return;
 }
 
+=head2 aoh_column_extract
+
+Extract only a column from an AoH data structure.
+
+=cut
+
 sub aoh_column_extract {
-    my ($self, $depdata, $column) = @_;
+    my ( $self, $depdata, $column ) = @_;
 
     my @dep_data;
-    foreach my $rec (@$depdata) {
+    foreach my $rec ( @{$depdata} ) {
         my $data = $rec->{$column};
         push @dep_data, $data;
     }
 
     return \@dep_data;
 }
+
+=head2 table_selectcol_as_array
+
+Return an array reference of column values.
+
+=cut
 
 sub table_selectcol_as_array {
     my ($self, $data_hr) = @_;
