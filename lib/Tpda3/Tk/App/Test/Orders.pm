@@ -325,6 +325,7 @@ sub run_screen {
         -validate       => 1,
         -variable       => $xtvar,
         -selectmode     => 'single',
+        -colstretchmode => 'unset',
         -resizeborders  => 'none',
         -colstretchmode => 'unset',
         -bg             => 'white',

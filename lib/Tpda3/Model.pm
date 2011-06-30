@@ -786,22 +786,21 @@ appear.
 sub store_record_update {
     my ( $self, $record) = @_;
 
-    my $mainrec = $record->[0];              # main record first
+    #- Main record
+
+    my $mainrec = $record->[0];              # rec data at index 0
 
     my $mainmeta = $mainrec->{metadata};
     my $maindata = $mainrec->{data};
-    my $table    = $mainmeta->{table};
-    my $pkcol    = $mainmeta->{pkcol};
 
-    my $where = $self->build_where($mainmeta);
-
-    #- Main record
+    my $table = $mainmeta->{table};
+    my $where = $mainmeta->{where};
 
     $self->table_record_update($table, $maindata, $where);
 
     #- Dependent records
 
-    my $deprec = $record->[1];
+    my $deprec = $record->[1];               # det data at index 1
 
     # One table at a time ...
     foreach my $tm ( keys %{$deprec} ) {
@@ -852,9 +851,9 @@ sub table_batch_update {
 
     my $to_update = $self->table_update_compare(\@to_update, $depmeta, $depdata);
 
-    print "To update: @{$to_update}\n";
-    print "To insert: @to_insert\n";
-    print "To delete: @to_delete\n";
+    # print "To update: @{$to_update}\n";
+    # print "To insert: @to_insert\n";
+    # print "To delete: @to_delete\n";
 
     $self->table_update_prepare( $to_update, $depmeta, $depdata);
     $self->table_insert_prepare(\@to_insert, $depmeta, $depdata);
@@ -909,6 +908,7 @@ Prepare data for batch update.
 sub table_update_prepare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
 
+    return unless $to_update;
     return unless scalar( @{$to_update} ) > 0;
 
     my $table = $depmeta->{table};

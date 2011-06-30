@@ -544,7 +544,7 @@ dependent table.
 =cut
 
 sub create_notebook {
-    my $self = shift;
+    my ($self, $det_page) = @_;
 
     #- NoteBook
 
@@ -560,7 +560,7 @@ sub create_notebook {
 
     $self->create_notebook_panel('rec', 'Record');
     $self->create_notebook_panel('lst', 'List');
-    $self->create_notebook_panel('det', 'Details');
+    $self->create_notebook_panel('det', 'Details') if $det_page;
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
@@ -1015,11 +1015,11 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub make_tablematrix_header {
-    my ($self, $tm_table, $tm_fields, $strech) = @_;
+    my ($self, $tm_table, $tm_fields, $strech, $selecol) = @_;
 
     # Set TableMatrix tags
     my $cols = scalar keys %{$tm_fields};
-    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech );
+    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech,$selecol );
 
     return;
 }
@@ -1031,7 +1031,7 @@ Set tags for the table matrix.
 =cut
 
 sub set_tablematrix_tags {
-    my ($self, $xtable, $cols, $tm_fields, $strech) = @_;
+    my ($self, $xtable, $cols, $tm_fields, $strech, $selecol) = @_;
 
     # TM is SpreadsheetHideRows type increase cols number with 1
     $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
@@ -1120,13 +1120,13 @@ sub set_tablematrix_tags {
         }
     }
 
-    # TODO:
-    #if (have selector add new col) {
-    $xtable->insertCols( $cols, 1 );
-    $xtable->tagCol( 'ro_center', $cols );
-    $xtable->colWidth( $cols, 3 );
-    $xtable->set( "0,$cols", 'Sel' );
-    #}
+    # Add selector column
+    if ($selecol) {
+        $xtable->insertCols( $selecol, 1 );
+        $xtable->tagCol( 'ro_center', $selecol );
+        $xtable->colWidth( $selecol, 3 );
+        $xtable->set( "0,$selecol", 'Sel' );
+    }
 
     $xtable->tagRow( 'title', 0 );
     if ( $xtable->tagExists('expnd') ) {

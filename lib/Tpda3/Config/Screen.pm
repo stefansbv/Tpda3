@@ -117,7 +117,29 @@ sub config_scr_file_name {
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
 }
 
-#---
+sub screen_detail {
+    my $self = shift;
+
+    return $self->screen->{details};
+}
+
+sub has_screen_detail {
+    my $self = shift;
+
+    my $screen = $self->screen_detail;
+    if ( ref $screen ) {
+        return scalar keys %{$screen};
+    }
+    else {
+        return $screen;
+    }
+}
+
+=head2 m_table
+
+Return main table configurations data structure.
+
+=cut
 
 sub m_table {
     my $self = shift;
@@ -147,6 +169,12 @@ sub m_table_pkcol {
     my $self = shift;
 
     return $self->m_table->{pkcol}{name};
+}
+
+sub m_table_fkcol {
+    my $self = shift;
+
+    return $self->m_table->{fkcol}{name};
 }
 
 sub m_table_columns {
@@ -203,6 +231,16 @@ sub d_table_selectorcol {
     my ($self, $tm_ds) = @_;
 
     return $self->d_table($tm_ds)->{selectorcol};
+}
+
+sub d_table_has_selectorcol {
+    my ($self, $tm_ds) = @_;
+
+    my $sc = $self->d_table_selectorcol($tm_ds);
+
+    return if $sc eq 'none';
+
+    return $sc;
 }
 
 sub d_table_orderby {
