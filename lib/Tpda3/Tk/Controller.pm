@@ -3882,7 +3882,7 @@ Save screen data to temp file with Storable.
 sub save_screendata {
     my ($self, $data_file) = @_;
 
-    my $record = $self->get_screen_data_record();
+    my $record = $self->get_screen_data_record('upd');
 
     return store( $record, $data_file );
 }
@@ -3912,8 +3912,8 @@ sub restore_screendata {
     my $mainrec = $rec->[0];                 # main record is first
 
     # Dont't want to restore the Id field, remove it
-    my $pk_col = $mainrec->{metadata}{pkcol};
-    delete $mainrec->{data}{ $pk_col };
+    my $where = $mainrec->{metadata}{where};
+    delete $mainrec->{data}{$_} for keys %{$where};
 
     $self->screen_write( $mainrec->{data}, 'record' );
 
