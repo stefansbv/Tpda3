@@ -3622,17 +3622,17 @@ Save record.  Different procedures for different modes.
 sub save_record {
     my $self = shift;
 
-    if ( !$self->is_record ) {
-        $self->_view->set_status('Empty screen','ms','orange' );
-        return;
-    }
-
     if ( $self->_model->is_mode('add') ) {
         my $record = $self->get_screen_data_record('ins');
-            print Dumper('ins', $record);
-#        $self->save_record_insert($record);
+        print Dumper('ins', $record);
+        $self->save_record_insert($record);
     }
     elsif ( $self->_model->is_mode('edit') ) {
+        if ( !$self->is_record ) {
+            $self->_view->set_status('Empty screen','ms','orange' );
+            return;
+        }
+
         my $record = $self->get_screen_data_record('upd');
         $self->_model->store_record_update($record);
     }
@@ -3640,7 +3640,6 @@ sub save_record {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
         return;
     }
-
 
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
@@ -3822,6 +3821,7 @@ sub m_table_metadata {
     }
     elsif ($for_sql eq 'ins') {
         $metadata->{table} = $self->scrcfg->m_table_name;
+        $metadata->{pkcol} = $pk_col;
     }
     else {
         carp "Wrong parameter: $for_sql\n";

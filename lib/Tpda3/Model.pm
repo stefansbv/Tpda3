@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -705,6 +703,7 @@ sub store_record_insert {
 
     my $mainmeta = $mainrec->{metadata};
     my $maindata = $mainrec->{data};
+
     my $table    = $mainmeta->{table};
     my $pkcol    = $mainmeta->{pkcol};
 
