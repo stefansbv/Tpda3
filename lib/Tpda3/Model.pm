@@ -302,22 +302,20 @@ sub is_loaded {
 
 =head2 query_records_count
 
-Count records in table
+Count records in table. TODO.
 
 =cut
 
 sub query_records_count {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $rec ) = @_;
 
-    my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};
-
-    my $where = $self->build_where($data_hr);
+    my $table = $rec->{table};
+    my $pkcol = $rec->{pkcol};
+    my $where = $self->build_where($rec);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select(
-        $table, ["COUNT($pkcol)"], $where );
+    my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
 
     my $record_count;
     try {
@@ -346,18 +344,17 @@ I<columns> configuration.
 =cut
 
 sub query_records_find {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $rec ) = @_;
 
-    my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};
-    my $cols  = $data_hr->{columns};
-    my $order = $pkcol;
+    my $table = $rec->{table};
+    my $cols  = $rec->{columns};
+    my $pkcol = $rec->{pkcol};
 
-    my $where = $self->build_where($data_hr);
+    my $where = $self->build_where($rec);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
 
     my $search_limit = $self->_cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit }; # limit search result
@@ -383,19 +380,14 @@ Return a record as hash reference
 =cut
 
 sub query_record {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $rec ) = @_;
 
-    my $table = $data_hr->{table};
-    my $pkcol = $data_hr->{pkcol};
-    my $where = $data_hr->{where};
+    my $table = $rec->{table};
+    my $where = $rec->{where};
 
-    # my $where = $self->build_where($data_hr);
-
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+    my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
-
-    # print Dumper( $stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -416,18 +408,16 @@ Query records.
 =cut
 
 sub table_batch_query {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $rec ) = @_;
 
-    my $table  = $data_hr->{table};
-    my $pkcol  = $data_hr->{pkcol};
-    my $order  = $data_hr->{order};
-    my $fields = $data_hr->{colslist};
+    my $table    = $rec->{table};
+    my $colslist = $rec->{colslist};
+    my $where    = $rec->{where};
+    my $order    = $rec->{order};
 
-    my $where = $self->build_where($data_hr);
+    my $sql = SQL::Abstract->new();
 
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-
-    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+    my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
 
     my @records;
     try {
@@ -453,14 +443,14 @@ Query a dictionary table
 =cut
 
 sub query_dictionary {
-    my ( $self, $data_hr ) = @_;
+    my ( $self, $rec ) = @_;
 
-    my $table = $data_hr->{table};
-    my $opt   = $data_hr->{options};
-    my $order = $data_hr->{order};
-    my $cols  = $data_hr->{columns};
+    my $table = $rec->{table};
+    my $opt   = $rec->{options};
+    my $order = $rec->{order};
+    my $cols  = $rec->{columns};
 
-    my $where = $self->build_where($data_hr, $opt);
+    my $where = $self->build_where($rec, $opt);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
@@ -505,11 +495,11 @@ Second parameter 'option' is passed to quote4like.
 =cut
 
 sub build_where {
-    my ( $self, $data_hr, $opt ) = @_;
+    my ( $self, $rec, $opt ) = @_;
 
     my $where = {};
 
-    while ( my ( $field, $attrib ) = each( %{ $data_hr->{where} } ) ) {
+    while ( my ( $field, $attrib ) = each( %{ $rec->{where} } ) ) {
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
@@ -650,9 +640,9 @@ sub table_batch_insert {
     my $sql = SQL::Abstract->new();
 
     # AoH refs
-    foreach my $rec ( @{$records} ) {
+    foreach my $record ( @{$records} ) {
 
-        my ( $stmt, @bind ) = $sql->insert( $table, $rec );
+        my ( $stmt, @bind ) = $sql->insert( $table, $record );
 
         try {
             my $sth = $self->{_dbh}->prepare($stmt);
@@ -718,8 +708,6 @@ sub store_record_insert {
     my $table    = $mainmeta->{table};
     my $pkcol    = $mainmeta->{pkcol};
 
-    my $where = $self->build_where($mainmeta);
-
     #- Main record
 
     my $pk_id = $self->table_record_insert($table, $pkcol, $maindata);
@@ -740,8 +728,6 @@ sub store_record_insert {
         # Update params for where
         $depmeta->{where}{$pkcol} = [ $pk_id, 'allstr' ];
 
-        my $where = $self->build_where($depmeta);
-
         # Update PK column with the new $pk_id
         foreach my $rec ( @{$depdata} ) {
             $rec->{$pkcol} = $pk_id;
@@ -758,7 +744,7 @@ sub store_record_insert {
 Updates a record.
 
 The I<$record> parameter holds a complex AoH containing data colected
-from the Screen controls (widgets) and the metadata needed to
+from the Screen controls (widgets) and the meta-data needed to
 construct the SQL commands.
 
 There is a new setting in the Screen configuration in the 'deptable'
@@ -784,14 +770,12 @@ appear.
 =cut
 
 sub store_record_update {
-    my ( $self, $record) = @_;
+    my ( $self, $record ) = @_;
 
     #- Main record
 
-    my $mainrec = $record->[0];              # rec data at index 0
-
-    my $mainmeta = $mainrec->{metadata};
-    my $maindata = $mainrec->{data};
+    my $mainmeta = $record->[0]{metadata};
+    my $maindata = $record->[0]{data};
 
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
@@ -800,18 +784,14 @@ sub store_record_update {
 
     #- Dependent records
 
-    my $deprec = $record->[1];               # det data at index 1
-
     # One table at a time ...
-    foreach my $tm ( keys %{$deprec} ) {
-        my $depmeta = $deprec->{$tm}{metadata};
-        my $depdata = $deprec->{$tm}{data};
+    foreach my $tm ( keys %{ $record->[1] } ) {
+        my $depmeta = $record->[1]{$tm}{metadata};
+        my $depdata = $record->[1]{$tm}{data};
 
         my $updstyle = $depmeta->{updstyle};
         my $table    = $depmeta->{table};
-        my $pkcol    = $depmeta->{pkcol};
-        my $fkcol    = $depmeta->{fkcol};
-        my $where    = $self->build_where($depmeta);
+        my $where    = $depmeta->{where};
 
         if ( $updstyle eq 'delete+add' ) {
             # Delete all articles and reinsert from TM ;)
@@ -840,6 +820,7 @@ sub table_batch_update {
 
     my $compare_col = $depmeta->{fkcol};
 
+    # print Dumper('batch_update',$depmeta, $depdata);
     my $tb_data = $self->table_selectcol_as_array($depmeta);
     my $tm_data = $self->aoh_column_extract($depdata, $compare_col);
 
@@ -851,9 +832,9 @@ sub table_batch_update {
 
     my $to_update = $self->table_update_compare(\@to_update, $depmeta, $depdata);
 
-    # print "To update: @{$to_update}\n";
-    # print "To insert: @to_insert\n";
-    # print "To delete: @to_delete\n";
+    print "To update: @{$to_update}\n" if ref $to_update;
+    print "To insert: @to_insert\n";
+    print "To delete: @to_delete\n";
 
     $self->table_update_prepare( $to_update, $depmeta, $depdata);
     $self->table_insert_prepare(\@to_insert, $depmeta, $depdata);
@@ -875,16 +856,12 @@ sub table_update_compare {
     return unless scalar( @{$to_update} ) > 0;
 
     my $table = $depmeta->{table};
-    my $pkcol = $depmeta->{pkcol};
     my $fkcol = $depmeta->{fkcol};
-    my $pk_id = $depmeta->{where}{$pkcol}[0];
+    my $where = $depmeta->{where};
 
     my @toupdate;
     foreach my $fk_id ( @{$to_update} ) {
-        my $where = {
-            $pkcol => $pk_id,
-            $fkcol => $fk_id,
-        };
+        $where->{ $fkcol } = $fk_id;
 
         # Filter data; record is Aoh
         my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
@@ -912,15 +889,11 @@ sub table_update_prepare {
     return unless scalar( @{$to_update} ) > 0;
 
     my $table = $depmeta->{table};
-    my $pkcol = $depmeta->{pkcol};
     my $fkcol = $depmeta->{fkcol};
-    my $pk_id = $depmeta->{where}{$pkcol}[0];
+    my $where = $depmeta->{where};
 
     foreach my $fk_id ( @{$to_update} ) {
-        my $where = {
-            $pkcol => $pk_id,
-            $fkcol => $fk_id,
-        };
+        $where->{ $fkcol } = $fk_id;
 
         # Filter data; record is Aoh
         my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
@@ -928,6 +901,9 @@ sub table_update_prepare {
         ### delete $record->{$fkcol}; # remove FK col from update data;
                                       # does NOT work, it's like remmove
                                       # from the original datastructure?!
+
+        # print "update: $table\n";
+        # print Dumper($where);
 
         $self->table_record_update( $table, $record, $where );
     }
@@ -947,9 +923,7 @@ sub table_insert_prepare {
     return unless scalar( @{$to_insert} ) > 0;
 
     my $table = $depmeta->{table};
-    my $pkcol = $depmeta->{pkcol};
     my $fkcol = $depmeta->{fkcol};
-    my $pk_id = $depmeta->{where}{$pkcol}[0];
 
     my @records;
     foreach my $fk_id ( @{$to_insert} ) {
@@ -959,6 +933,8 @@ sub table_insert_prepare {
 
         push @records, $rec;
     }
+
+    # print "insert: $table\n";
 
     $self->table_batch_insert($table, \@records);
 
@@ -977,14 +953,10 @@ sub table_delete_prepare {
     return unless scalar( @{$to_delete} ) > 0;
 
     my $table = $depmeta->{table};
-    my $pkcol = $depmeta->{pkcol};
-    my $fkcol = $depmeta->{fkcol};
-    my $pk_id = $depmeta->{where}{$pkcol}[0];
+    my $where = $depmeta->{where};
 
-    my $where  = {
-        $pkcol => $pk_id,
-        $fkcol => { -in => $to_delete },
-    };
+    # print "delete: $table\n";
+    # print Dumper($where);
 
     $self->table_batch_delete($table, $where);
 
@@ -1016,14 +988,13 @@ Return an array reference of column values.
 =cut
 
 sub table_selectcol_as_array {
-    my ($self, $data_hr) = @_;
+    my ($self, $rec) = @_;
 
-    my $table  = $data_hr->{table};
-    my $pkcol  = $data_hr->{pkcol};
-    my $fields = $data_hr->{fkcol};
+    my $table  = $rec->{table};
+    my $pkcol  = $rec->{pkcol};
+    my $fields = $rec->{fkcol};
+    my $where  = $rec->{where};
     my $order  = $fields;
-
-    my $where = $self->build_where($data_hr);
 
     my $sql = SQL::Abstract->new();
 

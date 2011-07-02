@@ -3531,13 +3531,10 @@ sub record_load {
 
     print "Record load [r] ($pk_val)\n";
 
-    #-  Main table
-    my $params = $self->m_table_metadata('use_view');
-    my $pk_col = $self->screen_get_pk_col();
-
     $self->screen_set_pk_val($pk_val); # save PK value
 
-    $params->{where} = { $pk_col => $pk_val }; # SQL where
+    #-  Main table
+    my $params = $self->m_table_metadata('qry');
 
     my $record = $self->_model->query_record($params);
 
@@ -3546,7 +3543,7 @@ sub record_load {
     #- Dependent table(s), (if any)
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        my $tm_params = $self->d_table_metadata( $tm_ds, 'use_view' );
+        my $tm_params = $self->d_table_metadata($tm_ds, 'qry');
 
         my $records = $self->_model->table_batch_query($tm_params);
 
@@ -3571,19 +3568,15 @@ Load the record in the detail Screen.
 sub record_load_detail {
     my ($self, $args) = @_;
 
-    my $params = $self->m_table_metadata('use_view');
-
-    # PK
-    my $pk_col = $self->screen_get_pk_col;
-    my $pk_val = $self->screen_get_pk_val;
-    $params->{where} = { $pk_col => $pk_val };
-
     # FK
     my $fk_col = $self->screen_get_fk_col;
     my $fk_val = $args->{$fk_col};
-    $params->{where} = { $fk_col => $fk_val };
+
+    print "Record load [d] ($fk_val)\n";
 
     $self->screen_set_fk_val($fk_val); # save FK value
+
+    my $params = $self->m_table_metadata('qry');
 
     my $record = $self->_model->query_record($params);
 
@@ -3644,18 +3637,25 @@ Save record.  Different procedures for different modes.
 sub save_record {
     my $self = shift;
 
-    my $record = $self->get_screen_data_as_record();
+    if ( !$self->is_record ) {
+        $self->_view->set_status('Empty screen','ms','orange' );
+        return;
+    }
 
     if ( $self->_model->is_mode('add') ) {
-        $self->save_record_insert($record);
+        my $record = $self->get_screen_data_record('ins');
+            print Dumper('ins', $record);
+#        $self->save_record_insert($record);
     }
     elsif ( $self->_model->is_mode('edit') ) {
-        $self->save_record_update($record);
+        my $record = $self->get_screen_data_record('upd');
+        $self->_model->store_record_update($record);
     }
     else {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
         return;
     }
+
 
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
@@ -3693,40 +3693,6 @@ sub save_record_insert {
     }
 
     # TODO: Insert in List
-
-    return;
-}
-
-=head2 save_record_update
-
-Update record.
-
-=cut
-
-sub save_record_update {
-    my ( $self, $record ) = @_;
-
-    my $pk_col = $self->screen_get_pk_col;
-    my $pk_val = $self->screen_get_pk_val;
-    if ( !defined $pk_val ) {
-        $self->_view->set_status( 'No screen data?', 'ms', 'orange' );
-        return;
-    }
-
-    #- Add 'WHERE' to metadata
-
-    $record->[0]{metadata}{where}{$pk_col} = $pk_val; # pk
-
-    if ($self->_rscrcfg->screen->{style} eq 'dependent') {
-        my $fk_col = $self->screen_get_fk_col;
-        my $fk_val = $self->screen_get_fk_val;
-        if ($fk_col and $fk_val) {
-            $record->[0]{metadata}{where}{$fk_col} = $fk_val; # fk
-        }
-    }
-
-    print Dumper('upd', $record );
-    $self->_model->store_record_update($record);
 
     return;
 }
@@ -3789,7 +3755,7 @@ sub note_file_name {
     return $data_file;
 }
 
-=head2 get_screen_data_as_record
+=head2 get_screen_data_record
 
 Make a record from screen data.  The data structure is an AoH where at
 index 0 there is the main record meta-data and data and at index 1 the
@@ -3797,23 +3763,18 @@ dependent table(s) data and meta-data.
 
 =cut
 
-sub get_screen_data_as_record {
-    my ($self, $use_view) = @_;
+sub get_screen_data_record {
+    my ($self, $for_sql) = @_;
 
-    if ( !$self->is_record ) {
-        $self->_view->set_status('Empty screen','ms','orange' );
-        return;
-    }
+    $self->screen_read();       # read screen data
 
-    $self->screen_read();
+    my @record;
 
     #-  Main table
 
     #-- Metadata
     my $record = {};
-    $record->{metadata} = $self->m_table_metadata();
-
-    my @record;
+    $record->{metadata} = $self->m_table_metadata($for_sql);
 
     #-- Data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
@@ -3821,21 +3782,18 @@ sub get_screen_data_as_record {
     }
     push @record, $record;         # rec data at index 0
 
-    # Get PK field name and value
-    my $pk_col = $self->screen_get_pk_col;
-    my $pk_val = $self->screen_get_pk_val;
-
     #-  Dependent table(s), if any
+
     my $deprec = {};
-    my $tm_dss = $self->scrobj->get_tm_controls();
+    my $tm_dss = $self->scrobj->get_tm_controls(); #
 
     foreach my $tm_ds ( keys %{$tm_dss} ) {
         $deprec->{$tm_ds}{metadata} =
-          $self->d_table_metadata( $tm_ds, $use_view );
-        $deprec->{$tm_ds}{data} = $self->tmatrix_read($tm_ds);
+          $self->d_table_metadata($tm_ds, $for_sql);
+        ( $deprec->{$tm_ds}{data}, undef ) = $self->tmatrix_read($tm_ds);
 
         # TableMatrix data doesn't contain pk_col=>pk_val, add it
-        my $pk_ref = { $pk_col => $pk_val };
+        my $pk_ref = $record->{metadata}{where};
         foreach my $rec ( @{ $deprec->{$tm_ds}{data} } ) {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
@@ -3852,32 +3810,38 @@ Retrieve main table meta-data from the screen configuration.
 =cut
 
 sub m_table_metadata {
-    my ($self, $use_view) = @_;
+    my ($self, $for_sql) = @_;
 
-    my $page = $self->_view->get_nb_current_page();
+    my $metadata = {};
 
-    my $cfg;
-    if ($page eq 'rec') {
-        $cfg = $self->_rscrcfg;
+    #- Get PK field name and value and FK if exists
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
+    my ($fk_col, $fk_val);
+    my $has_dep = 0;
+    if ($self->scrcfg->screen->{style} eq 'dependent') {
+        $has_dep = 1;
+        $fk_col = $self->screen_get_fk_col;
+        $fk_val = $self->screen_get_fk_val;
     }
-    elsif ($page eq 'det') {
-        $cfg = $self->_dscrcfg;
+
+    if ($for_sql eq 'qry') {
+        $metadata->{table} = $self->scrcfg->m_table_view;
+        $metadata->{where}{$pk_col} = $pk_val; # pk
+        $metadata->{where}{$fk_col} = $fk_val if $has_dep;
+    }
+    elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
+        $metadata->{table} = $self->scrcfg->m_table_name;
+        $metadata->{where}{$pk_col} = $pk_val; # pk
+        $metadata->{where}{$fk_col} = $fk_val if $has_dep;
+    }
+    elsif ($for_sql eq 'ins') {
+        $metadata->{table} = $self->scrcfg->m_table_name;
     }
     else {
-        carp "Wrong page: '$page'!";
+        carp "Wrong parameter: $for_sql\n";
         return;
     }
-
-    # # Dependent table metadata
-    # my $columns = $cfg->m_table_columns($page);
-
-    # Construct where, add findtype info
-    my $metadata = {};
-    # Construct where, add findtype info
-    $metadata->{table} =
-        $use_view
-      ? $cfg->m_table_view( $page )
-      : $cfg->m_table_name( $page );
 
     return $metadata;
 }
@@ -3889,30 +3853,39 @@ Retrieve dependent table meta-data from the screen configuration.
 =cut
 
 sub d_table_metadata {
-    my ($self, $tm_ds, $use_view) = @_;
+    my ($self, $tm_ds, $for_sql) = @_;
 
-    my $table   = $self->_rscrcfg->d_table($tm_ds);
-    my $columns = $self->_rscrcfg->d_table_columns($tm_ds);
-    my $orderby = $self->_rscrcfg->d_table_orderby($tm_ds);
+    my $metadata = {};
 
-    # Construct where, add findtype info
-    my $tm_metadata = {};
-    $tm_metadata->{table} =
-        $use_view
-      ? $self->_rscrcfg->d_table_view( $tm_ds )
-      : $self->_rscrcfg->d_table_name( $tm_ds );
-
+    #- Get PK field name and value
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
 
-    $tm_metadata->{updstyle} = $self->_rscrcfg->d_table_updatestyle($tm_ds);
-    $tm_metadata->{pkcol}    = $pk_col;
-    $tm_metadata->{fkcol}    = $self->_rscrcfg->d_table_fkcol($tm_ds);
-    $tm_metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $tm_metadata->{where}{$pk_col} = [ $pk_val, 'allstr' ];
-    $tm_metadata->{order}    = $orderby;
+    if ($for_sql eq 'qry') {
+        $metadata->{table} = $self->scrcfg->d_table_view($tm_ds);
+        $metadata->{where}{$pk_col} = $pk_val; # pk
+    }
+    elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
+        $metadata->{table} = $self->scrcfg->d_table_name($tm_ds);
+        $metadata->{where}{$pk_col} = $pk_val; # pk
+    }
+    elsif ($for_sql eq 'ins') {
+        $metadata->{table} = $self->scrcfg->m_table_name;
+    }
+    else {
+        carp "Wrong parameter: $for_sql\n";
+        return;
+    }
 
-    return $tm_metadata;
+    my $columns = $self->scrcfg->d_table_columns($tm_ds);
+
+    $metadata->{pkcol}    = $pk_col;
+    $metadata->{fkcol}    = $self->scrcfg->d_table_fkcol($tm_ds);
+    $metadata->{order}    = $self->scrcfg->d_table_orderby($tm_ds);
+    $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
+    $metadata->{updstyle} = $self->scrcfg->d_table_updatestyle($tm_ds);
+
+    return $metadata;
 }
 
 =head2 save_screendata
@@ -3924,7 +3897,7 @@ Save screen data to temp file with Storable.
 sub save_screendata {
     my ($self, $data_file) = @_;
 
-    my $record = $self->get_screen_data_as_record();
+    my $record = $self->get_screen_data_record();
 
     return store( $record, $data_file );
 }
