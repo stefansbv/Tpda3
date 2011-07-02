@@ -65,6 +65,8 @@ Constructor method.
 
 =item _scrdata  - current screen data
 
+=item _tm_sel   - TableMatrix selected row
+
 =back
 
 =cut
@@ -90,6 +92,7 @@ sub new {
         _dscrcfg  => undef,
         _tblkeys  => undef,
         _scrdata  => undef,
+        _tm_sel   => undef,
         _cfg      => Tpda3::Config->instance(),
         _log      => get_logger(),
     };
@@ -526,7 +529,7 @@ On page I<det> activate.
 sub on_page_det_activate {
     my $self = shift;
 
-    my $row = $self->tmatrix_read_selector('tm1');
+    my $row = $self->tmatrix_get_selected;
     unless ($row) {
         $self->_view->get_notebook()->raise('rec');
         $self->_view->set_status('Select a row','ms','orange');
@@ -2799,43 +2802,24 @@ sub tmatrix_read {
     return (\@tabledata, $sc);
 }
 
-=head2 tmatrix_read_selector
+=head2 tmatrix_get_selected
 
-Scan table rows and read embeded Checkbutton selector state.
+Get selected table row.
 
 =cut
 
-sub tmatrix_read_selector {
-    my ($self, $tm_ds) = @_;
+sub tmatrix_get_selected {
+    my $self = shift;
 
-    my $sc = $self->_rscrcfg->d_table_has_selectorcol($tm_ds);
+    return $self->{_tm_sel};
+}
 
-    return unless $sc;
+sub tmatrix_set_selected {
+    my ($self, $selected_row) = @_;
 
-    my $tmx      = $self->_rscrobj->get_tm_controls($tm_ds);
-    my $rows_no  = $tmx->cget( -rows );
-    my $rows_idx = $rows_no - 1;
-    my $r;
+    $self->{_tm_sel} = $selected_row if $selected_row;
 
-    # Extrag datele din tabel
-    for my $row ( 1 .. $rows_idx ) {
-
-        # Scan Checkbutton from column ($sc)
-        my $ckb;
-        eval { $ckb = $tmx->windowCget( "$row,$sc", -window ); };
-        unless ($@) {
-            if ( $ckb =~ /Checkbutton/ ) {
-                my $sel = $ckb->{'Value'};
-                next if !defined $sel or $sel == 0; # skip if not selected
-                if ( $sel == 1 ) {
-                    $r = $row;
-                    last;       # should be only one
-                }
-            }
-        }
-    }
-
-    return $r;
+    return;
 }
 
 =head2 tmatrix_read_cell
@@ -2971,9 +2955,9 @@ sub tmatrix_make_selector {
 
     my $tmx      = $self->_rscrobj->get_tm_controls($tm_ds);
     my $rows_no  = $tmx->cget( -rows );
-    my $cols_no  = $tmx->cget( -cols );
+    # my $cols_no  = $tmx->cget( -cols );
     my $rows_idx = $rows_no - 1;
-    my $cols_idx = $cols_no - 1;
+    # my $cols_idx = $cols_no - 1;
 
     foreach my $r ( 1 .. $rows_idx ) {
         $self->embeded_buttons( $tmx, $r, $sc );
@@ -3399,7 +3383,7 @@ sub add_tmatrix_row {
     my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
     if ($sc ne 'none') {
         $self->embeded_buttons( $xt, $new_r, $sc ); # add button
-        $self->toggle_ckbuttons($xt, $new_r, $sc);
+        $self->tmatrix_set_selected($new_r);
     }
 
     # Focus to newly inserted row, column 1
@@ -3449,7 +3433,8 @@ sub remove_tmatrix_row {
 
     my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
     if ($sc ne 'none') {
-        $self->toggle_ckbuttons($xt, $r - 1, $sc);
+        $self->tmatrix_set_selected($r - 1);
+        # $self->toggle_rbbuttons($xt, $r - 1, $sc);
     }
 
     $self->renum_tmatrix_row($xt)
@@ -3955,75 +3940,34 @@ sub embeded_buttons {
     $tmx->windowConfigure(
         "$row,$col",
         -sticky => 's',
-        -window => $self->build_ckbutton($tmx, $row, $col),
+        -window => $self->build_rbbutton($row, $col),
     );
-
-#    $self->toggle_ckbuttons($tmx, $row, $col);
 
     return;
 }
 
-=head2 build_ckbutton
+=head2 build_rbbutton
 
-Build Checkbutton.
-
-TODO: Better use Radiobutton?
+Build Radiobutton.
 
 =cut
 
-sub build_ckbutton {
-    my ( $self, $tmx, $row, $col ) = @_;
+sub build_rbbutton {
+    my ( $self, $row, $col ) = @_;
 
-    my $button = $self->_view->Checkbutton(
+    my $button = $self->_view->Radiobutton(
         -width       => 3,
-        # -image       => 'playpause16',
-        # -selectimage => 'nav2rightarrow16',
+        -variable    => \$self->{_tm_sel},
+        -value       => $row,
         -indicatoron => 0,
         -selectcolor => 'lightblue',
         -state       => 'normal',
-        -command     => [ \&toggle_ckbuttons, $self, $tmx, $row, $col ],
     );
 
-    # Default selected row 1
-    if ($row == 1) {
-        $button->select;
-        $button->configure( -state => 'disabled');
-    }
+    # Default selected row == 1
+    $self->tmatrix_set_selected($row) if $row == 1;
 
     return $button;
-}
-
-=head2 toggle_ckbuttons
-
-Callback for selectro Checkbuttons.
-
-=cut
-
-sub toggle_ckbuttons {
-    my ($self, $tmx, $r, $c) = @_;
-
-    my $rows_no  = $tmx->cget( -rows );
-    my $rows_idx = $rows_no - 1;
-
-    for my $row ( 1 .. $rows_idx ) {
-        my $ckb;
-        eval { $ckb = $tmx->windowCget( "$row,$c", -window ); };
-        unless ($@) {
-            if ( $ckb =~ /Checkbutton/ ) {
-                if ($row == $r) {
-                    $ckb->configure(-state => 'normal');
-                    $ckb->select;
-                    $ckb->configure(-state => 'disabled');
-                }
-                else {
-                    $ckb->configure(-state => 'normal');
-                    $ckb->deselect;
-                }
-            }
-        }
-    }
-
-    return;
 }
 
 #-- PK
@@ -4117,22 +4061,6 @@ sub screen_get_fk_val {
 
     return $self->{_tblkeys}{$fk_col};
 }
-
-# sub screen_set_fk_col {
-#     my $self = shift;
-
-#     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-#         my $fk_col = $self->_rscrcfg->d_table_fkcol($tm_ds);
-#         if ($fk_col) {
-#             $self->{_fk_col}{$tm_ds} = $fk_col;
-#         }
-#         else {
-#             croak "ERR: Unknown FK column name!\n";
-#         }
-#     }
-
-#     return;
-# }
 
 =head1 AUTHOR
 
