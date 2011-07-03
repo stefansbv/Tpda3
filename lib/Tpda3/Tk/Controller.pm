@@ -1890,19 +1890,20 @@ sub toggle_interface_controls {
     my $mode = $self->_model->get_appmode;
     my $page = $self->_view->get_nb_current_page();
 
-    print " toggle_interface_controls on $page\n";
     my $is_rec = $self->is_record('rec');
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
 
-        # Take note button
+        #- Exceptions
+
+        #-- Take note button
         if ( $name eq 'tb_tn' and $self->{_rscrcls} ) {
             $status = 'normal'   if $mode eq 'add';
             $status = 'disabled' unless $is_rec;
         }
 
-        # Restore note
+        #-- Restore note
         if ( $name eq 'tb_tr' and $self->{_rscrcls} ) {
             my $data_file = $self->note_file_name();
             $status = $mode eq 'add'
@@ -1919,7 +1920,10 @@ sub toggle_interface_controls {
         #             : 'disabled';
         # }
 
+        #-- List tab
         $status = 'disabled' if $page eq 'lst';
+
+        #- Set status for toolbar buttons
 
         $self->_view->enable_tool( $name, $status );
     }
