@@ -563,7 +563,8 @@ sub on_page_det_activate {
     my $ret = $self->record_load_detail($para);
     if ($ret) {
         $self->_view->set_status('Record loaded (d)','ms','blue');
-        $self->controls_det_state_set('edit');
+        $self->set_app_mode('edit');
+        # $self->controls_state_set('edit');
         # $self->_model->set_scrdata_rec(q{});    # empty
     }
 
@@ -640,7 +641,7 @@ sub _set_event_handler_screen {
     #-- Add row button
     $self->scrobj('rec')->get_toolbar_btn('tb2ad')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->add_tmatrix_row($tm_ds);
+            $self->tmatrix_add_row($tm_ds);
             $self->toggle_detail_tab;
         }
     );
@@ -648,7 +649,7 @@ sub _set_event_handler_screen {
     #-- Remove row button
     $self->scrobj('rec')->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->remove_tmatrix_row($tm_ds);
+            $self->tmatrix_remove_row($tm_ds);
             $self->toggle_detail_tab;
         }
     );
@@ -1310,8 +1311,8 @@ sub on_screen_mode_idle {
         $self->tmatrix_clear($tm_ds);
     }
 
-    $self->controls_rec_state_set('off');
-    $self->controls_det_state_set('off');
+    $self->controls_state_set('off');
+    # $self->controls_det_state_set('off');
 
     my $nb = $self->_view->get_notebook();
     $nb->pageconfigure('det', -state => 'disabled');
@@ -1339,8 +1340,8 @@ sub on_screen_mode_add {
         $self->tmatrix_clear($tm_ds);
     }
 
-    $self->controls_rec_state_set('edit');
-    $self->controls_det_state_set('edit'); # if loaded?
+    $self->controls_state_set('edit');
+    # $self->controls_det_state_set('edit'); # if loaded?
 
     my $nb = $self->_view->get_notebook();
     $nb->pageconfigure('lst', -state => 'disabled');
@@ -1367,8 +1368,8 @@ sub on_screen_mode_find {
         $self->tmatrix_clear($tm_ds);
     }
 
-    $self->controls_rec_state_set('find');
-    $self->controls_det_state_set('find');
+    $self->controls_state_set('find');
+    # $self->controls_det_state_set('find');
 
     return;
 }
@@ -1383,8 +1384,8 @@ to the default color as specified in the configuration.
 sub on_screen_mode_edit {
     my $self = shift;
 
-    $self->controls_rec_state_set('edit');
-    $self->controls_det_state_set('edit');
+    $self->controls_state_set('edit');
+#    $self->controls_det_state_set('edit');
 
     my $nb = $self->_view->get_notebook();
     # $nb->pageconfigure('det', -state => 'normal');
@@ -1877,7 +1878,7 @@ sub screen_init {
 =head2 toggle_interface_controls
 
 Toggle controls (tool bar buttons) appropriate for different states of
-the application.
+the application, and different pages.
 
 =cut
 
@@ -1887,11 +1888,13 @@ sub toggle_interface_controls {
     my ($toolbars, $attribs) = $self->_view->toolbar_names();
 
     my $mode = $self->_model->get_appmode;
+    my $page = $self->_view->get_nb_current_page();
 
+    print " toggle_interface_controls on $page\n";
     my $is_rec = $self->is_record('rec');
 
     foreach my $name ( @{$toolbars} ) {
-        my $status = $attribs->{$name}{state}{$mode};
+        my $status = $attribs->{$name}{state}{$page}{$mode};
 
         # Take note button
         if ( $name eq 'tb_tn' and $self->{_rscrcls} ) {
@@ -1916,16 +1919,7 @@ sub toggle_interface_controls {
         #             : 'disabled';
         # }
 
-        # Disable some buttons in 'det' page
-        my $nb = $self->_view->get_notebook();
-        if ($nb->raised eq 'det') {
-            if ( $name eq 'tb_ad' and $self->{_rscrcls} ) {
-                $status = 'disabled';
-            }
-            if ( $name eq 'tb_fm' and $self->{_rscrcls} ) {
-                $status = 'disabled';
-            }
-        }
+        $status = 'disabled' if $page eq 'lst';
 
         $self->_view->enable_tool( $name, $status );
     }
@@ -2626,10 +2620,12 @@ sub screen_write_det {
 
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
-  FIELD:
-    foreach my $field ( keys %{ $self->scrcfg('det')->main_table->{columns} } ) {
+    my $scrcfg = $self->scrcfg('det');
 
-        my $fld_cfg = $self->scrcfg('det')->main_table->{columns}{$field};
+  FIELD:
+    foreach my $field ( keys %{ $scrcfg->main_table->{columns} } ) {
+
+        my $fld_cfg = $scrcfg->main_table->{columns}{$field};
 
         my $ctrl_state;
         eval {
@@ -2840,10 +2836,11 @@ sub tmatrix_write {
     my $row = 1;
 
     #- Scan and write to table
+    my $scrcfg = $self->scrcfg('rec');
 
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->scrcfg('rec')->dep_table_columns($tm_ds) } ) {
-            my $fld_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $field);
+        foreach my $field ( keys %{ $scrcfg->dep_table_columns($tm_ds) } ) {
+            my $fld_cfg = $scrcfg->dep_table_column($tm_ds, $field);
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
@@ -2973,6 +2970,132 @@ sub tmatrix_write_row {
     return $nr_col;
 }
 
+=head2 tmatrix_add_row
+
+Table matrix methods.  Add TableMatrix row.
+
+=cut
+
+sub tmatrix_add_row {
+    my ($self, $tm_ds, $valori_ref) = @_;
+
+    $tm_ds ||= q{tm1};          # default table matrix designator
+
+    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
+    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
+    return
+      unless $self->_model->is_mode('add')
+          or $self->_model->is_mode('edit');
+
+    $xt->configure( state => 'normal' );    # normal state
+    my $old_r = $xt->index( 'end', 'row' ); # get old row index
+    $xt->insertRows('end');
+    my $new_r = $xt->index( 'end', 'row' ); # get new row index
+
+    if (($updstyle eq 'delete+add') or ($old_r == 0)) {
+        $xt->set( "$new_r,0", $new_r );     # set new index
+        $self->tmatrix_renum_row($xt);
+    }
+    else {
+        # No renumbering ...
+        my $max_r = (sort {$b <=> $a} $xt->get("1,0","$old_r,0"))[0]; # max row
+        if ($max_r >= $new_r) {
+            $xt->set( "$new_r,0", $max_r + 1);
+        }
+        else {
+            $xt->set( "$new_r,0", $new_r);
+        }
+    }
+
+    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
+    if ($sc) {
+        $self->embeded_buttons( $xt, $new_r, $sc ); # add button
+        $self->tmatrix_set_selected($new_r);
+    }
+
+    # Focus to newly inserted row, column 1
+    $xt->focus;
+    $xt->activate("$new_r,1");
+    $xt->see("$new_r,1");
+
+    return;
+}
+
+=head2 tmatrix_remove_row
+
+Delete TableMatrix row.
+
+=cut
+
+sub tmatrix_remove_row {
+    my ($self, $tm_ds) = @_;
+
+    $tm_ds ||= q{tm1};           # default table matrix designator
+
+    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
+    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
+    unless ( $self->_model->is_mode('add')
+                 || $self->_model->is_mode('edit') ) {
+        return;
+    }
+
+    $xt->configure( state => 'normal' );     # Stare normala
+
+    my $r;
+    eval {
+        $r = $xt->index( 'active', 'row' );
+
+        if ( $r >= 1 ) {
+            $xt->deleteRows( $r, 1 );
+        }
+        else {
+            $self->_view->set_status('Select a row','ms','orange');
+        }
+    };
+    if ($@) {
+        $self->_view->set_status('Select a row','ms','orange');
+        return;
+    }
+
+    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
+    if ($sc) {
+        $self->tmatrix_set_selected($r - 1);
+    }
+
+    $self->tmatrix_renum_row($xt)
+      if $updstyle eq 'delete+add';    # renumber rows
+
+    # Refresh table
+    $xt->activate('origin');
+    $xt->activate("$r,1");
+
+    # TODO: Feature to trigger a method here?
+
+    return $r;
+}
+
+=head2 tmatrix_renum_row
+
+Renumber TableMatrix rows.
+
+=cut
+
+sub tmatrix_renum_row {
+    my ($self, $xt) = @_;
+
+    my $r = $xt->index( 'end', 'row' );
+
+    if ( $r >= 1 ) {
+        foreach my $i ( 1 .. $r ) {
+            $xt->set( "$i,0", $i );
+        }
+    }
+
+    return;
+}
+
 =head2 toggle_mode_find
 
 Toggle find mode, ask to save record if modified.
@@ -3019,20 +3142,22 @@ Toggle all controls state from I<Screen>.
 
 =cut
 
-sub controls_rec_state_set {
+sub controls_state_set {
     my ( $self, $state ) = @_;
 
     $self->_log->info("Screen 'rec' controls state is '$state'");
 
-    my $ctrl_ref = $self->scrobj('rec')->get_controls();
+    my $page = $self->_view->get_nb_current_page();
+
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
     my $control_states = $self->control_states($state);
 
-    return unless defined $self->scrcfg('rec');
+    return unless defined $self->scrcfg($page);
 
-    foreach my $field ( keys %{ $self->scrcfg('rec')->main_table_columns } ) {
-        my $fld_cfg = $self->scrcfg('rec')->main_table_column($field);
+    foreach my $field ( keys %{ $self->scrcfg($page)->main_table_columns } ) {
+        my $fld_cfg = $self->scrcfg($page)->main_table_column($field);
 
         # Skip for some control types
         # next if $fld_cfg->{ctrltype} = '';
@@ -3045,14 +3170,14 @@ sub controls_rec_state_set {
         my $bg_color = $bkground;
         $bg_color = $fld_cfg->{bgcolor}
             if $bkground eq 'from_config';
-        $bg_color = $self->scrobj('rec')->get_bgcolor
+        $bg_color = $self->scrobj($page)->get_bgcolor
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
                 $ctrl_state = 'disabled';
-                $bg_color   = $self->scrobj('rec')->get_bgcolor();
+                $bg_color   = $self->scrobj($page)->get_bgcolor();
             }
         }
 
@@ -3069,57 +3194,57 @@ sub controls_rec_state_set {
     return;
 }
 
-sub controls_det_state_set {
-    my ( $self, $state ) = @_;
+# sub controls_det_state_set {
+#     my ( $self, $state ) = @_;
 
-    $self->_log->info("Screen 'det' controls state is '$state'");
+#     $self->_log->info("Screen 'det' controls state is '$state'");
 
-    return unless $self->scrobj('det');
+#     return unless $self->scrobj('det');
 
-    my $ctrl_ref = $self->scrobj('det')->get_controls();
-    return unless scalar keys %{$ctrl_ref};
+#     my $ctrl_ref = $self->scrobj('det')->get_controls();
+#     return unless scalar keys %{$ctrl_ref};
 
-    my $control_states = $self->control_states($state);
+#     my $control_states = $self->control_states($state);
 
-    return unless defined $self->scrcfg('det');
+#     return unless defined $self->scrcfg('det');
 
-    foreach my $field ( keys %{ $self->scrcfg('det')->main_table_columns } ) {
-        my $fld_cfg = $self->scrcfg('det')->main_table_column($field);
+#     foreach my $field ( keys %{ $self->scrcfg('det')->main_table_columns } ) {
+#         my $fld_cfg = $self->scrcfg('det')->main_table_column($field);
 
-        # Skip for some control types
-        # next if $fld_cfg->{ctrltype} = '';
+#         # Skip for some control types
+#         # next if $fld_cfg->{ctrltype} = '';
 
-        my $ctrl_state = $control_states->{state};
-        $ctrl_state = $fld_cfg->{state}
-            if $ctrl_state eq 'from_config';
+#         my $ctrl_state = $control_states->{state};
+#         $ctrl_state = $fld_cfg->{state}
+#             if $ctrl_state eq 'from_config';
 
-        my $bkground = $control_states->{background};
-        my $bg_color = $bkground;
-        $bg_color = $fld_cfg->{bgcolor}
-            if $bkground eq 'from_config';
-        $bg_color = $self->scrobj('rec')->get_bgcolor()
-            if $bkground eq 'disabled_bgcolor';
+#         my $bkground = $control_states->{background};
+#         my $bg_color = $bkground;
+#         $bg_color = $fld_cfg->{bgcolor}
+#             if $bkground eq 'from_config';
+#         $bg_color = $self->scrobj('rec')->get_bgcolor()
+#             if $bkground eq 'disabled_bgcolor';
 
-        # Special case for find mode and fields with 'findtype' set to none
-        if ( $state eq 'find' ) {
-            if ( $fld_cfg->{findtype} eq 'none' ) {
-                $ctrl_state = 'disabled';
-                $bg_color   = $self->scrobj('rec')->get_bgcolor();
-            }
-        }
+#         # Special case for find mode and fields with 'findtype' set to none
+#         if ( $state eq 'find' ) {
+#             if ( $fld_cfg->{findtype} eq 'none' ) {
+#                 $ctrl_state = 'disabled';
+#                 $bg_color   = $self->scrobj('rec')->get_bgcolor();
+#             }
+#         }
 
-        # Configure controls
-        eval {
-            $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
-            $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
-        };
-        if ($@) {
-            # print "Problems with '$field'\n";
-        }
-    }
+#         # Configure controls
+#         eval {
+#             $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
+#             $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
+#         };
+#         if ($@) {
+#             # print "Problems with '$field'\n";
+#         }
+#     }
 
-    return;
-}
+#     return;
+# }
 
 =head2 control_write_e
 
@@ -3277,149 +3402,6 @@ sub control_states {
     my ($self, $state) = @_;
 
     return $self->{control_states}{$state};
-}
-
-=head2 add_tmatrix_row
-
-Table matrix methods.  Add TableMatrix row.
-
-=cut
-
-sub add_tmatrix_row {
-    my ($self, $tm_ds, $valori_ref) = @_;
-
-    $tm_ds ||= q{tm1};          # default table matrix designator
-
-    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
-    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
-
-    return
-      unless $self->_model->is_mode('add')
-          or $self->_model->is_mode('edit');
-
-    $xt->configure( state => 'normal' );    # normal state
-    my $old_r = $xt->index( 'end', 'row' ); # get old row index
-    $xt->insertRows('end');
-    my $new_r = $xt->index( 'end', 'row' ); # get new row index
-
-    if (($updstyle eq 'delete+add') or ($old_r == 0)) {
-        $xt->set( "$new_r,0", $new_r );     # set new index
-        $self->renum_tmatrix_row($xt);
-    }
-    else {
-        # No renumbering ...
-        my $max_r = (sort {$b <=> $a} $xt->get("1,0","$old_r,0"))[0]; # max row
-        if ($max_r >= $new_r) {
-            $xt->set( "$new_r,0", $max_r + 1);
-        }
-        else {
-            $xt->set( "$new_r,0", $new_r);
-        }
-    }
-
-    # print Dumper( $valori_ref);
-    # my $c = 1;
-    # if ( ref($valori_ref) eq 'ARRAY' ) {
-
-    #     # Insert data
-    #     foreach my $valoare ( @{$valori_ref} ) {
-    #         if ( defined $valoare ) {
-    #             $xt->set( "$new_r,$c", $valoare );
-    #         }
-    #         $c++;
-    #     }
-    # }
-    # else {
-    #     print " NO values\n";
-    # }
-
-    my $sc = $self->scrcfg('rec')->dep_table_selectorcol($tm_ds);
-    if ($sc ne 'none') {
-        $self->embeded_buttons( $xt, $new_r, $sc ); # add button
-        $self->tmatrix_set_selected($new_r);
-    }
-
-    # Focus to newly inserted row, column 1
-    $xt->focus;
-    $xt->activate("$new_r,1");
-    $xt->see("$new_r,1");
-
-    return;
-}
-
-=head2 remove_tmatrix_row
-
-Delete TableMatrix row.
-
-=cut
-
-sub remove_tmatrix_row {
-    my ($self, $tm_ds) = @_;
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
-    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
-
-    unless ( $self->_model->is_mode('add')
-                 || $self->_model->is_mode('edit') ) {
-        return;
-    }
-
-    $xt->configure( state => 'normal' );     # Stare normala
-
-    my $r;
-    eval {
-        $r = $xt->index( 'active', 'row' );
-
-        if ( $r >= 1 ) {
-            $xt->deleteRows( $r, 1 );
-        }
-        else {
-            $self->_view->set_status('Select a row','ms','orange');
-        }
-    };
-    if ($@) {
-        $self->_view->set_status('Select a row','ms','orange');
-        return;
-    }
-
-    my $sc = $self->scrcfg('rec')->dep_table_selectorcol($tm_ds);
-    if ($sc ne 'none') {
-        $self->tmatrix_set_selected($r - 1);
-        # $self->toggle_rbbuttons($xt, $r - 1, $sc);
-    }
-
-    $self->renum_tmatrix_row($xt)
-      if $updstyle eq 'delete+add';    # renumber rows
-
-    # Refresh table
-    $xt->activate('origin');
-    $xt->activate("$r,1");
-
-    # TODO: Feature to trigger a method here?
-
-    return $r;
-}
-
-=head2 renum_tmatrix_row
-
-Renumber TableMatrix rows.
-
-=cut
-
-sub renum_tmatrix_row {
-    my ($self, $xt) = @_;
-
-    my $r = $xt->index( 'end', 'row' );
-
-    if ( $r >= 1 ) {
-        foreach my $i ( 1 .. $r ) {
-            $xt->set( "$i,0", $i );
-        }
-    }
-
-    return;
 }
 
 =head2 record_reload

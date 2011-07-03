@@ -157,12 +157,6 @@ sub main_table_view {
     return $self->main_table->{view};
 }
 
-sub main_table_generator {
-    my $self = shift;
-
-    return $self->main_table->{generator};
-}
-
 sub main_table_pkcol {
     my $self = shift;
 
@@ -211,12 +205,6 @@ sub dep_table_view {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{view};
-}
-
-sub dep_table_generator {
-    my ($self, $tm_ds) = @_;
-
-    return $self->dep_table($tm_ds)->{generator};
 }
 
 sub dep_table_updatestyle {
