@@ -3,8 +3,6 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
