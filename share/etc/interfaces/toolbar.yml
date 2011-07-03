@@ -101,7 +101,7 @@ toolbar:
       det:
         idle: disabled
         add:  disabled
-        edit: normal
+        edit: disabled
         find: disabled
         sele: disabled
   tb_tr:
@@ -121,7 +121,7 @@ toolbar:
       det:
         idle: disabled
         add:  disabled
-        edit: normal
+        edit: disabled
         find: disabled
         sele: disabled
   tb_cl:

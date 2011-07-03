@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -495,7 +493,7 @@ sub on_page_rec_activate {
     my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
 
     if ($pk_val_new eq $pk_val_old) {
-        $self->set_app_mode('edit'); # already loaded
+        $self->set_app_mode('edit'); # restore interface state
     }
     else {
         $self->record_load_new($pk_val_new);
@@ -529,23 +527,7 @@ On page I<det> activate.
 sub on_page_det_activate {
     my $self = shift;
 
-    my $row = $self->tmatrix_get_selected;
-    unless ($row) {
-        $self->_view->get_notebook()->raise('rec');
-        $self->_view->set_status('Select a row','ms','orange');
-        return;
-    }
-
-    # Detail screen module name from config
-    my $screen = $self->scrcfg('rec')->screen_detail;
-
-    my $dsm;
-    if ( ref $screen->{detail} eq 'ARRAY' ) {
-        $dsm = $self->get_dsm_name($screen, $row);
-    }
-    else {
-        $dsm = $screen;
-    }
+    my $dsm = $self->screen_detail_name();
 
     # Check if detail screen module is loaded and load it if it's not
     if ($dsm) {
@@ -557,16 +539,65 @@ sub on_page_det_activate {
         return;
     }
 
-    my $col_filter = $screen->{filter};
-    my $para = $self->tmatrix_read_cell($row, $col_filter, 'tm1');
+    $self->get_selected_and_set_fk_val;
 
-    my $ret = $self->record_load_detail($para);
-    if ($ret) {
-        $self->_view->set_status('Record loaded (d)','ms','blue');
-        $self->set_app_mode('edit');
-        # $self->controls_state_set('edit');
-        # $self->_model->set_scrdata_rec(q{});    # empty
+    # Load detail record
+    $self->record_load();
+
+    $self->_view->set_status('Record loaded (d)','ms','blue');
+    $self->set_app_mode('edit');
+    # $self->_model->set_scrdata_rec(q{});    # empty
+
+    return;
+}
+
+=head2 screen_detail_name
+
+Detail screen module name from screen configuration.
+
+=cut
+
+sub screen_detail_name {
+    my $self = shift;
+
+    my $screen = $self->scrcfg('rec')->screen_detail;
+
+    my $dsm;
+    if ( ref $screen->{detail} eq 'ARRAY' ) {
+        $dsm = $self->get_dsm_name($screen);
     }
+    else {
+        $dsm = $screen;
+    }
+
+    return $dsm;
+}
+
+=head2 get_selected_and_set_fk_val
+
+Read the selected row from TableMatrix widget and get the foreign key
+value designated by the I<filter> configuration value of the screen.
+
+Save the foreign key value.
+
+The default selector table is I<tm1>.
+
+=cut
+
+sub get_selected_and_set_fk_val {
+    my $self = shift;
+
+    my $row = $self->tmatrix_get_selected;
+
+    # Detail screen module name from config
+    my $screen = $self->scrcfg('rec')->screen_detail;
+
+    my $params = $self->tmatrix_read_cell($row, $screen->{filter}, 'tm1');
+
+    my $fk_col = $self->screen_get_fk_col;
+    my $fk_val = $params->{$fk_col};
+
+    $self->screen_set_fk_val($fk_val);
 
     return;
 }
@@ -597,6 +628,8 @@ sub screen_detail_load {
 Find the selected row in the TM. Read it and return the name of the
 detail screen module to load.
 
+The configuration is like this:
+
   {
       'detail' => [
           {
@@ -615,7 +648,9 @@ detail screen module to load.
 =cut
 
 sub get_dsm_name {
-    my ($self, $detscr, $row) = @_;
+    my ($self, $detscr) = @_;
+
+    my $row = $self->tmatrix_get_selected;
 
     my $col_name  = $detscr->{match};
     my $rec = $self->tmatrix_read_cell($row, $col_name, 'tm1');
@@ -1003,7 +1038,7 @@ sub lookup {
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->scrcfg('rec')->dep_table_column_attr($tm_ds, $fld, 'id');
+        my $col = $self->scrcfg('rec')->dep_table_column_attr($tm_ds,$fld,'id');
         $filter = $self->tmatrix_read_cell($r, $col);
     }
 
@@ -1169,16 +1204,16 @@ sub fields_cfg_one {
 
     # One field, no array
     my @cols;
-    my $lookup_field = $bindings->{field};
+    my $lookup = $bindings->{field};
     my $field_cfg;
     if ($tm_ds) {
-        $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup_field);
+        $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup);
     }
     else {
-        $field_cfg = $self->scrcfg('rec')->main_table_column($lookup_field);
+        $field_cfg = $self->scrcfg('rec')->main_table_column($lookup);
     }
     my $rec = {};
-    $rec->{$lookup_field} = {
+    $rec->{$lookup} = {
         width => $field_cfg->{width},
         label => $field_cfg->{label},
         order => $field_cfg->{order},
@@ -1515,7 +1550,7 @@ sub scrcfg {
 
     return $self->{_dscrcfg} if $page eq 'det';
 
-    carp "Wrong page: $page!\n";
+    warn "Wrong page: $page!\n";
 
     return;
 }
@@ -1536,7 +1571,7 @@ sub scrobj {
 
     return $self->{_dscrobj} if $page eq 'det';
 
-    carp "Wrong page: $page!\n";
+    warn "Wrong page: $page!\n";
 
     return;
 }
@@ -1960,29 +1995,6 @@ sub toggle_screen_interface_controls {
     return;
 }
 
-=head2 record_load_new
-
-Load a new record.
-
-The (primary) key field value is col0 from the selected item in the
-list control on the I<List> page.
-
-=cut
-
-sub record_load_new {
-    my ($self, $pk_val) = @_;
-
-    print "Load new record\n";
-
-    $self->record_load($pk_val);
-
-    if ( $self->_model->is_loaded ) {
-        $self->_view->set_status('Record loaded','ms','blue');
-    }
-
-    return;
-}
-
 =head2 screen_clear
 
 Clear the screen: empty all controls.
@@ -1996,8 +2008,10 @@ sub screen_clear {
 
     $self->record_clear;
 
-    if ($self->_model->is_mode('edit')) {
-        $self->set_app_mode('idle');
+    # Don't change mode if 'det' page
+    my $page = $self->_view->get_nb_current_page();
+    if ( $self->_model->is_mode('edit') ) {
+        $self->set_app_mode('idle') unless $page eq 'det';
     }
 
     $self->_view->set_status( 'Cleared','ms','orange' );
@@ -2244,7 +2258,7 @@ sub screen_read {
          # Skip READ ONLY fields if not FIND status
          # Read ALL if $all == true (don't skip)
          if ( ! ( $all or $self->_model->is_mode('find') ) ) {
-             next if $ctrlrw eq 'ro'; # skip RO field
+             next if $ctrlrw eq 'r' or $ctrlrw eq 'ro'; # skip ro field
          }
 
          # Run appropriate sub according to control (entry widget) type
@@ -2541,15 +2555,14 @@ sub screen_write {
         $cfg_ref  = $self->scrcfg('det');
     }
     else {
-        print "Wrong page: $page!\n";
+        warn "Wrong page: $page!\n";
         return;
     }
 
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
   FIELD:
-    foreach my $field ( keys %{ $cfg_ref->main_table_columns() } ) {
-
+    foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
         my $fld_cfg = $cfg_ref->main_table_column($field);
 
         my $ctrl_state;
@@ -2574,89 +2587,8 @@ sub screen_write {
             next FIELD if !$value;
         }
         elsif ( $option eq 'clear' ) {
-
-            # nothing here
-        }
-        else {
-            warn "Should never get here!\n";
-        }
-
-        if ($value) {
-
-            # Trim spaces and '\n' from the end
-            $value = Tpda3::Utils->trim($value);
-
-            # Should make $value = 0, than format as number ?
-            my $places = $fld_cfg->{places};
-            if ($places) {
-                if ( $places > 0 ) {
-
-                    # if places > 0, format as number
-                    $value = sprintf( "%.${places}f", $value );
-                }
-            }
-        }
-
-        # Run appropriate sub according to control (entry widget) type
-        my $sub_name = qq{control_write_$ctrltype};
-        if ( $self->can($sub_name) ) {
-            $self->$sub_name( $ctrl_ref, $field, $value );
-        }
-        else {
-            print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
-        }
-
-        # Restore state
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
-    }
-
-    # $self->_log->trace("Write finished (restored controls states)");
-
-    return;
-}
-
-sub screen_write_det {
-    my ($self, $record_ref, $option) = @_;
-
-    $option ||= 'record';             # default option record
-
-    # $self->_log->trace("Write '$option' screen controls");
-
-    my $ctrl_ref = $self->scrobj('det')->get_controls();
-
-    return unless scalar keys %{$ctrl_ref};  # no controls?
-
-    my $scrcfg = $self->scrcfg('det');
-
-  FIELD:
-    foreach my $field ( keys %{ $scrcfg->main_table->{columns} } ) {
-
-        my $fld_cfg = $scrcfg->main_table->{columns}{$field};
-
-        my $ctrl_state;
-        eval {
-            $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
-        };
-        if ($@) {
-            print "WW: Undefined field '$field', check configuration (d)!\n";
-            next FIELD;
-        }
-        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
-
-        # Control config attributes
-        my $ctrltype = $fld_cfg->{ctrltype};
-
-        my $value;
-        if ( $option eq 'record' ) {
-            $value = $record_ref->{ lc $field };
-        }
-        elsif ( $option eq 'fields' ) {
-            $value = $record_ref->{ lc $field };
-            next FIELD if !$value;
-        }
-        elsif ( $option eq 'clear' ) {
-
-            # nothing here
+            my $rw = $fld_cfg->{rw};
+            next FIELD if $rw eq 'r'; # 'det' page fields with data from 'rec'
         }
         else {
             warn "Should never get here!\n";
@@ -2798,7 +2730,7 @@ sub tmatrix_read_cell {
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
     unless ($tmx) {
-        carp "No TM!\n";
+        warn "No TM!\n";
         return;
     }
 
@@ -3410,6 +3342,31 @@ sub control_states {
     return $self->{control_states}{$state};
 }
 
+=head2 record_load_new
+
+Load a new record.
+
+The (primary) key field value is col0 from the selected item in the
+list control on the I<List> page.
+
+=cut
+
+sub record_load_new {
+    my ($self, $pk_val) = @_;
+
+    print "Load new record\n";
+
+    $self->screen_set_pk_val($pk_val); # save PK value
+
+    $self->record_load();
+
+    if ( $self->_model->is_loaded ) {
+        $self->_view->set_status('Record loaded','ms','blue');
+    }
+
+    return;
+}
+
 =head2 record_reload
 
 Reload the curent record.
@@ -3425,18 +3382,20 @@ can't delete it's content.
 sub record_reload {
     my $self = shift;
 
-    print " record_reload\n";
+    my $page = $self->_view->get_nb_current_page();
 
-    my $pk_col = $self->screen_get_pk_col;
-    my $pk_val = $self->screen_get_pk_val;
-    if ( ! defined $pk_val ) {
-        $self->_view->set_status('Reload failed!','ms','red');
-        return;
-    }
+    # Save PK-value
+    my $pk_val = $self->screen_get_pk_val; # get old pk-val
 
     $self->record_clear;
 
-    $self->record_load($pk_val);
+    # Restore
+    $self->screen_set_pk_val($pk_val);
+
+    # Set parameters for record load (pk, fk)
+    $self->get_selected_and_set_fk_val if $page eq 'det';
+
+    $self->record_load();
 
     $self->_view->set_status("Record reloaded",'ms','blue');
 
@@ -3448,16 +3407,16 @@ sub record_reload {
 
 =head2 record_load
 
-Load the selected record in the Screen.
+Load the selected record in the current screen. First it loads the
+main record into the screen widgets, than the dependent record(s) into
+the TableMatrix widget(s) if configured.
 
 =cut
 
 sub record_load {
-    my ($self, $pk_val) = @_;
+    my $self = shift;
 
-    print "Record load [r] ($pk_val)\n";
-
-    $self->screen_set_pk_val($pk_val); # save PK value
+    my $page = $self->_view->get_nb_current_page();
 
     #-  Main table
     my $params = $self->main_table_metadata('qry');
@@ -3468,7 +3427,7 @@ sub record_load {
 
     #- Dependent table(s), (if any)
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
+    foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
         my $tm_params = $self->dep_table_metadata($tm_ds, 'qry');
 
         my $records = $self->_model->table_batch_query($tm_params);
@@ -3485,31 +3444,11 @@ sub record_load {
     return;
 }
 
-=head2 record_load_detail
+=head2 record_delete
 
-Load the record in the detail Screen.
+Delete record and clear the screen.
 
 =cut
-
-sub record_load_detail {
-    my ($self, $args) = @_;
-
-    # FK
-    my $fk_col = $self->screen_get_fk_col;
-    my $fk_val = $args->{$fk_col};
-
-    print "Record load [d] ($fk_val)\n";
-
-    $self->screen_set_fk_val($fk_val); # save FK value
-
-    my $params = $self->main_table_metadata('qry');
-
-    my $record = $self->_model->query_record($params);
-
-    $self->screen_write_det($record);
-
-    return 1;
-}
 
 sub record_delete {
     my $self = shift;
@@ -3521,6 +3460,12 @@ sub record_delete {
 
     return;
 }
+
+=head2 record_clear
+
+Clear the screen.
+
+=cut
 
 sub record_clear {
     my $self = shift;
@@ -3565,7 +3510,7 @@ sub save_record {
 
     if ( $self->_model->is_mode('add') ) {
         my $record = $self->get_screen_data_record('ins');
-        print Dumper('ins', $record);
+
         $self->save_record_insert($record);
     }
     elsif ( $self->_model->is_mode('edit') ) {
@@ -3575,6 +3520,7 @@ sub save_record {
         }
 
         my $record = $self->get_screen_data_record('upd');
+
         $self->_model->store_record_update($record);
     }
     else {
@@ -3765,7 +3711,7 @@ sub main_table_metadata {
         $metadata->{pkcol} = $pk_col;
     }
     else {
-        carp "Wrong parameter: $for_sql\n";
+        warn "Wrong parameter: $for_sql\n";
         return;
     }
 
@@ -3799,7 +3745,7 @@ sub dep_table_metadata {
         $metadata->{table} = $self->scrcfg->main_table_name;
     }
     else {
-        carp "Wrong parameter: $for_sql\n";
+        warn "Wrong parameter: $for_sql\n";
         return;
     }
 
@@ -3844,7 +3790,7 @@ sub restore_screendata {
 
     my $rec = retrieve($data_file);
     unless (defined $rec) {
-        carp "Unable to retrieve from $data_file!\n";
+        warn "Unable to retrieve from $data_file!\n";
         return;
     }
 
