@@ -135,154 +135,154 @@ sub has_screen_detail {
     }
 }
 
-=head2 m_table
+=head2 main_table
 
 Return main table configurations data structure.
 
 =cut
 
-sub m_table {
+sub main_table {
     my $self = shift;
 
     return $self->maintable if $self->can('maintable');
 }
 
-sub m_table_name {
+sub main_table_name {
     my $self = shift;
 
-    return $self->m_table->{name};
+    return $self->main_table->{name};
 }
 
-sub m_table_view {
+sub main_table_view {
     my $self = shift;
 
-    return $self->m_table->{view};
+    return $self->main_table->{view};
 }
 
-sub m_table_generator {
+sub main_table_generator {
     my $self = shift;
 
-    return $self->m_table->{generator};
+    return $self->main_table->{generator};
 }
 
-sub m_table_pkcol {
+sub main_table_pkcol {
     my $self = shift;
 
-    return $self->m_table->{pkcol}{name};
+    return $self->main_table->{pkcol}{name};
 }
 
-sub m_table_fkcol {
+sub main_table_fkcol {
     my $self = shift;
 
-    return $self->m_table->{fkcol}{name};
+    return $self->main_table->{fkcol}{name};
 }
 
-sub m_table_columns {
+sub main_table_columns {
     my $self = shift;
 
-    return $self->m_table->{columns};
+    return $self->main_table->{columns};
 }
 
-sub m_table_column {
+sub main_table_column {
     my ($self, $column) = @_;
 
-    return $self->m_table_columns->{$column};
+    return $self->main_table_columns->{$column};
 }
 
-sub m_table_column_attr {
+sub main_table_column_attr {
     my ($self, $column, $attr) = @_;
 
-    return $self->m_table_column($column)->{$attr};
+    return $self->main_table_column($column)->{$attr};
 }
 
 #---
 
-sub d_table {
+sub dep_table {
     my ($self, $tm_ds) = @_;
 
     return $self->deptable->{$tm_ds} if $self->can('deptable');
 }
 
-sub d_table_name {
+sub dep_table_name {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{name};
+    return $self->dep_table($tm_ds)->{name};
 }
 
-sub d_table_view {
+sub dep_table_view {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{view};
+    return $self->dep_table($tm_ds)->{view};
 }
 
-sub d_table_generator {
+sub dep_table_generator {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{generator};
+    return $self->dep_table($tm_ds)->{generator};
 }
 
-sub d_table_updatestyle {
+sub dep_table_updatestyle {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{updatestyle};
+    return $self->dep_table($tm_ds)->{updatestyle};
 }
 
-sub d_table_selectorcol {
+sub dep_table_selectorcol {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{selectorcol};
+    return $self->dep_table($tm_ds)->{selectorcol};
 }
 
-sub d_table_has_selectorcol {
+sub dep_table_has_selectorcol {
     my ($self, $tm_ds) = @_;
 
-    my $sc = $self->d_table_selectorcol($tm_ds);
+    my $sc = $self->dep_table_selectorcol($tm_ds);
 
     return if $sc eq 'none';
 
     return $sc;
 }
 
-sub d_table_orderby {
+sub dep_table_orderby {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{orderby};
+    return $self->dep_table($tm_ds)->{orderby};
 }
 
-sub d_table_colstretch {
+sub dep_table_colstretch {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{colstretch};
+    return $self->dep_table($tm_ds)->{colstretch};
 }
 
-sub d_table_pkcol {
+sub dep_table_pkcol {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{pkcol}{name};
+    return $self->dep_table($tm_ds)->{pkcol}{name};
 }
 
-sub d_table_fkcol {
+sub dep_table_fkcol {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{fkcol}{name};
+    return $self->dep_table($tm_ds)->{fkcol}{name};
 }
 
-sub d_table_columns {
+sub dep_table_columns {
     my ($self, $tm_ds) = @_;
 
-    return $self->d_table($tm_ds)->{columns};
+    return $self->dep_table($tm_ds)->{columns};
 }
 
-sub d_table_column {
+sub dep_table_column {
     my ($self, $tm_ds, $column) = @_;
 
-    return $self->d_table_columns($tm_ds)->{$column};
+    return $self->dep_table_columns($tm_ds)->{$column};
 }
 
-sub d_table_column_attr {
+sub dep_table_column_attr {
     my ($self, $tm_ds, $column, $attr) = @_;
 
-    return $self->d_table($tm_ds)->{columns}{$column}{$attr};
+    return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
 
 =head1 AUTHOR

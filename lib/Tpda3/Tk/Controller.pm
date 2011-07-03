@@ -782,7 +782,7 @@ sub setup_lookup_bindings_entry {
         };
 
         # Add the search field to the columns list
-        my $field_cfg = $self->_rscrcfg->m_table_column($column);
+        my $field_cfg = $self->_rscrcfg->main_table_column($column);
         my @cols;
         my $rec = {};
         $rec->{$search} = {
@@ -1000,7 +1000,7 @@ sub lookup {
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->_rscrcfg->d_table_column_attr($tm_ds, $fld, 'id');
+        my $col = $self->_rscrcfg->dep_table_column_attr($tm_ds, $fld, 'id');
         $filter = $self->tmatrix_read_cell($r, $col);
     }
 
@@ -1044,7 +1044,7 @@ sub method {
 
 Return the data structure used by the L<Tpda3::Tk::Dialog::Search>
 module.  Uses the I<tablebindings> section of the screen configuration
-and the related field attributes from the I<d_table> section.
+and the related field attributes from the I<dep_table> section.
 
 =over
 
@@ -1116,7 +1116,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $column);
+    my $field_cfg = $self->_rscrcfg->dep_table_column($tm_ds, $column);
 
     my @cols;
     my $rec = {};
@@ -1169,10 +1169,10 @@ sub fields_cfg_one {
     my $lookup_field = $bindings->{field};
     my $field_cfg;
     if ($tm_ds) {
-        $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $lookup_field);
+        $field_cfg = $self->_rscrcfg->dep_table_column($tm_ds, $lookup_field);
     }
     else {
-        $field_cfg = $self->_rscrcfg->m_table_column($lookup_field);
+        $field_cfg = $self->_rscrcfg->main_table_column($lookup_field);
     }
     my $rec = {};
     $rec->{$lookup_field} = {
@@ -1200,10 +1200,10 @@ sub fields_cfg_many {
     foreach my $lookup_field ( @{ $bindings->{field} } ) {
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->_rscrcfg->d_table_column($tm_ds, $lookup_field);
+            $field_cfg = $self->_rscrcfg->dep_table_column($tm_ds, $lookup_field);
         }
         else {
-            $field_cfg = $self->_rscrcfg->m_table_column($lookup_field);
+            $field_cfg = $self->_rscrcfg->main_table_column($lookup_field);
         }
         my $rec = {};
         $rec->{$lookup_field} = {
@@ -1232,10 +1232,10 @@ sub fields_cfg_named {
         my $scr_field = $bindings->{field}{$lookup_field}{name};
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->_rscrcfg->d_table_columns($tm_ds, $scr_field);
+            $field_cfg = $self->_rscrcfg->dep_table_columns($tm_ds, $scr_field);
         }
         else {
-            $field_cfg = $self->_rscrcfg->m_table_column($scr_field);
+            $field_cfg = $self->_rscrcfg->main_table_column($scr_field);
         }
 
         my $rec = {};
@@ -1692,7 +1692,7 @@ sub screen_module_load {
 
     # List header
     my @header_cols = @{ $self->_rscrcfg->found_cols->{col} };
-    my $fields = $self->_rscrcfg->m_table_columns;
+    my $fields = $self->_rscrcfg->main_table_columns;
     my $header_attr = {};
     foreach my $col ( @header_cols ) {
         $header_attr->{$col} = {
@@ -1707,9 +1707,9 @@ sub screen_module_load {
     # TableMatrix header(s), if any
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
         my $tmx    = $self->_rscrobj->get_tm_controls($tm_ds);
-        my $fields = $self->_rscrcfg->d_table_columns($tm_ds);
-        my $strech = $self->_rscrcfg->d_table_colstretch('tm1');
-        my $sc     = $self->_rscrcfg->d_table_has_selectorcol($tm_ds);
+        my $fields = $self->_rscrcfg->dep_table_columns($tm_ds);
+        my $strech = $self->_rscrcfg->dep_table_colstretch('tm1');
+        my $sc     = $self->_rscrcfg->dep_table_has_selectorcol($tm_ds);
         $self->_view->make_tablematrix_header( $tmx, $fields, $strech, $sc );
     }
 
@@ -1793,7 +1793,7 @@ sub screen_module_detail_load {
     # # TableMatrix header(s), if any
     # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
     #     my $tmx = $self->_screen->get_tm_controls($tm_ds);
-    #     my $tm_fields = $self->_rscrcfg->d_table->{$tm_ds}{columns};
+    #     my $tm_fields = $self->_rscrcfg->dep_table->{$tm_ds}{columns};
     #     $self->_view->make_tablematrix_header( $tmx, $tm_fields );
     # }
 
@@ -1878,10 +1878,10 @@ sub screen_init {
     my $ctrl_ref = $self->_rscrobj->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
-    foreach my $field ( keys %{ $self->_rscrcfg->m_table_columns } ) {
+    foreach my $field ( keys %{ $self->_rscrcfg->main_table_columns } ) {
 
         # Control config attributes
-        my $fld_cfg  = $self->_rscrcfg->m_table_column($field);
+        my $fld_cfg  = $self->_rscrcfg->main_table_column($field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
@@ -2129,8 +2129,8 @@ sub record_find_execute {
     $self->screen_read();
 
     # Table configs
-    my $m_table = $self->_rscrcfg->m_table;
-    my $columns = $self->_rscrcfg->m_table_columns;
+    my $main_table = $self->_rscrcfg->main_table;
+    my $columns = $self->_rscrcfg->main_table_columns;
 
     my $params = {};
 
@@ -2146,8 +2146,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $m_table->{view};   # use view instead of table
-    $params->{pkcol} = $m_table->{pkcol}{name};
+    $params->{table} = $main_table->{view};   # use view instead of table
+    $params->{pkcol} = $main_table->{pkcol}{name};
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($params);
@@ -2174,7 +2174,7 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $columns = $self->_rscrcfg->m_table_columns;
+    my $columns = $self->_rscrcfg->main_table_columns;
 
     my $params = {};
 
@@ -2187,8 +2187,8 @@ sub record_find_count {
     }
 
     # Table data
-    $params->{table} = $self->_rscrcfg->m_table_view;   # use view instead of table
-    $params->{pkcol} = $self->_rscrcfg->m_table_pkcol;
+    $params->{table} = $self->_rscrcfg->main_table_view;   # use view instead of table
+    $params->{pkcol} = $self->_rscrcfg->main_table_pkcol;
 
     $self->_model->query_records_count($params);
 
@@ -2279,8 +2279,8 @@ sub screen_read {
 
    FIELD:
      # Scan and write to controls
-     foreach my $field ( keys %{ $scrcfg->m_table_columns() } ) {
-         my $fld_cfg = $scrcfg->m_table_column($field);
+     foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
+         my $fld_cfg = $scrcfg->main_table_column($field);
 
          # Control config attributes
          my $ctrltype = $fld_cfg->{ctrltype};
@@ -2595,9 +2595,9 @@ sub screen_write {
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
   FIELD:
-    foreach my $field ( keys %{ $cfg_ref->m_table_columns() } ) {
+    foreach my $field ( keys %{ $cfg_ref->main_table_columns() } ) {
 
-        my $fld_cfg = $cfg_ref->m_table_column($field);
+        my $fld_cfg = $cfg_ref->main_table_column($field);
 
         my $ctrl_state;
         eval {
@@ -2674,9 +2674,9 @@ sub screen_write_det {
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
   FIELD:
-    foreach my $field ( keys %{ $self->{_dscrcfg}->m_table->{columns} } ) {
+    foreach my $field ( keys %{ $self->{_dscrcfg}->main_table->{columns} } ) {
 
-        my $fld_cfg = $self->{_dscrcfg}->m_table->{columns}{$field};
+        my $fld_cfg = $self->{_dscrcfg}->main_table->{columns}{$field};
 
         my $ctrl_state;
         eval {
@@ -2767,11 +2767,11 @@ sub tmatrix_read {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    my $fields_cfg = $self->_rscrcfg->d_table_columns($tm_ds);
+    my $fields_cfg = $self->_rscrcfg->dep_table_columns($tm_ds);
     my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
     # Get selectorcol index, if any
-    my $sc = $self->_rscrcfg->d_table_has_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->dep_table_has_selectorcol($tm_ds);
 
     # Read table data and create an AoH
     my @tabledata;
@@ -2847,7 +2847,7 @@ sub tmatrix_read_cell {
         return;
     }
 
-    my $fields_cfg = $self->_rscrcfg->d_table_columns($tm_ds);
+    my $fields_cfg = $self->_rscrcfg->dep_table_columns($tm_ds);
 
     my $col_name;
     if ($is_col_name) {
@@ -2889,8 +2889,8 @@ sub tmatrix_write {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->_rscrcfg->d_table_columns($tm_ds) } ) {
-            my $fld_cfg = $self->_rscrcfg->d_table_column($tm_ds, $field);
+        foreach my $field ( keys %{ $self->_rscrcfg->dep_table_columns($tm_ds) } ) {
+            my $fld_cfg = $self->_rscrcfg->dep_table_column($tm_ds, $field);
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
@@ -2949,7 +2949,7 @@ Make TableMatrix selector.
 sub tmatrix_make_selector {
     my ($self, $tm_ds) = @_;
 
-    my $sc = $self->_rscrcfg->d_table_has_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->dep_table_has_selectorcol($tm_ds);
 
     return unless $sc;
 
@@ -2995,7 +2995,7 @@ sub tmatrix_write_row {
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
 
-        my $fld_cfg = $self->_rscrcfg->d_table_column($tm_ds, $field);
+        my $fld_cfg = $self->_rscrcfg->dep_table_column($tm_ds, $field);
         my $value = $record_ref->{$field};
 
         my ( $col, $validtype, $width, $places ) =
@@ -3078,8 +3078,8 @@ sub controls_rec_state_set {
 
     return unless defined $self->_rscrcfg;
 
-    foreach my $field ( keys %{ $self->_rscrcfg->m_table_columns } ) {
-        my $fld_cfg = $self->_rscrcfg->m_table_column($field);
+    foreach my $field ( keys %{ $self->_rscrcfg->main_table_columns } ) {
+        my $fld_cfg = $self->_rscrcfg->main_table_column($field);
 
         # Skip for some control types
         # next if $fld_cfg->{ctrltype} = '';
@@ -3130,8 +3130,8 @@ sub controls_det_state_set {
 
     return unless defined $self->_dscrcfg;
 
-    foreach my $field ( keys %{ $self->_dscrcfg->m_table_columns } ) {
-        my $fld_cfg = $self->_dscrcfg->m_table_column($field);
+    foreach my $field ( keys %{ $self->_dscrcfg->main_table_columns } ) {
+        my $fld_cfg = $self->_dscrcfg->main_table_column($field);
 
         # Skip for some control types
         # next if $fld_cfg->{ctrltype} = '';
@@ -3337,7 +3337,7 @@ sub add_tmatrix_row {
 
     $tm_ds ||= q{tm1};          # default table matrix designator
 
-    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
+    my $updstyle = $self->_rscrcfg->dep_table_updatestyle($tm_ds);
     my $xt = $self->_rscrobj->get_tm_controls($tm_ds);
 
     return
@@ -3380,7 +3380,7 @@ sub add_tmatrix_row {
     #     print " NO values\n";
     # }
 
-    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->dep_table_selectorcol($tm_ds);
     if ($sc ne 'none') {
         $self->embeded_buttons( $xt, $new_r, $sc ); # add button
         $self->tmatrix_set_selected($new_r);
@@ -3405,7 +3405,7 @@ sub remove_tmatrix_row {
 
     $tm_ds ||= q{tm1};           # default table matrix designator
 
-    my $updstyle = $self->_rscrcfg->d_table_updatestyle($tm_ds);
+    my $updstyle = $self->_rscrcfg->dep_table_updatestyle($tm_ds);
     my $xt = $self->_rscrobj->get_tm_controls($tm_ds);
 
     unless ( $self->_model->is_mode('add')
@@ -3431,7 +3431,7 @@ sub remove_tmatrix_row {
         return;
     }
 
-    my $sc = $self->_rscrcfg->d_table_selectorcol($tm_ds);
+    my $sc = $self->_rscrcfg->dep_table_selectorcol($tm_ds);
     if ($sc ne 'none') {
         $self->tmatrix_set_selected($r - 1);
         # $self->toggle_rbbuttons($xt, $r - 1, $sc);
@@ -3519,7 +3519,7 @@ sub record_load {
     $self->screen_set_pk_val($pk_val); # save PK value
 
     #-  Main table
-    my $params = $self->m_table_metadata('qry');
+    my $params = $self->main_table_metadata('qry');
 
     my $record = $self->_model->query_record($params);
 
@@ -3528,7 +3528,7 @@ sub record_load {
     #- Dependent table(s), (if any)
 
     foreach my $tm_ds ( keys %{ $self->_rscrobj->get_tm_controls() } ) {
-        my $tm_params = $self->d_table_metadata($tm_ds, 'qry');
+        my $tm_params = $self->dep_table_metadata($tm_ds, 'qry');
 
         my $records = $self->_model->table_batch_query($tm_params);
 
@@ -3561,7 +3561,7 @@ sub record_load_detail {
 
     $self->screen_set_fk_val($fk_val); # save FK value
 
-    my $params = $self->m_table_metadata('qry');
+    my $params = $self->main_table_metadata('qry');
 
     my $record = $self->_model->query_record($params);
 
@@ -3758,7 +3758,7 @@ sub get_screen_data_record {
 
     #-- Metadata
     my $record = {};
-    $record->{metadata} = $self->m_table_metadata($for_sql);
+    $record->{metadata} = $self->main_table_metadata($for_sql);
 
     #-- Data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
@@ -3773,7 +3773,7 @@ sub get_screen_data_record {
 
     foreach my $tm_ds ( keys %{$tm_dss} ) {
         $deprec->{$tm_ds}{metadata} =
-          $self->d_table_metadata($tm_ds, $for_sql);
+          $self->dep_table_metadata($tm_ds, $for_sql);
         ( $deprec->{$tm_ds}{data}, undef ) = $self->tmatrix_read($tm_ds);
 
         # TableMatrix data doesn't contain pk_col=>pk_val, add it
@@ -3787,13 +3787,13 @@ sub get_screen_data_record {
     return \@record;
 }
 
-=head2 m_table_metadata
+=head2 main_table_metadata
 
 Retrieve main table meta-data from the screen configuration.
 
 =cut
 
-sub m_table_metadata {
+sub main_table_metadata {
     my ($self, $for_sql) = @_;
 
     my $metadata = {};
@@ -3810,17 +3810,17 @@ sub m_table_metadata {
     }
 
     if ($for_sql eq 'qry') {
-        $metadata->{table} = $self->scrcfg->m_table_view;
+        $metadata->{table} = $self->scrcfg->main_table_view;
         $metadata->{where}{$pk_col} = $pk_val; # pk
         $metadata->{where}{$fk_col} = $fk_val if $has_dep;
     }
     elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
-        $metadata->{table} = $self->scrcfg->m_table_name;
+        $metadata->{table} = $self->scrcfg->main_table_name;
         $metadata->{where}{$pk_col} = $pk_val; # pk
         $metadata->{where}{$fk_col} = $fk_val if $has_dep;
     }
     elsif ($for_sql eq 'ins') {
-        $metadata->{table} = $self->scrcfg->m_table_name;
+        $metadata->{table} = $self->scrcfg->main_table_name;
         $metadata->{pkcol} = $pk_col;
     }
     else {
@@ -3831,13 +3831,13 @@ sub m_table_metadata {
     return $metadata;
 }
 
-=head2 d_table_metadata
+=head2 dep_table_metadata
 
 Retrieve dependent table meta-data from the screen configuration.
 
 =cut
 
-sub d_table_metadata {
+sub dep_table_metadata {
     my ($self, $tm_ds, $for_sql) = @_;
 
     my $metadata = {};
@@ -3847,28 +3847,28 @@ sub d_table_metadata {
     my $pk_val = $self->screen_get_pk_val;
 
     if ($for_sql eq 'qry') {
-        $metadata->{table} = $self->scrcfg->d_table_view($tm_ds);
+        $metadata->{table} = $self->scrcfg->dep_table_view($tm_ds);
         $metadata->{where}{$pk_col} = $pk_val; # pk
     }
     elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
-        $metadata->{table} = $self->scrcfg->d_table_name($tm_ds);
+        $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
         $metadata->{where}{$pk_col} = $pk_val; # pk
     }
     elsif ($for_sql eq 'ins') {
-        $metadata->{table} = $self->scrcfg->m_table_name;
+        $metadata->{table} = $self->scrcfg->main_table_name;
     }
     else {
         carp "Wrong parameter: $for_sql\n";
         return;
     }
 
-    my $columns = $self->scrcfg->d_table_columns($tm_ds);
+    my $columns = $self->scrcfg->dep_table_columns($tm_ds);
 
     $metadata->{pkcol}    = $pk_col;
-    $metadata->{fkcol}    = $self->scrcfg->d_table_fkcol($tm_ds);
-    $metadata->{order}    = $self->scrcfg->d_table_orderby($tm_ds);
+    $metadata->{fkcol}    = $self->scrcfg->dep_table_fkcol($tm_ds);
+    $metadata->{order}    = $self->scrcfg->dep_table_orderby($tm_ds);
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $metadata->{updstyle} = $self->scrcfg->d_table_updatestyle($tm_ds);
+    $metadata->{updstyle} = $self->scrcfg->dep_table_updatestyle($tm_ds);
 
     return $metadata;
 }
@@ -3975,7 +3975,7 @@ sub build_rbbutton {
 sub screen_get_pk_col {
     my $self = shift;
 
-    return $self->_rscrcfg->m_table_pkcol();
+    return $self->_rscrcfg->main_table_pkcol();
 }
 
 sub screen_set_pk_col {
@@ -4021,7 +4021,7 @@ sub screen_get_pk_val {
 sub screen_get_fk_col {
     my $self = shift;
 
-    return $self->_dscrcfg->m_table_fkcol();
+    return $self->_dscrcfg->main_table_fkcol();
 }
 
 sub screen_set_fk_col {
