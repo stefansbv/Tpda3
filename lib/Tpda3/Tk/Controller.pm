@@ -580,7 +580,9 @@ Check if the detail screen module is loaded, and load if it's not.
 sub screen_detail_load {
     my ($self, $dsm) = @_;
 
-    if ( $self->{_dscrstr} && ( $self->{_dscrstr} eq lc $dsm ) ) {
+    my $dscrstr = $self->screen_string('det');
+
+    if ( $dscrstr && ( $dscrstr eq lc $dsm ) ) {
         print "Already loaded ($dsm)\n";
     }
     else {
@@ -1772,14 +1774,14 @@ sub screen_string {
         $module = $self->{_rscrcls};
     }
     elsif ($page eq 'det') {
-        $module = $self->{_dscrcls};
+        $module = $self->{_dscrcls} || q{}; # empty
     }
     else {
         print "WW: screen_string called with page '$page'\n";
         return;
     }
 
-    my $scrstr = ( split /::/, $module )[-1];
+    my $scrstr = ( split /::/, $module )[-1] || q{}; # or nothing
 
     return lc $scrstr;
 }
@@ -2242,7 +2244,7 @@ sub screen_read {
          # Skip READ ONLY fields if not FIND status
          # Read ALL if $all == true (don't skip)
          if ( ! ( $all or $self->_model->is_mode('find') ) ) {
-             next if $ctrlrw eq 'r'; # skip RO field
+             next if $ctrlrw eq 'ro'; # skip RO field
          }
 
          # Run appropriate sub according to control (entry widget) type
