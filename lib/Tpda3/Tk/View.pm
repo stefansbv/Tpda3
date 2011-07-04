@@ -12,7 +12,7 @@ use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
-use Tk::widgets qw(NoteBook StatusBar Dialog Checkbutton
+use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
                    LabFrame Listbox JComboBox Font);
 
 # require Tk::ErrorDialog;
@@ -705,6 +705,27 @@ sub define_dialogs {
         -default_button => 'Ok',
         -buttons        => [qw/Ok Cancel/]
     );
+
+    # $self->{asksave} = $self->DialogBox(
+    #     -title   => 'Save?',
+    #     -buttons => [qw{Yes No Cancel}],
+    # );
+    # $self->{asksave}->geometry('400x300');
+    # $self->{asksave}->bind(
+    #     '<Escape>',
+    #     sub { $self->{asksave}->Subwidget('B_Cancel')->invoke }
+    # );
+
+    # # Nice trick to position buttons to the right
+    # # Source: PM by lamprecht on Apr 22, 2011 at 22:09 UTC
+    # my $bframe = $self->{asksave}->Subwidget('bottom');
+    # for ($bframe->children) {
+    #     $_->packForget;
+    #     $_->pack(-side => 'right',
+    #              -padx => 3,
+    #              -pady => 3,
+    #          );
+    # }
 
     return;
 }

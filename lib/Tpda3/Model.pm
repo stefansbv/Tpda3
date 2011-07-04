@@ -2,6 +2,8 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -1009,6 +1011,24 @@ sub table_selectcol_as_array {
     };
 
     return $records;
+}
+
+=head2 record_compare
+
+Compare the data structure created when a new record was loaded, the
+witness record, with the current data structure from the screen.
+
+=cut
+
+sub record_compare {
+    my ($self, $witness, $record) = @_;
+
+    my $dc = Data::Compare->new($witness, $record);
+
+    # print 'Structures of $witness and $record are ',
+    #     $dc->Cmp ? "" : "not ", "identical.\n";
+
+    return !$dc->Cmp;
 }
 
 =head1 AUTHOR

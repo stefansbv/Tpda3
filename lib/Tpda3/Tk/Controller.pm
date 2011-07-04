@@ -2,9 +2,13 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
+use Tk::DialogBox;
+
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
@@ -59,7 +63,7 @@ Constructor method.
 
 =item _dscrcfg  - current I<detail> screen config object
 
-=item _tblkeys  - primary and foreign keys and values
+=item _tblkeys  - primary and foreign keys and values record
 
 =item _scrdata  - current screen data
 
@@ -221,6 +225,7 @@ sub _set_event_handlers {
     #-- Exit
     $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
+            return if ! defined $self->ask_to_save;
             $self->_view->on_quit;
         }
     );
@@ -235,7 +240,7 @@ sub _set_event_handlers {
     #-- Save geometry
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
-            my $scr_name = $self->screen_string || 'main';
+            my $scr_name = $self->screen_string('rec') || 'main';
             $self->_cfg->config_save_instance(
                 $scr_name, $self->_view->w_geometry() );
         }
@@ -257,7 +262,7 @@ sub _set_event_handlers {
     #-- Attach to desktop - pin (save geometry to config file)
     $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
-            my $scr_name = $self->screen_string || 'main';
+            my $scr_name = $self->screen_string('rec') || 'main';
             $self->_cfg
                 ->config_save_instance( $scr_name, $self->_view->w_geometry() );
         }
@@ -358,13 +363,19 @@ sub _set_event_handlers {
     #-- Quit
     $self->_view->get_toolbar_btn('tb_qt')->bind(
         '<ButtonRelease-1>' => sub {
+            return if ! defined $self->ask_to_save;
             $self->_view->on_quit;
         }
     );
 
     #-- Make some key bindings
 
-    $self->_view->bind( '<Control-q>' => sub { $self->_view->on_quit } );
+    $self->_view->bind(
+        '<Control-q>' => sub {
+            return if ! defined $self->ask_to_save;
+            $self->_view->on_quit
+        }
+    );
     $self->_view->bind(
         '<F5>' => sub {
             $self->_model->is_mode('edit')
@@ -498,6 +509,9 @@ sub on_page_rec_activate {
     else {
         $self->record_load_new($pk_val_new);
         $self->set_app_mode('edit');
+
+        # Save record as witness reference for comparison
+        $self->save_screendata( $self->storable_file_name('orig') );
     }
 
     return;
@@ -1833,7 +1847,7 @@ sub update_geometry {
 
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->screen_string };
+        $geom = $self->_cfg->geometry->{ $self->screen_string('rec') };
         unless ($geom) {
             $geom = $self->scrcfg('rec')->screen->{geometry};
         }
@@ -1932,21 +1946,25 @@ sub toggle_interface_controls {
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
 
-        #- Exceptions
+        #- Conditions
 
-        #-- Take note button
-        if ( $name eq 'tb_tn' and $self->{_rscrcls} ) {
-            $status = 'normal'   if $mode eq 'add';
-            $status = 'disabled' unless $is_rec;
-        }
+        unless ( $page eq 'lst' ) {
 
-        #-- Restore note
-        if ( $name eq 'tb_tr' and $self->{_rscrcls} ) {
-            my $data_file = $self->note_file_name();
-            $status = $mode eq 'add'
-                    ? 'normal'
-                    : 'disabled';
-            $status = 'disabled' if !-f $data_file;
+            #-- Take note button
+            if ( $name eq 'tb_tn' and $self->{_rscrcls} ) {
+                $status = 'normal' if $mode eq 'add';
+                $status = 'disabled' unless $is_rec;
+            }
+
+            #-- Restore note
+            if ( $name eq 'tb_tr' and $self->{_rscrcls} ) {
+                my $data_file = $self->storable_file_name;
+                $status =
+                  $mode eq 'add'
+                  ? 'normal'
+                  : 'disabled';
+                $status = 'disabled' if !-f $data_file;
+            }
         }
 
         # Print preview
@@ -2244,7 +2262,6 @@ sub screen_read {
 
      return unless scalar keys %{$ctrl_ref};
 
-   FIELD:
      # Scan and write to controls
      foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
          my $fld_cfg = $scrcfg->main_table_column($field);
@@ -2266,7 +2283,7 @@ sub screen_read {
          if ( $self->can($sub_name) ) {
              unless ( $ctrl_ref->{$field}[1] ) {
                  print "WW: Undefined field '$field', check configuration!\n";
-                 next FIELD;
+                 next;
              }
              $self->$sub_name( $ctrl_ref, $field );
          }
@@ -2292,8 +2309,8 @@ sub control_read_e {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
-        # Clean '\n' from end
-        $value =~ s/\n$//mg;    # m=multiline
+        # Trim spaces and '\n' from the end
+        $value = Tpda3::Utils->trim($value);
 
         $self->{_scrdata}{$field} = $value;
         # print "Screen (e): $field = $value\n";
@@ -2324,8 +2341,8 @@ sub control_read_t {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
-        # Clean '\n' from end
-        $value =~ s/\n$//mg;    # m=multiline
+        # Trim spaces and '\n' from the end
+        $value = Tpda3::Utils->trim($value);
 
         $self->{_scrdata}{$field} = $value;
         # print "Screen (t): $field = $value\n";
@@ -2561,7 +2578,6 @@ sub screen_write {
 
     return unless scalar keys %{$ctrl_ref};  # no controls?
 
-  FIELD:
     foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
         my $fld_cfg = $cfg_ref->main_table_column($field);
 
@@ -2571,7 +2587,7 @@ sub screen_write {
         };
         if ($@) {
             print "WW: Undefined field '$field', check configuration (w)!\n";
-            next FIELD;
+            next;
         }
         $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
 
@@ -2584,11 +2600,11 @@ sub screen_write {
         }
         elsif ( $option eq 'fields' ) {
             $value = $record_ref->{ lc $field };
-            next FIELD if !$value;
+            next if !$value;
         }
         elsif ( $option eq 'clear' ) {
             my $rw = $fld_cfg->{rw};
-            next FIELD if $rw eq 'r'; # 'det' page fields with data from 'rec'
+            next if $rw eq 'r'; # 'det' page fields with data from 'rec'
         }
         else {
             warn "Should never get here!\n";
@@ -3043,7 +3059,11 @@ Toggle find mode, ask to save record if modified.
 sub toggle_mode_find {
     my $self = shift;
 
-    $self->ask_to_save() if $self->_model->is_modified;
+    my $answer = $self->ask_to_save; # if $self->_model->is_modified;
+    if (! defined $answer) {
+        $self->_view->get_toolbar_btn('tb_fm')->deselect;
+        return;
+    }
 
     $self->_model->is_mode('find')
         ? $self->set_app_mode('idle')
@@ -3063,7 +3083,13 @@ Toggle add mode, ask to save record if modified.
 sub toggle_mode_add {
     my $self = shift;
 
-    $self->ask_to_save() if $self->_model->is_modified;
+    if ( $self->_model->is_mode('edit') ) {
+        my $answer = $self->ask_to_save; # if $self->_model->is_modified;
+        if ( !defined $answer ) {
+            $self->_view->get_toolbar_btn('tb_ad')->deselect;
+            return;
+        }
+    }
 
     $self->_model->is_mode('add')
         ? $self->set_app_mode('idle')
@@ -3354,8 +3380,6 @@ list control on the I<List> page.
 sub record_load_new {
     my ($self, $pk_val) = @_;
 
-    print "Load new record\n";
-
     $self->screen_set_pk_val($pk_val); # save PK value
 
     $self->record_load();
@@ -3490,13 +3514,64 @@ sub ask_to_save {
     my $self = shift;
 
     if (   $self->_model->is_mode('edit')
-        or $self->_model->is_mode('add') )
-    {
-        print "Save record?\n";
-        $self->_model->set_scrdata_rec(0);       # empty
+        or $self->_model->is_mode('add') ) {
+
+        if ( $self->record_changed ) {
+
+            # Using a dialog defined on site because the one defined
+            # in View.pm, shows up behind the main window in KDE
+            my $db = $self->_view->DialogBox(
+                -title   => 'Dialog',
+                -buttons => [qw{Da Renunt Nu}],
+            );
+            $db->geometry('300x150');
+            $db->bind(
+                '<Escape>',
+                sub { $db->Subwidget('B_Renunt')->invoke }
+            );
+
+            #
+            my $dialog_text = "Inregistarea a fost modificata.\n\n";
+            $dialog_text   .= "Doriti sa salvati inregistrarea?";
+            my $scrolled = $db->Label(
+                -text => $dialog_text,
+            )->pack(
+                -side => 'bottom',
+                -padx => 20,
+                -pady => 20,
+            );
+            #
+
+            # Position buttons to the right
+            # Source: PM by lamprecht on Apr 22, 2011 at 22:09 UTC
+            # my $bframe = $db->Subwidget('bottom');
+            # for ($bframe->children) {
+            #     $_->packForget;
+            #     $_->pack(-side => 'right',
+            #              -padx => 3,
+            #              -pady => 3,
+            #          );
+            # }
+
+            # Does'n work as expected :(
+            # Rise and Show dialog by qumsieh on Oct 08, 2004
+            # $self->_view->after(50, sub {$self->_view->{asksave}->raise});
+            # my $answer = $self->_view->{asksave}->Show();
+            my $answer = $db->Show();
+            if ( $answer eq q{Da} ) {
+                $self->save_record();
+            }
+            elsif ( $answer eq q{Nu} ) {
+                $self->_view->set_status( 'Not saved!', 'ms', 'blue' );
+            }
+            else {
+                $self->_view->set_status( 'Canceled', 'ms', 'blue' );
+                return;
+            }
+        }
     }
 
-    return;
+    return 1;
 }
 
 =head2
@@ -3568,6 +3643,30 @@ sub save_record_insert {
     return;
 }
 
+=head2 record_changed
+
+Retrieve the witness data structure from disk and the current data
+structure read from the screen widgets and compare them.
+
+=cut
+
+sub record_changed {
+    my ($self, ) = @_;
+
+    my $witness_file = $self->storable_file_name('orig');
+    unless (-f $witness_file) {
+        $self->_view->set_status( 'Error!','ms','orange' );
+        croak "Can't find saved data for comparison!\n";
+        return;
+    }
+
+    my $witness = retrieve($witness_file);
+
+    my $record = $self->get_screen_data_record('upd');
+
+    return $self->_model->record_compare($witness, $record);
+}
+
 =head2 take_note
 
 Save record to a temporary file on disk.  Can be restored into a new
@@ -3578,7 +3677,7 @@ record.  An easy way of making multiple records based on a template.
 sub take_note {
     my $self = shift;
 
-    my $msg = $self->save_screendata( $self->note_file_name )
+    my $msg = $self->save_screendata( $self->storable_file_name )
             ? 'Note taken'
             : 'Note take failed';
 
@@ -3597,7 +3696,7 @@ easy way of making multiple records based on a template.
 sub restore_note {
     my $self = shift;
 
-    my $msg = $self->restore_screendata( $self->note_file_name )
+    my $msg = $self->restore_screendata( $self->storable_file_name )
             ? 'Note restored'
             : 'Note restore failed';
 
@@ -3606,21 +3705,24 @@ sub restore_note {
     return;
 }
 
-=head2 note_file_name
+=head2 storable_file_name
 
 Note file name defaults to the name of the screen with a I<dat>
 extension.
 
 =cut
 
-sub note_file_name {
-    my $self = shift;
+sub storable_file_name {
+    my ($self, $orig) = @_;
+
+    my $suffix = q{};
+    $suffix = '-orig' if $orig;
 
     # Store record data to file
     my $data_file = catfile(
         $self->_cfg->cfapps,
         $self->_cfg->cfname,
-        $self->{_rscrcls} . q{.dat},
+        $self->screen_string . $suffix . q{.dat},
     );
 
     return $data_file;
@@ -3768,6 +3870,8 @@ Save screen data to temp file with Storable.
 
 sub save_screendata {
     my ($self, $data_file) = @_;
+
+    my $mode = $self->_model->get_appmode;
 
     my $record = $self->get_screen_data_record('upd');
 
