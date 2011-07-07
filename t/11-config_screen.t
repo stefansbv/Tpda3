@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 19;
 
 use lib qw( lib ../lib );
 
@@ -32,45 +32,41 @@ ok( $scrcfg->isa('Tpda3::Config::Screen'), 'created Tpda3::Config::Screen' );
 
 is( $scrcfg->config_screen_load('orders'), undef, 'Load orders.conf' );
 
-is( ref $scrcfg->m_table, 'HASH', 'm_table' );
+is( ref $scrcfg->main_table, 'HASH', 'main_table' );
 
-is( $scrcfg->m_table_name, 'orders', 'm_table_name' );
+is( $scrcfg->main_table_name, 'orders', 'main_table_name' );
 
-is( $scrcfg->m_table_view, 'v_orders', 'm_table_view' );
+is( $scrcfg->main_table_view, 'v_orders', 'main_table_view' );
 
-is( $scrcfg->m_table_generator, 'generator_name', 'm_table_generator' );
+is( $scrcfg->main_table_pkcol, 'ordernumber', 'main_table_pkcol' );
 
-is( $scrcfg->m_table_pkcol, 'ordernumber', 'm_table_pkcol' );
+is( ref $scrcfg->main_table_columns, 'HASH', 'main_table_columns' );
 
-is( ref $scrcfg->m_table_columns, 'HASH', 'm_table_columns' );
+is( ref $scrcfg->main_table_column('customername'), 'HASH', 'main_table_column' );
 
-is( ref $scrcfg->m_table_column('customername'), 'HASH', 'm_table_column' );
-
-is( $scrcfg->m_table_column_attr( 'customername', 'ctrltype' ),
-    'e', 'm_table_column_attr' );
+is( $scrcfg->main_table_column_attr( 'customername', 'ctrltype' ),
+    'e', 'main_table_column_attr' );
 
 #--
 
 my $tm_ds = 'tm1';
 
-is( ref $scrcfg->d_table($tm_ds), 'HASH', 'd_table' );
+is( ref $scrcfg->dep_table($tm_ds), 'HASH', 'dep_table' );
 
-is( $scrcfg->d_table_name($tm_ds), 'orderdetails', 'd_table_name' );
+is( $scrcfg->dep_table_name($tm_ds), 'orderdetails', 'dep_table_name' );
 
-is( $scrcfg->d_table_view($tm_ds), 'v_orderdetails', 'd_table_view' );
+is( $scrcfg->dep_table_view($tm_ds), 'v_orderdetails', 'dep_table_view' );
 
-is( $scrcfg->d_table_generator($tm_ds), 'generator_name', 'd_table_generator' );
+is( $scrcfg->dep_table_updatestyle($tm_ds), 'delete+add', 'dep_table_updatestyle' );
 
-is( $scrcfg->d_table_updatestyle($tm_ds), 'delete+add', 'd_table_updatestyle' );
+is( $scrcfg->dep_table_selectorcol($tm_ds), 'none', 'dep_table_selectorcol' );
 
-is( $scrcfg->d_table_selectorcol($tm_ds), 'none', 'd_table_selectorcol' );
+is( ref $scrcfg->dep_table_columns($tm_ds), 'HASH', 'dep_table_columns' );
 
-is( ref $scrcfg->d_table_columns($tm_ds), 'HASH', 'd_table_columns' );
+is( ref $scrcfg->dep_table_column( $tm_ds, 'productcode' ),
+    'HASH', 'dep_table_column' );
 
-is( ref $scrcfg->d_table_column( $tm_ds, 'productcode' ),
-    'HASH', 'd_table_column' );
-
-is( $scrcfg->d_table_column_attr( $tm_ds, 'productcode', 'id' ),
-    1, 'd_table_column_attr' );
+is( $scrcfg->dep_table_column_attr( $tm_ds, 'productcode', 'id' ),
+    1, 'dep_table_column_attr' );
 
 #-- End test
