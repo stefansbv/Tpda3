@@ -121,7 +121,7 @@ sub new {
 
 =head2 start
 
-Check if we have user and pass, if not, show dialog.  Connect do
+Check if we have user and pass, if not, show dialog.  Connect to
 database.
 
 =cut
@@ -356,7 +356,7 @@ sub _set_event_handlers {
     #-- Save record
     $self->_view->get_toolbar_btn('tb_sv')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->save_record();
+            $self->record_save();
         }
     );
 
@@ -467,20 +467,15 @@ tab.
 sub toggle_detail_tab {
     my $self = shift;
 
-    my $det_records_no = 0;
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls } ) {
-        my ($rec, $sc) = $self->tmatrix_read($tm_ds);
-        if ($sc) {
-            $det_records_no = scalar @{$rec};
-        }
-    }
+    my $selected = $self->tmatrix_get_selected;
 
     my $nb = $self->_view->get_notebook();
-    if ($det_records_no <= 0) {
-        $nb->pageconfigure('det', -state => 'disabled');
+
+    if ($selected) {
+        $nb->pageconfigure('det', -state => 'normal');
     }
     else {
-        $nb->pageconfigure('det', -state => 'normal');
+        $nb->pageconfigure('det', -state => 'disabled');
     }
 
     return;
@@ -507,12 +502,11 @@ sub on_page_rec_activate {
         $self->set_app_mode('edit'); # restore interface state
     }
     else {
-        $self->record_load_new($pk_val_new);
         $self->set_app_mode('edit');
-
-        # Save record as witness reference for comparison
-        $self->save_screendata( $self->storable_file_name('orig') );
+        $self->record_load_new($pk_val_new);
     }
+
+    $self->toggle_detail_tab;
 
     return;
 }
@@ -603,6 +597,8 @@ sub get_selected_and_set_fk_val {
 
     my $row = $self->tmatrix_get_selected;
 
+    return unless defined $row and $row > 0;
+
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen_detail;
 
@@ -666,6 +662,8 @@ sub get_dsm_name {
 
     my $row = $self->tmatrix_get_selected;
 
+    return unless defined $row and $row > 0;
+
     my $col_name  = $detscr->{match};
     my $rec = $self->tmatrix_read_cell($row, $col_name, 'tm1');
     my $col_value = $rec->{$col_name};
@@ -693,7 +691,6 @@ sub _set_event_handler_screen {
     $self->scrobj('rec')->get_toolbar_btn('tb2ad')->bind(
         '<ButtonRelease-1>' => sub {
             $self->tmatrix_add_row($tm_ds);
-            $self->toggle_detail_tab;
         }
     );
 
@@ -701,7 +698,6 @@ sub _set_event_handler_screen {
     $self->scrobj('rec')->get_toolbar_btn('tb2rm')->bind(
         '<ButtonRelease-1>' => sub {
             $self->tmatrix_remove_row($tm_ds);
-            $self->toggle_detail_tab;
         }
     );
 
@@ -1363,7 +1359,6 @@ sub on_screen_mode_idle {
     }
 
     $self->controls_state_set('off');
-    # $self->controls_det_state_set('off');
 
     my $nb = $self->_view->get_notebook();
     $nb->pageconfigure('det', -state => 'disabled');
@@ -1392,7 +1387,6 @@ sub on_screen_mode_add {
     }
 
     $self->controls_state_set('edit');
-    # $self->controls_det_state_set('edit'); # if loaded?
 
     my $nb = $self->_view->get_notebook();
     $nb->pageconfigure('lst', -state => 'disabled');
@@ -1420,7 +1414,6 @@ sub on_screen_mode_find {
     }
 
     $self->controls_state_set('find');
-    # $self->controls_det_state_set('find');
 
     return;
 }
@@ -1436,13 +1429,10 @@ sub on_screen_mode_edit {
     my $self = shift;
 
     $self->controls_state_set('edit');
-#    $self->controls_det_state_set('edit');
 
     my $nb = $self->_view->get_notebook();
     # $nb->pageconfigure('det', -state => 'normal');
     $nb->pageconfigure('lst', -state => 'normal');
-
-    $self->toggle_detail_tab;
 
     return;
 }
@@ -2004,10 +1994,13 @@ sub toggle_screen_interface_controls {
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my $mode = $self->_model->get_appmode;
+    my $page = $self->_view->get_nb_current_page();
+
+    return if $page eq 'lst';
 
     foreach my $name ( @{$toolbars} ) {
-        my $state = $attribs->{$name}{state}{$mode};
-        $self->scrobj('rec')->enable_tool($name, $state);
+        my $status = $attribs->{$name}{state}{$page}{$mode};
+        $self->scrobj($page)->enable_tool($name, $status);
     }
 
     return;
@@ -2270,15 +2263,13 @@ sub screen_read {
          my $ctrltype = $fld_cfg->{ctrltype};
          my $ctrlrw   = $fld_cfg->{rw};
 
-         # print " Field: $field \[$ctrltype\]\n";
-
          # Skip READ ONLY fields if not FIND status
          # Read ALL if $all == true (don't skip)
-         if ( ! ( $all or $self->_model->is_mode('find') ) ) {
-             next if $ctrlrw eq 'r' or $ctrlrw eq 'ro'; # skip ro field
+         if ( ! $all or $self->_model->is_mode('edit') ) {
+             next if ($ctrlrw eq 'r') or ($ctrlrw eq 'ro'); # skip ro field
          }
 
-         # Run appropriate sub according to control (entry widget) type
+         # Run the appropriate sub according to control (widget) type
          my $sub_name = "control_read_$ctrltype";
          if ( $self->can($sub_name) ) {
              unless ( $ctrl_ref->{$field}[1] ) {
@@ -2720,7 +2711,12 @@ sub tmatrix_get_selected {
 sub tmatrix_set_selected {
     my ($self, $selected_row) = @_;
 
-    $self->{_tm_sel} = $selected_row if $selected_row;
+    if ($selected_row) {
+        $self->{_tm_sel} = $selected_row;
+    }
+    else {
+        $self->{_tm_sel} = undef;
+    }
 
     return;
 }
@@ -2995,7 +2991,7 @@ sub tmatrix_remove_row {
         return;
     }
 
-    $xt->configure( state => 'normal' );     # Stare normala
+    $xt->configure( state => 'normal' );
 
     my $r;
     eval {
@@ -3016,6 +3012,7 @@ sub tmatrix_remove_row {
     my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
     if ($sc) {
         $self->tmatrix_set_selected($r - 1);
+        $self->toggle_detail_tab;
     }
 
     $self->tmatrix_renum_row($xt)
@@ -3382,6 +3379,8 @@ sub record_load_new {
 
     $self->screen_set_pk_val($pk_val); # save PK value
 
+    $self->tmatrix_set_selected();     # initialize selector
+
     $self->record_load();
 
     if ( $self->_model->is_loaded ) {
@@ -3413,13 +3412,15 @@ sub record_reload {
 
     $self->record_clear;
 
-    # Restore
+    # Restore PK-value
     $self->screen_set_pk_val($pk_val);
 
     # Set parameters for record load (pk, fk)
     $self->get_selected_and_set_fk_val if $page eq 'det';
 
     $self->record_load();
+
+    $self->toggle_detail_tab;
 
     $self->_view->set_status("Record reloaded",'ms','blue');
 
@@ -3462,6 +3463,9 @@ sub record_load {
         $self->tmatrix_make_selector($tm_ds); # if configured
     }
 
+    # Save record as witness reference for comparison
+    $self->save_screendata( $self->storable_file_name('orig') );
+
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
 
@@ -3477,7 +3481,29 @@ Delete record and clear the screen.
 sub record_delete {
     my $self = shift;
 
-    print " delete not implemented\n";
+    #-  Main table
+
+    #-- Metadata
+    my @record;
+
+    my $record = {};
+    $record->{metadata} = $self->main_table_metadata('del');
+    push @record, $record;         # rec data at index 0
+
+    #-  Dependent table(s), if any
+
+    my $deprec = {};
+    my $tm_dss = $self->scrobj->get_tm_controls(); #
+
+    foreach my $tm_ds ( keys %{$tm_dss} ) {
+        $deprec->{$tm_ds}{metadata} =
+            $self->dep_table_metadata($tm_ds, 'del');
+    }
+    push @record, $deprec if scalar keys %{$deprec}; # det data at index 1
+
+    $self->_model->store_record_delete(\@record);
+
+    $self->set_app_mode('idle');
 
     $self->_model->unset_scrdata_rec(); # false = loaded,  true = modified,
                                         # undef = unloaded
@@ -3559,7 +3585,7 @@ sub ask_to_save {
             # my $answer = $self->_view->{asksave}->Show();
             my $answer = $db->Show();
             if ( $answer eq q{Da} ) {
-                $self->save_record();
+                $self->record_save();
             }
             elsif ( $answer eq q{Nu} ) {
                 $self->_view->set_status( 'Not saved!', 'ms', 'blue' );
@@ -3574,19 +3600,75 @@ sub ask_to_save {
     return 1;
 }
 
+sub ask_to {
+    my ($self, $for_action) = @_;
+
+    # Using a dialog defined on site because the one defined
+    # in View.pm, shows up behind the main window in KDE
+    my $db = $self->_view->DialogBox(
+        -title   => 'Dialog',
+        -buttons => [qw{Da Renunt Nu}],
+    );
+    $db->geometry('300x150');
+    $db->bind(
+        '<Escape>',
+        sub { $db->Subwidget('B_Renunt')->invoke }
+    );
+
+    #
+    my $dialog_text = '';
+    if ($for_action eq 'save') {
+        $dialog_text = "Inregistarea a fost modificata.\n\n";
+        $dialog_text   .= "Doriti sa salvati inregistrarea?";
+    }
+    elsif ($for_action eq 'save_insert') {
+        $dialog_text = "Inregistare noua.\n\n";
+        $dialog_text   .= "Doriti sa salvati inregistrarea?";
+    }
+    #
+
+    my $scrolled = $db->Label(
+        -text => $dialog_text,
+    )->pack(
+        -side => 'bottom',
+        -padx => 20,
+        -pady => 20,
+    );
+
+    # $self->_view->after(50, sub {$self->_view->{asksave}->raise});
+    # my $answer = $self->_view->{asksave}->Show();
+    my $answer = $db->Show();
+    if ( $answer eq q{Da} ) {
+        return 'yes';
+    }
+    elsif ( $answer eq q{Nu} ) {
+        return 'no';
+    }
+    else {
+        return 'cancel';
+    }
+}
+
 =head2
 
 Save record.  Different procedures for different modes.
 
 =cut
 
-sub save_record {
+sub record_save {
     my $self = shift;
 
     if ( $self->_model->is_mode('add') ) {
         my $record = $self->get_screen_data_record('ins');
 
-        $self->save_record_insert($record);
+        my $answer = $self->ask_to('save_insert');
+
+        return if $answer eq 'cancel';
+        print "answer is $answer\n";
+
+        $self->record_save_insert($record) if $answer eq 'yes';
+
+        $self->record_reload;
     }
     elsif ( $self->_model->is_mode('edit') ) {
         if ( !$self->is_record ) {
@@ -3606,24 +3688,26 @@ sub save_record {
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
 
+    $self->toggle_detail_tab;
+
     return;
 }
 
-=head2 save_record_insert
+=head2 record_save_insert
 
 Insert record.
 
 =cut
 
-sub save_record_insert {
+sub record_save_insert {
     my ($self, $record) = @_;
 
     # Ask first
-    my $answer = $self->_view->{dialog2}->Show();
-    if ( $answer !~ /Ok/i ) {
-        $self->_view->set_status( 'Canceled', 'ms', 'blue' );
-        return;
-    }
+    # my $answer = $self->_view->{dialog2}->Show();
+    # if ( $answer !~ /Ok/i ) {
+    #     $self->_view->set_status( 'Canceled', 'ms', 'blue' );
+    #     return;
+    # }
 
     my $pk_val = $self->_model->store_record_insert($record);
 
@@ -3632,6 +3716,7 @@ sub save_record_insert {
         $self->screen_write( { $pk_col => $pk_val }, 'fields' );
         $self->set_app_mode('edit');
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
+        $self->screen_set_pk_val($pk_val); # save PK value
     }
     else {
         $self->_view->set_status( 'Failed', 'ms', 'darkred' );
@@ -3739,7 +3824,7 @@ dependent table(s) data and meta-data.
 sub get_screen_data_record {
     my ($self, $for_sql) = @_;
 
-    $self->screen_read();       # read screen data
+    $self->screen_read('all_fields');
 
     my @record;
 
@@ -3844,7 +3929,7 @@ sub dep_table_metadata {
         $metadata->{where}{$pk_col} = $pk_val; # pk
     }
     elsif ($for_sql eq 'ins') {
-        $metadata->{table} = $self->scrcfg->main_table_name;
+        $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
     }
     else {
         warn "Wrong parameter: $for_sql\n";

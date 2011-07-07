@@ -657,13 +657,13 @@ sub table_batch_insert {
     return;
 }
 
-=head2 table_batch_delete
+=head2 table_record_delete
 
 Deletes all records using a required WHERE SQL clause.
 
 =cut
 
-sub table_batch_delete {
+sub table_record_delete {
     my ( $self, $table, $where ) = @_;
 
     my $sql = SQL::Abstract->new();
@@ -796,7 +796,7 @@ sub store_record_update {
 
         if ( $updstyle eq 'delete+add' ) {
             # Delete all articles and reinsert from TM ;)
-            $self->table_batch_delete($table, $where);
+            $self->table_record_delete($table, $where);
             $self->table_batch_insert($table, $depdata);
         }
         else {
@@ -805,6 +805,41 @@ sub store_record_update {
             $self->table_batch_update($depmeta, $depdata);
         }
      }
+
+    return 1;
+}
+
+=head2 store_record_delete
+
+Delete all detail records and then the record.
+
+=cut
+
+sub store_record_delete {
+    my ( $self, $record ) = @_;
+
+    #- Dependent records
+
+    # One table at a time ...
+    foreach my $tm ( keys %{ $record->[1] } ) {
+        my $depmeta = $record->[1]{$tm}{metadata};
+
+        my $table = $depmeta->{table};
+        my $where = $depmeta->{where};
+
+        # Delete all articles
+        $self->table_record_delete( $table, $where );
+    }
+
+    #- Main record
+
+    my $mainmeta = $record->[0]{metadata};
+
+    my $table = $mainmeta->{table};
+    my $where = $mainmeta->{where};
+
+    # Delete all articles
+    $self->table_record_delete( $table, $where );
 
     return 1;
 }
@@ -959,7 +994,7 @@ sub table_delete_prepare {
     # print "delete: $table\n";
     # print Dumper($where);
 
-    $self->table_batch_delete($table, $where);
+    $self->table_record_delete($table, $where);
 
     return;
 }
@@ -1025,8 +1060,9 @@ sub record_compare {
 
     my $dc = Data::Compare->new($witness, $record);
 
-    # print 'Structures of $witness and $record are ',
-    #     $dc->Cmp ? "" : "not ", "identical.\n";
+#    print Dumper( $witness, $record);
+    print 'Structures of $witness and $record are ',
+        $dc->Cmp ? "" : "not ", "identical.\n";
 
     return !$dc->Cmp;
 }
