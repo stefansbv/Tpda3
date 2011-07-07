@@ -253,7 +253,7 @@ sub identify_date_string {
            : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
            : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
            : $is =~ m/^(\d{4})$/                             ? "datey:$1"
-           :                                                    "dataerr:$is";
+           :                                                   "dataerr:$is";
 }
 
 =head2 format_query
@@ -273,7 +273,8 @@ sub format_query {
         $where = $transformations->{$directive}->( $year, $month );
     }
     else {
-        warn "Unrecognized directive '$directive'";
+        # warn "Unrecognized directive '$directive'";
+        $where = $directive;
     }
 
     return $where;

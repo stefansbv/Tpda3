@@ -313,6 +313,8 @@ sub query_records_count {
     my $pkcol = $rec->{pkcol};
     my $where = $self->build_where($rec);
 
+    return if !ref $where;
+
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
@@ -349,8 +351,9 @@ sub query_records_find {
     my $table = $rec->{table};
     my $cols  = $rec->{columns};
     my $pkcol = $rec->{pkcol};
-
     my $where = $self->build_where($rec);
+
+    return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
@@ -514,8 +517,14 @@ sub build_where {
             $where->{$field} = $attrib->[0];
         }
         elsif ( $find_type eq 'date' ) {
-            $where->{$field} =
-              Tpda3::Utils->process_date_string( $attrib->[0] );
+            my $ret = Tpda3::Utils->process_date_string( $attrib->[0] );
+            if ($ret eq 'dataerr') {
+                $self->_print("Wrong search parameter!");
+                return;
+            }
+            else {
+                $where->{$field} = $ret;
+            }
         }
         elsif ( $find_type eq 'none' ) {
 

@@ -467,15 +467,14 @@ tab.
 sub toggle_detail_tab {
     my $self = shift;
 
-    my $selected = $self->tmatrix_get_selected;
+    my $nbk = $self->_view->get_notebook();
+    my $sel = $self->tmatrix_get_selected;
 
-    my $nb = $self->_view->get_notebook();
-
-    if ($selected) {
-        $nb->pageconfigure('det', -state => 'normal');
+    if ( $sel and !$self->_model->is_modified ) {
+        $nbk->pageconfigure( 'det', -state => 'normal' );
     }
     else {
-        $nb->pageconfigure('det', -state => 'disabled');
+        $nbk->pageconfigure( 'det', -state => 'disabled' );
     }
 
     return;
@@ -2969,6 +2968,8 @@ sub tmatrix_add_row {
     $xt->activate("$new_r,1");
     $xt->see("$new_r,1");
 
+    $self->_model->set_scrdata_rec(1); # modified
+
     return;
 }
 
@@ -3023,6 +3024,8 @@ sub tmatrix_remove_row {
     $xt->activate("$r,1");
 
     # TODO: Feature to trigger a method here?
+
+    $self->_model->set_scrdata_rec(1); # modified
 
     return $r;
 }
@@ -3396,9 +3399,6 @@ Reload the curent record.
 
 Reads the contents of the (primary) key field, retrieves the record from
 the database table and loads the record data in the controls.
-
-The control that holds the key record has to be readonly, so the user
-can't delete it's content.
 
 =cut
 
