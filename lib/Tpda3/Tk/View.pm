@@ -2,10 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
-
 use Carp;
+
 use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
@@ -13,7 +11,7 @@ use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
-                   LabFrame Listbox JComboBox Font);
+                   LabFrame Listbox JComboBox);
 
 # require Tk::ErrorDialog;
 

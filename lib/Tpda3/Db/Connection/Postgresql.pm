@@ -137,7 +137,7 @@ sub table_info_short {
         $flds_ref = $sth->fetchall_hashref('pos');
     }
     catch {
-        $log->fatal("Transaction aborted because $_")
+         $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -214,10 +214,10 @@ sub table_keys {
     $self->{_dbh}{AutoCommit} = 1;    # disable transactions
     $self->{_dbh}{RaiseError} = 0;
 
-    my $pkf = [];
+    my $pkf;
     try {
         # List of lists
-        $pkf = $self->{_dbh}->selectall_arrayref( $sql );
+        $pkf = $self->{_dbh}->selectcol_arrayref( $sql );
     }
     catch {
         $log->fatal("Transaction aborted because $_")
@@ -237,6 +237,41 @@ sub table_deps {
     my ($self, $table) = @_;
 
     return;
+}
+
+=head2 table_list
+
+Return list of tables from the database.
+
+=cut
+
+sub table_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of tables');
+
+    my $sql = qq( SELECT table_name
+                      FROM information_schema.tables
+                      WHERE table_type = 'BASE TABLE'
+                        AND table_schema NOT IN
+                            ('pg_catalog', 'information_schema');
+    );
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $table_list;
+    try {
+        $table_list = $self->{_dbh}->selectcol_arrayref( $sql );
+    }
+    catch {
+         $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $table_list;
 }
 
 =head1 AUTHOR
