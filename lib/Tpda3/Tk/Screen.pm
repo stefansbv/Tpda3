@@ -2,11 +2,14 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tpda3::Tk::Entry;
 #use Tpda3::Tk::Text;
 
+use Tpda3::Utils;
 use Tpda3::Tk::ToolBar;
 
 require Tpda3::Tk::Validation;
@@ -34,9 +37,15 @@ Constructor method
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $args) = @_;
 
-    return bless {}, $class;
+    my $self = {};
+
+    bless $self, $class;
+
+    $self->{scrcfg} = $args;
+
+    return $self;
 }
 
 =head2 run_screen
@@ -46,7 +55,7 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $nb, $scr_cfg ) = @_;
 
     print 'run_screen not implemented in ', __PACKAGE__, "\n";
 
@@ -77,12 +86,12 @@ If TM Id parameter is provided return a reference to that TM object.
 =cut
 
 sub get_tm_controls {
-    my ( $self, $tm ) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return {} if ! exists $self->{tm_controls};
 
-    if ($tm) {
-        return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+    if ($tm_ds) {
+        return ${ $self->{tm_controls}{rec}{$tm_ds} }->Subwidget('scrolled');
     }
     else {
         return $self->{tm_controls}{rec};
@@ -137,20 +146,20 @@ sub get_bgcolor {
 
 =head2 make_toolbar_for_table
 
-Make toolbar with add and remove buttons.
+Make toolbar for TableMatrix widget, usually with I<add> and I<remove>
+buttons.
 
 =cut
 
 sub make_toolbar_for_table {
-    my ($self, $tb_frame, $toolbar) = @_;
+    my ($self, $tb_frame, $tm_ds) = @_;
 
     $self->{tb} = Tpda3::Tk::ToolBar->new($tb_frame);
 
-    my $cfg = Tpda3::Config->instance();
+    my $attribs  = $self->{scrcfg}->dep_table_toolbars($tm_ds);
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    my $attribs = $cfg->toolbar2;
-
-    $self->{tb}->make_toolbar_buttons($toolbar, $attribs);
+    $self->{tb}->make_toolbar_buttons($toolbars, $attribs);
 
     return;
 }

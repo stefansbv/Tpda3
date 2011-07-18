@@ -308,8 +308,7 @@ sub run_screen {
         -fill   => 'x',
     );
 
-    my $tb_names1 = [ qw(tb2ad tb2rm) ];      # order of creation
-    $self->SUPER::make_toolbar_for_table($tb_frame1, $tb_names1);
+    $self->SUPER::make_toolbar_for_table($tb_frame1, 'tm1');
 
     #- TableMatrix
 

@@ -58,6 +58,5 @@ test_requires 'DBD::SQLite'           => '1.29';
 
 install_share  'share';
 install_script 'bin/tpda3';
-install_script 'script/tpda3-make-conf.pl';
 
 WriteAll;

@@ -2,6 +2,7 @@ package Tpda3::Utils;
 
 use strict;
 use warnings;
+use utf8;
 
 =head1 NAME
 
@@ -334,6 +335,22 @@ sub ins_underline_mark {
     substr($label, $position, 0) = '&';
 
     return $label;
+}
+
+=head2 deaccent
+
+Remove Romanian accented characters.
+
+TODO: Add other accented characters, especially for German and Hungarian.
+
+=cut
+
+sub deaccent{
+    my ($self, $text) = @_;
+
+    $text =~ tr/ăĂãÃâÂîÎșȘşŞțȚţŢ/aAaAaAiIsSsStTtT/;
+
+    return $text;
 }
 
 =head1 AUTHOR
