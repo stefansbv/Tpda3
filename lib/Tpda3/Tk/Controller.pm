@@ -677,10 +677,18 @@ sub get_dsm_name {
 Setup event handlers for the I<add> and I<delete> buttons attached to
 the TableMatrix widget.
 
+TODO: Where to configure what to do and how to make this bindings
+configurable?
+
 =cut
 
 sub _set_event_handler_screen {
     my ($self, $tm_ds) = @_;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
+
+    return if not ref $attribs;
 
     $self->_log->trace("Setup event handler for TM buttons");
 
@@ -1313,7 +1321,6 @@ sub set_app_mode {
 
     return unless ref $self->scrobj('rec');
 
-    # TODO: Should this be called on all screens?
     $self->toggle_screen_interface_controls;
 
     if ( my $method_name = $self->{method_for}{$mode} ) {
@@ -1652,7 +1659,7 @@ sub screen_module_load {
     }
 
     # New screen instance
-    $self->{_rscrobj} = $class->new();
+    $self->{_rscrobj} = $class->new( $self->{_rscrcfg} );
     $self->_log->trace("New screen instance: $module");
 
     # Show screen
@@ -1664,11 +1671,6 @@ sub screen_module_load {
 
     # Load instance config
     $self->_cfg->config_load_instance();
-
-    # Event handlers
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls } ) {
-        $self->_set_event_handler_screen($tm_ds);
-    }
 
     #-- Lookup bindings for Tk::Entry widgets
     $self->setup_lookup_bindings_entry('rec');
@@ -1705,6 +1707,9 @@ sub screen_module_load {
         my $strech = $self->scrcfg('rec')->dep_table_colstretch('tm1');
         my $sc     = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
         $self->_view->make_tablematrix_header( $tmx, $fields, $strech, $sc );
+
+        # Event handlers
+        $self->set_event_handler_screen($tm_ds);
     }
 
     # Load lists into JBrowseEntry or JComboBox widgets
@@ -1718,6 +1723,46 @@ sub screen_module_load {
 
     return 1;                       # to make ok from Test::More happy
                                     # probably missing something :) TODO!
+}
+
+=head2 set_event_handler_screen
+
+Setup event handlers for the I<add> and I<delete> buttons attached to
+the TableMatrix widget.
+
+TODO: Where to configure what to do and how to make this bindings
+configurable?
+
+=cut
+
+sub set_event_handler_screen {
+    my ($self, $tm_ds) = @_;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
+
+    foreach my $tb_btn (keys %{$attribs}) {
+        my $method = $attribs->{$tb_btn}{method};
+        $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
+
+        # Check current screen for method for binding
+        my $obj;
+        if ( $self->scrobj('rec')->can($method) ) {
+            $obj = $self->scrobj('rec');
+        }
+        else {
+            # Fallback to $self
+            $obj = $self;
+        }
+
+        $self->scrobj('rec')->get_toolbar_btn($tb_btn)->bind(
+            '<ButtonRelease-1>' => sub {
+                $obj->$method($tm_ds);
+            }
+        );
+    }
+
+    return;
 }
 
 =head2 screen_module_detail_load
@@ -1988,18 +2033,23 @@ widget in some screens.
 sub toggle_screen_interface_controls {
     my $self = shift;
 
-    # Get ToolBar button atributes
-    my $attribs  = $self->_cfg->toolbar2;
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-    my $mode = $self->_model->get_appmode;
     my $page = $self->_view->get_nb_current_page();
 
     return if $page eq 'lst';
 
-    foreach my $name ( @{$toolbars} ) {
-        my $status = $attribs->{$name}{state}{$page}{$mode};
-        $self->scrobj($page)->enable_tool($name, $status);
+    foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
+
+        # Get ToolBar button atributes
+        my $attribs = $self->scrcfg->dep_table_toolbars('tm1');
+
+        my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+
+        my $mode = $self->_model->get_appmode;
+
+        foreach my $name ( @{$toolbars} ) {
+            my $status = $attribs->{$name}{state}{$page}{$mode};
+            $self->scrobj($page)->enable_tool( $name, $status );
+        }
     }
 
     return;
@@ -2929,7 +2979,7 @@ sub tmatrix_add_row {
     my ($self, $tm_ds, $valori_ref) = @_;
 
     $tm_ds ||= q{tm1};          # default table matrix designator
-
+print "tm_ds is  $tm_ds\n";
     my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
     my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
 

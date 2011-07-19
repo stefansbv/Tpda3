@@ -271,6 +271,12 @@ sub dep_table_column_attr {
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
 
+sub dep_table_toolbars {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{toolbar};
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>
