@@ -1704,7 +1704,7 @@ sub screen_module_load {
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
         my $tmx    = $self->scrobj('rec')->get_tm_controls($tm_ds);
         my $fields = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-        my $strech = $self->scrcfg('rec')->dep_table_colstretch('tm1');
+        my $strech = $self->scrcfg('rec')->dep_table_colstretch($tm_ds);
         my $sc     = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
         $self->_view->make_tablematrix_header( $tmx, $fields, $strech, $sc );
 
@@ -1755,7 +1755,7 @@ sub set_event_handler_screen {
             $obj = $self;
         }
 
-        $self->scrobj('rec')->get_toolbar_btn($tb_btn)->bind(
+        $self->scrobj('rec')->get_toolbar_btn($tm_ds, $tb_btn)->bind(
             '<ButtonRelease-1>' => sub {
                 $obj->$method($tm_ds);
             }
@@ -2040,7 +2040,7 @@ sub toggle_screen_interface_controls {
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
 
         # Get ToolBar button atributes
-        my $attribs = $self->scrcfg->dep_table_toolbars('tm1');
+        my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
 
         my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
@@ -2048,7 +2048,7 @@ sub toggle_screen_interface_controls {
 
         foreach my $name ( @{$toolbars} ) {
             my $status = $attribs->{$name}{state}{$page}{$mode};
-            $self->scrobj($page)->enable_tool( $name, $status );
+            $self->scrobj($page)->enable_tool( $tm_ds, $name, $status );
         }
     }
 
@@ -2979,7 +2979,7 @@ sub tmatrix_add_row {
     my ($self, $tm_ds, $valori_ref) = @_;
 
     $tm_ds ||= q{tm1};          # default table matrix designator
-print "tm_ds is  $tm_ds\n";
+
     my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
     my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
 
@@ -3508,7 +3508,7 @@ sub record_load {
         my $records = $self->_model->table_batch_query($tm_params);
 
         $self->tmatrix_clear($tm_ds);
-        $self->tmatrix_write($records);
+        $self->tmatrix_write($records, $tm_ds);
 
         $self->tmatrix_make_selector($tm_ds); # if configured
     }

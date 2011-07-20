@@ -105,9 +105,9 @@ Return a toolbar button when we know its name.
 =cut
 
 sub get_toolbar_btn {
-    my ( $self, $name ) = @_;
+    my ( $self, $tm_ds, $name ) = @_;
 
-    return $self->{tb}->get_toolbar_btn($name);
+    return $self->{tb}{$tm_ds}->get_toolbar_btn($name);
 }
 
 =head2 enable_tool
@@ -118,11 +118,11 @@ toggle.  State can come as 0 | 1 and normal | disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $btn_name, $state) = @_;
+    my ($self, $tm_ds, $btn_name, $state) = @_;
 
-    return if not defined $self->{tb};
+    return if not defined $self->{tb}{$tm_ds};
 
-    $self->{tb}->enable_tool($btn_name, $state);
+    $self->{tb}{$tm_ds}->enable_tool($btn_name, $state);
 
     return;
 }
@@ -152,14 +152,14 @@ buttons.
 =cut
 
 sub make_toolbar_for_table {
-    my ($self, $tb_frame, $tm_ds) = @_;
+    my ($self, $tm_ds, $tb_frame) = @_;
 
-    $self->{tb} = Tpda3::Tk::ToolBar->new($tb_frame);
+    $self->{tb}{$tm_ds} = Tpda3::Tk::ToolBar->new($tb_frame);
 
     my $attribs  = $self->{scrcfg}->dep_table_toolbars($tm_ds);
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    $self->{tb}->make_toolbar_buttons($toolbars, $attribs);
+    $self->{tb}{$tm_ds}->make_toolbar_buttons($toolbars, $attribs);
 
     return;
 }

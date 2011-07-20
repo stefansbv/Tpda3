@@ -308,7 +308,7 @@ sub run_screen {
         -fill   => 'x',
     );
 
-    $self->SUPER::make_toolbar_for_table($tb_frame1, 'tm1');
+    $self->make_toolbar_for_table('tm1', $tb_frame1);
 
     #- TableMatrix
 
