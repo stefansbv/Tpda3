@@ -32,16 +32,16 @@ Constructor method.
 =cut
 
 sub new {
-    my ( $self, $gui ) = @_;
+    my ( $class, $frame ) = @_;
 
     # Frame for toolbar
-    my $tbf = $gui->Frame->pack(
+    my $tbf = $frame->Frame->pack(
         -side   => 'top',
         -anchor => 'nw',
         -fill   => 'x',
     );
 
-    $self = $self->SUPER::new(
+    my $self = $class->SUPER::new(
         $tbf,
         -movable       => 0,
         -side          => 'top',
