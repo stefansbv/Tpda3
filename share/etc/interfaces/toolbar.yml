@@ -12,11 +12,18 @@ toolbar:
     help:    Toggle find mode
     sep:     none
     state:
-      idle: normal
-      add:  disabled
-      edit: normal
-      find: normal
-      sele: disabled
+      rec:
+        idle: normal
+        add:  disabled
+        edit: normal
+        find: normal
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_fe:
     id:      1002
     type:    _item_normal
@@ -25,11 +32,18 @@ toolbar:
     help:    Execute search
     sep:     none
     state:
-      idle: disabled
-      add:  disabled
-      edit: disabled
-      find: normal
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: normal
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_fc:
     id:      1003
     type:    _item_normal
@@ -38,11 +52,18 @@ toolbar:
     help:    Execute count
     sep:     after
     state:
-      idle: disabled
-      add:  disabled
-      edit: disabled
-      find: normal
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: normal
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_pr:
     id:      1004
     type:    _item_normal
@@ -51,11 +72,18 @@ toolbar:
     help:    Print (preview) default report
     sep:     after
     state:
-      idle: disabled
-      add:  disabled
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_tn:
     id:      1005
     type:    _item_normal
@@ -64,11 +92,18 @@ toolbar:
     help:    Take note
     sep:     none
     state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_tr:
     id:      1006
     type:    _item_normal
@@ -77,11 +112,18 @@ toolbar:
     help:    Restore note
     sep:     after
     state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_cl:
     id:      1007
     type:    _item_normal
@@ -90,11 +132,18 @@ toolbar:
     help:    Clear
     sep:     none
     state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
   tb_rr:
     id:      1008
     type:    _item_normal
@@ -103,11 +152,18 @@ toolbar:
     help:    Refresh
     sep:     after
     state:
-      idle: disabled
-      add:  disabled
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
   tb_ad:
     id:      1009
     type:    _item_check
@@ -116,11 +172,18 @@ toolbar:
     help:    Add record
     sep:     none
     state:
-      idle: normal
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: normal
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_rm:
     id:      1010
     type:    _item_normal
@@ -129,11 +192,18 @@ toolbar:
     help:    Remove record
     sep:     none
     state:
-      idle: disabled
-      add:  disabled
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: disabled
+        find: disabled
+        sele: disabled
   tb_sv:
     id:      1011
     type:    _item_normal
@@ -142,11 +212,18 @@ toolbar:
     help:    Save record
     sep:     after
     state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: disabled
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
   tb_at:
     id:      1012
     type:    _item_normal
@@ -155,11 +232,18 @@ toolbar:
     help:    Save actual window position and dimensions
     sep:     after
     state:
-      idle: normal
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: normal
+      rec:
+        idle: normal
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: normal
+      det:
+        idle: normal
+        add:  normal
+        edit: normal
+        find: disabled
+        sele: normal
   tb_qt:
     id:      1013
     type:    _item_normal
@@ -168,35 +252,15 @@ toolbar:
     help:    Quit the application
     sep:     after
     state:
-      idle: normal
-      add:  disabled
-      edit: normal
-      find: disabled
-      sele: disabled
-toolbar2:
-  tb2ad:
-    id:      2001
-    type:    _item_normal
-    icon:    actitemadd16
-    tooltip: Add row
-    help:    Add new row in table
-    sep:     none
-    state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
-  tb2rm:
-    id:      2002
-    type:    _item_normal
-    icon:    actitemdelete16
-    tooltip: Remove row
-    help:    Remove row from table
-    sep:     none
-    state:
-      idle: disabled
-      add:  normal
-      edit: normal
-      find: disabled
-      sele: disabled
+      rec:
+        idle: normal
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: normal
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled

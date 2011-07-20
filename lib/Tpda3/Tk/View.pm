@@ -2,18 +2,16 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
-
 use Carp;
+
 use POSIX qw (floor);
 
 use Log::Log4perl qw(get_logger);
 
 use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
-use Tk::widgets qw(NoteBook StatusBar Dialog Checkbutton
-                   LabFrame Listbox JComboBox Font);
+use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
+                   LabFrame Listbox JComboBox);
 
 # require Tk::ErrorDialog;
 
@@ -138,7 +136,7 @@ sub _set_model_callbacks {
     $apm->add_callback( sub { $self->update_gui_components(); } );
 
     # When the modified status changes, update statusbar
-    my $svs = $self->_model->get_modified_observable;
+    my $svs = $self->_model->get_scrdata_rec_observable;
     $svs->add_callback( sub{ $self->set_status( $_[0], 'ss') } );
 
     return;
@@ -146,8 +144,8 @@ sub _set_model_callbacks {
 
 =head2 set_modified_record
 
-Set modified to 'M' if not already set but only if in I<edit> or
-I<add> mode.
+Set modified to 1 if not already set but only if in I<edit> or I<add>
+mode.
 
 =cut
 
@@ -157,7 +155,7 @@ sub set_modified_record {
     if (   $self->_model->is_mode('edit')
         or $self->_model->is_mode('add') )
     {
-        $self->_model->set_modified(q{M}) if !$self->_model->is_modified;
+        $self->_model->set_scrdata_rec(1) if !$self->_model->is_modified;
     }
 
     return;
@@ -481,6 +479,13 @@ sub set_status {
     if ( $sb_id eq 'cn' ) {
         $sb->configure( -image => $text ) if defined $text;
     }
+    elsif ( $sb_id eq 'ss' ) {
+        #         _scrdata_rec       status text
+        my $str = !defined $text   ? ''
+                : $text            ? 'M'
+                :                    'S';
+        $sb->configure( -textvariable => \$str ) if defined $str;
+    }
     else {
         $sb->configure( -textvariable => \$text ) if defined $text;
         $sb->configure( -foreground   => $color ) if defined $color;
@@ -537,7 +542,7 @@ dependent table.
 =cut
 
 sub create_notebook {
-    my $self = shift;
+    my ($self, $det_page) = @_;
 
     #- NoteBook
 
@@ -553,7 +558,7 @@ sub create_notebook {
 
     $self->create_notebook_panel('rec', 'Record');
     $self->create_notebook_panel('lst', 'List');
-    # $self->create_notebook_panel('det', 'Details');
+    $self->create_notebook_panel('det', 'Details') if $det_page;
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
@@ -607,6 +612,21 @@ sub create_notebook_panel {
     return;
 }
 
+
+=head2 remove_notebook_panel
+
+Remove a NoteBook panel
+
+=cut
+
+sub remove_notebook_panel {
+    my ($self, $panel) = @_;
+
+    $self->{_nb}->delete($panel);
+
+    return;
+}
+
 =head2 get_notebook
 
 Return the notebook handler
@@ -638,6 +658,27 @@ sub destroy_notebook {
     return;
 }
 
+sub get_nb_current_page {
+    my $self = shift;
+
+    return $self->get_notebook->raised();
+}
+
+sub notebook_page_clean {
+    my ($self, $page) = @_;
+
+    my $frame = $self->get_notebook($page);
+
+    $frame->Walk(
+        sub {
+            my $widget = shift;
+            $widget->destroy;
+        }
+    );
+
+    return;
+}
+
 =head2 define_dialogs
 
 Define some dialogs
@@ -662,6 +703,27 @@ sub define_dialogs {
         -default_button => 'Ok',
         -buttons        => [qw/Ok Cancel/]
     );
+
+    # $self->{asksave} = $self->DialogBox(
+    #     -title   => 'Save?',
+    #     -buttons => [qw{Yes No Cancel}],
+    # );
+    # $self->{asksave}->geometry('400x300');
+    # $self->{asksave}->bind(
+    #     '<Escape>',
+    #     sub { $self->{asksave}->Subwidget('B_Cancel')->invoke }
+    # );
+
+    # # Nice trick to position buttons to the right
+    # # Source: PM by lamprecht on Apr 22, 2011 at 22:09 UTC
+    # my $bframe = $self->{asksave}->Subwidget('bottom');
+    # for ($bframe->children) {
+    #     $_->packForget;
+    #     $_->pack(-side => 'right',
+    #              -padx => 3,
+    #              -pady => 3,
+    #          );
+    # }
 
     return;
 }
@@ -946,10 +1008,8 @@ sub list_read_selected {
 
     # In scalar context, getRow returns the value of column 0
     # Column 0 has to be a Pk ...
-    my ($pk_id, $fk_id);
-    eval {
-        ($pk_id, $fk_id) = ($self->get_recordlist->getRow($indecs))[0,1];
-    };
+    my $pk_id;
+    eval { $pk_id = ( $self->get_recordlist->getRow($indecs) )[0]; };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
@@ -962,13 +1022,9 @@ sub list_read_selected {
             $pk_id =~ s/^\s+//;
             $pk_id =~ s/\s+$//;
         }
-        if ( defined($fk_id) ) {
-            $fk_id =~ s/^\s+//;
-            $fk_id =~ s/\s+$//;
-        }
     }
 
-    return ($pk_id, $fk_id);
+    return $pk_id;
 }
 
 =head2 make_tablematrix_header
@@ -978,11 +1034,11 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub make_tablematrix_header {
-    my ($self, $tm_table, $tm_fields) = @_;
+    my ($self, $tm_table, $tm_fields, $strech, $selecol) = @_;
 
     # Set TableMatrix tags
     my $cols = scalar keys %{$tm_fields};
-    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields );
+    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech,$selecol );
 
     return;
 }
@@ -994,7 +1050,7 @@ Set tags for the table matrix.
 =cut
 
 sub set_tablematrix_tags {
-    my ($self, $xtable, $cols, $tm_fields) = @_;
+    my ($self, $xtable, $cols, $tm_fields, $strech, $selecol) = @_;
 
     # TM is SpreadsheetHideRows type increase cols number with 1
     $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
@@ -1026,10 +1082,10 @@ sub set_tablematrix_tags {
     # Make enter do the same thing as return:
     $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
 
-    if ($cols) {
-        $xtable->configure( -cols => $cols );
-        $xtable->configure( -rows => 1 ); # Keep table dim in grid
-    }
+    # if ($cols) {
+    #     $xtable->configure( -cols => $cols );
+    #     $xtable->configure( -rows => 1 ); # Keep table dim in grid
+    # }
     $xtable->tagConfigure(
         'active',
         -bg     => 'lightyellow',
@@ -1070,10 +1126,25 @@ sub set_tablematrix_tags {
     foreach my $field ( keys %{$tm_fields} ) {
         my $col = $tm_fields->{$field}{id};
         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
-        $xtable->colWidth( $col, $tm_fields->{$field}{width} );
         $xtable->set( "0,$col", $tm_fields->{$field}{label} );
 
-        my $xtvar  = $xtable->cget( -variable );
+        # If colstretch = 'n' in screen config file, don't set width,
+        # because of the -colstretchmode => 'unset' setting, col 'n'
+        # will be of variable width
+        next if $strech and $col == $strech;
+
+        my $width = $tm_fields->{$field}{width};
+        if ( $width and ( $width > 0 ) ) {
+            $xtable->colWidth( $col, $width );
+        }
+    }
+
+    # Add selector column
+    if ($selecol) {
+        $xtable->insertCols( $selecol, 1 );
+        $xtable->tagCol( 'ro_center', $selecol );
+        $xtable->colWidth( $selecol, 3 );
+        $xtable->set( "0,$selecol", 'Sel' );
     }
 
     $xtable->tagRow( 'title', 0 );

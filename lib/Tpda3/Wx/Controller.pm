@@ -797,7 +797,7 @@ sub screen_module_load {
 
     # Load the new screen configuration
     $self->{_scrcfg} = Tpda3::Config::Screen->new();
-    $self->_scrcfg->config_screen_load($self->{_scrstr} . '.conf');
+    $self->_scrcfg->config_screen_load( $self->{_scrstr} );
 
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();

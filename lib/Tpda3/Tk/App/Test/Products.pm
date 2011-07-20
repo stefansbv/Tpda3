@@ -34,17 +34,22 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p, $scr_cfg ) = @_;
+    my ( $self, $nb, $scr_cfg ) = @_;
 
-    my $gui     = $inreg_p->toplevel;
-    my $main_p  = $inreg_p->parent;
-    $self->{bg} = $gui->cget('-background');
+    # my $gui     = $inreg_p->toplevel;
+    # my $main_p  = $inreg_p->parent;
+    # $self->{bg} = $gui->cget('-background');
+
+    my $rec_page  = $nb->page_widget('rec');
+    my $det_page  = $nb->page_widget('det');
+    $self->{view} = $nb->toplevel;
+    $self->{bg}   = $self->{view}->cget('-background');
 
     my $validation = Tpda3::Tk::Validation->new($scr_cfg);
 
     #- Frame1 - Products
 
-    my $frame1 = $inreg_p->LabFrame(
+    my $frame1 = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Product',
         -labelside  => 'acrosstop',
@@ -240,7 +245,7 @@ sub run_screen {
 
     # Frame 2
 
-    my $frame2 = $inreg_p->LabFrame(
+    my $frame2 = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Description',
         -labelside  => 'acrosstop',

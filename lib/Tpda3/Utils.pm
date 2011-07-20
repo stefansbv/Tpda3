@@ -2,6 +2,7 @@ package Tpda3::Utils;
 
 use strict;
 use warnings;
+use utf8;
 
 =head1 NAME
 
@@ -253,7 +254,7 @@ sub identify_date_string {
            : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
            : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
            : $is =~ m/^(\d{4})$/                             ? "datey:$1"
-           :                                                    "dataerr:$is";
+           :                                                   "dataerr:$is";
 }
 
 =head2 format_query
@@ -273,7 +274,8 @@ sub format_query {
         $where = $transformations->{$directive}->( $year, $month );
     }
     else {
-        warn "Unrecognized directive '$directive'";
+        # warn "Unrecognized directive '$directive'";
+        $where = $directive;
     }
 
     return $where;
@@ -333,6 +335,22 @@ sub ins_underline_mark {
     substr($label, $position, 0) = '&';
 
     return $label;
+}
+
+=head2 deaccent
+
+Remove Romanian accented characters.
+
+TODO: Add other accented characters, especially for German and Hungarian.
+
+=cut
+
+sub deaccent{
+    my ($self, $text) = @_;
+
+    $text =~ tr/ăĂãÃâÂîÎșȘşŞțȚţŢ/aAaAaAiIsSsStTtT/;
+
+    return $text;
 }
 
 =head1 AUTHOR

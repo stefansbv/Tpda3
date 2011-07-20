@@ -78,11 +78,12 @@ Load a config files at request
 =cut
 
 sub config_screen_load {
-    my ($self, $file_name) = @_;
+    my ($self, $scrcls) = @_;
 
     my $log = get_logger();
 
-    my $cfg_file = $self->config_scr_file_name($file_name);
+    my $file_name = "$scrcls.conf";
+    my $cfg_file  = $self->config_scr_file_name($file_name);
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
     $msg   .= qq{\n  from '$cfg_file'!};
@@ -112,6 +113,168 @@ sub config_scr_file_name {
     my $cfg = Tpda3::Config->instance();
 
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
+}
+
+sub screen_detail {
+    my $self = shift;
+
+    return $self->screen->{details};
+}
+
+sub has_screen_detail {
+    my $self = shift;
+
+    my $screen = $self->screen_detail;
+    if ( ref $screen ) {
+        return scalar keys %{$screen};
+    }
+    else {
+        return $screen;
+    }
+}
+
+=head2 main_table
+
+Return main table configurations data structure.
+
+=cut
+
+sub main_table {
+    my $self = shift;
+
+    return $self->maintable if $self->can('maintable');
+}
+
+sub main_table_name {
+    my $self = shift;
+
+    return $self->main_table->{name};
+}
+
+sub main_table_view {
+    my $self = shift;
+
+    return $self->main_table->{view};
+}
+
+sub main_table_pkcol {
+    my $self = shift;
+
+    return $self->main_table->{pkcol}{name};
+}
+
+sub main_table_fkcol {
+    my $self = shift;
+
+    return $self->main_table->{fkcol}{name};
+}
+
+sub main_table_columns {
+    my $self = shift;
+
+    return $self->main_table->{columns};
+}
+
+sub main_table_column {
+    my ($self, $column) = @_;
+
+    return $self->main_table_columns->{$column};
+}
+
+sub main_table_column_attr {
+    my ($self, $column, $attr) = @_;
+
+    return $self->main_table_column($column)->{$attr};
+}
+
+#---
+
+sub dep_table {
+    my ($self, $tm_ds) = @_;
+
+    return $self->deptable->{$tm_ds} if $self->can('deptable');
+}
+
+sub dep_table_name {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{name};
+}
+
+sub dep_table_view {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{view};
+}
+
+sub dep_table_updatestyle {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{updatestyle};
+}
+
+sub dep_table_selectorcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{selectorcol};
+}
+
+sub dep_table_has_selectorcol {
+    my ($self, $tm_ds) = @_;
+
+    my $sc = $self->dep_table_selectorcol($tm_ds);
+
+    return if $sc eq 'none';
+
+    return $sc;
+}
+
+sub dep_table_orderby {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{orderby};
+}
+
+sub dep_table_colstretch {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{colstretch};
+}
+
+sub dep_table_pkcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{pkcol}{name};
+}
+
+sub dep_table_fkcol {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{fkcol}{name};
+}
+
+sub dep_table_columns {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{columns};
+}
+
+sub dep_table_column {
+    my ($self, $tm_ds, $column) = @_;
+
+    return $self->dep_table_columns($tm_ds)->{$column};
+}
+
+sub dep_table_column_attr {
+    my ($self, $tm_ds, $column, $attr) = @_;
+
+    return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
+}
+
+sub dep_table_toolbars {
+    my ($self, $tm_ds) = @_;
+
+    return $self->dep_table($tm_ds)->{toolbar};
 }
 
 =head1 AUTHOR

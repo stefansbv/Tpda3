@@ -62,7 +62,7 @@ Add a callback
 sub add_callback {
     my ( $self, $callback ) = @_;
 
-    $self->{_callbacks}->{$callback} = $callback;
+    $self->{_callbacks}{$callback} = $callback;
 
     return $self;
 }
@@ -76,7 +76,7 @@ Delete a callback
 sub del_callback {
     my ( $self, $callback ) = @_;
 
-    delete $self->{_callbacks}->{$callback};
+    delete $self->{_callbacks}{$callback};
 
     return $self;
 }
@@ -91,7 +91,7 @@ sub _docallbacks {
     my $self = shift;
 
     foreach my $cb ( keys %{ $self->{_callbacks} } ) {
-        $self->{_callbacks}->{$cb}->( $self->{_data} );
+        $self->{_callbacks}{$cb}->( $self->{_data} );
     }
 
     return;
@@ -130,13 +130,13 @@ Set data to undef
 
 =cut
 
-# sub unset {
-#     my $self = shift;
+sub unset {
+    my $self = shift;
 
-#     $self->{_data} = undef;
+    $self->{_data} = undef;
 
-#     return $self;
-# }
+    return $self;
+}
 
 =head1 AUTHOR
 

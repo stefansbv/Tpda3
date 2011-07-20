@@ -39,17 +39,22 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p, $scr_cfg ) = @_;
+    my ( $self, $nb, $scr_cfg ) = @_;
 
-    my $gui     = $inreg_p->toplevel;
-    my $main_p  = $inreg_p->parent;
-    $self->{bg} = $gui->cget('-background');
+    # my $gui     = $inreg_p->toplevel;
+    # my $main_p  = $inreg_p->parent;
+    # $self->{bg} = $gui->cget('-background');
+
+    my $rec_page  = $nb->page_widget('rec');
+    my $det_page  = $nb->page_widget('det');
+    $self->{view} = $nb->toplevel;
+    $self->{bg}   = $self->{view}->cget('-background');
 
     my $validation = Tpda3::Tk::Validation->new($scr_cfg);
 
     #- Frame bottom
 
-    my $frm_bl = $inreg_p->LabFrame(
+    my $frm_bl = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Order total',
         -labelside  => 'acrosstop'
@@ -61,7 +66,7 @@ sub run_screen {
 
     #- Frame t => Tabel
 
-    my $frm_t = $inreg_p->LabFrame(
+    my $frm_t = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Articles',
         -labelside  => 'acrosstop'
@@ -73,7 +78,7 @@ sub run_screen {
 
     #- Top Left Frame
 
-    my $frame1 = $inreg_p->LabFrame(
+    my $frame1 = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Order',
         -labelside  => 'acrosstop'
@@ -85,7 +90,7 @@ sub run_screen {
 
     #- Top Right Frame
 
-    my $frame2 = $inreg_p->LabFrame(
+    my $frame2 = $rec_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Comments',
         -labelside  => 'acrosstop'
@@ -303,8 +308,7 @@ sub run_screen {
         -fill   => 'x',
     );
 
-    my $tb_names1 = [ qw(tb2ad tb2rm) ];      # order of creation
-    $self->SUPER::make_toolbar_for_table($tb_frame1, $tb_names1);
+    $self->make_toolbar_for_table('tm1', $tb_frame1);
 
     #- TableMatrix
 
@@ -320,6 +324,7 @@ sub run_screen {
         -validate       => 1,
         -variable       => $xtvar,
         -selectmode     => 'single',
+        -colstretchmode => 'unset',
         -resizeborders  => 'none',
         -colstretchmode => 'unset',
         -bg             => 'white',
