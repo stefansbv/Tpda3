@@ -1033,15 +1033,15 @@ Write header on row 0 of TableMatrix
 
 =cut
 
-sub make_tablematrix_header {
-    my ($self, $tm_table, $tm_fields, $strech, $selecol) = @_;
+# sub make_tablematrix_header {
+#     my ($self, $tm_table, $tm_fields, $strech, $selecol) = @_;
 
-    # Set TableMatrix tags
-    my $cols = scalar keys %{$tm_fields};
-    $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech,$selecol );
+#     # Set TableMatrix tags
+#     my $cols = scalar keys %{$tm_fields};
+#     $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech,$selecol );
 
-    return;
-}
+#     return;
+# }
 
 =head2 set_tablematrix_tags
 
@@ -1049,112 +1049,112 @@ Set tags for the table matrix.
 
 =cut
 
-sub set_tablematrix_tags {
-    my ($self, $xtable, $cols, $tm_fields, $strech, $selecol) = @_;
+# sub set_tablematrix_tags {
+#     my ($self, $xtable, $cols, $tm_fields, $strech, $selecol) = @_;
 
-    # TM is SpreadsheetHideRows type increase cols number with 1
-    $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
+#     # TM is SpreadsheetHideRows type increase cols number with 1
+#     $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
 
-    # Tags for the detail data:
-    $xtable->tagConfigure(
-        'detail',
-        -bg     => 'darkseagreen2',
-        -relief => 'sunken',
-    );
-    $xtable->tagConfigure(
-        'detail2',
-        -bg     => 'burlywood2',
-        -relief => 'sunken',
-    );
-    $xtable->tagConfigure(
-        'detail3',
-        -bg     => 'lightyellow',
-        -relief => 'sunken',
-    );
+#     # Tags for the detail data:
+#     $xtable->tagConfigure(
+#         'detail',
+#         -bg     => 'darkseagreen2',
+#         -relief => 'sunken',
+#     );
+#     $xtable->tagConfigure(
+#         'detail2',
+#         -bg     => 'burlywood2',
+#         -relief => 'sunken',
+#     );
+#     $xtable->tagConfigure(
+#         'detail3',
+#         -bg     => 'lightyellow',
+#         -relief => 'sunken',
+#     );
 
-    $xtable->tagConfigure(
-        'expnd',
-        -bg     => 'grey85',
-        -relief => 'raised',
-    );
-    $xtable->tagCol( 'expnd', 0 );
+#     $xtable->tagConfigure(
+#         'expnd',
+#         -bg     => 'grey85',
+#         -relief => 'raised',
+#     );
+#     $xtable->tagCol( 'expnd', 0 );
 
-    # Make enter do the same thing as return:
-    $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
+#     # Make enter do the same thing as return:
+#     $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
 
-    # if ($cols) {
-    #     $xtable->configure( -cols => $cols );
-    #     $xtable->configure( -rows => 1 ); # Keep table dim in grid
-    # }
-    $xtable->tagConfigure(
-        'active',
-        -bg     => 'lightyellow',
-        -relief => 'sunken',
-    );
-    $xtable->tagConfigure(
-        'title',
-        -bg     => 'tan',
-        -fg     => 'black',
-        -relief => 'raised',
-        -anchor => 'n',
-    );
-    $xtable->tagConfigure( 'find_left', -anchor => 'w', -bg => 'lightgreen' );
-    $xtable->tagConfigure(
-        'find_center',
-        -anchor => 'n',
-        -bg     => 'lightgreen',
-    );
-    $xtable->tagConfigure(
-        'find_right',
-        -anchor => 'e',
-        -bg     => 'lightgreen',
-    );
-    $xtable->tagConfigure('ro_left'     , -anchor => 'w', -bg => 'lightgrey');
-    $xtable->tagConfigure('ro_center'   , -anchor => 'n', -bg => 'lightgrey');
-    $xtable->tagConfigure('ro_right'    , -anchor => 'e', -bg => 'lightgrey');
-    $xtable->tagConfigure('enter_left'  , -anchor => 'w', -bg => 'white');
-    $xtable->tagConfigure('enter_center', -anchor => 'n', -bg => 'white');
-    $xtable->tagConfigure(
-        'enter_center_blue',
-        -anchor => 'n',
-        -bg     => 'lightblue',
-    );
-    $xtable->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
-    $xtable->tagConfigure( 'find_row', -bg => 'lightgreen' );
+#     # if ($cols) {
+#     #     $xtable->configure( -cols => $cols );
+#     #     $xtable->configure( -rows => 1 ); # Keep table dim in grid
+#     # }
+#     $xtable->tagConfigure(
+#         'active',
+#         -bg     => 'lightyellow',
+#         -relief => 'sunken',
+#     );
+#     $xtable->tagConfigure(
+#         'title',
+#         -bg     => 'tan',
+#         -fg     => 'black',
+#         -relief => 'raised',
+#         -anchor => 'n',
+#     );
+#     $xtable->tagConfigure( 'find_left', -anchor => 'w', -bg => 'lightgreen' );
+#     $xtable->tagConfigure(
+#         'find_center',
+#         -anchor => 'n',
+#         -bg     => 'lightgreen',
+#     );
+#     $xtable->tagConfigure(
+#         'find_right',
+#         -anchor => 'e',
+#         -bg     => 'lightgreen',
+#     );
+#     $xtable->tagConfigure('ro_left'     , -anchor => 'w', -bg => 'lightgrey');
+#     $xtable->tagConfigure('ro_center'   , -anchor => 'n', -bg => 'lightgrey');
+#     $xtable->tagConfigure('ro_right'    , -anchor => 'e', -bg => 'lightgrey');
+#     $xtable->tagConfigure('enter_left'  , -anchor => 'w', -bg => 'white');
+#     $xtable->tagConfigure('enter_center', -anchor => 'n', -bg => 'white');
+#     $xtable->tagConfigure(
+#         'enter_center_blue',
+#         -anchor => 'n',
+#         -bg     => 'lightblue',
+#     );
+#     $xtable->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
+#     $xtable->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
-    # TableMatrix header, Set Name, Align, Width
-    foreach my $field ( keys %{$tm_fields} ) {
-        my $col = $tm_fields->{$field}{id};
-        $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
-        $xtable->set( "0,$col", $tm_fields->{$field}{label} );
+#     # TableMatrix header, Set Name, Align, Width
+#     foreach my $field ( keys %{$tm_fields} ) {
+#         my $col = $tm_fields->{$field}{id};
+#         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
+#         $xtable->set( "0,$col", $tm_fields->{$field}{label} );
 
-        # If colstretch = 'n' in screen config file, don't set width,
-        # because of the -colstretchmode => 'unset' setting, col 'n'
-        # will be of variable width
-        next if $strech and $col == $strech;
+#         # If colstretch = 'n' in screen config file, don't set width,
+#         # because of the -colstretchmode => 'unset' setting, col 'n'
+#         # will be of variable width
+#         next if $strech and $col == $strech;
 
-        my $width = $tm_fields->{$field}{width};
-        if ( $width and ( $width > 0 ) ) {
-            $xtable->colWidth( $col, $width );
-        }
-    }
+#         my $width = $tm_fields->{$field}{width};
+#         if ( $width and ( $width > 0 ) ) {
+#             $xtable->colWidth( $col, $width );
+#         }
+#     }
 
-    # Add selector column
-    if ($selecol) {
-        $xtable->insertCols( $selecol, 1 );
-        $xtable->tagCol( 'ro_center', $selecol );
-        $xtable->colWidth( $selecol, 3 );
-        $xtable->set( "0,$selecol", 'Sel' );
-    }
+#     # Add selector column
+#     if ($selecol) {
+#         $xtable->insertCols( $selecol, 1 );
+#         $xtable->tagCol( 'ro_center', $selecol );
+#         $xtable->colWidth( $selecol, 3 );
+#         $xtable->set( "0,$selecol", 'Sel' );
+#     }
 
-    $xtable->tagRow( 'title', 0 );
-    if ( $xtable->tagExists('expnd') ) {
-        # Change the tag priority
-        $xtable->tagRaise( 'expnd', 'title' );
-    }
+#     $xtable->tagRow( 'title', 0 );
+#     if ( $xtable->tagExists('expnd') ) {
+#         # Change the tag priority
+#         $xtable->tagRaise( 'expnd', 'title' );
+#     }
 
-    return;
-}
+#     return;
+# }
 
 # sub Tk::Error {
 #     my ($widget, $error, @where) = @_;

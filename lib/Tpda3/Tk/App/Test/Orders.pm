@@ -3,12 +3,12 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
-use Tk::widgets qw(DateEntry JComboBox TableMatrix); #  MatchingBE
+use Tk::widgets qw(DateEntry JComboBox); #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
 
-use Tpda3::Config;
-#use Tpda3::Tk::ToolBar;
+#use Tpda3::Config;
+use Tpda3::Tk::TM;
 
 =head1 NAME
 
@@ -39,18 +39,14 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $nb, $scr_cfg ) = @_;
-
-    # my $gui     = $inreg_p->toplevel;
-    # my $main_p  = $inreg_p->parent;
-    # $self->{bg} = $gui->cget('-background');
+    my ( $self, $nb ) = @_;
 
     my $rec_page  = $nb->page_widget('rec');
     my $det_page  = $nb->page_widget('det');
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
-    my $validation = Tpda3::Tk::Validation->new($scr_cfg);
+    my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
 
     #- Frame bottom
 
@@ -300,37 +296,12 @@ sub run_screen {
     #
 
     #-- Toolbar
+    $self->make_toolbar_for_table('tm1', $frm_t);
 
-    my $tb_frame1 = $frm_t->Frame();
-    $tb_frame1->pack(
-        -anchor => 'n',
-        -expand => 'n',
-        -fill   => 'x',
-    );
+    my $fields = $self->{scrcfg}->dep_table_columns('tm1');
 
-    $self->make_toolbar_for_table('tm1', $tb_frame1);
-
-    #- TableMatrix
-
-    my $xtvar = {};                     # must init as hash reference!
-    my $xtable = $frm_t->Scrolled(
-        'TableMatrix',
-        -rows           => 5,
-        -cols           => 5,
-        -width          => -1,
-        -height         => -1,
-        -ipadx          => 3,
-        -titlerows      => 1,
-        -validate       => 1,
-        -variable       => $xtvar,
-        -selectmode     => 'single',
-        -colstretchmode => 'unset',
-        -resizeborders  => 'none',
-        -colstretchmode => 'unset',
-        -bg             => 'white',
-        -scrollbars     => 'osw',
-        -vcmd           => sub { $validation->validate_table_cell('tm1', @_) },
-    );
+    #-- TableMatrix
+    my $xtable = Tpda3::Tk::TM->new($frm_t, $fields);
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     #- Ordertotal (ordertotal)
@@ -378,9 +349,9 @@ sub run_screen {
     $xtable->update;
 
     # Prepare screen configuration data for tables
-    foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
-        $validation->init_cfgdata( 'deptable', $tm_ds );
-    }
+    # foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
+    #     $validation->init_cfgdata( 'deptable', $tm_ds );
+    # }
 
     return;
 }

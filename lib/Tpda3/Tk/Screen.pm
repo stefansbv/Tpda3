@@ -2,8 +2,6 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tpda3::Tk::Entry;
@@ -43,7 +41,7 @@ sub new {
 
     bless $self, $class;
 
-    $self->{scrcfg} = $args;
+    $self->{scrcfg} = Tpda3::Config::Screen->new($args);
 
     return $self;
 }
@@ -55,7 +53,7 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $nb, $scr_cfg ) = @_;
+    my ( $self, $nb ) = @_;
 
     print 'run_screen not implemented in ', __PACKAGE__, "\n";
 
@@ -91,7 +89,7 @@ sub get_tm_controls {
     return {} if ! exists $self->{tm_controls};
 
     if ($tm_ds) {
-        return ${ $self->{tm_controls}{rec}{$tm_ds} }->Subwidget('scrolled');
+        return ${ $self->{tm_controls}{rec}{$tm_ds} };
     }
     else {
         return $self->{tm_controls}{rec};
@@ -152,14 +150,38 @@ buttons.
 =cut
 
 sub make_toolbar_for_table {
-    my ($self, $tm_ds, $tb_frame) = @_;
+    my ($self, $tm_ds, $tbf) = @_;
 
-    $self->{tb}{$tm_ds} = Tpda3::Tk::ToolBar->new($tb_frame);
+    $self->{tb}{$tm_ds} = Tpda3::Tk::ToolBar->new($tbf);
 
     my $attribs  = $self->{scrcfg}->dep_table_toolbars($tm_ds);
+
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
     $self->{tb}{$tm_ds}->make_toolbar_buttons($toolbars, $attribs);
+
+    return;
+}
+
+sub tmatrix_add_row {
+    my ($self, $tm_ds) = @_;
+
+    my $tmx = $self->get_tm_controls($tm_ds);
+
+    $tmx->add_row();
+
+    return;
+}
+
+sub tmatrix_remove_row {
+    my ($self, $tm_ds) = @_;
+
+    my $tmx = $self->get_tm_controls($tm_ds);
+
+    my $row = $tmx->get_active_row();
+    print "remove row! $tm_ds: $row\n";
+
+    $tmx->remove_row($row);
 
     return;
 }

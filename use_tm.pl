@@ -106,7 +106,23 @@ $tm->fill($record);
 
 my ($data) = $tm->data_read();
 
-print Dumper( $data );
+# print Dumper( $data );
+
+my $cell_data = $tm->cell_read(1,1);
+
+# print Dumper( $cell_data );
+
+$tm->clear_all;
+
+$tm->add_row();
+$tm->write_row( 1, 0, $record->[0] );
+
+$tm->add_row();
+$tm->write_row( 2, 0, $record->[1] );
+
+# my $r = get_active_row();
+
+# $tm->remove_row(1);
+
 
 MainLoop;
-

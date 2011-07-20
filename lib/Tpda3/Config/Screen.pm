@@ -43,11 +43,13 @@ Constructor method.
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $args) = @_;
 
     my $self = {};
 
     bless $self, $class;
+
+    $self->config_screen_load($args);
 
     return $self;
 }
