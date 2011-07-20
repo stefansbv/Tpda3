@@ -2,9 +2,12 @@ package Tpda3::Tk::TM;
 
 use strict;
 use warnings;
+use Carp;
 
 use Tk;
 use base qw{Tk::TableMatrix};
+
+use Tpda3::Utils;
 
 =head1 NAME
 
@@ -93,10 +96,9 @@ Write header on row 0 of TableMatrix
 sub _init {
     my ($self, $metadata, $strech, $selecol) = @_;
 
-    # Set TableMatrix tags
-    my $cols = scalar keys %{$metadata};
+    $self->{fields} = $metadata;
 
-    $self->set_tablematrix_tags($cols, $metadata, 4, 0 );
+    $self->set_tablematrix_tags();
 
     return;
 }
@@ -108,10 +110,12 @@ Set tags for the table matrix.
 =cut
 
 sub set_tablematrix_tags {
-    my ($self, $cols, $tm_fields, $strech, $selecol) = @_;
+    my $self = shift;
+
+    my $cols = scalar keys %{ $self->{fields} };
 
     # TM is SpreadsheetHideRows type increase cols number with 1
-    $cols += 1 if $self =~ m/SpreadsheetHideRows/;
+    # $cols += 1 if $self =~ m/SpreadsheetHideRows/;
 
     # Tags for the detail data:
     $self->tagConfigure(
@@ -140,10 +144,10 @@ sub set_tablematrix_tags {
     # Make enter do the same thing as return:
     $self->bind( '<KP_Enter>', $self->bind('<Return>') );
 
-    # if ($cols) {
-    #     $self->configure( -cols => $cols );
-    #     $self->configure( -rows => 1 ); # Keep table dim in grid
-    # }
+    if ($cols) {
+        $self->configure( -cols => $cols );
+        $self->configure( -rows => 1 ); # Keep table dim in grid
+    }
     $self->tagConfigure(
         'active',
         -bg     => 'lightyellow',
@@ -181,35 +185,87 @@ sub set_tablematrix_tags {
     $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
     # TableMatrix header, Set Name, Align, Width
-    foreach my $field ( keys %{$tm_fields} ) {
-        my $col = $tm_fields->{$field}{id};
-        $self->tagCol( $tm_fields->{$field}{tag}, $col );
-        $self->set( "0,$col", $tm_fields->{$field}{label} );
+    foreach my $field ( keys %{$self->{fields}} ) {
+        my $col = $self->{fields}->{$field}{id};
+        $self->tagCol( $self->{fields}->{$field}{tag}, $col );
+        $self->set( "0,$col", $self->{fields}->{$field}{label} );
 
         # If colstretch = 'n' in screen config file, don't set width,
         # because of the -colstretchmode => 'unset' setting, col 'n'
         # will be of variable width
-        next if $strech and $col == $strech;
+#        next if $strech and $col == $strech;
 
-        my $width = $tm_fields->{$field}{width};
+        my $width = $self->{fields}->{$field}{width};
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }
     }
 
-    # Add selector column
-    if ($selecol) {
-        $self->insertCols( $selecol, 1 );
-        $self->tagCol( 'ro_center', $selecol );
-        $self->colWidth( $selecol, 3 );
-        $self->set( "0,$selecol", 'Sel' );
-    }
+    # # Add selector column
+    # if ($selecol) {
+    #     $self->insertCols( $selecol, 1 );
+    #     $self->tagCol( 'ro_center', $selecol );
+    #     $self->colWidth( $selecol, 3 );
+    #     $self->set( "0,$selecol", 'Sel' );
+    # }
 
     $self->tagRow( 'title', 0 );
     if ( $self->tagExists('expnd') ) {
         # Change the tag priority
         $self->tagRaise( 'expnd', 'title' );
     }
+
+    return;
+}
+
+=head2 fill
+
+Fill TableMatrix widget with data.
+
+=cut
+
+sub fill {
+    my ($self, $record_ref) = @_;
+
+    my $xtvar = $self->cget( -variable );
+
+    my $row = 1;
+
+    #- Scan and write to table
+
+    foreach my $record ( @{$record_ref} ) {
+        foreach my $field ( keys %{ $self->{fields} } ) {
+            my $fld_cfg = $self->{fields}{$field};
+
+            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+
+            my $value = $record->{$field};
+            $value = q{} unless defined $value;    # empty
+            $value =~ s/[\n\t]//g;                 # delete control chars
+
+            my ( $col, $validtype, $width, $places ) =
+              @$fld_cfg{'id','validation','width','places'}; # hash slice
+
+            if ( $validtype eq 'numeric' ) {
+                $value = 0 unless $value;
+                if ( defined $places ) {
+
+                    # Daca SCALE >= 0, Formatez numarul
+                    $value = sprintf( "%.${places}f", $value );
+                }
+                else {
+                    $value = sprintf( "%.0f", $value );
+                }
+            }
+
+            $xtvar->{"$row,$col"} = $value;
+        }
+
+        $row++;
+    }
+
+    # Refreshing the table...
+    $self->configure( -rows => $row);
 
     return;
 }
@@ -231,7 +287,8 @@ sub data_read {
     my $cols_idx = $cols_no - 1;
 
     # my $fields_cfg = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-    # my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+    my $fields_cfg = $self->{fields};
+    my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
     # # Get selectorcol index, if any
     my $sc; # = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
@@ -239,28 +296,27 @@ sub data_read {
     # # Read table data and create an AoH
     my @tabledata;
 
-    # # The first row is the header
-    # for my $row ( 1 .. $rows_idx ) {
+    # The first row is the header
+    for my $row ( 1 .. $rows_idx ) {
 
-    #     my $rowdata = {};
-    #     for my $col ( 0 .. $cols_idx ) {
+        my $rowdata = {};
+        for my $col ( 0 .. $cols_idx ) {
 
-    #         next if $sc and ($col == $sc); # skip selectorcol
+            next if $sc and ($col == $sc); # skip selectorcol
 
-    #         my $cell_value = $self->get("$row,$col");
-    #         my $col_name = $cols_ref->[$col];
+            my $cell_value = $self->get("$row,$col");
+            my $col_name = $cols_ref->[$col];
 
-    #         my $fld_cfg = $fields_cfg->{$col_name};
-    #         my ($rw ) = @$fld_cfg{'rw'};     # hash slice
+            my $fld_cfg = $fields_cfg->{$col_name};
+            my ($rw ) = @$fld_cfg{'rw'};     # hash slice
 
-    #         next if $rw eq 'ro'; # skip ro cols
+            next if $rw eq 'ro'; # skip ro cols
 
-    #         # print "$row: $col_name => $cell_value\n";
-    #         $rowdata->{$col_name} = $cell_value;
-    #     }
+            $rowdata->{$col_name} = $cell_value;
+        }
 
-    #     push @tabledata, $rowdata;
-    # }
+        push @tabledata, $rowdata;
+    }
 
     return (\@tabledata, $sc);
 }

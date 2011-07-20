@@ -3509,7 +3509,7 @@ sub record_load {
 
         $self->tmatrix_clear($tm_ds);
         $self->tmatrix_write($records, $tm_ds);
-
+        print Dumper( $records );
         $self->tmatrix_make_selector($tm_ds); # if configured
     }
 
