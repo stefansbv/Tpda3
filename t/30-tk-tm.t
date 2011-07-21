@@ -25,7 +25,7 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 9;
+    plan tests => 7;
 }
 
 use_ok('Tpda3::Tk::TM');
@@ -59,7 +59,7 @@ my $fields = {
         'id'         => '5',
         'label'      => 'Value',
         'tag'        => 'ro_right',
-        'rw'         => 'ro'
+        'rw'         => 'rw'
     },
     'quantityordered' => {
         'places'     => '0',
@@ -79,7 +79,7 @@ my $fields = {
         'id'         => '2',
         'label'      => 'Product',
         'tag'        => 'ro_left',
-        'rw'         => 'ro'
+        'rw'         => 'rw'
     },
     'orderlinenumber' => {
         'places'     => '0',
@@ -111,9 +111,9 @@ my $record = [
         'orderlinenumber' => '2'
     },
     {
-        'priceeach'       => '70.4',
+        'priceeach'       => '70.40',
         'productcode'     => 'S700_3167',
-        'ordervalue'      => '2675.2',
+        'ordervalue'      => '2675.20',
         'quantityordered' => '38',
         'productname'     => 'F/A 18 Hornet 1/72',
         'orderlinenumber' => '3'
@@ -127,28 +127,63 @@ my $tm;
 eval { $tm = Tpda3::Tk::TM->new($mw, $fields) };
 $tm->pack;
 
-is( ref $tm, "Tpda3::Tk::TM", "TM object");
+ok( $tm->isa('Tpda3::Tk::TM'), 'created Tpda3::Tk::TM instance' );
 
-is($tm->fill($record), undef, 'Fill TM');
+my $delay = 1;
 
-# my $data;
-# eval { ($data) = $tm->data_read(); };
-# ok ($@, "Error: data_read");
+$mw->after(
+    $delay * 1000,
+    sub { is($tm->fill($record), undef, 'fill TM'); }
+);
 
-# eval { $tm->destroy; };
-# ok($@, "can't destroy TM widget");
+$delay++;
 
-# my $cell_data = $tm->cell_read(1,1);
+$mw->after(
+    $delay * 1000,
+    sub {
+        my ($data, $scol) = $tm->data_read();
+        is_deeply($data, $record, 'read data from TM');
+    }
+);
 
-# $tm->clear_all;
 
-# $tm->add_row();
-# $tm->write_row( 1, 0, $record->[0] );
 
-# $tm->add_row();
-# $tm->write_row( 2, 0, $record->[1] );
+$delay++;
 
-$mw->after(1500, sub { $mw->destroy } );
+$mw->after(
+    $delay * 1000,
+    sub {
+        my $cell_data = $tm->cell_read(1,1);
+        is_deeply($cell_data, {productcode => 'S50_1341'}, 'read cell from TM');
+    }
+);
+
+$delay++;
+
+$mw->after(
+    $delay * 1000,
+    sub {
+        $tm->clear_all;
+        my ($data, $scol) = $tm->data_read();
+        is_deeply($data, [], 'read data from TM after clear');
+    }
+);
+
+$delay++;
+
+$mw->after(
+    $delay * 1000,
+    sub {
+        $tm->add_row();
+        $tm->write_row( 1, 0, $record->[0] );
+        my ($data, $scol) = $tm->data_read();
+        is_deeply($data, [$record->[0]], 'read data from TM after add');
+    }
+);
+
+$delay++;
+
+$mw->after( $delay * 1000, sub { $mw->destroy } );
 
 Tk::MainLoop;
 
