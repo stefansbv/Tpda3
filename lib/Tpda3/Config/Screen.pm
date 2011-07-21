@@ -3,6 +3,8 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
@@ -277,6 +279,16 @@ sub dep_table_toolbars {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{toolbar};
+}
+
+sub dep_table_header_info {
+    my ($self, $tm_ds) = @_;
+
+    return {
+        columns     => $self->dep_table_columns($tm_ds),
+        selectorcol => $self->dep_table_selectorcol($tm_ds),
+        colstretch  => $self->dep_table_colstretch($tm_ds),
+    };
 }
 
 =head1 AUTHOR

@@ -179,9 +179,10 @@ sub tmatrix_remove_row {
     my $tmx = $self->get_tm_controls($tm_ds);
 
     my $row = $tmx->get_active_row();
-    print "remove row! $tm_ds: $row\n";
 
-    $tmx->remove_row($row);
+    if ($row) {
+        $tmx->remove_row($row);
+    }
 
     return;
 }

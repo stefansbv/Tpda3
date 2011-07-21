@@ -30,69 +30,75 @@ BEGIN {
 
 use_ok('Tpda3::Tk::TM');
 
-my $fields = {
-    'priceeach' => {
-        'places'     => '2',
-        'width'      => '12',
-        'validation' => 'numeric',
-        'order'      => 'N',
-        'id'         => '4',
-        'label'      => 'Price',
-        'tag'        => 'enter_right',
-        'rw'         => 'rw'
+# Header for TM, slightly modified data, all cols are 'rw'
+my $header = {
+    'colstretch' => '2',
+    'columns'    => {
+        'priceeach' => {
+            'places'     => '2',
+            'width'      => '12',
+            'validation' => 'numeric',
+            'order'      => 'N',
+            'id'         => '4',
+            'label'      => 'Price',
+            'tag'        => 'enter_right',
+            'rw'         => 'rw'
+        },
+        'productcode' => {
+            'places'     => '0',
+            'width'      => '15',
+            'validation' => 'alphanum',
+            'order'      => 'A',
+            'id'         => '1',
+            'label'      => 'Code',
+            'tag'        => 'find_center',
+            'rw'         => 'rw'
+        },
+        'ordervalue' => {
+            'places'     => '2',
+            'width'      => '12',
+            'validation' => 'numeric',
+            'order'      => 'A',
+            'id'         => '5',
+            'label'      => 'Value',
+            'tag'        => 'ro_right',
+            'rw'         => 'rw'
+        },
+        'quantityordered' => {
+            'places'     => '0',
+            'width'      => '12',
+            'validation' => 'numeric',
+            'order'      => 'N',
+            'id'         => '3',
+            'label'      => 'Quantity',
+            'tag'        => 'enter_right',
+            'rw'         => 'rw'
+        },
+        'productname' => {
+            'places'     => '0',
+            'width'      => '36',
+            'validation' => 'alphanumplus',
+            'order'      => 'A',
+            'id'         => '2',
+            'label'      => 'Product',
+            'tag'        => 'ro_left',
+            'rw'         => 'rw'
+        },
+        'orderlinenumber' => {
+            'places'     => '0',
+            'width'      => '5',
+            'validation' => 'integer',
+            'order'      => 'N',
+            'id'         => '0',
+            'label'      => 'Art',
+            'tag'        => 'ro_center',
+            'rw'         => 'rw'
+        }
     },
-    'productcode' => {
-        'places'     => '0',
-        'width'      => '15',
-        'validation' => 'alphanum',
-        'order'      => 'A',
-        'id'         => '1',
-        'label'      => 'Code',
-        'tag'        => 'find_center',
-        'rw'         => 'rw'
-    },
-    'ordervalue' => {
-        'places'     => '2',
-        'width'      => '12',
-        'validation' => 'numeric',
-        'order'      => 'A',
-        'id'         => '5',
-        'label'      => 'Value',
-        'tag'        => 'ro_right',
-        'rw'         => 'rw'
-    },
-    'quantityordered' => {
-        'places'     => '0',
-        'width'      => '12',
-        'validation' => 'numeric',
-        'order'      => 'N',
-        'id'         => '3',
-        'label'      => 'Quantity',
-        'tag'        => 'enter_right',
-        'rw'         => 'rw'
-    },
-    'productname' => {
-        'places'     => '0',
-        'width'      => '36',
-        'validation' => 'alphanumplus',
-        'order'      => 'A',
-        'id'         => '2',
-        'label'      => 'Product',
-        'tag'        => 'ro_left',
-        'rw'         => 'rw'
-    },
-    'orderlinenumber' => {
-        'places'     => '0',
-        'width'      => '5',
-        'validation' => 'integer',
-        'order'      => 'N',
-        'id'         => '0',
-        'label'      => 'Art',
-        'tag'        => 'ro_center',
-        'rw'         => 'rw'
-    }
+    'selectorcol' => ''
 };
 
+# Data for tests
 my $record = [
     {
         'priceeach'       => '37.97',
@@ -124,7 +130,7 @@ my $mw = tkinit;
 $mw->geometry("680x200+10+10");
 
 my $tm;
-eval { $tm = Tpda3::Tk::TM->new($mw, $fields) };
+eval { $tm = Tpda3::Tk::TM->new($mw, $header) };
 $tm->pack;
 
 ok( $tm->isa('Tpda3::Tk::TM'), 'created Tpda3::Tk::TM instance' );

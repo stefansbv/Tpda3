@@ -3,11 +3,12 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::widgets qw(DateEntry JComboBox); #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
 
-#use Tpda3::Config;
 use Tpda3::Tk::TM;
 
 =head1 NAME
@@ -298,10 +299,10 @@ sub run_screen {
     #-- Toolbar
     $self->make_toolbar_for_table('tm1', $frm_t);
 
-    my $fields = $self->{scrcfg}->dep_table_columns('tm1');
+    my $header = $self->{scrcfg}->dep_table_header_info('tm1');
 
     #-- TableMatrix
-    my $xtable = Tpda3::Tk::TM->new($frm_t, $fields);
+    my $xtable = Tpda3::Tk::TM->new($frm_t, $header);
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     #- Ordertotal (ordertotal)
@@ -345,9 +346,6 @@ sub run_screen {
         },
     };
 
-    # This makes TableMatrix expand
-    $xtable->update;
-
     # Prepare screen configuration data for tables
     # foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
     #     $validation->init_cfgdata( 'deptable', $tm_ds );
@@ -365,7 +363,7 @@ Calculate order line.
 sub calculate_order_line {
     my ($self, $row) = @_;
 
-    my $xt = ${ $self->{tm_controls}{rec}{tm1} }->Subwidget('scrolled');
+    my $xt = ${ $self->{tm_controls}{rec}{tm1} };
 
     my $cant = $xt->get("$row,3"); # print "Cant = $cant\n";
     my $pret = $xt->get("$row,4"); # print "Pret = $pret\n";

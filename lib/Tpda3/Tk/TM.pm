@@ -34,7 +34,7 @@ Constructor method.
 =cut
 
 sub new {
-    my ( $class, $frame, $metadata ) = @_;
+    my ( $class, $frame, $args ) = @_;
 
     my $xtvar1 = {};    # must init as hash reference!
 
@@ -88,7 +88,7 @@ sub new {
 
     $self->pack( -side => 'left', -fill => 'both', -expand => 1 );
 
-    $self->_init($metadata);
+    $self->_init($frame, $args);
 
     return $self;
 }
@@ -100,9 +100,14 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub _init {
-    my ($self, $metadata, $strech, $selecol) = @_;
+    my ($self, $frame, $args) = @_;
 
-    $self->{fields} = $metadata;
+    $self->{columns}     = $args->{columns};
+    $self->{selectorcol} = $args->{selectorcol};
+    $self->{colstretch}  = $args->{colstretch};
+
+    $self->{frame}  = $frame;
+    $self->{tm_sel} = undef;               # selected row
 
     $self->set_tags();
 
@@ -118,7 +123,7 @@ Set tags for the table matrix.
 sub set_tags {
     my $self = shift;
 
-    my $cols = scalar keys %{ $self->{fields} };
+    my $cols = scalar keys %{ $self->{columns} };
 
     # TM is SpreadsheetHideRows type increase cols number with 1
     # $cols += 1 if $self =~ m/SpreadsheetHideRows/;
@@ -191,29 +196,30 @@ sub set_tags {
     $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
     # TableMatrix header, Set Name, Align, Width
-    foreach my $field ( keys %{$self->{fields}} ) {
-        my $col = $self->{fields}->{$field}{id};
-        $self->tagCol( $self->{fields}->{$field}{tag}, $col );
-        $self->set( "0,$col", $self->{fields}->{$field}{label} );
+    foreach my $field ( keys %{$self->{columns}} ) {
+        my $col = $self->{columns}->{$field}{id};
+        $self->tagCol( $self->{columns}->{$field}{tag}, $col );
+        $self->set( "0,$col", $self->{columns}->{$field}{label} );
 
         # If colstretch = 'n' in screen config file, don't set width,
         # because of the -colstretchmode => 'unset' setting, col 'n'
         # will be of variable width
-#        next if $strech and $col == $strech;
+        next if $self->{colstretch} and $col == $self->{colstretch};
 
-        my $width = $self->{fields}->{$field}{width};
+        my $width = $self->{columns}->{$field}{width};
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }
     }
 
-    # # Add selector column
-    # if ($selecol) {
-    #     $self->insertCols( $selecol, 1 );
-    #     $self->tagCol( 'ro_center', $selecol );
-    #     $self->colWidth( $selecol, 3 );
-    #     $self->set( "0,$selecol", 'Sel' );
-    # }
+    # Add selector column
+    if ( $self->{selectorcol} ) {
+        my $selecol = $self->{selectorcol};
+        $self->insertCols( $selecol, 1 );
+        $self->tagCol( 'ro_center', $selecol );
+        $self->colWidth( $selecol, 3 );
+        $self->set( "0,$selecol", 'Sel' );
+    }
 
     $self->tagRow( 'title', 0 );
     if ( $self->tagExists('expnd') ) {
@@ -254,8 +260,8 @@ sub fill {
     #- Scan and write to table
 
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->{fields} } ) {
-            my $fld_cfg = $self->{fields}{$field};
+        foreach my $field ( keys %{ $self->{columns} } ) {
+            my $fld_cfg = $self->{columns}{$field};
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
@@ -309,7 +315,7 @@ sub write_row {
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
 
-        my $fld_cfg = $self->{fields}{$field};
+        my $fld_cfg = $self->{columns}{$field};
         my $value   = $record_ref->{$field};
 
         my ( $col, $validtype, $width, $places ) =
@@ -350,12 +356,11 @@ sub data_read {
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
-    # my $fields_cfg = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-    my $fields_cfg = $self->{fields};
+    my $fields_cfg = $self->{columns};
     my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
-    # # Get selectorcol index, if any
-    my $sc; # = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
+    # Get selectorcol index, if any
+    my $sc = $self->{selectorcol};
 
     # # Read table data and create an AoH
     my @tabledata;
@@ -402,7 +407,7 @@ sub cell_read {
     my $is_col_name = 0;
     $is_col_name    = 1 if $col !~ m{\d+};
 
-    my $fields_cfg = $self->{fields};
+    my $fields_cfg = $self->{columns};
 
     my $col_name;
     if ($is_col_name) {
@@ -429,7 +434,6 @@ sub add_row {
     my $self = shift;
 
     my $updstyle = 'delete+add';
-    # my $self = $self->scrobj('rec')->get_tm_controls($tm_ds);
 
     # return
     #   unless $self->_model->is_mode('add')
@@ -455,11 +459,11 @@ sub add_row {
         }
     }
 
-    # my $sc = 0; # $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-    # if ($sc) {
-    #     $self->embeded_buttons( $self, $new_r, $sc ); # add button
-    #     $self->set_selected($new_r);
-    # }
+    my $sc = $self->{selectorcol};
+    if ($sc) {
+        $self->embeded_buttons( $new_r, $sc ); # add button
+        $self->set_selected($new_r);
+    }
 
     # Focus to newly inserted row, column 1
     $self->focus;
@@ -493,14 +497,14 @@ sub remove_row {
         $self->deleteRows( $row, 1 );
     }
     else {
-        warn 'Select a row!';
+        print "Select a row!\n";
     }
 
-    # my $sc = 0; #$self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-    # if ($sc) {
-    #     $self->set_selected($r - 1);
-    #     $self->toggle_detail_tab;
-    # }
+    my $sc = $self->{selectorcol};
+    if ($sc) {
+        $self->set_selected($row - 1);
+#        $self->toggle_detail_tab;
+    }
 
     $self->renum_row($self)
       if $updstyle eq 'delete+add';    # renumber rows
@@ -511,7 +515,7 @@ sub remove_row {
 
     # TODO: Feature to trigger a method here?
 
-    # $self->_model->set_scrdata_rec(1); # modified
+#    $self->_model->set_scrdata_rec(1); # modified
 
     return;
 }
@@ -524,7 +528,7 @@ sub get_active_row {
         $r = $self->index( 'active', 'row' );
     };
     if ($@) {
-        warn 'No active row!';
+        print "Select a row!\n";
         return;
     }
 
@@ -546,6 +550,92 @@ sub renum_row {
         foreach my $i ( 1 .. $r ) {
             $self->set( "$i,0", $i );
         }
+    }
+
+    return;
+}
+
+=head2 tmatrix_make_selector
+
+Make TableMatrix selector.
+
+=cut
+
+sub tmatrix_make_selector {
+    my ($self, $c) = @_;
+
+    my $rows_no  = $self->cget( -rows );
+    my $rows_idx = $rows_no - 1;
+
+    foreach my $r ( 1 .. $rows_idx ) {
+        $self->embeded_buttons( $r, $c );
+    }
+
+    return;
+}
+
+=head2 embeded_buttons
+
+Embeded windows
+
+=cut
+
+sub embeded_buttons {
+    my ($self, $row, $col) = @_;
+
+    $self->windowConfigure(
+        "$row,$col",
+        -sticky => 's',
+        -window => $self->build_rbbutton($row, $col),
+    );
+
+    return;
+}
+
+=head2 build_rbbutton
+
+Build Radiobutton.
+
+=cut
+
+sub build_rbbutton {
+    my ( $self, $row, $col ) = @_;
+
+    my $button = $self->{frame}->Radiobutton(
+        -width       => 3,
+        -variable    => \$self->{tm_sel},
+        -value       => $row,
+        -indicatoron => 0,
+        -selectcolor => 'lightblue',
+        -state       => 'normal',
+    );
+
+    # Default selected row == 1
+    $self->set_selected($row) if $row == 1;
+
+    return $button;
+}
+
+=head2 get_selected
+
+Get selected table row.
+
+=cut
+
+sub get_selected {
+    my $self = shift;
+
+    return $self->{tm_sel};
+}
+
+sub set_selected {
+    my ($self, $selected_row) = @_;
+
+    if ($selected_row) {
+        $self->{tm_sel} = $selected_row;
+    }
+    else {
+        $self->{tm_sel} = undef;
     }
 
     return;
