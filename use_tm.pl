@@ -106,7 +106,7 @@ $tm->fill($record);
 
 my ($data) = $tm->data_read();
 
-# print Dumper( $data );
+print Dumper( $data );
 
 my $cell_data = $tm->cell_read(1,1);
 

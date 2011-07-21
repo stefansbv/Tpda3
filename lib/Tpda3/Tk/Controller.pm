@@ -53,13 +53,9 @@ Constructor method.
 
 =item _rscrobj  - current I<record> screen object
 
-=item _rscrcfg  - current  I<record> screen config object
-
 =item _dscrcls  - class name of the current I<detail> screen
 
 =item _dscrobj  - current I<detail> screen object
-
-=item _dscrcfg  - current I<detail> screen config object
 
 =item _tblkeys  - primary and foreign keys and values record
 
