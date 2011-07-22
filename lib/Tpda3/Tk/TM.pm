@@ -51,8 +51,8 @@ sub new {
 
     my $self = $class->SUPER::new(
         $tmxf,
-        -rows           => 5,
-        -cols           => 5,
+        -rows           => 6,
+        -cols           => 1,
         -width          => -1,
         -height         => -1,
         -ipadx          => 3,
@@ -157,7 +157,7 @@ sub set_tags {
 
     if ($cols) {
         $self->configure( -cols => $cols );
-        $self->configure( -rows => 1 ); # Keep table dim in grid
+        # $self->configure( -rows => 1 ); # Keep table dim in grid
     }
     $self->tagConfigure(
         'active',

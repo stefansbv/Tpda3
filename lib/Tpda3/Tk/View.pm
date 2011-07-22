@@ -558,7 +558,7 @@ sub create_notebook {
 
     $self->create_notebook_panel('rec', 'Record');
     $self->create_notebook_panel('lst', 'List');
-    # $self->create_notebook_panel('det', 'Details') if $det_page;
+     # $self->create_notebook_panel('det', 'Details') if $det_page;
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(

@@ -49,16 +49,36 @@ sub run_screen {
 
     my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
 
-    #- Frame bottom
+    #- Top Frame
 
-    my $frm_bl = $rec_page->LabFrame(
+    my $frm_top = $rec_page->Frame(
+    )->pack(
+        -expand => 0,
+        -fill   => 'x',
+    );
+
+    #- Top Left Frame
+
+    my $frame1 = $frm_top->LabFrame(
         -foreground => 'blue',
-        -label      => 'Order total',
+        -label      => 'Order',
         -labelside  => 'acrosstop'
     )->pack(
-        -side   => 'bottom',
+        -side   => 'left',
         -expand => 0,
-        -fill   => 'both'
+        -fill   => 'x'
+    );
+
+    #- Top Right Frame
+
+    my $frame2 = $frm_top->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Comments',
+        -labelside  => 'acrosstop'
+    )->pack(
+        -side   => 'left',
+        -expand => 1,
+        -fill   => 'x'
     );
 
     #- Frame t => Tabel
@@ -68,33 +88,19 @@ sub run_screen {
         -label      => 'Articles',
         -labelside  => 'acrosstop'
     )->pack(
-        -side   => 'bottom',
         -expand => 1,
         -fill   => 'both'
     );
 
-    #- Top Left Frame
+    #- Frame bottom
 
-    my $frame1 = $rec_page->LabFrame(
+    my $frm_bl = $rec_page->LabFrame(
         -foreground => 'blue',
-        -label      => 'Order',
+        -label      => 'Order total',
         -labelside  => 'acrosstop'
     )->pack(
-        -side   => 'left',
-        -expand => 1,
-        -fill   => 'both'
-    );
-
-    #- Top Right Frame
-
-    my $frame2 = $rec_page->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Comments',
-        -labelside  => 'acrosstop'
-    )->pack(
-        -side   => 'right',
-        -expand => 1,
-        -fill   => 'both'
+        -expand => 0,
+        -fill   => 'x'
     );
 
     #- Customers
@@ -254,7 +260,7 @@ sub run_screen {
     $bstatuscode->form(
         -top  => [ '&', $lstatuscode, 0 ],
         -left => [ %0,  110 ],
-        -padbottom => 5,
+        -padbottom => 7,
     );
 
     # my $vstatuscode;
@@ -284,13 +290,16 @@ sub run_screen {
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
+    )->pack(
+        -expand => 1,
+        -fill   => 'x'
     );
 
-    $tcomments->form(
-        -left => [ %0, 0 ],
-        -top  => [ %0, 0 ],
-        -padx => 5,
-    );
+    # $tcomments->form(
+    #     -left => [ %0, 0 ],
+    #     -top  => [ %0, 0 ],
+    #     -padx => 5,
+    # );
 
     #--- Details
     #-
