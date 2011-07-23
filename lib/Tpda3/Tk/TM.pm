@@ -70,7 +70,7 @@ sub new {
     #-- Vertical scrollbar
 
     $v_sb->configure(
-        -width   => 10,
+        # -width   => 10,
         -orient  => 'v',
         -command => [ 'yview' => $self ],
     );

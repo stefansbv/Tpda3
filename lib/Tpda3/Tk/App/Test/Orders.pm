@@ -99,6 +99,7 @@ sub run_screen {
         -label      => 'Order total',
         -labelside  => 'acrosstop'
     )->pack(
+        -side   => 'bottom',
         -expand => 0,
         -fill   => 'x'
     );
