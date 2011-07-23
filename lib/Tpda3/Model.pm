@@ -495,7 +495,7 @@ Valid configuration options are:
 Second parameter 'option' is passed to quote4like.
 
 If the search string equals with I<%> or I<!>, then generated where
-clause will be I<field1> IS NULL and respectively I<field2> IS NOT
+clause will be I<field1> IS NOT NULL and respectively I<field2> IS
 NULL.
 
 =cut

@@ -7,6 +7,7 @@ use Data::Dumper;
 use Carp;
 
 use Tk;
+use Tk::Font;
 use Tk::DialogBox;
 
 use Class::Unload;
@@ -2166,13 +2167,14 @@ sub record_find_execute {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+        chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
         # Create a where clause like this:
-        #  field1 IS [NOT] NULL and field2 IS [NOT] NULL
+        #  field1 IS NOT NULL and field2 IS NULL
         # for entry values equal to '%' or '!'
-        $findtype = q{isnull}  if $value eq q{%};
-        $findtype = q{notnull} if $value eq q{!};
+        $findtype = q{notnull}  if $value eq q{%};
+        $findtype = q{isnull}   if $value eq q{!};
 
         $params->{where}{$field} = [ $value, $findtype ];
     }
@@ -4055,7 +4057,9 @@ sub restore_screendata {
     my $deprec = $rec->[1];                 # dependent records follow
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->tmatrix_write($deprec->{$tm_ds}{data}, $tm_ds);
+        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        $tmx->clear_all();
+        $tmx->fill( $deprec->{$tm_ds}{data} );
     }
 
     return 1;
