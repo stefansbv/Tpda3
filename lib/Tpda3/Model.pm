@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -475,9 +473,10 @@ sub query_dictionary {
 
 =head2 build_where
 
-Return a hash reference containing where clause attributes.  Table
-columns (fields) used in the screen has a configuration named
-I<findtype> used for choosing which form to use in the ...
+Return a hash reference containing where clause attributes.
+
+Table columns (fields) used in the screen have a configuration named
+I<findtype> that is used to build the appropriate where clause.
 
 Valid configuration options are:
 
@@ -495,6 +494,10 @@ Valid configuration options are:
 
 Second parameter 'option' is passed to quote4like.
 
+If the search string equals with I<%> or I<!>, then generated where
+clause will be I<field1> IS NULL and respectively I<field2> IS NOT
+NULL.
+
 =cut
 
 sub build_where {
@@ -503,6 +506,7 @@ sub build_where {
     my $where = {};
 
     while ( my ( $field, $attrib ) = each( %{ $rec->{where} } ) ) {
+
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
@@ -526,8 +530,15 @@ sub build_where {
                 $where->{$field} = $ret;
             }
         }
+        elsif ( $find_type eq 'isnull' ) {
+            $where->{$field} = undef;
+        }
+        elsif ( $find_type eq 'notnull' ) {
+            $where->{$field} = undef;
+            my $notnull = q{IS NOT NULL};
+            $where->{$field} = \$notnull;
+        }
         elsif ( $find_type eq 'none' ) {
-
             # just skip
         }
     }
@@ -865,7 +876,6 @@ sub table_batch_update {
 
     my $compare_col = $depmeta->{fkcol};
 
-    # print Dumper('batch_update',$depmeta, $depdata);
     my $tb_data = $self->table_selectcol_as_array($depmeta);
     my $tm_data = $self->aoh_column_extract($depdata, $compare_col);
 
@@ -947,9 +957,6 @@ sub table_update_prepare {
                                       # does NOT work, it's like remmove
                                       # from the original datastructure?!
 
-        # print "update: $table\n";
-        # print Dumper($where);
-
         $self->table_record_update( $table, $record, $where );
     }
 
@@ -999,9 +1006,6 @@ sub table_delete_prepare {
 
     my $table = $depmeta->{table};
     my $where = $depmeta->{where};
-
-    # print "delete: $table\n";
-    # print Dumper($where);
 
     $self->table_record_delete($table, $where);
 
@@ -1069,9 +1073,8 @@ sub record_compare {
 
     my $dc = Data::Compare->new($witness, $record);
 
-#    print Dumper( $witness, $record);
-    print 'Structures of $witness and $record are ',
-        $dc->Cmp ? "" : "not ", "identical.\n";
+    # print 'Structures of $witness and $record are ',
+    #     $dc->Cmp ? "" : "not ", "identical.\n";
 
     return !$dc->Cmp;
 }

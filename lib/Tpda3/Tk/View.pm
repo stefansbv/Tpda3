@@ -892,7 +892,7 @@ Polulate list with data from query result.
 =cut
 
 sub list_populate {
-    my ( $self, $paramdata ) = @_;
+    my ( $self, $ary_ref ) = @_;
 
     my $row_count;
 
@@ -908,7 +908,6 @@ sub list_populate {
         return;
     }
 
-    my $ary_ref = $self->_model->query_records_find($paramdata);
     my $record_count = scalar @{$ary_ref};
 
     # Data
