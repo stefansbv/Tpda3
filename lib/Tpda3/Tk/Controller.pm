@@ -2105,8 +2105,13 @@ sub record_find_execute {
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
         my $findtype = $columns->{$field}{findtype};
-        $findtype = q{contains} if $value eq q{%}; # allow search by
-                                                   # field contents
+
+        # Create a where clause like this:
+        #  field1 IS [NOT] NULL and field2 IS [NOT] NULL
+        # for entry values equal to '%' or '!'
+        $findtype = q{isnull}  if $value eq q{%};
+        $findtype = q{notnull} if $value eq q{!};
+
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
@@ -2114,8 +2119,10 @@ sub record_find_execute {
     $params->{table} = $main_table->{view};   # use view instead of table
     $params->{pkcol} = $main_table->{pkcol}{name};
 
+    my $ary_ref = $self->_model->query_records_find($params);
+
     $self->_view->list_init();
-    my $record_count = $self->_view->list_populate($params);
+    my $record_count = $self->_view->list_populate($ary_ref);
 
     # Set mode to sele if found
     if ($record_count > 0) {
