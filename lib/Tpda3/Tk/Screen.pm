@@ -164,24 +164,24 @@ sub make_toolbar_for_table {
 }
 
 sub tmatrix_add_row {
-    my ($self, $tm_ds) = @_;
+    my ($self, $tm_ds, $controller) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
-    $tmx->add_row();
+    $tmx->add_row($controller);
 
     return;
 }
 
 sub tmatrix_remove_row {
-    my ($self, $tm_ds) = @_;
+    my ($self, $tm_ds, $controller) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
     my $row = $tmx->get_active_row();
 
     if ($row) {
-        $tmx->remove_row($row);
+        $tmx->remove_row($row, $controller);
     }
 
     return;

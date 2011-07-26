@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -448,11 +446,10 @@ sub _set_event_handler_nb {
 
 =head2 toggle_detail_tab
 
-Toggle state of the 'I<det>.
+Toggle state of the 'I<Detail> tab.
 
-Search for TableMatrix with selector col configured and if the number
-of data rows is greater then zero, disable, else enable the I<Detail>
-tab.
+If TableMatrix with selector col configured and if there is a selected
+row and the data is saved, enable the I<Detail> tab, else disable.
 
 =cut
 
@@ -1676,9 +1673,6 @@ sub screen_module_load {
 Setup event handlers for the I<add> and I<delete> buttons attached to
 the TableMatrix widget.
 
-TODO: Where to configure what to do and how to make this bindings
-configurable?
-
 =cut
 
 sub set_event_handler_screen {
@@ -1703,7 +1697,7 @@ sub set_event_handler_screen {
 
         $self->scrobj('rec')->get_toolbar_btn($tm_ds, $tb_btn)->bind(
             '<ButtonRelease-1>' => sub {
-                $scrobj->$method($tm_ds);
+                $scrobj->$method($tm_ds, $self);
             }
         );
     }
@@ -2154,9 +2148,15 @@ sub record_find_count {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+        chomp $value;
         my $findtype = $columns->{$field}{findtype};
-        $findtype = q{contains} if $value eq q{%}; # allow count by
-                                                   # field contents
+
+        # Create a where clause like this:
+        #  field1 IS NOT NULL and field2 IS NULL
+        # for entry values equal to '%' or '!'
+        $findtype = q{notnull}  if $value eq q{%};
+        $findtype = q{isnull}   if $value eq q{!};
+
         $params->{where}{$field} = [ $value, $findtype ];
     }
 

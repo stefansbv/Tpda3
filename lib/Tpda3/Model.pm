@@ -205,14 +205,15 @@ Return true if is mode
 =cut
 
 sub is_mode {
-    my ($self, $mode) = @_;
+    my ($self, $ck_mode) = @_;
 
-    if ($self->get_appmode_observable->get eq $mode) {
-        return 1;
-    }
-    else {
-        return;
-    }
+    my $mode = $self->get_appmode_observable->get;
+
+    return unless $mode;
+
+    return 1 if $mode eq $ck_mode;
+
+    return;
 }
 
 =head2 get_appmode_observable

@@ -428,16 +428,18 @@ sub cell_read {
 
 Table matrix methods.  Add TableMatrix row.
 
+TODO: Passing the controller instance object as parameter, it this OK?
+
 =cut
 
 sub add_row {
-    my $self = shift;
+    my ($self, $controller) = @_;
 
     my $updstyle = 'delete+add';
 
-    # return
-    #   unless $self->_model->is_mode('add')
-    #       or $self->_model->is_mode('edit');
+    return
+        unless $controller->_model->is_mode('add')
+            or $controller->_model->is_mode('edit');
 
     $self->configure( state => 'normal' );    # normal state
     my $old_r = $self->index( 'end', 'row' ); # get old row index
@@ -459,18 +461,19 @@ sub add_row {
         }
     }
 
+    $controller->_model->set_scrdata_rec(1); # modified
+
     my $sc = $self->{selectorcol};
     if ($sc) {
         $self->embeded_buttons( $new_r, $sc ); # add button
         $self->set_selected($new_r);
+        $controller->toggle_detail_tab;
     }
 
     # Focus to newly inserted row, column 1
     $self->focus;
     $self->activate("$new_r,1");
     $self->see("$new_r,1");
-
-    # $self->_model->set_scrdata_rec(1); # modified
 
     return;
 }
@@ -479,17 +482,18 @@ sub add_row {
 
 Delete TableMatrix row.
 
+TODO: Passing the controller instance object as parameter, it this OK?
+
 =cut
 
 sub remove_row {
-    my ($self, $row) = @_;
+    my ($self, $row, $controller) = @_;
 
     my $updstyle = 'delete+add';
 
-    # unless ( $self->_model->is_mode('add')
-    #              || $self->_model->is_mode('edit') ) {
-    #     return;
-    # }
+    return
+        unless $controller->_model->is_mode('add')
+            or $controller->_model->is_mode('edit');
 
     $self->configure( state => 'normal' );
 
@@ -500,10 +504,12 @@ sub remove_row {
         print "Select a row!\n";
     }
 
+    $controller->_model->set_scrdata_rec(1); # modified
+
     my $sc = $self->{selectorcol};
     if ($sc) {
         $self->set_selected($row - 1);
-#        $self->toggle_detail_tab;
+        $controller->toggle_detail_tab;
     }
 
     $self->renum_row($self)
@@ -514,8 +520,6 @@ sub remove_row {
     $self->activate("$row,1");
 
     # TODO: Feature to trigger a method here?
-
-#    $self->_model->set_scrdata_rec(1); # modified
 
     return;
 }
