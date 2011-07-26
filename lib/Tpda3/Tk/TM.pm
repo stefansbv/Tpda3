@@ -428,18 +428,12 @@ sub cell_read {
 
 Table matrix methods.  Add TableMatrix row.
 
-TODO: Passing the controller instance object as parameter, it this OK?
-
 =cut
 
 sub add_row {
-    my ($self, $controller) = @_;
+    my ($self) = @_; # , $controller
 
     my $updstyle = 'delete+add';
-
-    return
-        unless $controller->_model->is_mode('add')
-            or $controller->_model->is_mode('edit');
 
     $self->configure( state => 'normal' );    # normal state
     my $old_r = $self->index( 'end', 'row' ); # get old row index
@@ -461,13 +455,10 @@ sub add_row {
         }
     }
 
-    $controller->_model->set_scrdata_rec(1); # modified
-
     my $sc = $self->{selectorcol};
     if ($sc) {
         $self->embeded_buttons( $new_r, $sc ); # add button
         $self->set_selected($new_r);
-        $controller->toggle_detail_tab;
     }
 
     # Focus to newly inserted row, column 1
@@ -482,18 +473,12 @@ sub add_row {
 
 Delete TableMatrix row.
 
-TODO: Passing the controller instance object as parameter, it this OK?
-
 =cut
 
 sub remove_row {
-    my ($self, $row, $controller) = @_;
+    my ($self, $row) = @_; # , $controller
 
     my $updstyle = 'delete+add';
-
-    return
-        unless $controller->_model->is_mode('add')
-            or $controller->_model->is_mode('edit');
 
     $self->configure( state => 'normal' );
 
@@ -504,12 +489,9 @@ sub remove_row {
         print "Select a row!\n";
     }
 
-    $controller->_model->set_scrdata_rec(1); # modified
-
     my $sc = $self->{selectorcol};
     if ($sc) {
         $self->set_selected($row - 1);
-        $controller->toggle_detail_tab;
     }
 
     $self->renum_row($self)
@@ -518,8 +500,6 @@ sub remove_row {
     # Refresh table
     $self->activate('origin');
     $self->activate("$row,1");
-
-    # TODO: Feature to trigger a method here?
 
     return;
 }

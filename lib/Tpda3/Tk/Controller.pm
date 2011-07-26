@@ -1697,7 +1697,13 @@ sub set_event_handler_screen {
 
         $self->scrobj('rec')->get_toolbar_btn($tm_ds, $tb_btn)->bind(
             '<ButtonRelease-1>' => sub {
+                return
+                    unless $self->_model->is_mode('add')
+                        or $self->_model->is_mode('edit');
+
                 $scrobj->$method($tm_ds, $self);
+                $self->_model->set_scrdata_rec(1); # modified
+                $self->toggle_detail_tab;
             }
         );
     }
