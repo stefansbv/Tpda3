@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -56,19 +54,13 @@ Constructor method.
 
 =item _rscrobj  - current I<record> screen object
 
-=item _rscrcfg  - current  I<record> screen config object
-
 =item _dscrcls  - class name of the current I<detail> screen
 
 =item _dscrobj  - current I<detail> screen object
 
-=item _dscrcfg  - current I<detail> screen config object
-
 =item _tblkeys  - primary and foreign keys and values record
 
 =item _scrdata  - current screen data
-
-=item _tm_sel   - TableMatrix selected row
 
 =back
 
@@ -89,13 +81,10 @@ sub new {
         _view     => $view,
         _rscrcls  => undef,
         _rscrobj  => undef,
-        _rscrcfg  => undef,
         _dscrcls  => undef,
         _dscrobj  => undef,
-        _dscrcfg  => undef,
         _tblkeys  => undef,
         _scrdata  => undef,
-        _tm_sel   => undef,
         _cfg      => Tpda3::Config->instance(),
         _log      => get_logger(),
     };
@@ -457,11 +446,10 @@ sub _set_event_handler_nb {
 
 =head2 toggle_detail_tab
 
-Toggle state of the 'I<det>.
+Toggle state of the 'I<Detail> tab.
 
-Search for TableMatrix with selector col configured and if the number
-of data rows is greater then zero, disable, else enable the I<Detail>
-tab.
+If TableMatrix with selector col configured and if there is a selected
+row and the data is saved, enable the I<Detail> tab, else disable.
 
 =cut
 
@@ -588,7 +576,7 @@ value designated by the I<filter> configuration value of the screen.
 
 Save the foreign key value.
 
-The default selector table is I<tm1>.
+The default table with selector column is I<tm1>.
 
 =cut
 
@@ -602,7 +590,8 @@ sub get_selected_and_set_fk_val {
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen_detail;
 
-    my $params = $self->tmatrix_read_cell($row, $screen->{filter}, 'tm1');
+    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $params = $tmx->cell_read( $row, $screen->{filter} );
 
     my $fk_col = $self->screen_get_fk_col;
     my $fk_val = $params->{$fk_col};
@@ -665,51 +654,15 @@ sub get_dsm_name {
     return unless defined $row and $row > 0;
 
     my $col_name  = $detscr->{match};
-    my $rec = $self->tmatrix_read_cell($row, $col_name, 'tm1');
+
+    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $rec = $tmx->cell_read($row, $col_name);
+
     my $col_value = $rec->{$col_name};
 
     my @dsm = grep { $_->{value} eq $col_value } @{$detscr->{detail}};
 
     return $dsm[0]{name};
-}
-
-=head2 _set_event_handler_screen
-
-Setup event handlers for the I<add> and I<delete> buttons attached to
-the TableMatrix widget.
-
-TODO: Where to configure what to do and how to make this bindings
-configurable?
-
-=cut
-
-sub _set_event_handler_screen {
-    my ($self, $tm_ds) = @_;
-
-    # Get ToolBar button atributes
-    my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
-
-    return if not ref $attribs;
-
-    $self->_log->trace("Setup event handler for TM buttons");
-
-    #- screen ToolBar
-
-    #-- Add row button
-    $self->scrobj('rec')->get_toolbar_btn('tb2ad')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->tmatrix_add_row($tm_ds);
-        }
-    );
-
-    #-- Remove row button
-    $self->scrobj('rec')->get_toolbar_btn('tb2rm')->bind(
-        '<ButtonRelease-1>' => sub {
-            $self->tmatrix_remove_row($tm_ds);
-        }
-    );
-
-    return;
 }
 
 =head2 _set_menus_enable
@@ -966,19 +919,21 @@ sub setup_bindings_table {
 
         # Bindings:
         my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
         $tm->bind(
-            'Tk::TableMatrix',
+            'Tpda3::Tk::TM',
             '<Return>',
             sub {
                 my $r  = $tm->index( 'active', 'row' );
                 my $c  = $tm->index( 'active', 'col' );
+
                 # Table refresh
                 $tm->activate('origin');
                 $tm->activate("$r,$c");
                 $tm->reread();
 
                 my $ci = $tm->cget( -cols ) - 1; # max col index
-                my $sc = $self->method_for( $dispatch, $bindings, $r,$c, $tm_ds );
+                my $sc = $self->method_for($dispatch, $bindings, $r,$c, $tm_ds);
                 my $ac = $c;
                 $sc ||= 1;          # skip cols
                 $ac += $sc;         # new active col
@@ -1050,6 +1005,8 @@ with the results.
 sub lookup {
     my ($self, $bnd, $r, $c, $tm_ds) = @_;
 
+    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
     my $lk_para = $self->get_lookup_setings($bnd, $r, $c, $tm_ds);
 
     # Check and set filter
@@ -1057,13 +1014,13 @@ sub lookup {
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
         my $col = $self->scrcfg('rec')->dep_table_column_attr($tm_ds,$fld,'id');
-        $filter = $self->tmatrix_read_cell($r, $col);
+        $filter = $tmx->cell_read($r, $col);
     }
 
     my $dict   = Tpda3::Lookup->new;
     my $record = $dict->lookup( $self->_view, $lk_para, $filter );
 
-    $self->tmatrix_write_row( $r, $c, $record, $tm_ds );
+    $tmx->write_row( $r, $c, $record, $tm_ds );
 
     my $skip_cols = scalar @{ $lk_para->{columns} }; # skip ahead cols number
 
@@ -1085,9 +1042,8 @@ sub method {
     my $bindings = $bnd->{method}{ $names[0] };
 
     my $method = $bindings->{subname};
-    if ( $self->{scrobj('rec')}->can($method) ) {
-        $self->{scrobj('rec')}->$method($r);
-        #$self->{scrobj('rec')}->calculate_order_line($r);
+    if ( $self->scrobj('rec')->can($method) ) {
+        $self->scrobj('rec')->$method($r);
     }
     else {
         print "WW: '$method' not implemented!\n";
@@ -1362,7 +1318,7 @@ sub on_screen_mode_idle {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->tmatrix_clear($tm_ds);
+        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('off');
@@ -1390,7 +1346,7 @@ sub on_screen_mode_add {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->tmatrix_clear($tm_ds);
+        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('edit');
@@ -1417,7 +1373,7 @@ sub on_screen_mode_find {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->tmatrix_clear($tm_ds);
+        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('find');
@@ -1555,15 +1511,7 @@ Return current screen configuration object.
 sub scrcfg {
     my ($self, $page) = @_;
 
-    $page ||= $self->_view->get_nb_current_page();
-
-    return $self->{_rscrcfg} if $page eq 'rec';
-
-    return $self->{_dscrcfg} if $page eq 'det';
-
-    warn "Wrong page: $page!\n";
-
-    return;
+    return $self->scrobj($page)->{scrcfg};
 }
 
 =head2 scrobj
@@ -1616,10 +1564,6 @@ sub screen_module_load {
 
     my $rscrstr = lc $module;
 
-    # Load the new screen configuration
-    $self->{_rscrcfg} = Tpda3::Config::Screen->new();
-    $self->{_rscrcfg}->config_screen_load($rscrstr);
-
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();
 
@@ -1635,13 +1579,10 @@ sub screen_module_load {
         }
     }
 
-    my $has_det = $self->scrcfg('rec')->has_screen_detail;
-
     # Make new NoteBook widget and setup callback
-    $self->_view->create_notebook($has_det);
+    $self->_view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
-    $self->_set_event_handler_nb('det') if $has_det;
 
     my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
@@ -1660,12 +1601,19 @@ sub screen_module_load {
     }
 
     # New screen instance
-    $self->{_rscrobj} = $class->new( $self->{_rscrcfg} );
+    $self->{_rscrobj} = $class->new( $rscrstr );
     $self->_log->trace("New screen instance: $module");
+
+    # Details page
+    my $has_det = $self->scrcfg('rec')->has_screen_detail;
+    if ($has_det) {
+        $self->_view->create_notebook_panel('det', 'Details');
+        $self->_set_event_handler_nb('det');
+    }
 
     # Show screen
     my $nb = $self->_view->get_notebook();
-    $self->{_rscrobj}->run_screen( $nb, $self->{_rscrcfg} );
+    $self->{_rscrobj}->run_screen( $nb );
 
     # Store currently loaded screen class
     $self->{_rscrcls} = $class;
@@ -1701,15 +1649,9 @@ sub screen_module_load {
 
     $self->_view->make_list_header( \@header_cols, $header_attr );
 
-    # TableMatrix header(s), if any
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        my $tmx    = $self->scrobj('rec')->get_tm_controls($tm_ds);
-        my $fields = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-        my $strech = $self->scrcfg('rec')->dep_table_colstretch($tm_ds);
-        my $sc     = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-        $self->_view->make_tablematrix_header( $tmx, $fields, $strech, $sc );
+    #- Event handlers
 
-        # Event handlers
+    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
         $self->set_event_handler_screen($tm_ds);
     }
 
@@ -1731,9 +1673,6 @@ sub screen_module_load {
 Setup event handlers for the I<add> and I<delete> buttons attached to
 the TableMatrix widget.
 
-TODO: Where to configure what to do and how to make this bindings
-configurable?
-
 =cut
 
 sub set_event_handler_screen {
@@ -1747,18 +1686,18 @@ sub set_event_handler_screen {
         $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
 
         # Check current screen for method for binding
-        my $obj;
+        my $scrobj;
         if ( $self->scrobj('rec')->can($method) ) {
-            $obj = $self->scrobj('rec');
+            $scrobj = $self->scrobj('rec');
         }
         else {
             # Fallback to $self
-            $obj = $self;
+            $scrobj = $self;
         }
 
         $self->scrobj('rec')->get_toolbar_btn($tm_ds, $tb_btn)->bind(
             '<ButtonRelease-1>' => sub {
-                $obj->$method($tm_ds);
+                $scrobj->$method($tm_ds, $self);
             }
         );
     }
@@ -1778,8 +1717,8 @@ sub screen_module_detail_load {
     my $dscrstr = lc $module;
 
     # Load the new screen configuration
-    $self->{_dscrcfg} = Tpda3::Config::Screen->new();
-    $self->{_dscrcfg}->config_screen_load($dscrstr);
+    # $self->{_dscrcfg} = Tpda3::Config::Screen->new();
+    # $self->{_dscrcfg}->config_screen_load($dscrstr);
 
     $self->_view->notebook_page_clean('det');
 
@@ -1795,7 +1734,7 @@ sub screen_module_detail_load {
         }
     }
 
-    # $self->_set_event_handler_nb('det');
+    $self->_set_event_handler_nb('det');
 
     my ($class, $module_file) = $self->screen_module_class($module);
     eval {require $module_file };
@@ -1812,7 +1751,7 @@ sub screen_module_detail_load {
     }
 
     # New screen instance
-    $self->{_dscrobj} = $class->new();
+    $self->{_dscrobj} = $class->new($dscrstr);
     $self->_log->trace("New screen instance: $module");
 
     # Show screen
@@ -1825,22 +1764,15 @@ sub screen_module_detail_load {
     # Event handlers
 
     #-- Lookup bindings for Tk::Entry widgets
-    # $self->setup_lookup_bindings_entry('det');
+    $self->setup_lookup_bindings_entry('det');
 
     #-- Lookup bindings for tables (TableMatrix)
-    # $self->setup_bindings_table();
+    $self->setup_bindings_table();
 
-    # # TableMatrix header(s), if any
-    # foreach my $tm_ds ( keys %{ $self->_screen->get_tm_controls() } ) {
-    #     my $tmx = $self->_screen->get_tm_controls($tm_ds);
-    #     my $tm_fields = $self->_rscrcfg->dep_table->{$tm_ds}{columns};
-    #     $self->_view->make_tablematrix_header( $tmx, $tm_fields );
-    # }
+    # Load lists into JBrowseEntry or JComboBox widgets
+    $self->screen_init();
 
-    # # Load lists into JBrowseEntry or JComboBox widgets
-    # $self->screen_init();
-
-#    $self->_view->set_status('','ms');
+    $self->_view->set_status('','ms');
 
     # Set FK column name
     $self->screen_set_fk_col();
@@ -2216,14 +2148,20 @@ sub record_find_count {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+        chomp $value;
         my $findtype = $columns->{$field}{findtype};
-        $findtype = q{contains} if $value eq q{%}; # allow count by
-                                                   # field contents
+
+        # Create a where clause like this:
+        #  field1 IS NOT NULL and field2 IS NULL
+        # for entry values equal to '%' or '!'
+        $findtype = q{notnull}  if $value eq q{%};
+        $findtype = q{isnull}   if $value eq q{!};
+
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $self->scrcfg('rec')->main_table_view;   # use view instead of table
+    $params->{table} = $self->scrcfg('rec')->main_table_view;
     $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
 
     $self->_model->query_records_count($params);
@@ -2693,417 +2631,36 @@ sub screen_write {
     return;
 }
 
-=head2 tmatrix_read
-
-Read data from a table matrix widget.
-
-=cut
-
-sub tmatrix_read {
-    my ($self, $tm_ds) = @_;
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    my $xtvar;
-    if ($tmx) {
-        $xtvar = $tmx->cget( -variable );
-    }
-    else {
-        print "EE: Can't find '$tm_ds' table\n";
-        return;
-    }
-
-    my $rows_no  = $tmx->cget( -rows );
-    my $cols_no  = $tmx->cget( -cols );
-    my $rows_idx = $rows_no - 1;
-    my $cols_idx = $cols_no - 1;
-
-    my $fields_cfg = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
-
-    # Get selectorcol index, if any
-    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-
-    # Read table data and create an AoH
-    my @tabledata;
-
-    # The first row is the header
-    for my $row ( 1 .. $rows_idx ) {
-
-        my $rowdata = {};
-        for my $col ( 0 .. $cols_idx ) {
-
-            next if $sc and ($col == $sc); # skip selectorcol
-
-            my $cell_value = $tmx->get("$row,$col");
-            my $col_name = $cols_ref->[$col];
-
-            my $fld_cfg = $fields_cfg->{$col_name};
-            my ($rw ) = @$fld_cfg{'rw'};     # hash slice
-
-            next if $rw eq 'ro'; # skip ro cols
-
-            # print "$row: $col_name => $cell_value\n";
-            $rowdata->{$col_name} = $cell_value;
-        }
-
-        push @tabledata, $rowdata;
-    }
-
-    return (\@tabledata, $sc);
-}
-
 =head2 tmatrix_get_selected
 
-Get selected table row.
+Get selected table row from I<tm1>.
 
 =cut
 
 sub tmatrix_get_selected {
     my $self = shift;
 
-    return $self->{_tm_sel};
+    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $sc;
+    if ( ref($tmx) eq 'Tpda3::Tk::TM' ) {
+        $sc = $tmx->get_selected();
+    }
+
+    return $sc;
 }
+
+=head2 tmatrix_set_selected
+
+Set selected table row from I<tm1>.
+
+=cut
 
 sub tmatrix_set_selected {
-    my ($self, $selected_row) = @_;
-
-    if ($selected_row) {
-        $self->{_tm_sel} = $selected_row;
-    }
-    else {
-        $self->{_tm_sel} = undef;
-    }
-
-    return;
-}
-
-=head2 tmatrix_read_cell
-
-Read a cell from a TableMatrix widget and return it as a hash
-reference.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-The I<col> parameter can be a number - column index or a column name.
-
-=cut
-
-sub tmatrix_read_cell {
-    my ($self, $row, $col, $tm_ds) = @_;
-
-    my $is_col_name = 0;
-    $is_col_name    = 1 if $col !~ m{\d+};
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    unless ($tmx) {
-        warn "No TM!\n";
-        return;
-    }
-
-    my $fields_cfg = $self->scrcfg('rec')->dep_table_columns($tm_ds);
-
-    my $col_name;
-    if ($is_col_name) {
-        $col_name = $col;
-        $col = $fields_cfg->{$col_name}{id};
-    }
-    else {
-        my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
-        $col_name = $cols_ref->[$col];
-    }
-
-    my $cell_value = $tmx->get("$row,$col");
-
-    return {$col_name => $cell_value};
-}
-
-=head2 tmatrix_write
-
-Write data to TableMatrix widget.
-
-=cut
-
-sub tmatrix_write {
-    my ($self, $record_ref, $tm_ds) = @_;
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    my $xtvar;
-    if ($tmx) {
-        $xtvar = $tmx->cget( -variable );
-    }
-    else {
-        return;
-    }
-
-    my $row = 1;
-
-    #- Scan and write to table
-    my $scrcfg = $self->scrcfg('rec');
-
-    foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $scrcfg->dep_table_columns($tm_ds) } ) {
-            my $fld_cfg = $scrcfg->dep_table_column($tm_ds, $field);
-
-            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # empty
-            $value =~ s/[\n\t]//g;                 # delete control chars
-
-            my ( $col, $validtype, $width, $places ) =
-              @$fld_cfg{'id','validation','width','places'}; # hash slice
-
-            if ( $validtype eq 'numeric' ) {
-                $value = 0 unless $value;
-                if ( defined $places ) {
-
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
-
-            $xtvar->{"$row,$col"} = $value;
-        }
-
-        $row++;
-    }
-
-    # Refreshing the table...
-    $tmx->configure( -rows => $row);
-
-    return;
-}
-
-sub tmatrix_clear {
-    my ($self, $tm_ds) = @_;
-
-    my $tmx      = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    my $rows_no  = $tmx->cget( -rows );
-    my $rows_idx = $rows_no - 1;
-    my $r;
-
-    for my $row ( 1 .. $rows_idx ) {
-            $tmx->deleteRows( $row, 1 );
-    }
-
-    return;
-}
-
-=head2 tmatrix_make_selector
-
-Make TableMatrix selector.
-
-=cut
-
-sub tmatrix_make_selector {
-    my ($self, $tm_ds) = @_;
-
-    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-
-    return unless $sc;
-
-    my $tmx      = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    my $rows_no  = $tmx->cget( -rows );
-    # my $cols_no  = $tmx->cget( -cols );
-    my $rows_idx = $rows_no - 1;
-    # my $cols_idx = $cols_no - 1;
-
-    foreach my $r ( 1 .. $rows_idx ) {
-        $self->embeded_buttons( $tmx, $r, $sc );
-    }
-
-    return;
-}
-
-=head2 tmatrix_write_row
-
-Write a row to a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-=cut
-
-sub tmatrix_write_row {
-    my ($self, $row, $col, $record_ref, $tm_ds) = @_;
-
-    return unless ref $record_ref;     # No results
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    my $xtvar;
-    if ($tmx) {
-        $xtvar = $tmx->cget( -variable );
-    }
-    else {
-
-        # Just ignore :)
-        return;
-    }
-
-    my $nr_col = 0;
-    foreach my $field ( keys %{$record_ref} ) {
-
-        my $fld_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $field);
-        my $value = $record_ref->{$field};
-
-        my ( $col, $validtype, $width, $places ) =
-            @$fld_cfg{'id','validation','width','places'}; # hash slice
-
-        if ( $validtype =~ /digit/ ) {
-            $value = 0 unless $value;
-            if ( defined $places ) {
-
-                # Daca SCALE >= 0, Formatez numarul
-                $value = sprintf( "%.${places}f", $value );
-            }
-            else {
-                $value = sprintf( "%.0f", $value );
-            }
-        }
-
-        $xtvar->{"$row,$col"} = $value;
-        $nr_col++;
-    }
-
-    return $nr_col;
-}
-
-=head2 tmatrix_add_row
-
-Table matrix methods.  Add TableMatrix row.
-
-=cut
-
-sub tmatrix_add_row {
-    my ($self, $tm_ds, $valori_ref) = @_;
-
-    $tm_ds ||= q{tm1};          # default table matrix designator
-
-    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
-    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
-
-    return
-      unless $self->_model->is_mode('add')
-          or $self->_model->is_mode('edit');
-
-    $xt->configure( state => 'normal' );    # normal state
-    my $old_r = $xt->index( 'end', 'row' ); # get old row index
-    $xt->insertRows('end');
-    my $new_r = $xt->index( 'end', 'row' ); # get new row index
-
-    if (($updstyle eq 'delete+add') or ($old_r == 0)) {
-        $xt->set( "$new_r,0", $new_r );     # set new index
-        $self->tmatrix_renum_row($xt);
-    }
-    else {
-        # No renumbering ...
-        my $max_r = (sort {$b <=> $a} $xt->get("1,0","$old_r,0"))[0]; # max row
-        if ($max_r >= $new_r) {
-            $xt->set( "$new_r,0", $max_r + 1);
-        }
-        else {
-            $xt->set( "$new_r,0", $new_r);
-        }
-    }
-
-    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-    if ($sc) {
-        $self->embeded_buttons( $xt, $new_r, $sc ); # add button
-        $self->tmatrix_set_selected($new_r);
-    }
-
-    # Focus to newly inserted row, column 1
-    $xt->focus;
-    $xt->activate("$new_r,1");
-    $xt->see("$new_r,1");
-
-    $self->_model->set_scrdata_rec(1); # modified
-
-    return;
-}
-
-=head2 tmatrix_remove_row
-
-Delete TableMatrix row.
-
-=cut
-
-sub tmatrix_remove_row {
-    my ($self, $tm_ds) = @_;
-
-    $tm_ds ||= q{tm1};           # default table matrix designator
-
-    my $updstyle = $self->scrcfg('rec')->dep_table_updatestyle($tm_ds);
-    my $xt = $self->scrobj('rec')->get_tm_controls($tm_ds);
-
-    unless ( $self->_model->is_mode('add')
-                 || $self->_model->is_mode('edit') ) {
-        return;
-    }
-
-    $xt->configure( state => 'normal' );
-
-    my $r;
-    eval {
-        $r = $xt->index( 'active', 'row' );
-
-        if ( $r >= 1 ) {
-            $xt->deleteRows( $r, 1 );
-        }
-        else {
-            $self->_view->set_status('Select a row','ms','orange');
-        }
-    };
-    if ($@) {
-        $self->_view->set_status('Select a row','ms','orange');
-        return;
-    }
-
-    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-    if ($sc) {
-        $self->tmatrix_set_selected($r - 1);
-        $self->toggle_detail_tab;
-    }
-
-    $self->tmatrix_renum_row($xt)
-      if $updstyle eq 'delete+add';    # renumber rows
-
-    # Refresh table
-    $xt->activate('origin');
-    $xt->activate("$r,1");
-
-    # TODO: Feature to trigger a method here?
-
-    $self->_model->set_scrdata_rec(1); # modified
-
-    return $r;
-}
-
-=head2 tmatrix_renum_row
-
-Renumber TableMatrix rows.
-
-=cut
-
-sub tmatrix_renum_row {
-    my ($self, $xt) = @_;
-
-    my $r = $xt->index( 'end', 'row' );
-
-    if ( $r >= 1 ) {
-        foreach my $i ( 1 .. $r ) {
-            $xt->set( "$i,0", $i );
-        }
+    my ($self, $row) = @_;
+
+    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    if ( ref($tmx) eq 'Tpda3::Tk::TM' ) {
+        $tmx->set_selected($row);
     }
 
     return;
@@ -3216,58 +2773,6 @@ sub controls_state_set {
 
     return;
 }
-
-# sub controls_det_state_set {
-#     my ( $self, $state ) = @_;
-
-#     $self->_log->info("Screen 'det' controls state is '$state'");
-
-#     return unless $self->scrobj('det');
-
-#     my $ctrl_ref = $self->scrobj('det')->get_controls();
-#     return unless scalar keys %{$ctrl_ref};
-
-#     my $control_states = $self->control_states($state);
-
-#     return unless defined $self->scrcfg('det');
-
-#     foreach my $field ( keys %{ $self->scrcfg('det')->main_table_columns } ) {
-#         my $fld_cfg = $self->scrcfg('det')->main_table_column($field);
-
-#         # Skip for some control types
-#         # next if $fld_cfg->{ctrltype} = '';
-
-#         my $ctrl_state = $control_states->{state};
-#         $ctrl_state = $fld_cfg->{state}
-#             if $ctrl_state eq 'from_config';
-
-#         my $bkground = $control_states->{background};
-#         my $bg_color = $bkground;
-#         $bg_color = $fld_cfg->{bgcolor}
-#             if $bkground eq 'from_config';
-#         $bg_color = $self->scrobj('rec')->get_bgcolor()
-#             if $bkground eq 'disabled_bgcolor';
-
-#         # Special case for find mode and fields with 'findtype' set to none
-#         if ( $state eq 'find' ) {
-#             if ( $fld_cfg->{findtype} eq 'none' ) {
-#                 $ctrl_state = 'disabled';
-#                 $bg_color   = $self->scrobj('rec')->get_bgcolor();
-#             }
-#         }
-
-#         # Configure controls
-#         eval {
-#             $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
-#             $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
-#         };
-#         if ($@) {
-#             # print "Problems with '$field'\n";
-#         }
-#     }
-
-#     return;
-# }
 
 =head2 control_write_e
 
@@ -3516,10 +3021,14 @@ sub record_load {
 
         my $records = $self->_model->table_batch_query($tm_params);
 
-        $self->tmatrix_clear($tm_ds);
-        $self->tmatrix_write($records, $tm_ds);
+        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        $tmx->clear_all();
+        $tmx->fill($records);
 
-        $self->tmatrix_make_selector($tm_ds); # if configured
+        my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
+        if ($sc) {
+            $tmx->tmatrix_make_selector($sc);
+        }
     }
 
     # Save record as witness reference for comparison
@@ -3906,8 +3415,9 @@ sub get_screen_data_record {
 
     foreach my $tm_ds ( keys %{$tm_dss} ) {
         $deprec->{$tm_ds}{metadata} =
-          $self->dep_table_metadata($tm_ds, $for_sql);
-        ( $deprec->{$tm_ds}{data}, undef ) = $self->tmatrix_read($tm_ds);
+            $self->dep_table_metadata($tm_ds, $for_sql);
+        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        ( $deprec->{$tm_ds}{data}, undef ) = $tmx->data_read();
 
         # TableMatrix data doesn't contain pk_col=>pk_val, add it
         my $pk_ref = $record->{metadata}{where};
@@ -4063,48 +3573,6 @@ sub restore_screendata {
     }
 
     return 1;
-}
-
-=head2 embeded_buttons
-
-Embeded windows
-
-=cut
-
-sub embeded_buttons {
-    my ($self, $tmx, $row, $col) = @_;
-
-    $tmx->windowConfigure(
-        "$row,$col",
-        -sticky => 's',
-        -window => $self->build_rbbutton($row, $col),
-    );
-
-    return;
-}
-
-=head2 build_rbbutton
-
-Build Radiobutton.
-
-=cut
-
-sub build_rbbutton {
-    my ( $self, $row, $col ) = @_;
-
-    my $button = $self->_view->Radiobutton(
-        -width       => 3,
-        -variable    => \$self->{_tm_sel},
-        -value       => $row,
-        -indicatoron => 0,
-        -selectcolor => 'lightblue',
-        -state       => 'normal',
-    );
-
-    # Default selected row == 1
-    $self->tmatrix_set_selected($row) if $row == 1;
-
-    return $button;
 }
 
 #-- PK
