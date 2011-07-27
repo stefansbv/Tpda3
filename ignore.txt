@@ -6,7 +6,9 @@ Build.bat
 _build*
 pm_to_blib*
 *.tar.gz
+*.zip
 .lwpcookies
 cover_db
 pod2htm*.tmp
-tpda-mvc-*
+classicmodels
+*.log

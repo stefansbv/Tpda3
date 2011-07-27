@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -28,11 +30,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.12
+Version 0.13
 
 =cut
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 =head1 SYNOPSIS
 
@@ -141,6 +143,12 @@ sub start {
     return;
 }
 
+=head2 about
+
+About application dialog.
+
+=cut
+
 sub about {
     my $self = shift;
 
@@ -160,7 +168,7 @@ sub about {
     # Insert a text widget to display the information.
     my $text = $dbox->add(
         'Text',
-        -height     => 8,
+        -height     => 15,
         -width      => 35,
         -background => $bg
     );
@@ -171,16 +179,34 @@ sub about {
     $text->tag(
         'configure', 'italic',
         -font    => $italicfont,
-        -justify => 'center'
+        -justify => 'center',
     );
     $text->tag(
         'configure', 'normal',
         -font    => $textfont,
-        -justify => 'center'
+        -justify => 'center',
     );
 
+    # Framework version
     my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
     my $PROGRAM_VER  = $Tpda3::VERSION;
+
+    # Get application version
+    my $app_class = $self->application_class;
+    (my $app_file = "$app_class.pm") =~ s{::}{/}g;
+    my ($APP_VER, $APP_NAME) = ('', '');
+    eval {
+        require $app_file;
+        $app_class->import();
+    };
+    if ($@) {
+        print "WW: Can't load '$app_file'\n";
+        return;
+    }
+    else {
+        $APP_VER  = $app_class->VERSION;
+        $APP_NAME = $app_class->application_name();
+    }
 
     # Add the about text.
     $text->insert( 'end', "\n" );
@@ -189,8 +215,11 @@ sub about {
     $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
     $text->insert( 'end', "Copyright 2010-2011\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
-    $text->insert( 'end', "stefansbv at users . sourceforge . net",
-        'italic' );
+    $text->insert( 'end', "stefansbv at users . sourceforge . net", 'italic' );
+    $text->insert( 'end', "\n\n" );
+    $text->insert( 'end', "$APP_NAME\n", 'normal' );
+    $text->insert( 'end', "Version " . $APP_VER . "\n", 'normal' );
+
     $text->configure( -state => 'disabled' );
     $text->pack(
         -expand => 1,
@@ -1535,6 +1564,20 @@ sub scrobj {
     return;
 }
 
+=head2 application_class
+
+Main application class name.
+
+=cut
+
+sub application_class {
+    my $self = shift;
+
+    my $app_name  = $self->_cfg->application->{module};
+
+    return "Tpda3::Tk::App::${app_name}";
+}
+
 =head2 screen_module_class
 
 Return screen module class and file name.
@@ -1544,9 +1587,7 @@ Return screen module class and file name.
 sub screen_module_class {
     my ($self, $module) = @_;
 
-    my $app_name  = $self->_cfg->application->{module};
-
-    my $module_class = "Tpda3::Tk::App::${app_name}::${module}";
+    my $module_class = $self->application_class . "::${module}";
 
     (my $module_file = "$module_class.pm") =~ s{::}{/}g;
 
@@ -1964,8 +2005,11 @@ sub toggle_interface_controls {
 Toggle screen controls (toolbar buttons) appropriate for different
 states of the application.
 
-Curently used by the toolbar buttons attached to the TableMatrix
-widget in some screens.
+Used to fine tune the configuration for screens, enable disable
+toolbar buttons per screen.
+
+Also used by the toolbar buttons attached to the TableMatrix widget in
+some screens.
 
 =cut
 
@@ -1973,8 +2017,23 @@ sub toggle_screen_interface_controls {
     my $self = shift;
 
     my $page = $self->_view->get_nb_current_page();
+    my $mode = $self->_model->get_appmode;
 
     return if $page eq 'lst';
+
+    #- Toolbar
+
+    my ($toolbars, $attribs) = $self->scrobj()->toolbar_names();
+
+    foreach my $name ( @{$toolbars} ) {
+        my $status = $attribs->{$name}{state}{$page}{$mode};
+
+        #- Set status for toolbar buttons
+
+        $self->_view->enable_tool( $name, $status );
+    }
+
+    #- TableMatrix
 
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
 
@@ -1982,8 +2041,6 @@ sub toggle_screen_interface_controls {
         my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
 
         my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-        my $mode = $self->_model->get_appmode;
 
         foreach my $name ( @{$toolbars} ) {
             my $status = $attribs->{$name}{state}{$page}{$mode};
@@ -2003,15 +2060,16 @@ Clear the screen: empty all controls.
 sub screen_clear {
     my $self = shift;
 
-    return unless ref $self->scrobj('rec');
+    return unless ref $self->scrobj('rec');  # check if screen loaded
 
     $self->record_clear;
 
-    # Don't change mode if 'det' page
-    my $page = $self->_view->get_nb_current_page();
-    if ( $self->_model->is_mode('edit') ) {
-        $self->set_app_mode('idle') unless $page eq 'det';
-    }
+    # TODO: Don't change mode at all?
+    # # Don't change mode if 'det' page
+    # my $page = $self->_view->get_nb_current_page();
+    # if ( $self->_model->is_mode('edit') ) {
+    #     $self->set_app_mode('idle') unless $page eq 'det';
+    # }
 
     $self->_view->set_status( 'Cleared','ms','orange' );
 

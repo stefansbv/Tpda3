@@ -3,7 +3,7 @@ package Tpda3;
 use strict;
 use warnings;
 
-use 5.008005;
+use 5.010001;
 
 use Log::Log4perl qw(get_logger);
 

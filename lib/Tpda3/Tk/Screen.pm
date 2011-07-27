@@ -187,6 +187,27 @@ sub tmatrix_remove_row {
     return;
 }
 
+=head2 toolbar_names
+
+Configuration for toolbar buttons.
+
+Get Toolbar names as array reference from screen config.
+
+=cut
+
+sub toolbar_names {
+    my $self = shift;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->{scrcfg}->toolbar;
+
+    # TODO: Change the config file so we don't need this sorting anymore
+    # or better keep them sorted and ready to use in config
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    return ($toolbars, $attribs);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
