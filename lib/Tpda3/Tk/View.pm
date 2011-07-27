@@ -836,7 +836,7 @@ Make header for list
 =cut
 
 sub make_list_header {
-    my ($self, $header_cols, $header_attr) = @_;
+    my ($self, $list_header) = @_;
 
     # Delete existing columns
     $self->get_recordlist->selectionClear( 0, 'end' );
@@ -844,18 +844,16 @@ sub make_list_header {
 
     # Header
     my $colcnt = 0;
-    foreach my $col ( @{$header_cols} ) {
-        my $attr = $header_attr->{$col};
-
-        $self->get_recordlist->columnInsert( 'end', -text => $attr->{label} );
+    foreach my $col ( @{$list_header} ) {
+        $self->get_recordlist->columnInsert( 'end', -text => $col->{label} );
         $self->get_recordlist->columnGet($colcnt)
             ->Subwidget('heading')
             ->configure( -background => 'tan' );
         $self->get_recordlist->columnGet($colcnt)
             ->Subwidget('heading')
-            ->configure( -width => $attr->{width} );
-        if ( defined $attr->{order} ) {
-            if ($attr->{order} eq 'N') {
+            ->configure( -width => $col->{width} );
+        if ( defined $col->{order} ) {
+            if ($col->{order} eq 'N') {
                 $self->get_recordlist->columnGet($colcnt)
                     ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
             }

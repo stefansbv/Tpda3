@@ -20,7 +20,7 @@ our $VERSION = '0.03';
 
     require Tpda3::Tk::Validation;
 
-    my $validation = Tpda3::Tk::Validation->new($scr_cfg_ref);
+    my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
 
     # In 'run_screen' method of a screen module:
 
@@ -165,7 +165,7 @@ sub validate_table_cell {
     my $column = $self->column_name_from_idx( $tm_ds, $col );
 
     my ($type, $width, $places) = $self->deptable_attribs($tm_ds, $column);
-    print "$column: $type($width,$places)\n";
+
     return $self->validate( $type, $new, $width, $places );
 }
 
@@ -179,7 +179,7 @@ sub validate {
     my ( $self, $proc, $p1, $maxlen, $places ) = @_;
 
     if (!$proc) {
-        print "WW: no proc! for validation\n";
+        print "EE: Config error, no procedure for validation!\n";
         return;
     }
 

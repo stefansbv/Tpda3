@@ -1677,18 +1677,20 @@ sub screen_module_load {
     $self->set_app_mode('idle');
 
     # List header
-    my @header_cols = @{ $self->scrcfg('rec')->found_cols->{col} };
+    my $header_cols = $self->scrcfg('rec')->list_header->{col};
     my $fields = $self->scrcfg('rec')->main_table_columns;
-    my $header_attr = {};
-    foreach my $col ( @header_cols ) {
-        $header_attr->{$col} = {
+    my @list_header;
+    foreach my $col ( @{$header_cols} ) {
+        my $attr = {
+            name  =>  $col,
             label =>  $fields->{$col}{label},
             width =>  $fields->{$col}{width},
             order =>  $fields->{$col}{order},
         };
+        push @list_header, $attr;
     }
 
-    $self->_view->make_list_header( \@header_cols, $header_attr );
+    $self->_view->make_list_header( \@list_header );
 
     #- Event handlers
 
@@ -2159,7 +2161,7 @@ sub record_find_execute {
     my $params = {};
 
     # Columns data (for found list)
-    $params->{columns} = $self->scrcfg('rec')->found_cols->{col};
+    $params->{columns} = $self->scrcfg('rec')->list_header->{col};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
