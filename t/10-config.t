@@ -15,7 +15,7 @@ use Tpda3::Config;
 
 my $args = {
     cfname => 'test-tk',
-    user   => 'user',
+    user   => $ENV{USER},
     pass   => 'pass',
 };
 

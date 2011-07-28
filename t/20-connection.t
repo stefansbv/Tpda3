@@ -1,13 +1,13 @@
 #
 # Tpda3::Db test script
 #
-# From Class::Singleton test script
-#   by Andy Wardley <abw@wardley.org>
+# Inspired from the Class::Singleton test script by Andy Wardley
+#
 
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 use lib qw( lib ../lib );
 
@@ -15,8 +15,8 @@ use Tpda3::Config;
 
 my $args = {
     cfname => 'test-tk',
-    user   => 'user',
-    pass   => 'pass',
+    user   => $ENV{USER},
+    pass   => undef,
 };
 
 my $c1 = Tpda3::Config->instance($args);
@@ -36,5 +36,10 @@ my $d2 = Tpda3::Db->instance();
 ok( $d2->isa('Tpda3::Db'), 'created Tpda3::Db instance 2' );
 
 is( $d1, $d2, 'both instances are the same object' );
+
+my $dbh = Tpda3::Db->instance->dbh;
+ok( $dbh->isa('DBI::db'), 'Connected' );
+
+ok( $dbh->disconnect, 'Disconnect' );
 
 # end test
