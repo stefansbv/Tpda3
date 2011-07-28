@@ -84,7 +84,10 @@ Perl data structure.
 sub load_conf {
     my ( $self, $config_file ) = @_;
 
-    my $conf = Config::General->new($config_file);
+    my $conf = Config::General->new(
+        -ForceArray => 1,
+        -ConfigFile => $config_file,
+    );
 
     my %config = $conf->getall;
 

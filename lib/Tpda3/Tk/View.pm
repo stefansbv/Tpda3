@@ -89,6 +89,8 @@ sub new {
 
     $self->define_dialogs();
 
+    $self->{lookup} = undef;                 # info about list header
+
     return $self;
 }
 
@@ -831,38 +833,71 @@ sub get_recordlist {
 
 =head2 make_list_header
 
-Make header for list
+Prepare the header for list in the List tab.
 
 =cut
 
 sub make_list_header {
-    my ($self, $list_header) = @_;
+    my ($self, $header_look, $header_cols, $fields) = @_;
 
-    # Delete existing columns
+    #- Delete existing columns
     $self->get_recordlist->selectionClear( 0, 'end' );
     $self->get_recordlist->columnDelete( 0, 'end' );
 
-    # Header
+    #- Make header
+    $self->{lookup} = [];
     my $colcnt = 0;
-    foreach my $col ( @{$list_header} ) {
-        $self->get_recordlist->columnInsert( 'end', -text => $col->{label} );
-        $self->get_recordlist->columnGet($colcnt)
-            ->Subwidget('heading')
-            ->configure( -background => 'tan' );
-        $self->get_recordlist->columnGet($colcnt)
-            ->Subwidget('heading')
-            ->configure( -width => $col->{width} );
-        if ( defined $col->{order} ) {
-            if ($col->{order} eq 'N') {
-                $self->get_recordlist->columnGet($colcnt)
-                    ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
-            }
-        }
-        else {
-            warn " Warning: no sort option for '$col'\n";
-        }
+
+    #-- For lookup columns
+
+    foreach my $col ( @{$header_look} ) {
+        $self->list_header( $fields->{$col}, $colcnt );
+
+        # Save index of columns to return
+        push @{ $self->{lookup} }, $colcnt;
 
         $colcnt++;
+    }
+
+    #-- For the rest of the columns
+
+    foreach my $col ( @{$header_cols} ) {
+        $self->list_header( $fields->{$col}, $colcnt );
+        $colcnt++;
+    }
+
+    return;
+}
+
+=head2 list_header
+
+Make header for the list in the List tab.
+
+=cut
+
+sub list_header {
+    my ($self, $col, $colcnt) = @_;
+
+    # Label
+    $self->get_recordlist->columnInsert( 'end', -text => $col->{label} );
+
+    # Background
+    $self->get_recordlist->columnGet($colcnt)->Subwidget('heading')
+        ->configure( -background => 'tan' );
+
+    # Width
+    $self->get_recordlist->columnGet($colcnt)->Subwidget('heading')
+        ->configure( -width => $col->{width} );
+
+    # Sort order, (A)lpha is default
+    if ( defined $col->{order} ) {
+        if ( $col->{order} eq 'N' ) {
+            $self->get_recordlist->columnGet($colcnt)
+                ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
+        }
+    }
+    else {
+        print "WW: No sort option for '$col'\n";
     }
 
     return;
@@ -975,7 +1010,7 @@ sub list_read_selected {
     my $self = shift;
 
     if ( !$self->has_list_records ) {
-        warn "No records!\n";
+        # No records
         return;
     }
 
@@ -1004,160 +1039,22 @@ sub list_read_selected {
     }
 
     # In scalar context, getRow returns the value of column 0
-    # Column 0 has to be a Pk ...
-    my $pk_id;
-    eval { $pk_id = ( $self->get_recordlist->getRow($indecs) )[0]; };
+    my @idxs = @{ $self->{lookup} };      # indices for Pk and Fk cols
+    my @returned;
+    eval {
+        @returned = ( $self->get_recordlist->getRow($indecs) )[@idxs];
+    };
     if ($@) {
         warn "Error: $@";
         # $self->refresh_sb( 'll', 'No record selected!' );
         return;
     }
     else {
-
-        # Trim spaces
-        if ( defined($pk_id) ) {
-            $pk_id =~ s/^\s+//;
-            $pk_id =~ s/\s+$//;
-        }
+        @returned = Tpda3::Utils->trim(@returned) if @returned;
     }
 
-    return $pk_id;
+    return \@returned;
 }
-
-=head2 make_tablematrix_header
-
-Write header on row 0 of TableMatrix
-
-=cut
-
-# sub make_tablematrix_header {
-#     my ($self, $tm_table, $tm_fields, $strech, $selecol) = @_;
-
-#     # Set TableMatrix tags
-#     my $cols = scalar keys %{$tm_fields};
-#     $self->set_tablematrix_tags( $tm_table, $cols, $tm_fields, $strech,$selecol );
-
-#     return;
-# }
-
-=head2 set_tablematrix_tags
-
-Set tags for the table matrix.
-
-=cut
-
-# sub set_tablematrix_tags {
-#     my ($self, $xtable, $cols, $tm_fields, $strech, $selecol) = @_;
-
-#     # TM is SpreadsheetHideRows type increase cols number with 1
-#     $cols += 1 if $xtable =~ m/SpreadsheetHideRows/;
-
-#     # Tags for the detail data:
-#     $xtable->tagConfigure(
-#         'detail',
-#         -bg     => 'darkseagreen2',
-#         -relief => 'sunken',
-#     );
-#     $xtable->tagConfigure(
-#         'detail2',
-#         -bg     => 'burlywood2',
-#         -relief => 'sunken',
-#     );
-#     $xtable->tagConfigure(
-#         'detail3',
-#         -bg     => 'lightyellow',
-#         -relief => 'sunken',
-#     );
-
-#     $xtable->tagConfigure(
-#         'expnd',
-#         -bg     => 'grey85',
-#         -relief => 'raised',
-#     );
-#     $xtable->tagCol( 'expnd', 0 );
-
-#     # Make enter do the same thing as return:
-#     $xtable->bind( '<KP_Enter>', $xtable->bind('<Return>') );
-
-#     # if ($cols) {
-#     #     $xtable->configure( -cols => $cols );
-#     #     $xtable->configure( -rows => 1 ); # Keep table dim in grid
-#     # }
-#     $xtable->tagConfigure(
-#         'active',
-#         -bg     => 'lightyellow',
-#         -relief => 'sunken',
-#     );
-#     $xtable->tagConfigure(
-#         'title',
-#         -bg     => 'tan',
-#         -fg     => 'black',
-#         -relief => 'raised',
-#         -anchor => 'n',
-#     );
-#     $xtable->tagConfigure( 'find_left', -anchor => 'w', -bg => 'lightgreen' );
-#     $xtable->tagConfigure(
-#         'find_center',
-#         -anchor => 'n',
-#         -bg     => 'lightgreen',
-#     );
-#     $xtable->tagConfigure(
-#         'find_right',
-#         -anchor => 'e',
-#         -bg     => 'lightgreen',
-#     );
-#     $xtable->tagConfigure('ro_left'     , -anchor => 'w', -bg => 'lightgrey');
-#     $xtable->tagConfigure('ro_center'   , -anchor => 'n', -bg => 'lightgrey');
-#     $xtable->tagConfigure('ro_right'    , -anchor => 'e', -bg => 'lightgrey');
-#     $xtable->tagConfigure('enter_left'  , -anchor => 'w', -bg => 'white');
-#     $xtable->tagConfigure('enter_center', -anchor => 'n', -bg => 'white');
-#     $xtable->tagConfigure(
-#         'enter_center_blue',
-#         -anchor => 'n',
-#         -bg     => 'lightblue',
-#     );
-#     $xtable->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
-#     $xtable->tagConfigure( 'find_row', -bg => 'lightgreen' );
-
-#     # TableMatrix header, Set Name, Align, Width
-#     foreach my $field ( keys %{$tm_fields} ) {
-#         my $col = $tm_fields->{$field}{id};
-#         $xtable->tagCol( $tm_fields->{$field}{tag}, $col );
-#         $xtable->set( "0,$col", $tm_fields->{$field}{label} );
-
-#         # If colstretch = 'n' in screen config file, don't set width,
-#         # because of the -colstretchmode => 'unset' setting, col 'n'
-#         # will be of variable width
-#         next if $strech and $col == $strech;
-
-#         my $width = $tm_fields->{$field}{width};
-#         if ( $width and ( $width > 0 ) ) {
-#             $xtable->colWidth( $col, $width );
-#         }
-#     }
-
-#     # Add selector column
-#     if ($selecol) {
-#         $xtable->insertCols( $selecol, 1 );
-#         $xtable->tagCol( 'ro_center', $selecol );
-#         $xtable->colWidth( $selecol, 3 );
-#         $xtable->set( "0,$selecol", 'Sel' );
-#     }
-
-#     $xtable->tagRow( 'title', 0 );
-#     if ( $xtable->tagExists('expnd') ) {
-#         # Change the tag priority
-#         $xtable->tagRaise( 'expnd', 'title' );
-#     }
-
-#     return;
-# }
-
-# sub Tk::Error {
-#     my ($widget, $error, @where) = @_;
-
-#     croak("$widget, $error"); # , @where
-# }
 
 =head1 AUTHOR
 

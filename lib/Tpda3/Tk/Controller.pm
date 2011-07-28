@@ -507,20 +507,34 @@ On page I<rec> activate.
 sub on_page_rec_activate {
     my $self = shift;
 
-    my $pk_val_new = $self->_view->list_read_selected();
-    if ( ! defined $pk_val_new ) {
+    my $selected = $self->_view->list_read_selected(); # returns a array ref
+    unless ($selected) {
         $self->_view->set_status('Nothing selected','ms','orange');
+        $self->set_app_mode('idle');
         return;
     }
 
-    my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
+    my $pk_val_new = $selected->[0];                   # first is the pk value
+    my $fk_val_new = $selected->[1];                   # second the fk value
+    # if ( ! defined $pk_val_new ) {
+    #     $self->_view->set_status('Nothing selected','ms','orange');
+    #     return;
+    # }
 
-    if ($pk_val_new eq $pk_val_old) {
-        $self->set_app_mode('edit'); # restore interface state
+    my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
+    my $fk_val_old = $self->screen_get_pk_val() || q{};
+
+    $self->set_app_mode('edit'); # restore interface state
+
+    if ($pk_val_new ne $pk_val_old ) {
+        $self->record_load_new($pk_val_new, $fk_val_new);
     }
     else {
-        $self->set_app_mode('edit');
-        $self->record_load_new($pk_val_new);
+        if (defined $fk_val_new) {
+            if ($fk_val_new ne $fk_val_old ) {
+                $self->record_load_new($pk_val_new, $fk_val_new);
+            }
+        }
     }
 
     $self->toggle_detail_tab;
@@ -837,8 +851,9 @@ sub setup_lookup_bindings_entry {
         my $flds;
       SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
             /^$/     && do {
-                $flds =
-                  $self->fields_cfg_one($bindings->{$bind_name} );
+                # Removed: force array
+                # $flds =
+                #   $self->fields_cfg_one($bindings->{$bind_name} );
                 last SWITCH;
             };
             /array/i && do {
@@ -1175,11 +1190,13 @@ sub get_lookup_setings {
     my $flds;
   SWITCH: for ( ref $bindings->{field} ) {
         /^$/     && do {
-            $flds = $self->fields_cfg_one($bindings, $tm_ds);
+            # Removed: force array
+            # $flds = $self->fields_cfg_one($bindings, $tm_ds);
             last SWITCH;
         };
         /array/i && do {
             $flds = $self->fields_cfg_many($bindings, $tm_ds);
+            print Dumper('many', $flds);
             last SWITCH;
         };
         /hash/i  && do {
@@ -1202,29 +1219,29 @@ Just one field atribute.
 
 =cut
 
-sub fields_cfg_one {
-    my ( $self, $bindings, $tm_ds ) = @_;
+# sub fields_cfg_one {
+#     my ( $self, $bindings, $tm_ds ) = @_;
 
-    # One field, no array
-    my @cols;
-    my $lookup = $bindings->{field};
-    my $field_cfg;
-    if ($tm_ds) {
-        $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup);
-    }
-    else {
-        $field_cfg = $self->scrcfg('rec')->main_table_column($lookup);
-    }
-    my $rec = {};
-    $rec->{$lookup} = {
-        width => $field_cfg->{width},
-        label => $field_cfg->{label},
-        order => $field_cfg->{order},
-    };
-    push @cols, $rec;
+#     # One field, no array
+#     my @cols;
+#     my $lookup = $bindings->{field};
+#     my $field_cfg;
+#     if ($tm_ds) {
+#         $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup);
+#     }
+#     else {
+#         $field_cfg = $self->scrcfg('rec')->main_table_column($lookup);
+#     }
+#     my $rec = {};
+#     $rec->{$lookup} = {
+#         width => $field_cfg->{width},
+#         label => $field_cfg->{label},
+#         order => $field_cfg->{order},
+#     };
+#     push @cols, $rec;
 
-    return \@cols;
-}
+#     return \@cols;
+# }
 
 =head2 fields_cfg_many
 
@@ -1677,20 +1694,10 @@ sub screen_module_load {
     $self->set_app_mode('idle');
 
     # List header
-    my $header_cols = $self->scrcfg('rec')->list_header->{col};
-    my $fields = $self->scrcfg('rec')->main_table_columns;
-    my @list_header;
-    foreach my $col ( @{$header_cols} ) {
-        my $attr = {
-            name  =>  $col,
-            label =>  $fields->{$col}{label},
-            width =>  $fields->{$col}{width},
-            order =>  $fields->{$col}{order},
-        };
-        push @list_header, $attr;
-    }
-
-    $self->_view->make_list_header( \@list_header );
+    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
+    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+    my $fields      = $self->scrcfg('rec')->main_table_columns;
+    $self->_view->make_list_header( $header_look, $header_cols, $fields );
 
     #- Event handlers
 
@@ -2160,8 +2167,15 @@ sub record_find_execute {
 
     my $params = {};
 
-    # Columns data (for found list)
-    $params->{columns} = $self->scrcfg('rec')->list_header->{col};
+    # Columns data (from list header)
+    # TODO: transform data directly in config to avoid this:
+
+    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
+    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+
+    $params->{columns} = [];
+    push @{ $params->{columns} }, @{$header_look};
+    push @{ $params->{columns} }, @{$header_cols};
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
@@ -2305,7 +2319,7 @@ Read screen controls (widgets) and save in a Perl data stucture.
 =cut
 
 sub screen_read {
-     my ($self, $all) = @_;
+     my $self = shift;
 
      # Initialize
      $self->{_scrdata} = {};
@@ -2325,9 +2339,8 @@ sub screen_read {
          my $ctrltype = $fld_cfg->{ctrltype};
          my $ctrlrw   = $fld_cfg->{rw};
 
-         # Skip READ ONLY fields if not FIND status
-         # Read ALL if $all == true (don't skip)
-         if ( ! $all or $self->_model->is_mode('edit') ) {
+         # Skip READ ONLY fields if not edit status
+         if ( $self->_model->is_mode('edit') ) {
              next if ($ctrlrw eq 'r') or ($ctrlrw eq 'ro'); # skip ro field
          }
 
@@ -2335,13 +2348,13 @@ sub screen_read {
          my $sub_name = "control_read_$ctrltype";
          if ( $self->can($sub_name) ) {
              unless ( $ctrl_ref->{$field}[1] ) {
-                 print "WW: Undefined field '$field', check configuration!\n";
+                 print "EE: Undefined field '$field', check configuration!\n";
                  next;
              }
              $self->$sub_name( $ctrl_ref, $field );
          }
          else {
-             print "WW: No '$ctrltype' ctrl type for reading '$field'!\n";
+             print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
          }
      }
 
@@ -3008,9 +3021,10 @@ list control on the I<List> page.
 =cut
 
 sub record_load_new {
-    my ($self, $pk_val) = @_;
+    my ($self, $pk_val, $fk_val) = @_;
 
-    $self->screen_set_pk_val($pk_val); # save PK value
+    $self->screen_set_pk_val($pk_val);                    # save PK value
+    $self->screen_set_fk_val($fk_val) if defined $fk_val; # and FK value
 
     $self->tmatrix_set_selected();     # initialize selector
 
@@ -3458,7 +3472,7 @@ dependent table(s) data and meta-data.
 sub get_screen_data_record {
     my ($self, $for_sql) = @_;
 
-    $self->screen_read('all_fields');
+    $self->screen_read();                    #  'all_fields'
 
     my @record;
 
@@ -3511,22 +3525,22 @@ sub main_table_metadata {
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
     my ($fk_col, $fk_val);
-    my $has_dep = 0;
-    if ($self->scrcfg->screen->{style} eq 'dependent') {
-        $has_dep = 1;
+    # my $has_dep = 0;
+    # if ($self->scrcfg->screen->{style} eq 'dependent') {
+    #     $has_dep = 1;
         $fk_col = $self->screen_get_fk_col;
         $fk_val = $self->screen_get_fk_val;
-    }
+    # }
 
     if ($for_sql eq 'qry') {
         $metadata->{table} = $self->scrcfg->main_table_view;
         $metadata->{where}{$pk_col} = $pk_val; # pk
-        $metadata->{where}{$fk_col} = $fk_val if $has_dep;
+        $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
-    elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
+    elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
         $metadata->{table} = $self->scrcfg->main_table_name;
-        $metadata->{where}{$pk_col} = $pk_val; # pk
-        $metadata->{where}{$fk_col} = $fk_val if $has_dep;
+        $metadata->{where}{$pk_col} = $pk_val;    # pk
+        $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
     elsif ($for_sql eq 'ins') {
         $metadata->{table} = $self->scrcfg->main_table_name;
@@ -3590,8 +3604,6 @@ Save screen data to temp file with Storable.
 
 sub save_screendata {
     my ($self, $data_file) = @_;
-
-    my $mode = $self->_model->get_appmode;
 
     my $record = $self->get_screen_data_record('upd');
 
@@ -3690,9 +3702,11 @@ sub screen_get_pk_val {
 #-- FK
 
 sub screen_get_fk_col {
-    my $self = shift;
+    my ($self, $page) = @_;
 
-    return $self->scrcfg('det')->main_table_fkcol();
+    $page ||= $self->_view->get_nb_current_page();
+
+    return $self->scrcfg($page)->main_table_fkcol();
 }
 
 sub screen_set_fk_col {
@@ -3702,9 +3716,6 @@ sub screen_set_fk_col {
 
     if ($fk_col) {
         $self->{_tblkeys}{$fk_col} = undef;
-    }
-    else {
-        croak "ERR: Unknown FK column name!\n";
     }
 
     return;
@@ -3718,9 +3729,6 @@ sub screen_set_fk_val {
     if ($fk_col) {
         $self->{_tblkeys}{$fk_col} = $fk_val;
     }
-    else {
-        croak "ERR: Unknown FK column name!\n";
-    }
 
     return;
 }
@@ -3729,6 +3737,8 @@ sub screen_get_fk_val {
     my $self = shift;
 
     my $fk_col = $self->screen_get_fk_col;
+
+    return unless $fk_col;
 
     return $self->{_tblkeys}{$fk_col};
 }

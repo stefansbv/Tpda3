@@ -170,7 +170,11 @@ sub main_table_pkcol {
 sub main_table_fkcol {
     my $self = shift;
 
-    return $self->main_table->{fkcol}{name};
+    if ( exists $self->main_table->{fkcol} ) {
+        return $self->main_table->{fkcol}{name};
+    }
+
+    return;
 }
 
 sub main_table_columns {

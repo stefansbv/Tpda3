@@ -26,9 +26,3 @@ appmenubar:
         underline: 0
         sep: none
         key: ~
-      4:
-        name: WidgetsAll
-        label: All widgets
-        underline: 0
-        sep: before
-        key: ~
