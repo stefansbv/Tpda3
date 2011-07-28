@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use POSIX qw (floor);
@@ -965,13 +967,22 @@ sub list_populate {
     $self->get_recordlist->see('active');
     $self->{progres} = 0;
 
-    # Raise List tab if found and set focus to list
-    if ($record_count > 0) {
-        $self->{_nb}->raise('lst');
-        $self->get_recordlist->focus;
-    }
-
     return $record_count;
+}
+
+=head2 list_raise
+
+Raise I<List> tab and set focus to list.
+
+=cut
+
+sub list_raise {
+    my $self = shift;
+
+    $self->{_nb}->raise('lst');
+    $self->get_recordlist->focus;
+
+    return;
 }
 
 =head2 has_list_records
@@ -1014,7 +1025,9 @@ sub list_read_selected {
         return;
     }
 
-    my (@selected, $indecs);
+    my @selected;
+    my $indecs;
+
     eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
@@ -1022,19 +1035,14 @@ sub list_read_selected {
         return;
     }
     else {
-
-        # First row in case of multiselect
-        $indecs = pop @selected;
-        if ($indecs) {
-            unless ( $indecs > 0 ) {
-                $indecs = 0;
-
-                # Selecteaza si activeaza
-                $self->get_recordlist->selectionClear( 0, 'end' );
-                $self->get_recordlist->activate(0);
-                $self->get_recordlist->selectionSet(0);
-                $self->get_recordlist->see('active');
-            }
+        $indecs = pop @selected; # first row in case of multiselect
+        if (!defined $indecs) {
+            # Activate the last row
+            $indecs = 'end';
+            $self->get_recordlist->selectionClear( 0, 'end' );
+            $self->get_recordlist->activate($indecs);
+            $self->get_recordlist->selectionSet($indecs);
+            $self->get_recordlist->see('active');
         }
     }
 
@@ -1054,6 +1062,97 @@ sub list_read_selected {
     }
 
     return \@returned;
+}
+
+sub list_remove_selected {
+    my ($self, $pk_val, $fk_val) = @_;
+
+    #- Get selected and compare to params
+
+    my $sel = $self->list_read_selected();
+    if ( !ref $sel ) {
+        print "EE: Nothing selected!, use brute force? :)\n";
+        return;
+    }
+
+    my $fk_idx = $self->{lookup}[1];
+
+    my $found;
+    if ( $sel->[0] eq $pk_val ) {
+
+        # Check fk, if defined
+        if ( defined $fk_idx ) {
+            $found = 1 if $sel->[1] eq $fk_val;
+        }
+        else {
+            $found = 1;
+        }
+    }
+    else {
+        print "EE: No matching list row!\n";
+        return;
+    }
+
+    # return if !$found;
+
+    #- OK, found, delete from list
+
+    my @selected;
+    eval { @selected = $self->get_recordlist->curselection(); };
+    if ($@) {
+        warn "Error: $@";
+        # $self->refresh_sb( 'll', 'No record selected' );
+        return;
+    }
+    else {
+        my $indecs = pop @selected; # first row in case of multiselect
+        if (defined $indecs) {
+            $self->get_recordlist->delete($indecs);
+        }
+        else {
+            print "EE: Nothing selected!\n";
+        }
+    }
+
+    return;
+}
+
+=head2 list_locate
+
+This should be never needed.  Use brute force to locate the record in
+the list. ;)
+
+=cut
+
+sub list_locate {
+    my ($self, $pk_val, $fk_val) = @_;
+
+    my $pk_idx = $self->{lookup}[0];      # indices for Pk and Fk cols
+    my $fk_idx = $self->{lookup}[1];
+    my $idx;
+
+    my @returned = $self->get_recordlist->get( 0, 'end' );
+    my $i = 0;
+    foreach my $rec (@returned) {
+        if ( $rec->[$pk_idx] eq $pk_val ) {
+
+            # Check fk, if defined
+            if ( defined $fk_idx ) {
+                if ( $rec->[$fk_idx] eq $fk_val ) {
+                    $idx = $i;
+                    last;    # found!
+                }
+            }
+            else {
+                $idx = $i;
+                last;    # found!
+            }
+        }
+
+        $i++;
+    }
+
+    return $idx;
 }
 
 =head1 AUTHOR

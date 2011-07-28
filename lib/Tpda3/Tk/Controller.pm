@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -366,7 +368,7 @@ sub _set_event_handlers {
     #-- Delete
     $self->_view->get_toolbar_btn('tb_rm')->bind(
         '<ButtonRelease-1>' => sub {
-            $self->record_delete();
+            $self->event_record_delete();
         }
     );
 
@@ -505,22 +507,18 @@ On page I<rec> activate.
 sub on_page_rec_activate {
     my $self = shift;
 
-    my $selected = $self->_view->list_read_selected(); # returns a array ref
+    my $selected = $self->_view->list_read_selected(); # array reference
     unless ($selected) {
         $self->_view->set_status('Nothing selected','ms','orange');
         $self->set_app_mode('idle');
         return;
     }
 
-    my $pk_val_new = $selected->[0];                   # first is the pk value
-    my $fk_val_new = $selected->[1];                   # second the fk value
-    # if ( ! defined $pk_val_new ) {
-    #     $self->_view->set_status('Nothing selected','ms','orange');
-    #     return;
-    # }
+    my $pk_val_new = $selected->[0]; # first is the pk value
+    my $fk_val_new = $selected->[1]; # second the fk value
 
     my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
-    my $fk_val_old = $self->screen_get_pk_val() || q{};
+    my $fk_val_old = $self->screen_get_fk_val() || q{};
 
     $self->set_app_mode('edit'); # restore interface state
 
@@ -1511,12 +1509,17 @@ sub _log {
 
 =head2 scrcfg
 
-Return current screen configuration object.
+Return screen configuration object for I<page>, or for the current
+page.
 
 =cut
 
 sub scrcfg {
     my ($self, $page) = @_;
+
+    $page ||= $self->_view->get_nb_current_page();
+
+    warn "Wrong page (scrcfg): $page!\n" if $page eq 'lst';
 
     return $self->scrobj($page)->{scrcfg};
 }
@@ -1537,7 +1540,7 @@ sub scrobj {
 
     return $self->{_dscrobj} if $page eq 'det';
 
-    warn "Wrong page: $page!\n";
+    warn "Wrong page (scrobj): $page!\n";
 
     return;
 }
@@ -2129,14 +2132,7 @@ sub record_find_execute {
     my $params = {};
 
     # Columns data (from list header)
-    # TODO: transform data directly in config to avoid this:
-
-    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
-    my $header_cols = $self->scrcfg('rec')->list_header->{column};
-
-    $params->{columns} = [];
-    push @{ $params->{columns} }, @{$header_look};
-    push @{ $params->{columns} }, @{$header_cols};
+    $params->{columns} = $self->list_column_names();
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
@@ -2160,6 +2156,9 @@ sub record_find_execute {
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($ary_ref);
+    if ($record_count > 0) {
+        $self->_view->list_raise();
+    }
 
     # Set mode to sele if found
     if ($record_count > 0) {
@@ -2277,6 +2276,28 @@ sub screen_report_print {
 
 Read screen controls (widgets) and save in a Perl data stucture.
 
+Returns different data for different application modes.
+
+=over
+
+=item I<Find> mode
+
+Reads all fields regardles of the configured I<rw> attribute.
+
+=item I<Edit> mode
+
+Read the fields that have the configured I<rw> attribute set to I<rw>,
+ignoring the rest (I<r> and I<ro>), but incuding the fields with no
+values as I<undef> for the value.
+
+=item I<Add>  mode
+
+Read the fields that have the configured I<rw> attribute set to I<rw>,
+ignoring the rest (I<r> and I<ro>), but also ignoring the fields with
+no values.
+
+=back
+
 =cut
 
 sub screen_read {
@@ -2300,10 +2321,10 @@ sub screen_read {
          my $ctrltype = $fld_cfg->{ctrltype};
          my $ctrlrw   = $fld_cfg->{rw};
 
-         # Skip READ ONLY fields if not edit status
-         if ( $self->_model->is_mode('edit') ) {
-             next if ($ctrlrw eq 'r') or ($ctrlrw eq 'ro'); # skip ro field
-         }
+        # Skip READ ONLY fields if not FIND status
+        if ( !$self->_model->is_mode('find') ) {
+            next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
+        }
 
          # Run the appropriate sub according to control (widget) type
          my $sub_name = "control_read_$ctrltype";
@@ -3081,6 +3102,20 @@ sub record_load {
     return;
 }
 
+sub event_record_delete {
+    my $self = shift;
+
+    my $answer = $self->ask_to('delete');
+
+    return if $answer eq 'cancel' or $answer =~ /^N/i;
+
+    $self->list_update_remove(); # first remove from list
+
+    $self->record_delete();
+
+    return;
+}
+
 =head2 record_delete
 
 Delete record and clear the screen.
@@ -3224,7 +3259,8 @@ sub ask_to {
         sub { $db->Subwidget('B_Renunt')->invoke }
     );
 
-    #
+    #- Dialog texts
+
     my $dialog_text = '';
     if ($for_action eq 'save') {
         $dialog_text = "Inregistarea a fost modificata.\n\n";
@@ -3234,7 +3270,10 @@ sub ask_to {
         $dialog_text = "Inregistare noua.\n\n";
         $dialog_text   .= "Doriti sa salvati inregistrarea?";
     }
-    #
+    elsif ($for_action eq 'delete') {
+        $dialog_text = "Stergere inregistare.\n\n";
+        $dialog_text   .= "Doriti sa stergeti inregistrarea?";
+    }
 
     my $scrolled = $db->Label(
         -text => $dialog_text,
@@ -3277,7 +3316,9 @@ sub record_save {
 
         $self->record_save_insert($record) if $answer eq 'yes';
 
-        $self->record_reload;
+        $self->record_reload();
+
+        $self->list_update_add();   # insert the new record in the list
     }
     elsif ( $self->_model->is_mode('edit') ) {
         if ( !$self->is_record ) {
@@ -3332,7 +3373,47 @@ sub record_save_insert {
         return;
     }
 
-    # TODO: Insert in List
+    return;
+}
+
+=head2 list_update_add
+
+Insert the current record in I<List>.
+
+BUG: Lookup fields are empty in the list.
+
+=cut
+
+sub list_update_add {
+    my $self = shift;
+
+    my $columns = $self->list_column_names();
+    my $current = $self->get_screen_data_record('upd');
+
+    my @list;
+    foreach my $field ( @{$columns} ) {
+        push @list, $current->[0]->{data}{$field};
+    }
+
+    $self->_view->list_populate([\@list]); # AoA
+
+    return;
+}
+
+=head2 list_update_remove
+
+Compare the selected row in the I<List> with given Pk and optionaly Fk
+values and remove it.
+
+=cut
+
+sub list_update_remove {
+    my $self = shift;
+
+    my $pk_val = $self->screen_get_pk_val();
+    my $fk_val = $self->screen_get_fk_val();
+
+    $self->_view->list_remove_selected($pk_val, $fk_val);
 
     return;
 }
@@ -3433,7 +3514,7 @@ dependent table(s) data and meta-data.
 sub get_screen_data_record {
     my ($self, $for_sql) = @_;
 
-    $self->screen_read();                    #  'all_fields'
+    $self->screen_read();
 
     my @record;
 
@@ -3702,6 +3783,25 @@ sub screen_get_fk_val {
     return unless $fk_col;
 
     return $self->{_tblkeys}{$fk_col};
+}
+
+=head2 list_column_names
+
+Return the list column names.
+
+=cut
+
+sub list_column_names {
+    my $self = shift;
+
+    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
+    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+
+    my $columns = [];
+    push @{$columns}, @{$header_look};
+    push @{$columns}, @{$header_cols};
+
+    return $columns;
 }
 
 =head1 AUTHOR
