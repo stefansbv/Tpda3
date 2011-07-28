@@ -1064,10 +1064,17 @@ sub list_read_selected {
     return \@returned;
 }
 
+=head2 list_remove_selected
+
+Remove the selected row from the list.
+
+First it compares the Pk and the Fk values from the screen, with the
+selected row contents in the list.
+
+=cut
+
 sub list_remove_selected {
     my ($self, $pk_val, $fk_val) = @_;
-
-    #- Get selected and compare to params
 
     my $sel = $self->list_read_selected();
     if ( !ref $sel ) {
@@ -1093,8 +1100,6 @@ sub list_remove_selected {
         return;
     }
 
-    # return if !$found;
-
     #- OK, found, delete from list
 
     my @selected;
@@ -1119,8 +1124,8 @@ sub list_remove_selected {
 
 =head2 list_locate
 
-This should be never needed.  Use brute force to locate the record in
-the list. ;)
+This should be never needed and is not used.  Using brute force to
+locate the record in the list. ;)
 
 =cut
 
