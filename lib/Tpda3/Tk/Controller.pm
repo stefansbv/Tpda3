@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -30,11 +28,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =cut
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 =head1 SYNOPSIS
 
@@ -850,21 +848,15 @@ sub setup_lookup_bindings_entry {
         # columns list
         my $flds;
       SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
-            /^$/     && do {
-                # Removed: force array
-                # $flds =
-                #   $self->fields_cfg_one($bindings->{$bind_name} );
-                last SWITCH;
-            };
             /array/i && do {
-                $flds = $self->fields_cfg_many($bindings->{$bind_name} );
+                $flds = $self->fields_cfg_array($bindings->{$bind_name} );
                 last SWITCH;
             };
             /hash/i  && do {
-                $flds = $self->fields_cfg_named($bindings->{$bind_name} );
+                $flds = $self->fields_cfg_hash($bindings->{$bind_name} );
                 last SWITCH;
             };
-            print "WW: Bindigs configuration style not recognised!\n";
+            print "WW: Wrong bindings configuration!\n";
             return;
         }
         push @cols, @{$flds};
@@ -888,25 +880,6 @@ sub setup_lookup_bindings_entry {
 Creates column bindings for table widgets created with
 L<Tk::TableMatrix> using the information from the I<tablebindings>
 section of the screen configuration.
-
-This is a configuration example from the L<Orders> screen:
-
- <tablebindings tm1>
-   <lookup>
-     <products>
-       bindcol           = 1
-       table             = products
-       search            = productname
-       field             = productcode
-     </products>
-   </lookup>
-   <method>
-     <article>
-       bindcol           = 4
-       subname           = calculate_article
-     </article>
-   </method>
- </tablebindings>
 
 First it creates a dispatch table:
 
@@ -1102,7 +1075,28 @@ Return the data structure used by the L<Tpda3::Tk::Dialog::Search>
 module.  Uses the I<tablebindings> section of the screen configuration
 and the related field attributes from the I<dep_table> section.
 
+This is a configuration example from the L<Orders> screen:
+
+ <tablebindings tm1>
+   <lookup>
+     <products>
+       bindcol           = 1
+       table             = products
+       search            = productname
+       field             = productcode
+     </products>
+   </lookup>
+   <method>
+     <article>
+       bindcol           = 4
+       subname           = calculate_article
+     </article>
+   </method>
+ </tablebindings>
+
 =over
+
+=item I<bindcol> - column number to bind to
 
 =item I<search>  - field name to be searched for a substring
 
@@ -1112,7 +1106,7 @@ and the related field attributes from the I<dep_table> section.
 
 =back
 
-An example data structure, for the Orders screen:
+An example of a returned data structure, for the Orders screen:
 
  {
     'search'  => 'productname',
@@ -1189,21 +1183,15 @@ sub get_lookup_setings {
     # columns list
     my $flds;
   SWITCH: for ( ref $bindings->{field} ) {
-        /^$/     && do {
-            # Removed: force array
-            # $flds = $self->fields_cfg_one($bindings, $tm_ds);
-            last SWITCH;
-        };
         /array/i && do {
-            $flds = $self->fields_cfg_many($bindings, $tm_ds);
-            print Dumper('many', $flds);
+            $flds = $self->fields_cfg_array($bindings, $tm_ds);
             last SWITCH;
         };
         /hash/i  && do {
-            $flds = $self->fields_cfg_named($bindings, $tm_ds);
+            $flds = $self->fields_cfg_hash($bindings, $tm_ds);
             last SWITCH;
         };
-        print "WW: Bindigs configuration style?\n";
+        print "WW: Wrong bindings configuration!\n";
         return;
     }
     push @cols, @{$flds};
@@ -1213,43 +1201,13 @@ sub get_lookup_setings {
     return $lk_para;
 }
 
-=head2 fields_cfg_one
-
-Just one field atribute.
-
-=cut
-
-# sub fields_cfg_one {
-#     my ( $self, $bindings, $tm_ds ) = @_;
-
-#     # One field, no array
-#     my @cols;
-#     my $lookup = $bindings->{field};
-#     my $field_cfg;
-#     if ($tm_ds) {
-#         $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup);
-#     }
-#     else {
-#         $field_cfg = $self->scrcfg('rec')->main_table_column($lookup);
-#     }
-#     my $rec = {};
-#     $rec->{$lookup} = {
-#         width => $field_cfg->{width},
-#         label => $field_cfg->{label},
-#         order => $field_cfg->{order},
-#     };
-#     push @cols, $rec;
-
-#     return \@cols;
-# }
-
-=head2 fields_cfg_many
+=head2 fields_cfg_array
 
 Multiple return fields.
 
 =cut
 
-sub fields_cfg_many {
+sub fields_cfg_array {
     my ( $self, $bindings, $tm_ds ) = @_;
 
     my @cols;
@@ -1258,7 +1216,8 @@ sub fields_cfg_many {
     foreach my $lookup_field ( @{ $bindings->{field} } ) {
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $lookup_field);
+            $field_cfg =
+              $self->scrcfg('rec')->dep_table_column( $tm_ds, $lookup_field );
         }
         else {
             $field_cfg = $self->scrcfg('rec')->main_table_column($lookup_field);
@@ -1275,22 +1234,24 @@ sub fields_cfg_many {
     return \@cols;
 }
 
-=head2 fields_cfg_named
+=head2 fields_cfg_hash
 
 Multiple return fields and widget name different from field name.
 
 =cut
 
-sub fields_cfg_named {
+sub fields_cfg_hash {
     my ( $self, $bindings, $tm_ds ) = @_;
 
     my @cols;
+
     # Multiple fields returned as array
     foreach my $lookup_field ( keys %{ $bindings->{field} } ) {
         my $scr_field = $bindings->{field}{$lookup_field}{name};
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->scrcfg('rec')->dep_table_columns($tm_ds, $scr_field);
+            $field_cfg =
+              $self->scrcfg('rec')->dep_table_columns( $tm_ds, $scr_field );
         }
         else {
             $field_cfg = $self->scrcfg('rec')->main_table_column($scr_field);
