@@ -1,14 +1,16 @@
-package Tpda3::Tk::ToolBar;
+package Tpda3::Tk::TTB;
 
 use strict;
 use warnings;
 
 use Tk;
-use base qw{Tk::ToolBar};
+use base qw{Tk::Derived Tk::ToolBar};
+
+Tk::Widget->Construct('TTB');
 
 =head1 NAME
 
-Tpda3::Tk::ToolBar - Create a toolbar
+Tpda3::Tk::TTB - Create a toolbar
 
 =head1 VERSION
 
@@ -20,7 +22,7 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::ToolBar;
+    use Tpda3::Tk::TTB;
 
 
 =head1 METHODS
@@ -31,24 +33,12 @@ Constructor method.
 
 =cut
 
-sub new {
-    my ( $class, $frame ) = @_;
+sub Populate {
+    my ($self, $args) = @_;
 
-    # Frame for toolbar
-    my $tbf = $frame->Frame->pack(
-        -side   => 'top',
-        -anchor => 'nw',
-        -fill   => 'x',
-    );
+    $self->SUPER::Populate($args);
 
-    my $self = $class->SUPER::new(
-        $tbf,
-        -movable       => 0,
-        -side          => 'top',
-        -cursorcontrol => 0,       # Problems with cursorcontrol in tests
-    );
-
-    return $self;
+    return;
 }
 
 =head2 make_toolbar_buttons
@@ -204,4 +194,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of Tpda3::Tk::ToolBar
+1;    # End of Tpda3::Tk::TTB

@@ -21,7 +21,7 @@ use base 'Tk::MainWindow';
 
 use Tpda3::Config;
 use Tpda3::Utils;
-use Tpda3::Tk::ToolBar;
+use Tpda3::Tk::TTB; # ToolBar
 
 =head1 NAME
 
@@ -507,7 +507,7 @@ Create toolbar
 sub _create_toolbar {
     my $self = shift;
 
-    $self->{_tb} = Tpda3::Tk::ToolBar->new($self);
+    $self->{_tb} = $self->TTB();
 
     my ($toolbars, $attribs) = $self->toolbar_names();
 
