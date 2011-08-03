@@ -2703,7 +2703,7 @@ sub tmatrix_get_selected {
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
     my $sc;
-    if ( ref($tmx) eq 'Tpda3::Tk::TM' ) {
+    if ( ref($tmx->Subwidget) eq 'Tpda3::Tk::TM' ) {
         $sc = $tmx->get_selected();
     }
 
@@ -2720,7 +2720,7 @@ sub tmatrix_set_selected {
     my ($self, $row) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-    if ( ref($tmx) eq 'Tpda3::Tk::TM' ) {
+    if ( ref($tmx->Subwidget) eq 'Tpda3::Tk::TM' ) {
         $tmx->set_selected($row);
     }
 

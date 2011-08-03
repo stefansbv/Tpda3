@@ -17,15 +17,37 @@ Tpda3::Tk::TM - Create a table matrix widget.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.10
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.10';
 
 =head1 SYNOPSIS
 
     use Tpda3::Tk::TM;
+
+    my $xtvar = {};
+    my $xtable = $frame->Scrolled(
+        'TM',
+        -rows           => 6,
+        -cols           => 1,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -validate       => 1,
+        -variable       => $xtvar,
+        -selectmode     => 'single',
+        -colstretchmode => 'unset',
+        -resizeborders  => 'none',
+        -colstretchmode => 'unset',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
+    );
+    $xtable->pack( -expand => 1, -fill => 'both' );
+
+    $xtable->init($frame, $header);
 
 =head1 METHODS
 
@@ -40,7 +62,7 @@ sub Populate {
 
     $self->SUPER::Populate($args);
 
-    return;
+    return $self;
 }
 
 =head2 init
@@ -552,7 +574,8 @@ sub build_rbbutton {
 
 =head2 get_selected
 
-Get selected table row.
+Return selected table row, Used for tables with embeded radion buttons
+as selectors.
 
 =cut
 
@@ -561,6 +584,13 @@ sub get_selected {
 
     return $self->{tm_sel};
 }
+
+=head2 set_selected
+
+Set row as selected. The value has to be true, for false values set to
+undef. As a consequence it won't set as selected row 0.
+
+=cut
 
 sub set_selected {
     my ($self, $selected_row) = @_;
