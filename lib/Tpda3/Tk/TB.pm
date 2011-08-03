@@ -1,4 +1,4 @@
-package Tpda3::Tk::TTB;
+package Tpda3::Tk::TB;
 
 use strict;
 use warnings;
@@ -6,11 +6,11 @@ use warnings;
 use Tk;
 use base qw{Tk::Derived Tk::ToolBar};
 
-Tk::Widget->Construct('TTB');
+Tk::Widget->Construct('TB');
 
 =head1 NAME
 
-Tpda3::Tk::TTB - Create a toolbar
+Tpda3::Tk::TB - Create a toolbar
 
 =head1 VERSION
 
@@ -22,12 +22,11 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::TTB;
-
+    use Tpda3::Tk::TB;
 
 =head1 METHODS
 
-=head2 new
+=head2 Populate
 
 Constructor method.
 
@@ -194,4 +193,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of Tpda3::Tk::TTB
+1;    # End of Tpda3::Tk::TB

@@ -312,8 +312,30 @@ sub run_screen {
     my $header = $self->{scrcfg}->dep_table_header_info('tm1');
 
     #-- TableMatrix
-    my $xtable = Tpda3::Tk::TM->new($frm_t, $header);
+    # my $xtable = Tpda3::Tk::TM($frm_t, $header);
+
+    my $xtvar1 = {};
+    my $xtable = $frm_t->Scrolled(
+        'TM',
+        -rows           => 6,
+        -cols           => 1,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -validate       => 1,
+        -variable       => $xtvar1,
+        -selectmode     => 'single',
+        -colstretchmode => 'unset',
+        -resizeborders  => 'none',
+        -colstretchmode => 'unset',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
+    );
+
     $xtable->pack( -expand => 1, -fill => 'both' );
+
+    $xtable->init($frm_t, $header);
 
     #- Ordertotal (ordertotal)
 

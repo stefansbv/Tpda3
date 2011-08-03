@@ -10,8 +10,7 @@ use Tpda3::Tk::Entry;
 #use Tpda3::Tk::Text;
 
 use Tpda3::Utils;
-#use Tpda3::Tk::ToolBar;
-use Tpda3::Tk::TTB;
+use Tpda3::Tk::TB;
 
 require Tpda3::Tk::Validation;
 
@@ -155,8 +154,7 @@ buttons.
 sub make_toolbar_for_table {
     my ($self, $tm_ds, $tbf) = @_;
 
-    # $self->{tb}{$tm_ds} = Tpda3::Tk::ToolBar->new($tbf);
-    $self->{tb}{$tm_ds} = $tbf->TTB();
+    $self->{tb}{$tm_ds} = $tbf->TB();
 
     my $attribs  = $self->{scrcfg}->dep_table_toolbars($tm_ds);
 

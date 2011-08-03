@@ -4,10 +4,12 @@ use strict;
 use warnings;
 use Carp;
 
-use Tk;
-use base qw{Tk::TableMatrix};
-
 use Tpda3::Utils;
+
+use Tk;
+use base qw{Tk::Derived Tk::TableMatrix};
+
+Tk::Widget->Construct('TM');
 
 =head1 NAME
 
@@ -27,79 +29,27 @@ our $VERSION = '0.01';
 
 =head1 METHODS
 
-=head2 new
+=head2 Populate
 
 Constructor method.
 
 =cut
 
-sub new {
-    my ( $class, $frame, $args ) = @_;
+sub Populate {
+    my ($self, $args) = @_;
 
-    my $xtvar1 = {};    # must init as hash reference!
+    $self->SUPER::Populate($args);
 
-    #- Frame for TM
-    my $tmxf = $frame->Frame->pack(
-        -expand => 1,
-        -fill   => 'both'
-    );
-
-    #- Create the scrollbars
-
-    my $v_sb = $tmxf->Scrollbar();
-    # my $h_sb = $tmxf->Scrollbar();
-
-    my $self = $class->SUPER::new(
-        $tmxf,
-        -rows           => 6,
-        -cols           => 1,
-        -width          => -1,
-        -height         => -1,
-        -ipadx          => 3,
-        -titlerows      => 1,
-        -validate       => 1,
-        -variable       => $xtvar1,
-        -selectmode     => 'single',
-        -colstretchmode => 'unset',
-        -resizeborders  => 'none',
-        -colstretchmode => 'unset',
-        -bg             => 'white',
-        -yscrollcommand => [ 'set' => $v_sb ]
-    );
-
-    #-- Vertical scrollbar
-
-    $v_sb->configure(
-        # -width   => 10,
-        -orient  => 'v',
-        -command => [ 'yview' => $self ],
-    );
-
-    $v_sb->pack( -side => 'left', -fill => 'y' );
-
-    #-- Horizontal scrollbar
-
-    #  $h_sb->configure(
-    #     -width   => 10,
-    #     -orient  => 'h',
-    #     -command => [ 'xview' => $self ],
-    # );
-    # $h_sb->pack( -side => 'bottom', -fill => 'x' );
-
-    $self->pack( -side => 'left', -fill => 'both', -expand => 1 );
-
-    $self->_init($frame, $args);
-
-    return $self;
+    return;
 }
 
-=head2 _init
+=head2 init
 
 Write header on row 0 of TableMatrix
 
 =cut
 
-sub _init {
+sub init {
     my ($self, $frame, $args) = @_;
 
     $self->{columns}     = $args->{columns};
@@ -114,7 +64,7 @@ sub _init {
     return;
 }
 
-=head2 set_tablematrix_tags
+=head2 set_tags
 
 Set tags for the table matrix.
 

@@ -130,10 +130,30 @@ my $mw = tkinit;
 $mw->geometry("680x200+10+10");
 
 my $tm;
-eval { $tm = Tpda3::Tk::TM->new($mw, $header) };
+my $xtvar = {};
+eval {
+    $tm = $mw->Scrolled(
+        'TM',
+        -rows          => 5,
+        -cols          => 5,
+        -width         => -1,
+        -height        => -1,
+        -ipadx         => 3,
+        -titlerows     => 1,
+        -validate      => 1,
+        -variable      => $xtvar,
+        -selectmode    => 'single',
+        -resizeborders => 'none',
+        -bg            => 'white',
+        -scrollbars    => 'osw',
+    );
+};
+
+is($tm->init($mw, $header), undef, 'make header');
+
 $tm->pack;
 
-ok( $tm->isa('Tpda3::Tk::TM'), 'created Tpda3::Tk::TM instance' );
+# ok( $tm->isa('Tpda3::Tk::TM'), 'created Tpda3::Tk::TM instance' );
 
 my $delay = 1;
 
