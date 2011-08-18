@@ -3,11 +3,15 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger :levels);
 
 use File::HomeDir;
+use File::ShareDir qw(dist_dir);
 use File::UserConfig;
 use File::Spec::Functions;
+use File::Copy::Recursive ();
 
 use Tpda3::Config::Utils;
 
@@ -102,9 +106,13 @@ sub config_main_load {
     my ( $self, $args ) = @_;
 
     my $configpath = File::UserConfig->new(
-        dist     => 'tpda3',
+        dist     => 'Tpda3',
         sharedir => 'share',
     )->configdir;
+
+    # my $ddir = dist_dir('Tpda3'); print "dist dir is $ddir\n";
+    # Find a file in our distribution shared dir
+    # my $fdir = dist_file('Tpda3', 'etc/log.conf');print "log: $fdir\n";
 
     # Log init
     # Can't do before we know the application config path
@@ -196,10 +204,13 @@ because the path is only known at runtime.
 sub config_application_load {
     my ( $self, $args ) = @_;
 
+    my $cf_name = $self->cfname;
+
+    # Need to check early if the config dir for the application exists
+    $self->configdir_check();
+
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->config_app_file_name($section);
-
-        my $cf_name = $self->cfname;
 
         $self->{_log}->info("Loading '$section' config");
         $self->{_log}->trace("file: $cfg_file");
@@ -208,7 +219,7 @@ sub config_application_load {
         $msg .= qq{To create it, run:\n};
         $msg .= qq{% tpda3 -init $cf_name\n};
         $msg .= qq{and Edit the configuration files in: };
-        $msg .= $self->config_app_dir() . qq{\n};
+        $msg .= $self->configdir() . qq{\n};
         my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
@@ -247,13 +258,13 @@ sub config_app_file_name {
     return $fl;
 }
 
-=head2 config_app_dir
+=head2 configdir
 
 Return application configuration directory.
 
 =cut
 
-sub config_app_dir {
+sub configdir {
     my $self = shift;
 
     return catdir( $self->cfapps, $self->cfname );
@@ -428,6 +439,59 @@ sub config_init {
     Tpda3::Config::Utils->copy_files($menu_tmpl_qn, $cfg_path_etc);
 
     print "done.\n";
+
+    return;
+}
+
+=head2 configdir_make
+
+Create application configuration paths: I<etc> and I<scr>.
+
+=cut
+
+sub configdir_make {
+    my $self = shift;
+
+    my $cfg_path_etc = catdir( $self->cfapps, $self->cfname, 'etc');
+    Tpda3::Config::Utils->create_path($cfg_path_etc);
+
+    my $cfg_path_scr = catdir( $self->cfapps, $self->cfname, 'scr');
+    Tpda3::Config::Utils->create_path($cfg_path_scr);
+
+    return;
+}
+
+=head2 sharedir
+
+Returns the share directory for the current application configuration.
+
+=cut
+
+sub sharedir {
+    my $self = shift;
+
+    return catdir( dist_dir('Tpda3'), 'apps', $self->cfname );
+}
+
+=head2 configdir_check
+
+
+
+=cut
+
+sub configdir_check {
+    my $self = shift;
+
+    if ( !-d $self->configdir ) {
+        print "Making config directory '", $self->configdir, "'\n";
+
+        $self->configdir_make();
+
+        # Stolen from File::UserConfig ;)
+        File::Copy::Recursive::dircopy( $self->sharedir, $self->configdir )
+          or Carp::croak( "Failed to copy user data to " . $self->configdir );
+        print "Copying user data to ", $self->configdir, "\n";
+    }
 
     return;
 }

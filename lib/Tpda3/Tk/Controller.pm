@@ -2702,8 +2702,10 @@ sub tmatrix_get_selected {
     my $self = shift;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+
     my $sc;
-    if ( ref($tmx->Subwidget) eq 'Tpda3::Tk::TM' ) {
+# How to check if is a TM?
+    if ( $tmx->isa('Tk::Frame') ) {
         $sc = $tmx->get_selected();
     }
 
@@ -2720,7 +2722,8 @@ sub tmatrix_set_selected {
     my ($self, $row) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-    if ( ref($tmx->Subwidget) eq 'Tpda3::Tk::TM' ) {
+# How to check if is a TM?
+    if ( $tmx->isa('Tk::Frame') ) {
         $tmx->set_selected($row);
     }
 

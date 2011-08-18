@@ -30,7 +30,7 @@ use_ok('Tpda3::Tk::App::Test::Customers');
 
 my $args = {
     cfname => 'test-tk',
-    user   => 'user',
+    user   => $ENV{USER},
     pass   => 'pass',
 };
 
