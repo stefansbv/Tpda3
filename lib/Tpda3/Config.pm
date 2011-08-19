@@ -206,8 +206,12 @@ sub config_application_load {
 
     my $cf_name = $self->cfname;
 
-    # Need to check early if the config dir for the application exists
-    $self->configdir_check();
+    # Check early if the config dir for the application exists
+    # and create and populate with defaults if not.
+    if ( !-d $self->configdir ) {
+        $self->configdir_make();
+        $self->configdir_populate();
+    }
 
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->config_app_file_name($section);
@@ -256,18 +260,6 @@ sub config_app_file_name {
     #    print "$section: config_app_file_name is $fl \n";
 
     return $fl;
-}
-
-=head2 configdir
-
-Return application configuration directory.
-
-=cut
-
-sub configdir {
-    my $self = shift;
-
-    return catdir( $self->cfapps, $self->cfname );
 }
 
 =head2 config_file_name
@@ -400,65 +392,47 @@ sub config_load_instance {
 
 =head2 config_init
 
-Create new connection configuration directory and install new
-configuration file(s) from the template(s).
+Create new connection configuration directory and install
+configuration file(s) from defaults found in the application's
+I<share> directory.
+
+It won't overwrite an existing directory.
 
 =cut
 
 sub config_init {
-    my ( $self, $cfg_name ) = @_;
+    my ( $self, $cfname, $new_cfname ) = @_;
 
-    my $cfg_file = $self->config_file_name($cfg_name);
+    my $cfg_file = $self->config_file_name($new_cfname);
     if ( -f $cfg_file ) {
         print "Connection configuration exists, can't overwrite.\n";
-        print " > $cfg_name\n";
+        print " > $new_cfname\n";
         return;
     }
     else {
-        print "Creating new configs '$cfg_name' .. ";
+        print "Creating new configs '$new_cfname' .. ";
     }
 
-    # Create application config paths
-    my $cfg_path_etc = catdir( $self->cfapps, $cfg_name, 'etc');
-    Tpda3::Config::Utils->create_path($cfg_path_etc);
-    my $cfg_path_scr = catdir( $self->cfapps, $cfg_name, 'scr');
-    Tpda3::Config::Utils->create_path($cfg_path_scr);
-
-    #-- Install templates
-
-    #- Application
-    my $app_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{apptmpl} );
-    Tpda3::Config::Utils->copy_files($app_tmpl_qn, $cfg_path_etc);
-
-    #- Connection
-    my $conn_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{conntmpl} );
-    Tpda3::Config::Utils->copy_files($conn_tmpl_qn, $cfg_path_etc);
-
-    #- Menu
-    my $menu_tmpl_qn = catfile( $self->cfpath, $self->cfgen->{menutmpl} );
-    Tpda3::Config::Utils->copy_files($menu_tmpl_qn, $cfg_path_etc);
+    $self->configdir_make($new_cfname);
+    $self->configdir_populate($cfname, $new_cfname);
 
     print "done.\n";
 
     return;
 }
 
-=head2 configdir_make
+=head2 configdir
 
-Create application configuration paths: I<etc> and I<scr>.
+Return application configuration directory.
 
 =cut
 
-sub configdir_make {
-    my $self = shift;
+sub configdir {
+    my ($self, $cfname) = @_;
 
-    my $cfg_path_etc = catdir( $self->cfapps, $self->cfname, 'etc');
-    Tpda3::Config::Utils->create_path($cfg_path_etc);
+    $cfname ||= $self->cfname;
 
-    my $cfg_path_scr = catdir( $self->cfapps, $self->cfname, 'scr');
-    Tpda3::Config::Utils->create_path($cfg_path_scr);
-
-    return;
+    return catdir( $self->cfapps, $cfname );
 }
 
 =head2 sharedir
@@ -468,30 +442,42 @@ Returns the share directory for the current application configuration.
 =cut
 
 sub sharedir {
-    my $self = shift;
+    my ($self, $cfname) = @_;
 
-    return catdir( dist_dir('Tpda3'), 'apps', $self->cfname );
+    $cfname ||= $self->cfname;
+
+    return catdir( dist_dir('Tpda3'), 'apps', $cfname );
 }
 
-=head2 configdir_check
+=head2 configdir_make
 
-
+Create application configuration paths: I<etc> and I<scr>.
 
 =cut
 
-sub configdir_check {
-    my $self = shift;
+sub configdir_make {
+    my ($self, $cfname) = @_;
 
-    if ( !-d $self->configdir ) {
-        print "Making config directory '", $self->configdir, "'\n";
+    $cfname ||= $self->cfname;
 
-        $self->configdir_make();
+    my $cfg_path_etc = catdir( $self->cfapps, $cfname, 'etc');
+    Tpda3::Config::Utils->create_path($cfg_path_etc);
 
-        # Stolen from File::UserConfig ;)
-        File::Copy::Recursive::dircopy( $self->sharedir, $self->configdir )
-          or Carp::croak( "Failed to copy user data to " . $self->configdir );
-        print "Copying user data to ", $self->configdir, "\n";
-    }
+    my $cfg_path_scr = catdir( $self->cfapps, $cfname, 'scr');
+    Tpda3::Config::Utils->create_path($cfg_path_scr);
+
+    return;
+}
+
+sub configdir_populate {
+    my ($self, $cfname, $new_cfname) = @_;
+
+    my $configdir = $self->configdir($new_cfname);
+    my $sharedir  = $self->sharedir($cfname);
+
+    # Stolen from File::UserConfig ;)
+    File::Copy::Recursive::dircopy( $sharedir, $configdir )
+          or Carp::croak( "Failed to copy user data to " . $configdir );
 
     return;
 }
