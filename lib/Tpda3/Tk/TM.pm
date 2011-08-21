@@ -41,7 +41,6 @@ our $VERSION = '0.10';
         -selectmode     => 'single',
         -colstretchmode => 'unset',
         -resizeborders  => 'none',
-        -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
     );
@@ -603,6 +602,18 @@ sub set_selected {
     }
 
     return;
+}
+
+=head2 get_selector
+
+Return selector column.
+
+=cut
+
+sub get_selector {
+    my $self = shift;
+
+    return $self->{selectorcol};
 }
 
 =head1 AUTHOR
