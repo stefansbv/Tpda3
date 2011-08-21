@@ -1,8 +1,7 @@
 #
 # Tpda3::Config test script
 #
-# From Class::Singleton test script
-#   by Andy Wardley <abw@wardley.org>
+# Inspired from the Class::Singleton test script by Andy Wardley
 
 use strict;
 use warnings;
