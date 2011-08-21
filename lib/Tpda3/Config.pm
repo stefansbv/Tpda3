@@ -469,6 +469,12 @@ sub configdir_make {
     return;
 }
 
+=head2 configdir_populate
+
+Copy configuration files to the application configuration paths.
+
+=cut
+
 sub configdir_populate {
     my ($self, $cfname, $new_cfname) = @_;
 
