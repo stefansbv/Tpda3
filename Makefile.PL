@@ -55,6 +55,8 @@ recommends 'DBD::Pg'                  => '1.32';
 
 test_requires 'Test::More'            => '0.47';
 test_requires 'DBD::SQLite'           => '1.29';
+test_requires 'Test::Pod::Coverage'   => '0';
+test_requires 'Test::CheckManifest'   => '0';
 
 install_share  'share';
 install_script 'bin/tpda3';

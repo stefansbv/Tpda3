@@ -71,7 +71,7 @@ sub new {
     return $self;
 }
 
-=head2 _init_cfg_data
+=head2 _init_cfgdata
 
 Prepare configuration data for the I<column_name_from_idx> sub.  Data
 is a hashref with column names as keys and column index as values.
@@ -103,7 +103,7 @@ sub column_name_from_idx {
     return $self->{$tm_ds}{$col_idx};
 }
 
-=head2 column_attribs
+=head2 maintable_attribs
 
 Return column attributes for I<type>, I<width> and I<place>, from the
 screen configuration, for the main table.
@@ -118,7 +118,7 @@ sub maintable_attribs {
     return @{$table_cfg}{ qw(validation width places) }; # hash slice
 }
 
-=head2 column_attribs
+=head2 deptable_attribs
 
 Return column attributes for I<type>, I<width> and I<place>, from the
 screen configuration, for the dependent table(s).
@@ -151,7 +151,7 @@ sub validate_entry {
     return $self->validate( $type, $p1, $width, $places );
 }
 
-=head2 validate_table
+=head2 validate_table_cell
 
 Entry validation for tables.
 

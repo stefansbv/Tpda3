@@ -747,7 +747,7 @@ sub _check_app_menus {
     return;
 }
 
-=head2 setup_lookup_bindings
+=head2 setup_lookup_bindings_entry
 
 Creates widget bindings that use the L<Tpda3::Tk::Dialog::Search>
 module to look-up value key translations from a table and put them in
@@ -1801,6 +1801,12 @@ sub screen_module_detail_load {
     return;
 }
 
+=head2 screen_string
+
+Return a lower case string of the current screen module name.
+
+=cut
+
 sub screen_string {
     my ($self, $page) = @_;
 
@@ -2780,7 +2786,7 @@ sub toggle_mode_add {
     return;
 }
 
-=head2 controls_rec_state_set
+=head2 controls_state_set
 
 Toggle all controls state from I<Screen>.
 
@@ -3105,6 +3111,12 @@ sub record_load {
     return;
 }
 
+=head2 event_record_delete
+
+Ask user if really wants to delete the record and proceed accordingly.
+
+=cut
+
 sub event_record_delete {
     my $self = shift;
 
@@ -3247,6 +3259,13 @@ sub ask_to_save {
     return 1;
 }
 
+=head2 ask_to
+
+Create a custom dialog to ask the user confirmation about the current
+action.
+
+=cut
+
 sub ask_to {
     my ($self, $for_action) = @_;
 
@@ -3300,7 +3319,7 @@ sub ask_to {
     }
 }
 
-=head2
+=head2 record_save
 
 Save record.  Different procedures for different modes.
 
@@ -3698,13 +3717,23 @@ sub restore_screendata {
     return 1;
 }
 
-#-- PK
+=head2 screen_get_pk_col
+
+Return primary key column name for the current screen.
+
+=cut
 
 sub screen_get_pk_col {
     my $self = shift;
 
     return $self->scrcfg('rec')->main_table_pkcol();
 }
+
+=head2 screen_set_pk_col
+
+Store primary key column name for the current screen.
+
+=cut
 
 sub screen_set_pk_col {
     my $self = shift;
@@ -3721,6 +3750,12 @@ sub screen_set_pk_col {
     return;
 }
 
+=head2 screen_set_pk_val
+
+Store primary key column value for the current screen.
+
+=cut
+
 sub screen_set_pk_val {
     my ($self, $pk_val) = @_;
 
@@ -3736,6 +3771,12 @@ sub screen_set_pk_val {
     return;
 }
 
+=head2 screen_get_pk_val
+
+Return primary key column value for the current screen.
+
+=cut
+
 sub screen_get_pk_val {
     my $self = shift;
 
@@ -3744,7 +3785,11 @@ sub screen_get_pk_val {
     return $self->{_tblkeys}{$pk_col};
 }
 
-#-- FK
+=head2 screen_get_fk_col
+
+Return foreign key column name for the current screen.
+
+=cut
 
 sub screen_get_fk_col {
     my ($self, $page) = @_;
@@ -3753,6 +3798,12 @@ sub screen_get_fk_col {
 
     return $self->scrcfg($page)->main_table_fkcol();
 }
+
+=head2 screen_set_fk_col
+
+Store foreign key column name for the current screen.
+
+=cut
 
 sub screen_set_fk_col {
     my $self = shift;
@@ -3766,6 +3817,12 @@ sub screen_set_fk_col {
     return;
 }
 
+=head2 screen_set_fk_val
+
+Store foreign key column value for the current screen.
+
+=cut
+
 sub screen_set_fk_val {
     my ($self, $fk_val) = @_;
 
@@ -3777,6 +3834,12 @@ sub screen_set_fk_val {
 
     return;
 }
+
+=head2 screen_get_fk_val
+
+Return foreign key column value for the current screen.
+
+=cut
 
 sub screen_get_fk_val {
     my $self = shift;

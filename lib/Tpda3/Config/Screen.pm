@@ -3,8 +3,6 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
@@ -27,9 +25,7 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
+Load the screen configuration.
 
     use Tpda3::Config::Screen;
 
@@ -119,11 +115,23 @@ sub config_scr_file_name {
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
 }
 
+=head2 screen_detail
+
+Return details screen data structure.
+
+=cut
+
 sub screen_detail {
     my $self = shift;
 
     return $self->screen->{details};
 }
+
+=head2 has_screen_detail
+
+Return true if the main screen has details screen.
+
+=cut
 
 sub has_screen_detail {
     my $self = shift;
@@ -139,7 +147,7 @@ sub has_screen_detail {
 
 =head2 main_table
 
-Return main table configurations data structure.
+Return the main table configuration data structure.
 
 =cut
 
@@ -149,11 +157,23 @@ sub main_table {
     return $self->maintable if $self->can('maintable');
 }
 
+=head2 main_table_name
+
+Return the main table name.
+
+=cut
+
 sub main_table_name {
     my $self = shift;
 
     return $self->main_table->{name};
 }
+
+=head2 main_table_view
+
+Return the main table view name.
+
+=cut
 
 sub main_table_view {
     my $self = shift;
@@ -161,11 +181,23 @@ sub main_table_view {
     return $self->main_table->{view};
 }
 
+=head2 main_table_pkcol
+
+Return the main table primary key column name.
+
+=cut
+
 sub main_table_pkcol {
     my $self = shift;
 
     return $self->main_table->{pkcol}{name};
 }
+
+=head2 main_table_fkcol
+
+Return the main table foreign key column name.
+
+=cut
 
 sub main_table_fkcol {
     my $self = shift;
@@ -177,11 +209,24 @@ sub main_table_fkcol {
     return;
 }
 
+=head2 main_table_columns
+
+Return the main table columns configuration data structure.
+
+=cut
+
 sub main_table_columns {
     my $self = shift;
 
     return $self->main_table->{columns};
 }
+
+=head2 main_table_column
+
+Return a column from the main table columns configuration data
+structure.
+
+=cut
 
 sub main_table_column {
     my ($self, $column) = @_;
@@ -189,13 +234,24 @@ sub main_table_column {
     return $self->main_table_columns->{$column};
 }
 
+=head2 main_table_column_attr
+
+Return a column attribute from the main table columns configuration
+data structure.
+
+=cut
+
 sub main_table_column_attr {
     my ($self, $column, $attr) = @_;
 
     return $self->main_table_column($column)->{$attr};
 }
 
-#---
+=head2 dep_table
+
+Return the dependent table configuration data structure.
+
+=cut
 
 sub dep_table {
     my ($self, $tm_ds) = @_;
@@ -203,11 +259,23 @@ sub dep_table {
     return $self->deptable->{$tm_ds} if $self->can('deptable');
 }
 
+=head2 dep_table_name
+
+Return the dependent table name.
+
+=cut
+
 sub dep_table_name {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{name};
 }
+
+=head2 dep_table_view
+
+Return the dependent table view name.
+
+=cut
 
 sub dep_table_view {
     my ($self, $tm_ds) = @_;
@@ -215,17 +283,36 @@ sub dep_table_view {
     return $self->dep_table($tm_ds)->{view};
 }
 
+=head2 dep_table_updatestyle
+
+Return the dependent table I<update style> attribute.
+
+=cut
+
 sub dep_table_updatestyle {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{updatestyle};
 }
 
+=head2 dep_table_selectorcol
+
+Return the dependent table I<selector column> attribute.
+
+=cut
+
 sub dep_table_selectorcol {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{selectorcol};
 }
+
+=head2 dep_table_has_selectorcol
+
+Return true if the dependent table has I<selector column> attribute
+set.
+
+=cut
 
 sub dep_table_has_selectorcol {
     my ($self, $tm_ds) = @_;
@@ -237,11 +324,23 @@ sub dep_table_has_selectorcol {
     return $sc;
 }
 
+=head2 dep_table_orderby
+
+Return the dependent table I<order by> attribute.
+
+=cut
+
 sub dep_table_orderby {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{orderby};
 }
+
+=head2 dep_table_colstretch
+
+Return the dependent table I<colstretch> attribute.
+
+=cut
 
 sub dep_table_colstretch {
     my ($self, $tm_ds) = @_;
@@ -249,11 +348,23 @@ sub dep_table_colstretch {
     return $self->dep_table($tm_ds)->{colstretch};
 }
 
+=head2 dep_table_pkcol
+
+Return the dependent table primary key column name.
+
+=cut
+
 sub dep_table_pkcol {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{pkcol}{name};
 }
+
+=head2 dep_table_fkcol
+
+Return the dependent table foreign key column name.
+
+=cut
 
 sub dep_table_fkcol {
     my ($self, $tm_ds) = @_;
@@ -261,11 +372,25 @@ sub dep_table_fkcol {
     return $self->dep_table($tm_ds)->{fkcol}{name};
 }
 
+=head2 dep_table_columns
+
+Return the dependent table columns configuration data structure bound
+to the related Tk::TableMatrix widget.
+
+=cut
+
 sub dep_table_columns {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{columns};
 }
+
+=head2 dep_table_column
+
+Return a column from the dependent table columns configuration data
+structure bound to the related Tk::TableMatrix widget.
+
+=cut
 
 sub dep_table_column {
     my ($self, $tm_ds, $column) = @_;
@@ -273,17 +398,39 @@ sub dep_table_column {
     return $self->dep_table_columns($tm_ds)->{$column};
 }
 
+=head2 dep_table_column_attr
+
+Return a column attribute from the dependent table columns
+configuration data structure bound to the related Tk::TableMatrix
+widget.
+
+=cut
+
 sub dep_table_column_attr {
     my ($self, $tm_ds, $column, $attr) = @_;
 
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
 
+=head2 dep_table_toolbars
+
+Return the toolbar configuration data structure bound to the related
+Tk::TableMatrix widget.
+
+=cut
+
 sub dep_table_toolbars {
     my ($self, $tm_ds) = @_;
 
     return $self->dep_table($tm_ds)->{toolbar};
 }
+
+=head2 dep_table_header_info
+
+Return the table header configuration data structure bound to the
+related Tk::TableMatrix widget.
+
+=cut
 
 sub dep_table_header_info {
     my ($self, $tm_ds) = @_;

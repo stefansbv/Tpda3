@@ -3,12 +3,10 @@ package Tpda3::Tk::Text;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use base qw(Tk::Text);
 
-Construct Tk::Widget 'Text';
+Construct Tk::Widget 'TT';
 
 =head1 NAME
 

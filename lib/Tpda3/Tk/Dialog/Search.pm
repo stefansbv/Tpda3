@@ -14,11 +14,11 @@ Tpda3::Tk::Dialog::Search - Dialog for dictionary search
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -42,9 +42,9 @@ sub new {
     return bless( {}, $class );
 }
 
-=head2 search
+=head2 search_dialog
 
-Show dialog
+Define and show search dialog.
 
 =cut
 
@@ -315,7 +315,7 @@ sub search_dialog {
 
 =head2 search_command
 
-Lookup in dictionary and display result in list box
+Lookup in dictionary and display result in list box.
 
 =cut
 
@@ -367,7 +367,7 @@ sub search_command {
 
 =head2 refresh_message
 
-Refresh the message on the screen
+Refresh the message on the screen.
 
 =cut
 

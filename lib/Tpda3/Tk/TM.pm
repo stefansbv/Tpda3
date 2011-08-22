@@ -201,6 +201,12 @@ sub set_tags {
     return;
 }
 
+=head2 clear_all
+
+Clear all data from the Tk::TableMatrix widget, but preserve the header.
+
+=cut
+
 sub clear_all {
     my $self = shift;
 
@@ -474,6 +480,12 @@ sub remove_row {
 
     return;
 }
+
+=head2 get_active_row
+
+Return the active row.
+
+=cut
 
 sub get_active_row {
     my $self = shift;

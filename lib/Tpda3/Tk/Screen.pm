@@ -165,6 +165,12 @@ sub make_toolbar_for_table {
     return;
 }
 
+=head2 tmatrix_add_row
+
+Add new row to the Tk::TableMatrix widget.
+
+=cut
+
 sub tmatrix_add_row {
     my ($self, $tm_ds, $controller) = @_;
 
@@ -174,6 +180,12 @@ sub tmatrix_add_row {
 
     return;
 }
+
+=head2 tmatrix_remove_row
+
+Remove row to the Tk::TableMatrix widget.
+
+=cut
 
 sub tmatrix_remove_row {
     my ($self, $tm_ds, $controller) = @_;

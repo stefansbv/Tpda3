@@ -660,11 +660,23 @@ sub destroy_notebook {
     return;
 }
 
+=head2 get_nb_current_page
+
+Return the current page of the Tk::NoteBook widget.
+
+=cut
+
 sub get_nb_current_page {
     my $self = shift;
 
     return $self->get_notebook->raised();
 }
+
+=head2 notebook_page_clean
+
+Clean a page of the Tk::NoteBook widget, remove all child widgets.
+
+=cut
 
 sub notebook_page_clean {
     my ($self, $page) = @_;

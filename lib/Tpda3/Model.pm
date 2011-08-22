@@ -51,7 +51,6 @@ sub new {
         _stdout      => Tpda3::Observable->new(),
         _appmode     => Tpda3::Observable->new(),
         _scrdata_rec => Tpda3::Observable->new(),
-        _scrdata_det => Tpda3::Observable->new(),
         _cfg         => Tpda3::Config->instance(),
     };
 
@@ -244,7 +243,11 @@ sub get_appmode {
 
 =head2 set_scrdata_rec
 
-Set scrdata_rec
+Set screen data status for the I<rec> tab.
+
+ false = loaded
+ true  = modified
+ undef = unloaded
 
 =cut
 
@@ -256,6 +259,16 @@ sub set_scrdata_rec {
     return;
 }
 
+=head2 unset_scrdata_rec
+
+Clear data status for the I<rec> tab.
+
+ false = loaded
+ true  = modified
+ undef = unloaded *
+
+=cut
+
 sub unset_scrdata_rec {
     my $self = shift;
 
@@ -266,7 +279,7 @@ sub unset_scrdata_rec {
 
 =head2 get_scrdata_rec_observable
 
-Return add mode observable status
+Return screen data status for the I<rec> tab.
 
 =cut
 
@@ -711,7 +724,7 @@ sub table_record_delete {
     return;
 }
 
-=head2 store_record
+=head2 store_record_insert
 
 Inserts a record.
 
