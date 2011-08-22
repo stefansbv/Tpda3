@@ -127,7 +127,7 @@ my $record = [
 ];
 
 my $mw = tkinit;
-$mw->geometry("680x200+10+10");
+$mw->geometry('+20+20');
 
 my $tm;
 my $xtvar = {};

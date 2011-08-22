@@ -206,10 +206,9 @@ sub config_application_load {
 
     my $cf_name = $self->cfname;
 
-    # Check early if the config dir for the application exists
-    # and create and populate with defaults if not.
+    # Check early if the config dir for the application exists and
+    # populate with defaults if not.
     if ( !-d $self->configdir ) {
-        $self->configdir_make();
         $self->configdir_populate();
     }
 
@@ -447,26 +446,6 @@ sub sharedir {
     $cfname ||= $self->cfname;
 
     return catdir( dist_dir('Tpda3'), 'apps', $cfname );
-}
-
-=head2 configdir_make
-
-Create application configuration paths: I<etc> and I<scr>.
-
-=cut
-
-sub configdir_make {
-    my ($self, $cfname) = @_;
-
-    $cfname ||= $self->cfname;
-
-    my $cfg_path_etc = catdir( $self->cfapps, $cfname, 'etc');
-    Tpda3::Config::Utils->create_path($cfg_path_etc);
-
-    my $cfg_path_scr = catdir( $self->cfapps, $cfname, 'scr');
-    Tpda3::Config::Utils->create_path($cfg_path_scr);
-
-    return;
 }
 
 =head2 configdir_populate

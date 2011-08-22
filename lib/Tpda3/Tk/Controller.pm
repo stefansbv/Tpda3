@@ -3334,7 +3334,6 @@ sub record_save {
         my $answer = $self->ask_to('save_insert');
 
         return if $answer eq 'cancel';
-        print "answer is $answer\n";
 
         $self->record_save_insert($record) if $answer eq 'yes';
 
@@ -3356,6 +3355,9 @@ sub record_save {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
         return;
     }
+
+    # Save record as witness reference for comparison
+    $self->save_screendata( $self->storable_file_name('orig') );
 
     $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
                                        # undef = unloaded
