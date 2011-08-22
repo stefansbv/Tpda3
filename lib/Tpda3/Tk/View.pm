@@ -216,7 +216,7 @@ sub set_geometry_main {
         $geom = $self->_cfg->geometry->{'main'};
     }
     else {
-        $geom = '492x80+100+100';            # default
+        $geom = '492x80+20+20';              # default
     }
 
     $self->geometry($geom);

@@ -10,6 +10,7 @@ use Tk;
 use Tk::Font;
 use Tk::DialogBox;
 
+use Scalar::Util qw(blessed);
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
@@ -2704,8 +2705,7 @@ sub tmatrix_get_selected {
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
 
     my $sc;
-# How to check if is a TM?
-    if ( $tmx->isa('Tk::Frame') ) {
+    if ( blessed $tmx ) {
         $sc = $tmx->get_selected();
     }
 
@@ -2722,8 +2722,8 @@ sub tmatrix_set_selected {
     my ($self, $row) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-# How to check if is a TM?
-    if ( $tmx->isa('Tk::Frame') ) {
+
+    if ( blessed $tmx ) {
         $tmx->set_selected($row);
     }
 
