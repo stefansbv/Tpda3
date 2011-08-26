@@ -110,10 +110,6 @@ sub config_main_load {
         sharedir => 'share',
     )->configdir;
 
-    # my $ddir = dist_dir('Tpda3'); print "dist dir is $ddir\n";
-    # Find a file in our distribution shared dir
-    # my $fdir = dist_file('Tpda3', 'etc/log.conf');print "log: $fdir\n";
-
     # Log init
     # Can't do before we know the application config path
     my $log_qfn = catfile( $configpath, 'etc/log.conf' );
@@ -209,7 +205,7 @@ sub config_application_load {
     # Check early if the config dir for the application exists and
     # populate with defaults if not.
     if ( !-d $self->configdir ) {
-        $self->configdir_populate();
+        $self->configdir_populate($cf_name);
     }
 
     foreach my $section ( keys %{ $self->cfapp } ) {
@@ -459,6 +455,15 @@ sub configdir_populate {
 
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname);
+
+    # Alternate share directory
+    if ( !-d $sharedir ) {
+        $sharedir = dist_dir('Tpda3-' . ucfirst $cfname);
+        $sharedir = catdir($sharedir, 'apps', $cfname);
+    }
+
+    $self->{_log}->info("Config dir is '$configdir'");
+    $self->{_log}->info("Share dir is '$sharedir'");
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
