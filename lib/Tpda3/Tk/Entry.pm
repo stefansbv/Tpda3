@@ -3,8 +3,6 @@ package Tpda3::Tk::Entry;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk;
 use base qw(Tk::Entry);
 

@@ -3,8 +3,6 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Tk::widgets qw(DateEntry JComboBox); #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
