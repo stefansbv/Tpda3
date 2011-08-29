@@ -69,7 +69,7 @@ sub _connect {
     my $db;
     $log->trace("Database driver is $driver");
 
-  SWITCH: for ( $driver ) {
+SWITCH: for ($driver) {
         /^$/x && do warn "No driver name?\n";
         /firebird/xi && do {
             require Tpda3::Db::Connection::Firebird;
@@ -91,13 +91,14 @@ sub _connect {
             $db = Tpda3::Db::Connection::Sqlite->new();
             last SWITCH;
         };
+
         # Default
         warn "Database $driver not supported!\n";
         return;
     }
 
     $self->{dbc} = $db;
-    $self->{dbh} = $db->db_connect( $conf );
+    $self->{dbh} = $db->db_connect($conf);
 
     return;
 }
@@ -160,4 +161,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Db::Connection
+1;    # End of Tpda3::Db::Connection

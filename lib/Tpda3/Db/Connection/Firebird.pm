@@ -54,7 +54,7 @@ Connect to database
 =cut
 
 sub db_connect {
-    my ($self, $conf) = @_;
+    my ( $self, $conf ) = @_;
 
     my $log = get_logger();
 
@@ -67,16 +67,16 @@ sub db_connect {
     try {
         $self->{_dbh} = DBI->connect(
             "dbi:InterBase:"
-              . "dbname="
-              . $conf->{dbname}
-              . ";host="
-              . $conf->{host}
-              . ";port="
-              . $conf->{port}
-              . ";ib_dialect=3",
-            $conf->{user}, $conf->{pass},
-            {
-                FetchHashKeyName => 'NAME_lc',
+                . "dbname="
+                . $conf->{dbname}
+                . ";host="
+                . $conf->{host}
+                . ";port="
+                . $conf->{port}
+                . ";ib_dialect=3",
+            $conf->{user},
+            $conf->{pass},
+            {   FetchHashKeyName => 'NAME_lc',
                 AutoCommit       => 1,
                 RaiseError       => 1,
                 PrintError       => 0,
@@ -86,9 +86,9 @@ sub db_connect {
     }
     catch {
         $log->fatal("Transaction aborted: $_")
-          or print STDERR "$_\n";
+            or print STDERR "$_\n";
 
-          # exit 1;
+        # exit 1;
     };
 
     ## Date format
@@ -267,4 +267,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Db::Connection::Firebird
+1;    # End of Tpda3::Db::Connection::Firebird

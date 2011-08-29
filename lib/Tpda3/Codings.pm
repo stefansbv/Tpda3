@@ -64,11 +64,12 @@ Add the default value defined in configuration, if not exists in table.
 =cut
 
 sub get_coding_init {
-    my ($self, $field, $para) = @_;
+    my ( $self, $field, $para ) = @_;
 
-    if ( ! exists $self->{_code}{ $field } ) {
+    if ( !exists $self->{_code}{$field} ) {
+
         # Query database table
-        $self->{_code}{ $field } = $self->tbl_dict_query($para);
+        $self->{_code}{$field} = $self->tbl_dict_query($para);
     }
 
     if (   $para->{default} =~ m{null}i
@@ -76,14 +77,14 @@ sub get_coding_init {
     {
 
         # Add and empty option
-        unshift @{ $self->{_code}{ $field } },
-          {
+        unshift @{ $self->{_code}{$field} },
+            {
             -name  => ' ',
             -value => ' ',
-          };
+            };
     }
 
-    return $self->{_code}{ $field };
+    return $self->{_code}{$field};
 }
 
 =head2 get_coding
@@ -93,7 +94,7 @@ Return codes.
 =cut
 
 sub get_coding {
-    my ($self, $field, $val) = @_;
+    my ( $self, $field, $val ) = @_;
 
     return $self->{_code}{$field}{$val};
 }
@@ -131,10 +132,10 @@ TODO: Change the field names
 =cut
 
 sub tbl_dict_query {
-    my ($self, $para) = @_;
+    my ( $self, $para ) = @_;
 
     my $where;
-    if ($para->{table} eq 'codificari') {
+    if ( $para->{table} eq 'codificari' ) {
         $where->{variabila} = $para->{field};
     }
 
@@ -149,7 +150,7 @@ sub tbl_dict_query {
     # print "SQL : $stmt\n";
     # print "bind: @bind\n";
 
-    my @dictrows;#    my $rez;
+    my @dictrows;    #    my $rez;
     try {
 
         # Batch fetching
@@ -162,12 +163,13 @@ sub tbl_dict_query {
         }
 
         while ( my $row_rf = $sth->fetchrow_arrayref() ) {
+
             # JComboBox specific data structure
             push @dictrows, { -name => $row_rf->[1], -value => $row_rf->[0] };
         }
     }
     catch {
-        print("Database error!") ;
+        print("Database error!");
         croak("Transaction aborted: $_");
     };
 

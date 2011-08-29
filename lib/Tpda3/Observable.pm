@@ -168,4 +168,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Observable
+1;    # End of Tpda3::Observable

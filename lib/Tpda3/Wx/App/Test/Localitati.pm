@@ -37,29 +37,32 @@ The screen layout
 sub run_screen {
     my ( $self, $inreg_p ) = @_;
 
-    my $gui     = $inreg_p->GetGrandParent;
-    my $main_p  = $inreg_p->GetParent;
+    my $gui    = $inreg_p->GetGrandParent;
+    my $main_p = $inreg_p->GetParent;
     $self->{bg} = $inreg_p->GetBackgroundColour();
 
     my $lcod_p = Wx::StaticText->new( $inreg_p, -1, 'Cod', );
-    my $ecod_p =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $ecod_p
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $llocalitate = Wx::StaticText->new( $inreg_p, -1, 'Localitate', );
-    my $elocalitate =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $elocalitate
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $ljudet = Wx::StaticText->new( $inreg_p, -1, 'Judet', );
-    my $ejudet =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $ejudet
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $lid_judet = Wx::StaticText->new( $inreg_p, -1, 'Cod judet', );
-    my $eid_judet =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $eid_judet
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    my $tprim_adresa =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, 40 ],
-                           wxTE_MULTILINE, );
+    my $tprim_adresa = Wx::TextCtrl->new(
+        $inreg_p, -1, q{},
+        [ -1, -1 ],
+        [ -1, 40 ],
+        wxTE_MULTILINE,
+    );
 
     #--- Layout
 
@@ -67,23 +70,22 @@ sub run_screen {
 
     #-- Middle
 
-    my $loco_mid_sz =
-      Wx::StaticBoxSizer->new(
+    my $loco_mid_sz = Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $inreg_p, -1, ' Localitate ', ), wxVERTICAL, );
 
     my $loco_mid_fgs = Wx::FlexGridSizer->new( 2, 2, 5, 10 );
 
-    $loco_mid_fgs->Add( $lcod_p, 0, wxTOP | wxLEFT,  5 );
-    $loco_mid_fgs->Add( $ecod_p,    0, wxEXPAND | wxTOP, 5 );
+    $loco_mid_fgs->Add( $lcod_p, 0, wxTOP | wxLEFT,   5 );
+    $loco_mid_fgs->Add( $ecod_p, 0, wxEXPAND | wxTOP, 5 );
 
     $loco_mid_fgs->Add( $llocalitate, 0, wxLEFT,   5 );
     $loco_mid_fgs->Add( $elocalitate, 0, wxEXPAND, 0 );
 
     $loco_mid_fgs->Add( $ljudet, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $ejudet,   0, wxEXPAND, 0 );
+    $loco_mid_fgs->Add( $ejudet, 0, wxEXPAND, 0 );
 
     $loco_mid_fgs->Add( $lid_judet, 0, wxLEFT,   5 );
-    $loco_mid_fgs->Add( $eid_judet,    0, wxEXPAND, 0 );
+    $loco_mid_fgs->Add( $eid_judet, 0, wxEXPAND, 0 );
 
     #- Layout
 
@@ -92,10 +94,10 @@ sub run_screen {
 
     #-- Bottom
 
-    my $loco_bot_sz =
-      Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $inreg_p, -1, ' Adresa primarie ', ),
-        wxVERTICAL, );
+    my $loco_bot_sz
+        = Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new( $inreg_p, -1, ' Adresa primarie ', ), wxVERTICAL,
+        );
 
     $loco_bot_sz->Add( $tprim_adresa, 1, wxEXPAND );
 
@@ -149,4 +151,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::App::Test::Localitati
+1;    # End of Tpda3::Wx::App::Test::Localitati

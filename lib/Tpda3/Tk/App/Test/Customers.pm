@@ -36,8 +36,8 @@ The screen layout
 sub run_screen {
     my ( $self, $nb ) = @_;
 
-    my $rec_page  = $nb->page_widget('rec');
-    my $det_page  = $nb->page_widget('det');
+    my $rec_page = $nb->page_widget('rec');
+    my $det_page = $nb->page_widget('det');
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
@@ -52,8 +52,10 @@ sub run_screen {
     );
     $frame1->grid(
         $frame1,
-        -row    => 0, -column => 0,
-        -ipadx  => 3, -ipady  => 3,
+        -row    => 0,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
         -sticky => 'nsew',
     );
 
@@ -63,7 +65,8 @@ sub run_screen {
     $lcustomername->form(
         -top  => [ %0, 0 ],
         -left => [ %0, 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $ecustomername = $frame1->MEntry(
@@ -81,7 +84,7 @@ sub run_screen {
     #-+ Customernumber
 
     my $ecustomernumber = $frame1->MEntry(
-        -width => 5,
+        -width              => 5,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
@@ -96,7 +99,8 @@ sub run_screen {
     $lcontactlastname->form(
         -top  => [ $lcustomername, 0 ],
         -left => [ %0,             0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $econtactlastname = $frame1->MEntry( -width => 42 );
@@ -111,7 +115,8 @@ sub run_screen {
     $lcontactfirstname->form(
         -top  => [ $lcontactlastname, 0 ],
         -left => [ %0,                0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $econtactfirstname = $frame1->MEntry( -width => 42 );
@@ -126,7 +131,8 @@ sub run_screen {
     $lphone->form(
         -top  => [ $lcontactfirstname, 0 ],
         -left => [ %0,                 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $ephone = $frame1->MEntry( -width => 42 );
@@ -141,7 +147,8 @@ sub run_screen {
     $laddressline1->form(
         -top  => [ $lphone, 0 ],
         -left => [ %0,      0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $eaddressline1 = $frame1->MEntry( -width => 42 );
@@ -156,7 +163,8 @@ sub run_screen {
     $laddressline2->form(
         -top  => [ $laddressline1, 0 ],
         -left => [ %0,             0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $eaddressline2 = $frame1->MEntry( -width => 42 );
@@ -171,7 +179,8 @@ sub run_screen {
     $lcity->form(
         -top  => [ $laddressline2, 0 ],
         -left => [ %0,             0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $ecity = $frame1->MEntry( -width => 42 );
@@ -186,7 +195,8 @@ sub run_screen {
     $lstate->form(
         -top  => [ $lcity, 0 ],
         -left => [ %0,     0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $estate = $frame1->MEntry( -width => 42 );
@@ -201,7 +211,8 @@ sub run_screen {
     $lcountryname->form(
         -top  => [ $lstate, 0 ],
         -left => [ %0,      0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $ecountryname = $frame1->MEntry( -width => 35 );
@@ -226,7 +237,8 @@ sub run_screen {
     my $lsalesrepemployee = $frame1->Label( -text => 'Sales repres.' );
     $lsalesrepemployee->form(
         -top  => [ $lcountryname, 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
         -left => [ %0,            0 ],
     );
 
@@ -343,4 +355,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::App::Test::Customers
+1;    # End of Tpda3::Tk::App::Test::Customers

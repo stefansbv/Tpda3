@@ -41,7 +41,7 @@ Constructor method.
 =cut
 
 sub new {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
     my $self = {};
 
@@ -78,7 +78,7 @@ Load a config files at request
 =cut
 
 sub config_screen_load {
-    my ($self, $scrcls) = @_;
+    my ( $self, $scrcls ) = @_;
 
     my $log = get_logger();
 
@@ -86,17 +86,17 @@ sub config_screen_load {
     my $cfg_file  = $self->config_scr_file_name($file_name);
 
     my $msg = qq{\nConfiguration error: \n Can't read configurations};
-    $msg   .= qq{\n  from '$cfg_file'!};
+    $msg .= qq{\n  from '$cfg_file'!};
 
     $log->info("Loading '$file_name' config");
     $log->trace("file: $cfg_file");
 
-    my $cfg_data = Tpda3::Config::Utils->config_file_load($cfg_file, $msg);
+    my $cfg_data = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
-    my @accessor = keys %{ $cfg_data };
+    my @accessor = keys %{$cfg_data};
     $log->trace("Making accessors for: @accessor");
 
-    $self->_make_accessors( $cfg_data );
+    $self->_make_accessors($cfg_data);
 
     return;
 }
@@ -229,7 +229,7 @@ structure.
 =cut
 
 sub main_table_column {
-    my ($self, $column) = @_;
+    my ( $self, $column ) = @_;
 
     return $self->main_table_columns->{$column};
 }
@@ -242,7 +242,7 @@ data structure.
 =cut
 
 sub main_table_column_attr {
-    my ($self, $column, $attr) = @_;
+    my ( $self, $column, $attr ) = @_;
 
     return $self->main_table_column($column)->{$attr};
 }
@@ -254,7 +254,7 @@ Return the dependent table configuration data structure.
 =cut
 
 sub dep_table {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->deptable->{$tm_ds} if $self->can('deptable');
 }
@@ -266,7 +266,7 @@ Return the dependent table name.
 =cut
 
 sub dep_table_name {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{name};
 }
@@ -278,7 +278,7 @@ Return the dependent table view name.
 =cut
 
 sub dep_table_view {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{view};
 }
@@ -290,7 +290,7 @@ Return the dependent table I<update style> attribute.
 =cut
 
 sub dep_table_updatestyle {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{updatestyle};
 }
@@ -302,7 +302,7 @@ Return the dependent table I<selector column> attribute.
 =cut
 
 sub dep_table_selectorcol {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{selectorcol};
 }
@@ -315,7 +315,7 @@ set.
 =cut
 
 sub dep_table_has_selectorcol {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     my $sc = $self->dep_table_selectorcol($tm_ds);
 
@@ -331,7 +331,7 @@ Return the dependent table I<order by> attribute.
 =cut
 
 sub dep_table_orderby {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{orderby};
 }
@@ -343,7 +343,7 @@ Return the dependent table I<colstretch> attribute.
 =cut
 
 sub dep_table_colstretch {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{colstretch};
 }
@@ -355,7 +355,7 @@ Return the dependent table primary key column name.
 =cut
 
 sub dep_table_pkcol {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{pkcol}{name};
 }
@@ -367,7 +367,7 @@ Return the dependent table foreign key column name.
 =cut
 
 sub dep_table_fkcol {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{fkcol}{name};
 }
@@ -380,7 +380,7 @@ to the related Tk::TableMatrix widget.
 =cut
 
 sub dep_table_columns {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{columns};
 }
@@ -393,7 +393,7 @@ structure bound to the related Tk::TableMatrix widget.
 =cut
 
 sub dep_table_column {
-    my ($self, $tm_ds, $column) = @_;
+    my ( $self, $tm_ds, $column ) = @_;
 
     return $self->dep_table_columns($tm_ds)->{$column};
 }
@@ -407,7 +407,7 @@ widget.
 =cut
 
 sub dep_table_column_attr {
-    my ($self, $tm_ds, $column, $attr) = @_;
+    my ( $self, $tm_ds, $column, $attr ) = @_;
 
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
@@ -420,7 +420,7 @@ Tk::TableMatrix widget.
 =cut
 
 sub dep_table_toolbars {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{toolbar};
 }
@@ -433,7 +433,7 @@ related Tk::TableMatrix widget.
 =cut
 
 sub dep_table_header_info {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     return {
         columns     => $self->dep_table_columns($tm_ds),
@@ -476,4 +476,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Config::Screen
+1;    # End of Tpda3::Config::Screen

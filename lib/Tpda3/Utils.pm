@@ -49,12 +49,12 @@ Trim strings or arrays.
 =cut
 
 sub trim {
-    my ($self, @text) = @_;
+    my ( $self, @text ) = @_;
 
     for (@text) {
         s/^\s+//;
         s/\s+$//;
-        s/\n$//mg; # m=multiline
+        s/\n$//mg;    # m=multiline
     }
 
     return wantarray ? @text : "@text";
@@ -68,32 +68,36 @@ Parse date for Tk::DateEntry.
 
 sub dateentry_parse_date {
 
-    my ($self, $format, $date) = @_;
+    my ( $self, $format, $date ) = @_;
 
-    my ($y, $m, $d);
+    my ( $y, $m, $d );
 
     # Default date style format
     $format = 'iso' unless $format;
 
-  SWITCH: for ($format) {
+SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_parse_date'\n";
         /german/i && do {
-            ($d, $m, $y ) = ( $date =~ m{([0-9]{2})\.([0-9]{2})\.([0-9]{4})} );
+            ( $d, $m, $y )
+                = ( $date =~ m{([0-9]{2})\.([0-9]{2})\.([0-9]{4})} );
             last SWITCH;
         };
         /iso/i && do {
-            ($y, $m, $d ) = ( $date =~ m{([0-9]{4})\-([0-9]{2})\-([0-9]{2})} );
+            ( $y, $m, $d )
+                = ( $date =~ m{([0-9]{4})\-([0-9]{2})\-([0-9]{2})} );
             last SWITCH;
         };
         /usa/i && do {
-            ($m, $d, $y ) = ( $date =~ m{([0-9]{4})\/([0-9]{2})\/([0-9]{4})} );
+            ( $m, $d, $y )
+                = ( $date =~ m{([0-9]{4})\/([0-9]{2})\/([0-9]{4})} );
             last SWITCH;
         };
+
         # DEFAULT
         warn "Wrong date format: $format\n";
     }
 
-    return ($y, $m, $d);
+    return ( $y, $m, $d );
 }
 
 =head2 dateentry_format_date
@@ -111,7 +115,7 @@ sub dateentry_format_date {
     # Default date style format
     $format = 'iso' unless $format;
 
-  SWITCH: for ($format) {
+SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_format_date'\n";
         /german/i && do {
             $date = sprintf( "%02d.%02d.%4d", $d, $m, $y );
@@ -125,6 +129,7 @@ sub dateentry_format_date {
             $date = sprintf( "%02d/%02d/%4d", $m, $d, $y );
             last SWITCH;
         };
+
         # DEFAULT
         warn "Unknown date format: $format\n";
     }
@@ -140,7 +145,7 @@ items.
 =cut
 
 sub sort_hash_by_id {
-    my ($self, $attribs) = @_;
+    my ( $self, $attribs ) = @_;
 
     #-- Sort by id
     #- Keep only key and id for sorting
@@ -148,9 +153,9 @@ sub sort_hash_by_id {
 
     #- Sort with  ST
     my @attribs = map { $_->[0] }
-      sort { $a->[1] <=> $b->[1] }
-      map { [ $_ => $temp{$_} ] }
-      keys %temp;
+        sort { $a->[1] <=> $b->[1] }
+        map { [ $_ => $temp{$_} ] }
+        keys %temp;
 
     return \@attribs;
 }
@@ -191,31 +196,29 @@ sub special_ops {
 
     return [
 
-        {
-            regex   => qr/^extractyear$/i,
+        {   regex   => qr/^extractyear$/i,
             handler => sub {
                 my ( $self, $field, $op, $arg ) = @_;
                 $arg = [$arg] if not ref $arg;
                 my $label         = $self->_quote($field);
                 my ($placeholder) = $self->_convert('?');
-                my $sql = $self->_sqlcase('extract (year from')
-                  . " $label) = $placeholder ";
+                my $sql           = $self->_sqlcase('extract (year from')
+                    . " $label) = $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
-              }
+                }
         },
-        {
-            regex   => qr/^extractmonth$/i,
+        {   regex   => qr/^extractmonth$/i,
             handler => sub {
                 my ( $self, $field, $op, $arg ) = @_;
                 $arg = [$arg] if not ref $arg;
                 my $label         = $self->_quote($field);
                 my ($placeholder) = $self->_convert('?');
                 my $sql           = $self->_sqlcase('extract (month from')
-                  . " $label) = $placeholder ";
+                    . " $label) = $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
-              }
+                }
         },
     ];
 }
@@ -228,7 +231,7 @@ and return a where clause.
 =cut
 
 sub process_date_string {
-    my ($self, $search_input) = @_;
+    my ( $self, $search_input ) = @_;
 
     my $dtype = $self->identify_date_string($search_input);
     my $where = $self->format_query($dtype);
@@ -245,16 +248,17 @@ separator is the colon character.
 =cut
 
 sub identify_date_string {
-    my ($self, $is) = @_;
+    my ( $self, $is ) = @_;
 
     #                When date format is...                     Type is ...
-    return $is eq q{}                                        ? 'nothing'
-           : $is =~ m/^(\d{4})[\.\/-](\d{2})[\.\/-](\d{2})$/ ? "dateiso:$is"
-           : $is =~ m/^(\d{2})[\.\/-](\d{2})[\.\/-](\d{4})$/ ? "dateamb:$is"
-           : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
-           : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
-           : $is =~ m/^(\d{4})$/                             ? "datey:$1"
-           :                                                   "dataerr:$is";
+    return
+          $is eq q{} ? 'nothing'
+        : $is =~ m/^(\d{4})[\.\/-](\d{2})[\.\/-](\d{2})$/ ? "dateiso:$is"
+        : $is =~ m/^(\d{2})[\.\/-](\d{2})[\.\/-](\d{4})$/ ? "dateamb:$is"
+        : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
+        : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
+        : $is =~ m/^(\d{4})$/                             ? "datey:$1"
+        :                                                   "dataerr:$is";
 }
 
 =head2 format_query
@@ -274,6 +278,7 @@ sub format_query {
         $where = $transformations->{$directive}->( $year, $month );
     }
     else {
+
         # warn "Unrecognized directive '$directive'";
         $where = $directive;
     }
@@ -330,9 +335,9 @@ Insert ampersand character for underline mark in menu.
 =cut
 
 sub ins_underline_mark {
-    my ($self, $label, $position) = @_;
+    my ( $self, $label, $position ) = @_;
 
-    substr($label, $position, 0) = '&';
+    substr( $label, $position, 0 ) = '&';
 
     return $label;
 }
@@ -345,8 +350,8 @@ TODO: Add other accented characters, especially for German and Hungarian.
 
 =cut
 
-sub deaccent{
-    my ($self, $text) = @_;
+sub deaccent {
+    my ( $self, $text ) = @_;
 
     $text =~ tr/ăĂãÃâÂîÎșȘşŞțȚţŢ/aAaAaAiIsSsStTtT/;
 
@@ -391,4 +396,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Utils
+1;    # End of Tpda3::Utils

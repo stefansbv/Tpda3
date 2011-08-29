@@ -33,7 +33,7 @@ Constructor method.
 =cut
 
 sub Populate {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     $self->SUPER::Populate($args);
 
@@ -47,10 +47,10 @@ Make main toolbar buttons.
 =cut
 
 sub make_toolbar_buttons {
-    my ($self, $toolbars, $attribs) = @_;
+    my ( $self, $toolbars, $attribs ) = @_;
 
     # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name (@{$toolbars}) {
+    foreach my $name ( @{$toolbars} ) {
         my $type = $attribs->{$name}{type};
         $self->$type( $name, $attribs->{$name} );
 
@@ -165,7 +165,7 @@ State can come as 0 | 1 and normal | disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $btn_name, $state) = @_;
+    my ( $self, $btn_name, $state ) = @_;
 
     my $tb_btn = $self->get_toolbar_btn($btn_name);
 
@@ -179,7 +179,7 @@ sub enable_tool {
         }
     }
     else {
-        $state = $tb_btn->cget(-state);
+        $state = $tb_btn->cget( -state );
         $other = $state eq 'normal' ? 'disabled' : 'normal';
     }
 
@@ -195,7 +195,7 @@ Toggle a toolbar checkbutton.
 =cut
 
 sub toggle_tool_check {
-    my ($self, $btn_name, $state) = @_;
+    my ( $self, $btn_name, $state ) = @_;
 
     my $tb_btn = $self->get_toolbar_btn($btn_name);
 

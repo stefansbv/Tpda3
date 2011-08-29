@@ -68,18 +68,18 @@ sub login {
         -labelside  => 'acrosstop',
     );
     $frame->pack(
-        -padx  => 10, -pady  => 10,
-        -ipadx => 5,  -ipady => 5,
+        -padx  => 10,
+        -pady  => 10,
+        -ipadx => 5,
+        -ipady => 5,
     );
 
     #-- User
 
-    my $luser = $frame->Label(
-        -text => 'User:',
-    );
+    my $luser = $frame->Label( -text => 'User:', );
     $luser->form(
-        -top  => [ %0, 0 ],
-        -left => [ %0, 0 ],
+        -top     => [ %0, 0 ],
+        -left    => [ %0, 0 ],
         -padleft => 5,
     );
     my $euser = $frame->Entry(
@@ -95,12 +95,10 @@ sub login {
 
     #-- Pass
 
-    my $lpass = $frame->Label(
-        -text => 'Password:',
-    );
+    my $lpass = $frame->Label( -text => 'Password:', );
     $lpass->form(
-        -top  => [ $luser, 8 ],
-        -left => [ %0,     0 ],
+        -top     => [ $luser, 8 ],
+        -left    => [ %0,     0 ],
         -padleft => 5,
     );
     my $epass = $frame->Entry(
@@ -137,6 +135,7 @@ sub login {
             my $cfg = Tpda3::Config->instance();
             $cfg->user($user);
             $cfg->pass($pass);
+
             # $self->{dlg}{selected_button} = 'Accept';
         }
         else {
@@ -148,4 +147,4 @@ sub login {
     }
 }
 
-1; # End of Tpda3::Tk::Dialog::Login
+1;    # End of Tpda3::Tk::Dialog::Login

@@ -102,12 +102,13 @@ sub _connect {
 
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
-        $self->get_connection_observable->set( 1 ); # yes
+        $self->get_connection_observable->set(1);    # yes
         $self->_print('Connected');
+
         # print "Connected\n";
     }
     else {
-        $self->get_connection_observable->set( 0 ); # no ;)
+        $self->get_connection_observable->set(0);    # no ;)
         $self->_print('Connection error!');
         print "Connection error!\n";
     }
@@ -125,7 +126,7 @@ sub _disconnect {
     my $self = shift;
 
     $self->{_dbh}->disconnect;
-    $self->get_connection_observable->set( 0 );
+    $self->get_connection_observable->set(0);
     $self->_print('Disconnected');
 
     return;
@@ -190,7 +191,7 @@ Set mode
 =cut
 
 sub set_mode {
-    my ($self, $mode) = @_;
+    my ( $self, $mode ) = @_;
 
     $self->get_appmode_observable->set($mode);
 
@@ -204,7 +205,7 @@ Return true if is mode
 =cut
 
 sub is_mode {
-    my ($self, $ck_mode) = @_;
+    my ( $self, $ck_mode ) = @_;
 
     my $mode = $self->get_appmode_observable->get;
 
@@ -250,7 +251,7 @@ Set screen data status for the I<rec> tab.
 =cut
 
 sub set_scrdata_rec {
-    my ($self, $state) = @_;
+    my ( $self, $state ) = @_;
 
     $self->get_scrdata_rec_observable->set($state);
 
@@ -340,11 +341,11 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
-    $self->_print("$record_count records found") ;
+    $self->_print("$record_count records found");
 
     return;
 }
@@ -372,18 +373,18 @@ sub query_records_find {
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
 
     my $search_limit = $self->_cfg->application->{limits}{search} || 100;
-    my $args = { MaxRows => $search_limit }; # limit search result
+    my $args = { MaxRows => $search_limit };    # limit search result
     my $ary_ref;
     try {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
     my $record_count = scalar @{$ary_ref};
-    $self->_print("$record_count records listed") ;
+    $self->_print("$record_count records listed");
 
     return $ary_ref;
 }
@@ -409,7 +410,7 @@ sub query_record {
         $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -444,7 +445,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -465,20 +466,20 @@ sub query_dictionary {
     my $order = $rec->{order};
     my $cols  = $rec->{columns};
 
-    my $where = $self->build_where($rec, $opt);
+    my $where = $self->build_where( $rec, $opt );
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
     my $lookup_limit = $self->_cfg->application->{limits}{lookup} || 50;
-    my $args = { MaxRows => $lookup_limit }; # limit search result
+    my $args = { MaxRows => $lookup_limit };    # limit search result
     my $ary_ref;
     try {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -530,15 +531,15 @@ sub build_where {
 
         if ( $find_type eq 'contains' ) {
             my $cmp = $self->cmp_function($searchstr);
-            $where->{$field} =
-                { $cmp => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
+            $where->{$field}
+                = { $cmp => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
         }
         elsif ( $find_type eq 'allstr' ) {
             $where->{$field} = $attrib->[0];
         }
         elsif ( $find_type eq 'date' ) {
             my $ret = Tpda3::Utils->process_date_string( $attrib->[0] );
-            if ($ret eq 'dataerr') {
+            if ( $ret eq 'dataerr' ) {
                 $self->_print("Wrong search parameter!");
                 return;
             }
@@ -555,6 +556,7 @@ sub build_where {
             $where->{$field} = \$notnull;
         }
         elsif ( $find_type eq 'none' ) {
+
             # just skip
         }
     }
@@ -575,24 +577,27 @@ case sensitive search, else case insensitive.
 =cut
 
 sub cmp_function {
-    my ($self, $search_str) = @_;
+    my ( $self, $search_str ) = @_;
 
     my $ignore_case = 1;
-    if ($search_str =~ m/\p{IsLu}{1,}/ ) {
+    if ( $search_str =~ m/\p{IsLu}{1,}/ ) {
         $ignore_case = 0;
     }
 
     my $driver = $self->_cfg->connection->{driver};
 
     my $cmp;
-  SWITCH: for ($driver) {
+SWITCH: for ($driver) {
         /^$/ && warn "EE: Unknown database driver name!\n";
         /postgresql/i && do {
             $cmp = $ignore_case ? '-ILIKE' : '-LIKE';
-            last SWITCH; };
-        /firebird/i   && do {
+            last SWITCH;
+        };
+        /firebird/i && do {
             $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
-            last SWITCH; };
+            last SWITCH;
+        };
+
         # Default
         warn "EE: Unknown database driver name: $driver!\n";
         $cmp = '-LIKE';
@@ -608,10 +613,10 @@ Return the data structure used to fill the list of choices.
 =cut
 
 sub get_codes {
-    my ($self, $field, $para) = @_;
+    my ( $self, $field, $para ) = @_;
 
     my $codings = Tpda3::Codings->new();
-    my $codes   = $codings->get_coding_init($field, $para);
+    my $codes = $codings->get_coding_init( $field, $para );
 
     return $codes;
 }
@@ -632,7 +637,8 @@ sub table_record_insert {
 
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) = $sql->insert( $table, $record, {returning => $pkcol} );
+    my ( $stmt, @bind )
+        = $sql->insert( $table, $record, { returning => $pkcol } );
 
     my $pk_id;
     try {
@@ -641,7 +647,7 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -666,7 +672,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -691,7 +697,7 @@ sub table_record_select {
         $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -747,7 +753,7 @@ sub table_record_delete {
         unless $table;
 
     croak "Empty SQL WHERE in DELETE command!"
-        unless ( %{$where} );   # safety net, is enough ???
+        unless ( %{$where} );    # safety net, is enough ???
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
@@ -756,7 +762,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -774,19 +780,19 @@ construct the SQL commands.
 =cut
 
 sub store_record_insert {
-    my ( $self, $record) = @_;
+    my ( $self, $record ) = @_;
 
-    my $mainrec = $record->[0];              # main record first
+    my $mainrec = $record->[0];    # main record first
 
     my $mainmeta = $mainrec->{metadata};
     my $maindata = $mainrec->{data};
 
-    my $table    = $mainmeta->{table};
-    my $pkcol    = $mainmeta->{pkcol};
+    my $table = $mainmeta->{table};
+    my $pkcol = $mainmeta->{pkcol};
 
     #- Main record
 
-    my $pk_id = $self->table_record_insert($table, $pkcol, $maindata);
+    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata );
 
     #- Dependent records
 
@@ -809,8 +815,8 @@ sub store_record_insert {
             $rec->{$pkcol} = $pk_id;
         }
 
-        $self->table_batch_insert($table, $depdata);
-     }
+        $self->table_batch_insert( $table, $depdata );
+    }
 
     return $pk_id;
 }
@@ -856,7 +862,7 @@ sub store_record_update {
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
 
-    $self->table_record_update($table, $maindata, $where);
+    $self->table_record_update( $table, $maindata, $where );
 
     #- Dependent records
 
@@ -870,16 +876,18 @@ sub store_record_update {
         my $where    = $depmeta->{where};
 
         if ( $updstyle eq 'delete+add' ) {
+
             # Delete all articles and reinsert from TM ;)
-            $self->table_record_delete($table, $where);
-            $self->table_batch_insert($table, $depdata);
+            $self->table_record_delete( $table, $where );
+            $self->table_batch_insert( $table, $depdata );
         }
         else {
+
             # Update based on comparison between the database table
             # data and TableMatrix data
-            $self->table_batch_update($depmeta, $depdata);
+            $self->table_batch_update( $depmeta, $depdata );
         }
-     }
+    }
 
     return 1;
 }
@@ -927,28 +935,29 @@ to insert, update or delete.
 =cut
 
 sub table_batch_update {
-    my ($self, $depmeta, $depdata) = @_;
+    my ( $self, $depmeta, $depdata ) = @_;
 
     my $compare_col = $depmeta->{fkcol};
 
     my $tb_data = $self->table_selectcol_as_array($depmeta);
-    my $tm_data = $self->aoh_column_extract($depdata, $compare_col);
+    my $tm_data = $self->aoh_column_extract( $depdata, $compare_col );
 
-    my $lc = List::Compare->new($tm_data, $tb_data);
+    my $lc = List::Compare->new( $tm_data, $tb_data );
 
     my @to_update = $lc->get_intersection;
     my @to_insert = $lc->get_unique;
     my @to_delete = $lc->get_complement;
 
-    my $to_update = $self->table_update_compare(\@to_update, $depmeta, $depdata);
+    my $to_update
+        = $self->table_update_compare( \@to_update, $depmeta, $depdata );
 
     print "To update: @{$to_update}\n" if ref $to_update;
     print "To insert: @to_insert\n";
     print "To delete: @to_delete\n";
 
-    $self->table_update_prepare( $to_update, $depmeta, $depdata);
-    $self->table_insert_prepare(\@to_insert, $depmeta, $depdata);
-    $self->table_delete_prepare(\@to_delete, $depmeta);
+    $self->table_update_prepare( $to_update, $depmeta, $depdata );
+    $self->table_insert_prepare( \@to_insert, $depmeta, $depdata );
+    $self->table_delete_prepare( \@to_delete, $depmeta );
 
     return;
 }
@@ -971,14 +980,14 @@ sub table_update_compare {
 
     my @toupdate;
     foreach my $fk_id ( @{$to_update} ) {
-        $where->{ $fkcol } = $fk_id;
+        $where->{$fkcol} = $fk_id;
 
         # Filter data; record is Aoh
         my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
 
         my $oldrec = $self->table_record_select( $table, $where );
 
-        my $dc = Data::Compare->new($oldrec, $record);
+        my $dc = Data::Compare->new( $oldrec, $record );
 
         push @toupdate, $fk_id if !$dc->Cmp;
     }
@@ -1003,14 +1012,14 @@ sub table_update_prepare {
     my $where = $depmeta->{where};
 
     foreach my $fk_id ( @{$to_update} ) {
-        $where->{ $fkcol } = $fk_id;
+        $where->{$fkcol} = $fk_id;
 
         # Filter data; record is Aoh
         my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
 
         ### delete $record->{$fkcol}; # remove FK col from update data;
-                                      # does NOT work, it's like remmove
-                                      # from the original datastructure?!
+        # does NOT work, it's like remmove
+        # from the original datastructure?!
 
         $self->table_record_update( $table, $record, $where );
     }
@@ -1043,7 +1052,7 @@ sub table_insert_prepare {
 
     # print "insert: $table\n";
 
-    $self->table_batch_insert($table, \@records);
+    $self->table_batch_insert( $table, \@records );
 
     return;
 }
@@ -1055,14 +1064,14 @@ Prepare data for batch delete.
 =cut
 
 sub table_delete_prepare {
-    my ($self, $to_delete, $depmeta) = @_;
+    my ( $self, $to_delete, $depmeta ) = @_;
 
     return unless scalar( @{$to_delete} ) > 0;
 
     my $table = $depmeta->{table};
     my $where = $depmeta->{where};
 
-    $self->table_record_delete($table, $where);
+    $self->table_record_delete( $table, $where );
 
     return;
 }
@@ -1092,7 +1101,7 @@ Return an array reference of column values.
 =cut
 
 sub table_selectcol_as_array {
-    my ($self, $rec) = @_;
+    my ( $self, $rec ) = @_;
 
     my $table  = $rec->{table};
     my $pkcol  = $rec->{pkcol};
@@ -1106,10 +1115,10 @@ sub table_selectcol_as_array {
 
     my $records;
     try {
-       $records = $self->{_dbh}->selectcol_arrayref($stmt, undef, @bind);
+        $records = $self->{_dbh}->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!") ;
+        $self->_print("Database error!");
         croak("Transaction aborted: $_");
     };
 
@@ -1124,9 +1133,9 @@ witness record, with the current data structure from the screen.
 =cut
 
 sub record_compare {
-    my ($self, $witness, $record) = @_;
+    my ( $self, $witness, $record ) = @_;
 
-    my $dc = Data::Compare->new($witness, $record);
+    my $dc = Data::Compare->new( $witness, $record );
 
     # print 'Structures of $witness and $record are ',
     #     $dc->Cmp ? "" : "not ", "identical.\n";
@@ -1154,4 +1163,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Model
+1;    # End of Tpda3::Model

@@ -29,14 +29,13 @@ Used only for the version information.
 
 sub application_name {
     my $name = "Test and demo application for Tpda3\n";
-    $name   .= "Author: Stefan Suciu\n";
-    $name   .= "Copyright 2010-2011\n";
-    $name   .= "GNU General Public License (GPL)\n";
-    $name   .=  "stefansbv at users . sourceforge . net";
+    $name .= "Author: Stefan Suciu\n";
+    $name .= "Copyright 2010-2011\n";
+    $name .= "GNU General Public License (GPL)\n";
+    $name .= "stefansbv at users . sourceforge . net";
 
     return $name;
 }
-
 
 =head1 AUTHOR
 
@@ -72,4 +71,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Tk::App::Test
+1;    # End of Tpda3::Tk::App::Test

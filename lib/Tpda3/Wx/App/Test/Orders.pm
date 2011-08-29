@@ -37,8 +37,8 @@ The screen layout
 sub run_screen {
     my ( $self, $inreg_p ) = @_;
 
-    my $gui     = $inreg_p->GetGrandParent;
-    my $main_p  = $inreg_p->GetParent;
+    my $gui    = $inreg_p->GetGrandParent;
+    my $main_p = $inreg_p->GetParent;
     $self->{bg} = $inreg_p->GetBackgroundColour();
 
     # TODO: use Wx::Perl::TextValidator
@@ -47,71 +47,103 @@ sub run_screen {
 
     #-- customername + customernumber
     my $lcustomername = Wx::StaticText->new( $inreg_p, -1, 'Name' );
-    my $ecustomername =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
-    my $ecustomernumber =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $ecustomername
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $ecustomernumber
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- ordernumber
     my $lordernumber = Wx::StaticText->new( $inreg_p, -1, 'Last name' );
-    my $eordernumber =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $eordernumber
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- orderdate
     my $lorderdate = Wx::StaticText->new( $inreg_p, -1, 'First name' );
-    my $eorderdate =
-        Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $eorderdate
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- requireddate
     my $lrequireddate = Wx::StaticText->new( $inreg_p, -1, 'requireddate' );
-    my $erequireddate = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $erequireddate
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- shippeddate
     my $lshippeddate = Wx::StaticText->new( $inreg_p, -1, 'shippeddate' );
-    my $eshippeddate = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $eshippeddate
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- statuscode
     my $lstatuscode = Wx::StaticText->new( $inreg_p, -1, 'statuscode' );
-    my $estatuscode = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $estatuscode
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- comments
     my $lcomments = Wx::StaticText->new( $inreg_p, -1, 'comments' );
-    my $ecomments = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $ecomments
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- ordertotal
     my $lordertotal = Wx::StaticText->new( $inreg_p, -1, 'ordertotal' );
-    my $eordertotal = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $eordertotal
+        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #--- Layout
 
-    my $top_sz = Wx::BoxSizer->new( wxVERTICAL );
+    my $top_sz = Wx::BoxSizer->new(wxVERTICAL);
 
-    my $sbox_sz =
-      Wx::StaticBoxSizer->new(
+    my $sbox_sz = Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $inreg_p, -1, ' Customer ', ), wxVERTICAL );
 
-    my $grid = Wx::GridBagSizer->new(5, 0);
+    my $grid = Wx::GridBagSizer->new( 5, 0 );
 
-    $grid->Add( 0, 3, gbpos( 0, 0 ), gbspan( 1, 2 ), ); # spacer
+    $grid->Add( 0, 3, gbpos( 0, 0 ), gbspan( 1, 2 ), );    # spacer
 
-    $grid->Add( $lcustomername,   gbpos( 1, 0 ), gbspan( 1, 1 ),
-                wxLEFT | wxRIGHT, 5 );
-    $grid->Add( $ecustomername,   gbpos( 1, 1 ), gbspan( 1, 1 ),
-                wxEXPAND | wxLEFT | wxRIGHT, 5 );
-    $grid->Add( $ecustomernumber, gbpos( 1, 2 ), gbspan( 1, 1 ),
-                wxEXPAND | wxRIGHT, 5 );
+    $grid->Add(
+        $lcustomername,
+        gbpos( 1, 0 ),
+        gbspan( 1, 1 ),
+        wxLEFT | wxRIGHT, 5
+    );
+    $grid->Add(
+        $ecustomername,
+        gbpos( 1, 1 ),
+        gbspan( 1, 1 ),
+        wxEXPAND | wxLEFT | wxRIGHT, 5
+    );
+    $grid->Add(
+        $ecustomernumber,
+        gbpos( 1, 2 ),
+        gbspan( 1, 1 ),
+        wxEXPAND | wxRIGHT, 5
+    );
 
-    $grid->Add( $lordernumber, gbpos( 2, 0 ), gbspan( 1, 1 ),
-                wxLEFT | wxRIGHT, 5 );
-    $grid->Add( $eordernumber, gbpos( 2, 1 ), gbspan( 1, 2 ),
-                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+    $grid->Add(
+        $lordernumber,
+        gbpos( 2, 0 ),
+        gbspan( 1, 1 ),
+        wxLEFT | wxRIGHT, 5
+    );
+    $grid->Add(
+        $eordernumber,
+        gbpos( 2, 1 ),
+        gbspan( 1, 2 ),
+        wxEXPAND | wxLEFT | wxRIGHT, 5
+    );
 
-    $grid->Add( $lorderdate, gbpos( 3, 0 ), gbspan( 1, 1 ),
-                wxLEFT | wxRIGHT, 5 );
-    $grid->Add( $eorderdate, gbpos( 3, 1 ), gbspan( 1, 2 ),
-                wxEXPAND | wxLEFT | wxRIGHT, 5 );
+    $grid->Add(
+        $lorderdate,
+        gbpos( 3, 0 ),
+        gbspan( 1, 1 ),
+        wxLEFT | wxRIGHT, 5
+    );
+    $grid->Add(
+        $eorderdate,
+        gbpos( 3, 1 ),
+        gbspan( 1, 2 ),
+        wxEXPAND | wxLEFT | wxRIGHT, 5
+    );
 
-    $grid->Add( 0, 3, gbpos( 13, 0 ), gbspan( 1, 2 ), ); # spacer
+    $grid->Add( 0, 3, gbpos( 13, 0 ), gbspan( 1, 2 ), );    # spacer
 
     $grid->AddGrowableCol(1);
 
@@ -137,7 +169,7 @@ sub run_screen {
     return;
 }
 
-sub gbpos  { Wx::GBPosition->new(@_) }
+sub gbpos { Wx::GBPosition->new(@_) }
 
 sub gbspan { Wx::GBSpan->new(@_) }
 
@@ -161,4 +193,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::App::Test::Orders
+1;    # End of Tpda3::Wx::App::Test::Orders

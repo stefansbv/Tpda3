@@ -49,7 +49,7 @@ Constructor method
 =cut
 
 sub new {
-    my ($class, $scrcfg) = @_;
+    my ( $class, $scrcfg ) = @_;
 
     my $self = {};
 
@@ -79,7 +79,7 @@ is a hashref with column names as keys and column index as values.
 =cut
 
 sub init_cfgdata {
-    my ($self, $table, $tm_ds) = @_;
+    my ( $self, $table, $tm_ds ) = @_;
 
     my $table_cfg = $self->{_cfg}{$table}{$tm_ds}{columns};
     my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
@@ -98,7 +98,7 @@ from the TableMatrix widget.
 =cut
 
 sub column_name_from_idx {
-    my ($self, $tm_ds, $col_idx) = @_;
+    my ( $self, $tm_ds, $col_idx ) = @_;
 
     return $self->{$tm_ds}{$col_idx};
 }
@@ -111,11 +111,11 @@ screen configuration, for the main table.
 =cut
 
 sub maintable_attribs {
-    my ($self, $column) = @_;
+    my ( $self, $column ) = @_;
 
     my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
 
-    return @{$table_cfg}{ qw(validation width places) }; # hash slice
+    return @{$table_cfg}{qw(validation width places)};    # hash slice
 }
 
 =head2 deptable_attribs
@@ -126,11 +126,11 @@ screen configuration, for the dependent table(s).
 =cut
 
 sub deptable_attribs {
-    my ($self, $tm_ds, $column) = @_;
+    my ( $self, $tm_ds, $column ) = @_;
 
     my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
 
-    return @{$table_cfg}{ qw(validation width places) }; # hash slice
+    return @{$table_cfg}{qw(validation width places)};    # hash slice
 }
 
 =head2 validate_entry
@@ -146,7 +146,7 @@ interpreted as a 'column IS NULL' SQL WHERE clause.
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
 
-    my ($type, $width, $places) = $self->maintable_attribs($column);
+    my ( $type, $width, $places ) = $self->maintable_attribs($column);
 
     return $self->validate( $type, $p1, $width, $places );
 }
@@ -160,11 +160,12 @@ Get I<type>, I<width> and I<places> from the table's configuration.
 =cut
 
 sub validate_table_cell {
-    my ($self, $tm_ds, $row, $col, $old, $new, $cidx) = @_;
+    my ( $self, $tm_ds, $row, $col, $old, $new, $cidx ) = @_;
 
     my $column = $self->column_name_from_idx( $tm_ds, $col );
 
-    my ($type, $width, $places) = $self->deptable_attribs($tm_ds, $column);
+    my ( $type, $width, $places )
+        = $self->deptable_attribs( $tm_ds, $column );
 
     return $self->validate( $type, $new, $width, $places );
 }
@@ -178,7 +179,7 @@ Validate sub calls the appropriate function for data validation.
 sub validate {
     my ( $self, $proc, $p1, $maxlen, $places ) = @_;
 
-    if (!$proc) {
+    if ( !$proc ) {
         print "EE: Config error, no procedure for validation!\n";
         return;
     }
@@ -202,15 +203,17 @@ Function to validate strings containing only alphabetical characters.
 =cut
 
 sub alpha {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^\p{IsAlpha}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"alpha:$maxlen", "red");
         return 0;
     }
@@ -224,15 +227,17 @@ characters.
 =cut
 
 sub alphanum {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^[\p{IsAlnum} +-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"alphanum:$maxlen", "red");
         return 0;
     }
@@ -246,15 +251,17 @@ some commonly used symbol characters.
 =cut
 
 sub alphanumplus {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"alphanum+:$maxlen", "red");
         return 0;
     }
@@ -268,15 +275,17 @@ integers.
 =cut
 
 sub integer {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^\p{IsDigit}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen", "red");
         return 0;
     }
@@ -292,21 +301,23 @@ TODO: Allow comma as decimal separator?
 =cut
 
 sub numeric {
-    my ($self, $myvar, $maxlen, $places) = @_;
+    my ( $self, $myvar, $maxlen, $places ) = @_;
 
     $places = 0 unless ( defined $places );
 
     my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
         $maxlen - $places - 1, $places;
 
-    # my $pattern =
-    #   qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
+  # my $pattern =
+  #   qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen:$places", "red");
         return 0;
     }
@@ -319,16 +330,18 @@ Function to validate strings containing only printable character.
 =cut
 
 sub anychar {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^\p{IsPrint}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-#        $self->{tpda}{gui}->refresh_sb('ll',"");
+
+        #        $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
-#        $self->{tpda}{gui}->refresh_sb('ll',"anychar:$maxlen", "red");
+
+       #        $self->{tpda}{gui}->refresh_sb('ll',"anychar:$maxlen", "red");
         return 0;
     }
 }
@@ -342,15 +355,17 @@ Better use the L<Email::Valid> module!
 =cut
 
 sub email {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"alphanum+:$maxlen", "red");
         return 0;
     }
@@ -363,15 +378,17 @@ Function to validate date strings, (only in I<dd.mm.yyyy> format).
 =cut
 
 sub date {
-    my ($self, $myvar, $maxlen) = @_;
+    my ( $self, $myvar, $maxlen ) = @_;
 
     my $pattern = sprintf "\^[0-9]{2}\.[0-9]{2}\.[0-9]{4}\$", $maxlen;
 
     if ( $myvar =~ m/$pattern/ ) {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"");
         return 1;
     }
     else {
+
         # $self->{tpda}{gui}->refresh_sb('ll',"date:dmy|mdy", "red");
         return 0;
     }
@@ -415,4 +432,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Tk::Validation
+1;    # End of Tpda3::Tk::Validation

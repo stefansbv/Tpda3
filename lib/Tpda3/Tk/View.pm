@@ -11,7 +11,7 @@ use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel catfile);
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
-                   LabFrame Listbox JComboBox);
+    LabFrame Listbox JComboBox);
 
 # require Tk::ErrorDialog;
 
@@ -19,7 +19,7 @@ use base 'Tk::MainWindow';
 
 use Tpda3::Config;
 use Tpda3::Utils;
-use Tpda3::Tk::TB; # ToolBar
+use Tpda3::Tk::TB;    # ToolBar
 
 =head1 NAME
 
@@ -62,11 +62,11 @@ sub new {
     $self->title(" Tpda3 ");
 
     # Load resource file, if found
-    my $resource = catfile($self->{_cfg}->cfetc, 'xresource.xrdb');
+    my $resource = catfile( $self->{_cfg}->cfetc, 'xresource.xrdb' );
     if ($resource) {
-        if (-f $resource) {
+        if ( -f $resource ) {
             $self->log_msg("II: Reading resource from '$resource'");
-            $self->optionReadfile($resource, 'widgetDefault');
+            $self->optionReadfile( $resource, 'widgetDefault' );
         }
         else {
             $self->log_msg("II: Resource not found: '$resource'");
@@ -89,7 +89,7 @@ sub new {
 
     $self->define_dialogs();
 
-    $self->{lookup} = undef;                 # info about list header
+    $self->{lookup} = undef;    # info about list header
 
     return $self;
 }
@@ -131,7 +131,7 @@ sub _set_model_callbacks {
     $co->add_callback( sub { $self->toggle_status_cn( $_[0] ); } );
 
     my $so = $self->_model->get_stdout_observable;
-    $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
+    $so->add_callback( sub { $self->set_status( $_[0], 'ms' ) } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
@@ -139,7 +139,7 @@ sub _set_model_callbacks {
 
     # When the modified status changes, update statusbar
     my $svs = $self->_model->get_scrdata_rec_observable;
-    $svs->add_callback( sub{ $self->set_status( $_[0], 'ss') } );
+    $svs->add_callback( sub { $self->set_status( $_[0], 'ss' ) } );
 
     return;
 }
@@ -176,24 +176,24 @@ sub update_gui_components {
 
     my $mode = $self->_model->get_appmode();
 
-    $self->set_status($mode, 'md');          # update statusbar
+    $self->set_status( $mode, 'md' );    # update statusbar
 
-    SWITCH: {
-          $mode eq 'find' && do {
-              $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
-              $self->{_tb}->toggle_tool_check( 'tb_fm', 1 );
-              last SWITCH;
-          };
-          $mode eq 'add' && do {
-              $self->{_tb}->toggle_tool_check( 'tb_ad', 1 );
-              $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
-              last SWITCH;
-          };
+SWITCH: {
+        $mode eq 'find' && do {
+            $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+            $self->{_tb}->toggle_tool_check( 'tb_fm', 1 );
+            last SWITCH;
+        };
+        $mode eq 'add' && do {
+            $self->{_tb}->toggle_tool_check( 'tb_ad', 1 );
+            $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+            last SWITCH;
+        };
 
-          # Else
-          $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
-          $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
-      }
+        # Else
+        $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+        $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+    }
 
     return;
 }
@@ -216,7 +216,7 @@ sub set_geometry_main {
         $geom = $self->_cfg->geometry->{'main'};
     }
     else {
-        $geom = '492x80+20+20';              # default
+        $geom = '492x80+20+20';    # default
     }
 
     $self->geometry($geom);
@@ -231,7 +231,7 @@ Set window geometry
 =cut
 
 sub set_geometry {
-    my ($self, $geom) = @_;
+    my ( $self, $geom ) = @_;
 
     $self->geometry($geom);
 
@@ -285,7 +285,7 @@ sub _create_app_menu {
 
     my $attribs = $self->_cfg->appmenubar;
 
-    $self->make_menus($attribs, 2);   # Add starting with position = 2
+    $self->make_menus( $attribs, 2 );    # Add starting with position = 2
 
     return;
 }
@@ -297,9 +297,9 @@ Make menus
 =cut
 
 sub make_menus {
-    my ($self, $attribs, $position) = @_;
+    my ( $self, $attribs, $position ) = @_;
 
-    $position = 1 if ! $position;
+    $position = 1 if !$position;
     my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
 
     #- Create menus
@@ -307,7 +307,8 @@ sub make_menus {
 
         $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
 
-        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        my @popups
+            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
         foreach my $id (@popups) {
             $self->make_popup_item(
                 $self->{_menu}{$menu_name},
@@ -345,7 +346,8 @@ sub get_app_menus_list {
 
     my @menulist;
     foreach my $menu_name ( @{$menus} ) {
-        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        my @popups
+            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
         foreach my $item (@popups) {
             push @menulist, $attribs->{$menu_name}{popup}{$item}{name};
         }
@@ -436,8 +438,8 @@ sub _create_statusbar {
 
     # Second label for modified status
     $self->{_sb}{ss} = $sb->addLabel(
-        -width  => 3,
-        -relief => 'sunken',
+        -width      => 3,
+        -relief     => 'sunken',
         -anchor     => 'center',
         -side       => 'right',
         -background => 'lightyellow',
@@ -482,10 +484,12 @@ sub set_status {
         $sb->configure( -image => $text ) if defined $text;
     }
     elsif ( $sb_id eq 'ss' ) {
+
         #         _scrdata_rec       status text
-        my $str = !defined $text   ? ''
-                : $text            ? 'M'
-                :                    'S';
+        my $str
+            = !defined $text ? ''
+            : $text          ? 'M'
+            :                  'S';
         $sb->configure( -textvariable => \$str ) if defined $str;
     }
     else {
@@ -507,9 +511,9 @@ sub _create_toolbar {
 
     $self->{_tb} = $self->TB();
 
-    my ($toolbars, $attribs) = $self->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->toolbar_names();
 
-    $self->{_tb}->make_toolbar_buttons($toolbars, $attribs);
+    $self->{_tb}->make_toolbar_buttons( $toolbars, $attribs );
 
     return;
 }
@@ -530,7 +534,7 @@ sub toolbar_names {
     # or better keep them sorted and ready to use in config
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    return ($toolbars, $attribs);
+    return ( $toolbars, $attribs );
 }
 
 =head2 create_notebook
@@ -544,23 +548,26 @@ dependent table.
 =cut
 
 sub create_notebook {
-    my ($self) = @_;                         # , $det_page
+    my ($self) = @_;    # , $det_page
 
     #- NoteBook
 
     $self->{_nb} = $self->NoteBook()->pack(
         -side   => 'top',
-        -padx   => 3, -pady   => 3,
-        -ipadx  => 6, -ipady  => 6,
+        -padx   => 3,
+        -pady   => 3,
+        -ipadx  => 6,
+        -ipady  => 6,
         -fill   => 'both',
         -expand => 1,
     );
 
     #- Panels
 
-    $self->create_notebook_panel('rec', 'Record');
-    $self->create_notebook_panel('lst', 'List');
-     # $self->create_notebook_panel('det', 'Details') if $det_page;
+    $self->create_notebook_panel( 'rec', 'Record' );
+    $self->create_notebook_panel( 'lst', 'List' );
+
+    # $self->create_notebook_panel('det', 'Details') if $det_page;
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
@@ -586,7 +593,8 @@ sub create_notebook {
     $self->{_nb}->pack(
         -side   => 'top',
         -fill   => 'both',
-        -padx   => 5, -pady   => 5,
+        -padx   => 5,
+        -pady   => 5,
         -expand => 1,
     );
 
@@ -603,7 +611,7 @@ Create a NoteBook panel
 =cut
 
 sub create_notebook_panel {
-    my ($self, $panel, $label) = @_;
+    my ( $self, $panel, $label ) = @_;
 
     $self->{_nb}{$panel} = $self->{_nb}->add(
         $panel,
@@ -614,7 +622,6 @@ sub create_notebook_panel {
     return;
 }
 
-
 =head2 remove_notebook_panel
 
 Remove a NoteBook panel
@@ -622,7 +629,7 @@ Remove a NoteBook panel
 =cut
 
 sub remove_notebook_panel {
-    my ($self, $panel) = @_;
+    my ( $self, $panel ) = @_;
 
     $self->{_nb}->delete($panel);
 
@@ -636,7 +643,7 @@ Return the notebook handler
 =cut
 
 sub get_notebook {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     if ($page) {
         return $self->{_nb}{$page};
@@ -679,7 +686,7 @@ Clean a page of the Tk::NoteBook widget, remove all child widgets.
 =cut
 
 sub notebook_page_clean {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     my $frame = $self->get_notebook($page);
 
@@ -764,9 +771,9 @@ State can come as 0 | 1 and normal | disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $btn_name, $state) = @_;
+    my ( $self, $btn_name, $state ) = @_;
 
-    $self->{_tb}->enable_tool($btn_name, $state);
+    $self->{_tb}->enable_tool( $btn_name, $state );
 
     return;
 }
@@ -778,15 +785,16 @@ Toggle the icon in the status bar
 =cut
 
 sub toggle_status_cn {
-    my ($self, $status) = @_;
+    my ( $self, $status ) = @_;
 
     if ($status) {
-        $self->set_status('connectyes16','cn');
-        $self->set_status($self->_cfg->connection->{dbname},'db','darkgreen');
+        $self->set_status( 'connectyes16', 'cn' );
+        $self->set_status( $self->_cfg->connection->{dbname},
+            'db', 'darkgreen' );
     }
     else {
-        $self->set_status('connectno16','cn');
-        $self->set_status('','db');
+        $self->set_status( 'connectno16', 'cn' );
+        $self->set_status( '',            'db' );
     }
 
     return;
@@ -838,7 +846,7 @@ Return the record list handler
 =cut
 
 sub get_recordlist {
-    my $self  = shift;
+    my $self = shift;
 
     return $self->{_rc};
 }
@@ -850,7 +858,7 @@ Prepare the header for list in the List tab.
 =cut
 
 sub make_list_header {
-    my ($self, $header_look, $header_cols, $fields) = @_;
+    my ( $self, $header_look, $header_cols, $fields ) = @_;
 
     #- Delete existing columns
     $self->get_recordlist->selectionClear( 0, 'end' );
@@ -888,7 +896,7 @@ Make header for the list in the List tab.
 =cut
 
 sub list_header {
-    my ($self, $col, $colcnt) = @_;
+    my ( $self, $col, $colcnt ) = @_;
 
     # Label
     $self->get_recordlist->columnInsert( 'end', -text => $col->{label} );
@@ -960,7 +968,7 @@ sub list_populate {
         $self->get_recordlist->insert( 'end', $record );
         $self->get_recordlist->see('end');
         $row_count++;
-        $self->set_status("$row_count records fetched", 'ms');
+        $self->set_status( "$row_count records fetched", 'ms' );
         $self->get_recordlist->update;
 
         # Progress bar
@@ -968,7 +976,7 @@ sub list_populate {
         if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status("$row_count records listed", 'ms');
+    $self->set_status( "$row_count records listed", 'ms' );
 
     # Activate and select last
     $self->get_recordlist->selectionClear( 0, 'end' );
@@ -1031,6 +1039,7 @@ sub list_read_selected {
     my $self = shift;
 
     if ( !$self->has_list_records ) {
+
         # No records
         return;
     }
@@ -1041,12 +1050,14 @@ sub list_read_selected {
     eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
+
         # $self->refresh_sb( 'll', 'No record selected' );
         return;
     }
     else {
-        $indecs = pop @selected; # first row in case of multiselect
-        if (!defined $indecs) {
+        $indecs = pop @selected;    # first row in case of multiselect
+        if ( !defined $indecs ) {
+
             # Activate the last row
             $indecs = 'end';
             $self->get_recordlist->selectionClear( 0, 'end' );
@@ -1057,13 +1068,12 @@ sub list_read_selected {
     }
 
     # In scalar context, getRow returns the value of column 0
-    my @idxs = @{ $self->{lookup} };      # indices for Pk and Fk cols
+    my @idxs = @{ $self->{lookup} };    # indices for Pk and Fk cols
     my @returned;
-    eval {
-        @returned = ( $self->get_recordlist->getRow($indecs) )[@idxs];
-    };
+    eval { @returned = ( $self->get_recordlist->getRow($indecs) )[@idxs]; };
     if ($@) {
         warn "Error: $@";
+
         # $self->refresh_sb( 'll', 'No record selected!' );
         return;
     }
@@ -1084,7 +1094,7 @@ selected row contents in the list.
 =cut
 
 sub list_remove_selected {
-    my ($self, $pk_val, $fk_val) = @_;
+    my ( $self, $pk_val, $fk_val ) = @_;
 
     my $sel = $self->list_read_selected();
     if ( !ref $sel ) {
@@ -1116,12 +1126,13 @@ sub list_remove_selected {
     eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
+
         # $self->refresh_sb( 'll', 'No record selected' );
         return;
     }
     else {
-        my $indecs = pop @selected; # first row in case of multiselect
-        if (defined $indecs) {
+        my $indecs = pop @selected;    # first row in case of multiselect
+        if ( defined $indecs ) {
             $self->get_recordlist->delete($indecs);
         }
         else {
@@ -1140,9 +1151,9 @@ locate the record in the list. ;)
 =cut
 
 sub list_locate {
-    my ($self, $pk_val, $fk_val) = @_;
+    my ( $self, $pk_val, $fk_val ) = @_;
 
-    my $pk_idx = $self->{lookup}[0];      # indices for Pk and Fk cols
+    my $pk_idx = $self->{lookup}[0];    # indices for Pk and Fk cols
     my $fk_idx = $self->{lookup}[1];
     my $idx;
 
@@ -1160,7 +1171,7 @@ sub list_locate {
             }
             else {
                 $idx = $i;
-                last;    # found!
+                last;        # found!
             }
         }
 

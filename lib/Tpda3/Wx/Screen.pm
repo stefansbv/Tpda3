@@ -96,11 +96,11 @@ toggle.  State can come as 0 | 1 and normal | disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $btn_name, $state) = @_;
+    my ( $self, $btn_name, $state ) = @_;
 
     return if not defined $self->{tb};
 
-    $self->{tb}->enable_tool($btn_name, $state);
+    $self->{tb}->enable_tool( $btn_name, $state );
 
     return;
 }
@@ -142,4 +142,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::Screen
+1;    # End of Tpda3::Wx::Screen

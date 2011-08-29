@@ -57,7 +57,7 @@ Constructor method.
 =cut
 
 sub Populate {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     $self->SUPER::Populate($args);
 
@@ -71,14 +71,14 @@ Write header on row 0 of TableMatrix
 =cut
 
 sub init {
-    my ($self, $frame, $args) = @_;
+    my ( $self, $frame, $args ) = @_;
 
     $self->{columns}     = $args->{columns};
     $self->{selectorcol} = $args->{selectorcol};
     $self->{colstretch}  = $args->{colstretch};
 
     $self->{frame}  = $frame;
-    $self->{tm_sel} = undef;               # selected row
+    $self->{tm_sel} = undef;    # selected row
 
     $self->set_tags();
 
@@ -128,6 +128,7 @@ sub set_tags {
 
     if ($cols) {
         $self->configure( -cols => $cols );
+
         # $self->configure( -rows => 1 ); # Keep table dim in grid
     }
     $self->tagConfigure(
@@ -153,11 +154,11 @@ sub set_tags {
         -anchor => 'e',
         -bg     => 'lightgreen',
     );
-    $self->tagConfigure('ro_left'     , -anchor => 'w', -bg => 'lightgrey');
-    $self->tagConfigure('ro_center'   , -anchor => 'n', -bg => 'lightgrey');
-    $self->tagConfigure('ro_right'    , -anchor => 'e', -bg => 'lightgrey');
-    $self->tagConfigure('enter_left'  , -anchor => 'w', -bg => 'white');
-    $self->tagConfigure('enter_center', -anchor => 'n', -bg => 'white');
+    $self->tagConfigure( 'ro_left',      -anchor => 'w', -bg => 'lightgrey' );
+    $self->tagConfigure( 'ro_center',    -anchor => 'n', -bg => 'lightgrey' );
+    $self->tagConfigure( 'ro_right',     -anchor => 'e', -bg => 'lightgrey' );
+    $self->tagConfigure( 'enter_left',   -anchor => 'w', -bg => 'white' );
+    $self->tagConfigure( 'enter_center', -anchor => 'n', -bg => 'white' );
     $self->tagConfigure(
         'enter_center_blue',
         -anchor => 'n',
@@ -167,7 +168,7 @@ sub set_tags {
     $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
     # TableMatrix header, Set Name, Align, Width
-    foreach my $field ( keys %{$self->{columns}} ) {
+    foreach my $field ( keys %{ $self->{columns} } ) {
         my $col = $self->{columns}->{$field}{id};
         $self->tagCol( $self->{columns}->{$field}{tag}, $col );
         $self->set( "0,$col", $self->{columns}->{$field}{label} );
@@ -194,6 +195,7 @@ sub set_tags {
 
     $self->tagRow( 'title', 0 );
     if ( $self->tagExists('expnd') ) {
+
         # Change the tag priority
         $self->tagRaise( 'expnd', 'title' );
     }
@@ -215,7 +217,7 @@ sub clear_all {
     my $r;
 
     for my $row ( 1 .. $rows_idx ) {
-            $self->deleteRows( $row, 1 );
+        $self->deleteRows( $row, 1 );
     }
 
     return;
@@ -228,7 +230,7 @@ Fill TableMatrix widget with data.
 =cut
 
 sub fill {
-    my ($self, $record_ref) = @_;
+    my ( $self, $record_ref ) = @_;
 
     my $xtvar = $self->cget( -variable );
 
@@ -246,8 +248,9 @@ sub fill {
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
 
-            my ( $col, $validtype, $width, $places ) =
-              @$fld_cfg{'id','validation','width','places'}; # hash slice
+            my ( $col, $validtype, $width, $places )
+                = @$fld_cfg{ 'id', 'validation', 'width',
+                'places' };                        # hash slice
 
             if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
@@ -268,11 +271,10 @@ sub fill {
     }
 
     # Refreshing the table...
-    $self->configure( -rows => $row);
+    $self->configure( -rows => $row );
 
     return;
 }
-
 
 =head2 write_row
 
@@ -283,9 +285,9 @@ TableMatrix designator is optional and default to 'tm1'.
 =cut
 
 sub write_row {
-    my ($self, $row, $col, $record_ref) = @_;
+    my ( $self, $row, $col, $record_ref ) = @_;
 
-    return unless ref $record_ref;     # No results
+    return unless ref $record_ref;    # No results
 
     my $xtvar = $self->cget( -variable );
 
@@ -295,8 +297,8 @@ sub write_row {
         my $fld_cfg = $self->{columns}{$field};
         my $value   = $record_ref->{$field};
 
-        my ( $col, $validtype, $width, $places ) =
-            @$fld_cfg{'id','validation','width','places'}; # hash slice
+        my ( $col, $validtype, $width, $places )
+            = @$fld_cfg{ 'id', 'validation', 'width', 'places' }; # hash slice
 
         if ( $validtype =~ /digit/ ) {
             $value = 0 unless $value;
@@ -324,7 +326,7 @@ Read data from widget.
 =cut
 
 sub data_read {
-    my $self  = shift;
+    my $self = shift;
 
     my $xtvar = $self->cget( -variable );
 
@@ -334,7 +336,7 @@ sub data_read {
     my $cols_idx = $cols_no - 1;
 
     my $fields_cfg = $self->{columns};
-    my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
 
     # Get selectorcol index, if any
     my $sc = $self->{selectorcol};
@@ -348,10 +350,10 @@ sub data_read {
         my $rowdata = {};
         for my $col ( 0 .. $cols_idx ) {
 
-            next if $sc and ($col == $sc); # skip selectorcol
+            next if $sc and ( $col == $sc );    # skip selectorcol
 
             my $cell_value = $self->get("$row,$col");
-            my $col_name = $cols_ref->[$col];
+            my $col_name   = $cols_ref->[$col];
 
             my $fld_cfg = $fields_cfg->{$col_name};
             my ($rw) = @$fld_cfg{'rw'};    # hash slice
@@ -364,7 +366,7 @@ sub data_read {
         push @tabledata, $rowdata;
     }
 
-    return (\@tabledata, $sc);
+    return ( \@tabledata, $sc );
 }
 
 =head2 cell_read
@@ -379,17 +381,17 @@ The I<col> parameter can be a number - column index or a column name.
 =cut
 
 sub cell_read {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
     my $is_col_name = 0;
-    $is_col_name    = 1 if $col !~ m{\d+};
+    $is_col_name = 1 if $col !~ m{\d+};
 
     my $fields_cfg = $self->{columns};
 
     my $col_name;
     if ($is_col_name) {
         $col_name = $col;
-        $col = $fields_cfg->{$col_name}{id};
+        $col      = $fields_cfg->{$col_name}{id};
     }
     else {
         my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
@@ -398,7 +400,7 @@ sub cell_read {
 
     my $cell_value = $self->get("$row,$col");
 
-    return {$col_name => $cell_value};
+    return { $col_name => $cell_value };
 }
 
 =head2 add_row
@@ -408,33 +410,35 @@ Table matrix methods.  Add TableMatrix row.
 =cut
 
 sub add_row {
-    my ($self) = @_; # , $controller
+    my ($self) = @_;    # , $controller
 
     my $updstyle = 'delete+add';
 
     $self->configure( state => 'normal' );    # normal state
     my $old_r = $self->index( 'end', 'row' ); # get old row index
     $self->insertRows('end');
-    my $new_r = $self->index( 'end', 'row' ); # get new row index
+    my $new_r = $self->index( 'end', 'row' );    # get new row index
 
-    if (($updstyle eq 'delete+add') or ($old_r == 0)) {
-        $self->set( "$new_r,0", $new_r );     # set new index
+    if ( ( $updstyle eq 'delete+add' ) or ( $old_r == 0 ) ) {
+        $self->set( "$new_r,0", $new_r );        # set new index
         $self->renum_row($self);
     }
     else {
+
         # No renumbering ...
-        my $max_r = (sort {$b <=> $a} $self->get("1,0","$old_r,0"))[0]; # max row
-        if ($max_r >= $new_r) {
-            $self->set( "$new_r,0", $max_r + 1);
+        my $max_r = ( sort { $b <=> $a } $self->get( "1,0", "$old_r,0" ) )[0]
+            ;                                    # max row
+        if ( $max_r >= $new_r ) {
+            $self->set( "$new_r,0", $max_r + 1 );
         }
         else {
-            $self->set( "$new_r,0", $new_r);
+            $self->set( "$new_r,0", $new_r );
         }
     }
 
     my $sc = $self->{selectorcol};
     if ($sc) {
-        $self->embeded_buttons( $new_r, $sc ); # add button
+        $self->embeded_buttons( $new_r, $sc );    # add button
         $self->set_selected($new_r);
     }
 
@@ -453,7 +457,7 @@ Delete TableMatrix row.
 =cut
 
 sub remove_row {
-    my ($self, $row) = @_; # , $controller
+    my ( $self, $row ) = @_;    # , $controller
 
     my $updstyle = 'delete+add';
 
@@ -468,11 +472,11 @@ sub remove_row {
 
     my $sc = $self->{selectorcol};
     if ($sc) {
-        $self->set_selected($row - 1);
+        $self->set_selected( $row - 1 );
     }
 
     $self->renum_row($self)
-      if $updstyle eq 'delete+add';    # renumber rows
+        if $updstyle eq 'delete+add';    # renumber rows
 
     # Refresh table
     $self->activate('origin');
@@ -491,9 +495,7 @@ sub get_active_row {
     my $self = shift;
 
     my $r;
-    eval {
-        $r = $self->index( 'active', 'row' );
-    };
+    eval { $r = $self->index( 'active', 'row' ); };
     if ($@) {
         print "Select a row!\n";
         return;
@@ -529,7 +531,7 @@ Make TableMatrix selector.
 =cut
 
 sub tmatrix_make_selector {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
 
     my $rows_no  = $self->cget( -rows );
     my $rows_idx = $rows_no - 1;
@@ -548,12 +550,12 @@ Embeded windows
 =cut
 
 sub embeded_buttons {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
     $self->windowConfigure(
         "$row,$col",
         -sticky => 's',
-        -window => $self->build_rbbutton($row, $col),
+        -window => $self->build_rbbutton( $row, $col ),
     );
 
     return;
@@ -604,7 +606,7 @@ undef. As a consequence it won't set as selected row 0.
 =cut
 
 sub set_selected {
-    my ($self, $selected_row) = @_;
+    my ( $self, $selected_row ) = @_;
 
     if ($selected_row) {
         $self->{tm_sel} = $selected_row;

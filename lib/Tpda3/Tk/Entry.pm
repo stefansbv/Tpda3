@@ -78,4 +78,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Tk::Entry
+1;    # End of Tpda3::Tk::Entry

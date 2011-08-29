@@ -54,7 +54,7 @@ Connect to database
 =cut
 
 sub db_connect {
-    my ($self, $conf) = @_;
+    my ( $self, $conf ) = @_;
 
     my $log = get_logger();
 
@@ -67,15 +67,15 @@ sub db_connect {
     try {
         $self->{_dbh} = DBI->connect(
             "dbi:Pg:"
-              . "dbname="
-              . $conf->{dbname}
-              . ";host="
-              . $conf->{host}
-              . ";port="
-              . $conf->{port},
-            $conf->{user}, $conf->{pass},
-            {
-                FetchHashKeyName => 'NAME_lc',
+                . "dbname="
+                . $conf->{dbname}
+                . ";host="
+                . $conf->{host}
+                . ";port="
+                . $conf->{port},
+            $conf->{user},
+            $conf->{pass},
+            {   FetchHashKeyName => 'NAME_lc',
                 AutoCommit       => 1,
                 RaiseError       => 1,
                 PrintError       => 0,
@@ -85,7 +85,7 @@ sub db_connect {
     }
     catch {
         $log->fatal("Transaction aborted: $_")
-          or print STDERR "$_\n";
+            or print STDERR "$_\n";
     };
 
     ## Date format
@@ -108,7 +108,7 @@ TODO: Implement using SQL::Abstract !
 =cut
 
 sub table_info_short {
-    my ($self, $table) = @_;
+    my ( $self, $table ) = @_;
 
     my $log = get_logger();
     $log->info("Geting table info for $table");
@@ -126,7 +126,7 @@ sub table_info_short {
                ORDER BY ordinal_position;
     );
 
-    $self->{_dbh}{ChopBlanks} = 1;          # trim CHAR fields
+    $self->{_dbh}{ChopBlanks} = 1;    # trim CHAR fields
 
     my $flds_ref;
     try {
@@ -137,7 +137,7 @@ sub table_info_short {
         $flds_ref = $sth->fetchall_hashref('pos');
     }
     catch {
-         $log->fatal("Transaction aborted because $_")
+        $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -153,7 +153,7 @@ TODO: Implement using SQL::Abstract !
 =cut
 
 sub table_exists {
-    my ($self, $table) = @_;
+    my ( $self, $table ) = @_;
 
     my $log = get_logger();
     $log->info("Checking if $table table exists");
@@ -189,7 +189,7 @@ TODO: Implement using SQL::Abstract !
 =cut
 
 sub table_keys {
-    my ($self, $table, $foreign) = @_;
+    my ( $self, $table, $foreign ) = @_;
 
     my $log = get_logger();
 
@@ -216,8 +216,9 @@ sub table_keys {
 
     my $pkf;
     try {
+
         # List of lists
-        $pkf = $self->{_dbh}->selectcol_arrayref( $sql );
+        $pkf = $self->{_dbh}->selectcol_arrayref($sql);
     }
     catch {
         $log->fatal("Transaction aborted because $_")
@@ -234,7 +235,7 @@ Return table dependencies and their Id field.
 =cut
 
 sub table_deps {
-    my ($self, $table) = @_;
+    my ( $self, $table ) = @_;
 
     return;
 }
@@ -264,10 +265,10 @@ sub table_list {
 
     my $table_list;
     try {
-        $table_list = $self->{_dbh}->selectcol_arrayref( $sql );
+        $table_list = $self->{_dbh}->selectcol_arrayref($sql);
     }
     catch {
-         $log->fatal("Transaction aborted because $_")
+        $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -294,4 +295,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Db::Connection::Postgresql
+1;    # End of Tpda3::Db::Connection::Postgresql

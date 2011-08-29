@@ -19,7 +19,7 @@ BEGIN {
     }
 }
 
-diag( "Testing with Perl $], $^X" );
+diag("Testing with Perl $], $^X");
 
 use_ok('Tpda3');
 use_ok('Tpda3::Utils');

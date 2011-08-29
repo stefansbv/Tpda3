@@ -43,7 +43,7 @@ use Wx q{:everything};
 use Wx::Event qw(EVT_TIMER);
 
 my $timer = Wx::Timer->new( $a->{gui}{_view}, 1 );
-$timer->Start(1000, 1); # one shot
+$timer->Start( 1000, 1 );    # one shot
 
 EVT_TIMER $a->{gui}{_view}, 1, sub {
     ok( $a->{gui}->screen_module_load('Customers'), 'Load Screen' );

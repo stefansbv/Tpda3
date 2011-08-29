@@ -10,6 +10,7 @@ use Test::More;
 use lib qw( lib ../lib );
 
 use Tk;
+
 # use Tpda3;
 # use Tpda3::Config;
 use Tpda3::Tk::TM;
@@ -100,24 +101,21 @@ my $header = {
 
 # Data for tests
 my $record = [
-    {
-        'priceeach'       => '37.97',
+    {   'priceeach'       => '37.97',
         'productcode'     => 'S50_1341',
         'ordervalue'      => '1101.13',
         'quantityordered' => '29',
         'productname'     => '1930 Buick Marquette Phaeton',
         'orderlinenumber' => '1'
     },
-    {
-        'priceeach'       => '81.29',
+    {   'priceeach'       => '81.29',
         'productcode'     => 'S700_1691',
         'ordervalue'      => '3901.92',
         'quantityordered' => '48',
         'productname'     => 'American Airlines: B767-300',
         'orderlinenumber' => '2'
     },
-    {
-        'priceeach'       => '70.40',
+    {   'priceeach'       => '70.40',
         'productcode'     => 'S700_3167',
         'ordervalue'      => '2675.20',
         'quantityordered' => '38',
@@ -149,7 +147,7 @@ eval {
     );
 };
 
-is($tm->init($mw, $header), undef, 'make header');
+is( $tm->init( $mw, $header ), undef, 'make header' );
 
 $tm->pack;
 
@@ -157,30 +155,30 @@ $tm->pack;
 
 my $delay = 1;
 
-$mw->after(
-    $delay * 1000,
-    sub { is($tm->fill($record), undef, 'fill TM'); }
-);
+$mw->after( $delay * 1000,
+    sub { is( $tm->fill($record), undef, 'fill TM' ); } );
 
 $delay++;
 
 $mw->after(
     $delay * 1000,
     sub {
-        my ($data, $scol) = $tm->data_read();
-        is_deeply($data, $record, 'read data from TM');
+        my ( $data, $scol ) = $tm->data_read();
+        is_deeply( $data, $record, 'read data from TM' );
     }
 );
 
-
-
 $delay++;
 
 $mw->after(
     $delay * 1000,
     sub {
-        my $cell_data = $tm->cell_read(1,1);
-        is_deeply($cell_data, {productcode => 'S50_1341'}, 'read cell from TM');
+        my $cell_data = $tm->cell_read( 1, 1 );
+        is_deeply(
+            $cell_data,
+            { productcode => 'S50_1341' },
+            'read cell from TM'
+        );
     }
 );
 
@@ -190,8 +188,8 @@ $mw->after(
     $delay * 1000,
     sub {
         $tm->clear_all;
-        my ($data, $scol) = $tm->data_read();
-        is_deeply($data, [], 'read data from TM after clear');
+        my ( $data, $scol ) = $tm->data_read();
+        is_deeply( $data, [], 'read data from TM after clear' );
     }
 );
 
@@ -202,8 +200,8 @@ $mw->after(
     sub {
         $tm->add_row();
         $tm->write_row( 1, 0, $record->[0] );
-        my ($data, $scol) = $tm->data_read();
-        is_deeply($data, [$record->[0]], 'read data from TM after add');
+        my ( $data, $scol ) = $tm->data_read();
+        is_deeply( $data, [ $record->[0] ], 'read data from TM after add' );
     }
 );
 

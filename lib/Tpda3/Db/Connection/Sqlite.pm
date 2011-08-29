@@ -53,7 +53,7 @@ Connect to database
 =cut
 
 sub db_connect {
-    my ($self, $conf) = @_;
+    my ( $self, $conf ) = @_;
 
     my $log = get_logger();
 
@@ -62,12 +62,8 @@ sub db_connect {
     $log->trace("  => Database = $conf->{dbname}\n");
 
     try {
-        $self->{_dbh} = DBI->connect(
-            "dbi:SQLite:"
-              . $conf->{dbname},
-            q{},
-            q{},
-        );
+        $self->{_dbh}
+            = DBI->connect( "dbi:SQLite:" . $conf->{dbname}, q{}, q{}, );
     }
     catch {
         $log->fatal("Transaction aborted: $_")
@@ -104,4 +100,4 @@ the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Db::Connection::Sqlite
+1;    # End of Tpda3::Db::Connection::Sqlite

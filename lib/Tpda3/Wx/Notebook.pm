@@ -3,7 +3,7 @@ package Tpda3::Wx::Notebook;
 use strict;
 use warnings;
 
-use Wx qw(:everything);  # TODO: Eventualy change this!
+use Wx qw(:everything);    # TODO: Eventualy change this!
 use Wx::AUI;
 
 use base qw{Wx::AuiNotebook};
@@ -40,10 +40,9 @@ sub new {
     #- The Notebook
 
     my $self = $class->SUPER::new(
-        $gui,
-        -1,
-        [-1, -1],
-        [-1, -1],
+        $gui, -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
         wxAUI_NB_TAB_FIXED_WIDTH,
     );
 
@@ -57,14 +56,10 @@ Create a notebook_panel and page.
 =cut
 
 sub create_notebook_page {
-    my ($self, $name, $label) = @_;
+    my ( $self, $name, $label ) = @_;
 
-    $self->{$name} = Wx::Panel->new(
-        $self,
-        -1,
-        wxDefaultPosition,
-        wxDefaultSize,
-    );
+    $self->{$name}
+        = Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize, );
 
     $self->AddPage( $self->{$name}, $label );
 
@@ -91,4 +86,4 @@ the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::Notebook
+1;    # End of Tpda3::Wx::Notebook

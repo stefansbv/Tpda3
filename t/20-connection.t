@@ -26,7 +26,7 @@ use Tpda3::Db;
 #-- Check the one instance functionality
 
 # No instance if instance() not called yet
-ok( ! Tpda3::Db->has_instance(), 'no Tpda3::Db instance yet' );
+ok( !Tpda3::Db->has_instance(), 'no Tpda3::Db instance yet' );
 
 my $d1 = Tpda3::Db->instance();
 ok( $d1->isa('Tpda3::Db'), 'created Tpda3::Db instance 1' );

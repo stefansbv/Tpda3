@@ -100,12 +100,12 @@ sub search_dialog {
             { -name => 'starts with', -value => 'S' },
             { -name => 'ends with',   -value => 'E' },
         ],
-    )->grid(
+        )->grid(
         -row    => 0,
         -column => 1,
         -padx   => 5,
         -pady   => 6,
-    );
+        );
 
     # Focus on Entry
     $search_ctrl->focus;
@@ -117,10 +117,8 @@ sub search_dialog {
         -command => [
             sub {
                 my ($self) = @_;
-                $self->search_command(
-                    $view->_model, $search_ctrl->get, $para,
-                    $selected,     $filter
-                );
+                $self->search_command( $view->_model, $search_ctrl->get,
+                    $para, $selected, $filter );
             },
             $self,
         ],
@@ -137,12 +135,12 @@ sub search_dialog {
     my $frm2 = $mf->LabFrame(
         -label      => 'Rezult',
         -foreground => 'darkgreen',
-      )->pack(
+        )->pack(
         -expand => 1,
         -fill   => 'both',
         -ipadx  => 5,
         -ipady  => 3,
-      );
+        );
 
     $self->{box} = $frm2->Scrolled(
         'MListbox',
@@ -152,12 +150,12 @@ sub search_dialog {
         -width              => 0,
         -selectmode         => 'browse',
         -relief             => 'sunken',
-    )->pack(
+        )->pack(
         -expand => 1,
         -fill   => 'both',
         -ipadx  => 5,
         -ipady  => 3,
-    );
+        );
 
     # Box header
 
@@ -167,23 +165,25 @@ sub search_dialog {
         foreach my $field ( keys %{$rec} ) {
 
             # Use maping of name instead of 'field' if exists
-            if (exists $rec->{$field}{name}) {
+            if ( exists $rec->{$field}{name} ) {
                 push @columns, $rec->{$field}{name};
             }
             else {
                 push @columns, $field;
             }
 
-            $self->{box}->columnInsert( 'end', -text => $rec->{$field}{label} );
+            $self->{box}
+                ->columnInsert( 'end', -text => $rec->{$field}{label} );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
-              ->configure( -background => 'tan' );
+                ->configure( -background => 'tan' );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
-              ->configure( -width => $rec->{$field}{width} );
+                ->configure( -width => $rec->{$field}{width} );
 
             if ( defined $rec->{$field}{order} ) {
                 if ( $rec->{$field}{order} eq 'N' ) {
                     $self->{box}->columnGet($colcnt)
-                      ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
+                        ->configure(
+                        -comparecommand => sub { $_[0] <=> $_[1] } );
                 }
             }
             else {
@@ -195,7 +195,7 @@ sub search_dialog {
     }
 
     # Search in field ...
-    my $den_label = $para->{search} || q{}; # label name or empty string
+    my $den_label = $para->{search} || q{};    # label name or empty string
     $lblcamp->configure( -text => "[ $den_label ]", -foreground => 'blue' );
 
     $search_ctrl->bind(
@@ -220,9 +220,7 @@ sub search_dialog {
 
     #- Label
 
-    my $fltlbl = $frm3->Label(
-        -text => 'Filter:',
-    )->grid(
+    my $fltlbl = $frm3->Label( -text => 'Filter:', )->grid(
         -row    => 0,
         -column => 0,
         -sticky => 'e',
@@ -234,12 +232,12 @@ sub search_dialog {
     $self->{filt} = $frm3->Label(
         -relief => 'groove',
         -width  => 50,
-    )->grid(
+        )->grid(
         -row    => 0,
         -column => 1,
         -padx   => 5,
         -pady   => 5,
-    );
+        );
 
     #-- Frame
 
@@ -266,7 +264,7 @@ sub search_dialog {
 
     # Filter?
 
-    if (ref $filter) {
+    if ( ref $filter ) {
         my $message;
         while ( my ( $key, $value ) = each( %{$filter} ) ) {
             print "$key: $value\n";
@@ -302,7 +300,7 @@ sub search_dialog {
         #- Prepare data and return as hash reference
 
         my $row_data = {};
-        for (my $i = 0; $i < @columns; $i++) {
+        for ( my $i = 0; $i < @columns; $i++ ) {
             $row_data->{ $columns[$i] } = $values[$i];
         }
 
@@ -330,13 +328,13 @@ sub search_command {
     $params->{where}{ $para->{search} } = [ $srcstr, 'contains' ];
     $params->{options} = $options;
     $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
-    $params->{order} = $para->{search};      # order by lookup field
+    $params->{order} = $para->{search};    # order by lookup field
 
     if ( ref $filter ) {
 
         # Add the filter to the WHERE (merge hash refs)
-        @{ $params->{where} }{ keys %{$filter} } =
-          [ values %{$filter}, 'allstr' ];
+        @{ $params->{where} }{ keys %{$filter} }
+            = [ values %{$filter}, 'allstr' ];
     }
 
     my $records = $model->query_dictionary($params);

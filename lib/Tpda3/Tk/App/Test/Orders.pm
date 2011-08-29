@@ -3,7 +3,7 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
-use Tk::widgets qw(DateEntry JComboBox); #  MatchingBE
+use Tk::widgets qw(DateEntry JComboBox);    #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
 
@@ -40,8 +40,8 @@ The screen layout
 sub run_screen {
     my ( $self, $nb ) = @_;
 
-    my $rec_page  = $nb->page_widget('rec');
-    my $det_page  = $nb->page_widget('det');
+    my $rec_page = $nb->page_widget('rec');
+    my $det_page = $nb->page_widget('det');
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
@@ -49,8 +49,7 @@ sub run_screen {
 
     #- Top Frame
 
-    my $frm_top = $rec_page->Frame(
-    )->pack(
+    my $frm_top = $rec_page->Frame()->pack(
         -expand => 0,
         -fill   => 'x',
     );
@@ -61,11 +60,11 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Order',
         -labelside  => 'acrosstop'
-    )->pack(
+        )->pack(
         -side   => 'left',
         -expand => 0,
         -fill   => 'x'
-    );
+        );
 
     #- Top Right Frame
 
@@ -73,11 +72,11 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Comments',
         -labelside  => 'acrosstop'
-    )->pack(
+        )->pack(
         -side   => 'left',
         -expand => 1,
         -fill   => 'x'
-    );
+        );
 
     #- Frame t => Tabel
 
@@ -85,10 +84,10 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Articles',
         -labelside  => 'acrosstop'
-    )->pack(
+        )->pack(
         -expand => 1,
         -fill   => 'both'
-    );
+        );
 
     #- Frame bottom
 
@@ -96,20 +95,18 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Order total',
         -labelside  => 'acrosstop'
-    )->pack(
+        )->pack(
         -side   => 'bottom',
         -expand => 0,
         -fill   => 'x'
-    );
+        );
 
     #- Customers
 
-    my $lcustomername = $frame1->Label(
-        -text => 'Customer, No',
-    );
+    my $lcustomername = $frame1->Label( -text => 'Customer, No', );
     $lcustomername->form(
-        -top  => [ %0, 0 ],
-        -left => [ %0, 0 ],
+        -top     => [ %0, 0 ],
+        -left    => [ %0, 0 ],
         -padleft => 5,
     );
 
@@ -127,8 +124,8 @@ sub run_screen {
         -disabledforeground => 'black',
     );
     $ecustomernumber->form(
-        -top  => [ '&',            $lcustomername, 0 ],
-        -left => [ $ecustomername, 5 ],
+        -top      => [ '&',            $lcustomername, 0 ],
+        -left     => [ $ecustomername, 5 ],
         -padright => 5,
     );
 
@@ -136,8 +133,8 @@ sub run_screen {
 
     my $lordernumber = $frame1->Label( -text => 'Order ID' );
     $lordernumber->form(
-        -top  => [ $lcustomername, 8 ],
-        -left => [ %0,             0 ],
+        -top     => [ $lcustomername, 8 ],
+        -left    => [ %0,             0 ],
         -padleft => 5,
     );
 
@@ -155,6 +152,7 @@ sub run_screen {
 
     my $vorderdate;
     my $dorderdate = $frame1->DateEntry(
+
         # -daynames   => \@daynames,
         -variable   => \$vorderdate,
         -arrowimage => 'calmonth16',
@@ -169,14 +167,14 @@ sub run_screen {
     );
 
     $dorderdate->form(
-        -top   => [ '&', $eordernumber,   0 ],
+        -top   => [ '&',  $eordernumber, 0 ],
         -right => [ %100, -5 ],
     );
 
     my $lorderdate = $frame1->Label( -text => 'Order date' );
     $lorderdate->form(
-        -top   => [ '&',         $lordernumber, 0 ],
-        -right => [ $dorderdate, -20 ],
+        -top     => [ '&',         $lordernumber, 0 ],
+        -right   => [ $dorderdate, -20 ],
         -padleft => 5,
     );
 
@@ -184,13 +182,14 @@ sub run_screen {
 
     my $lrequireddate = $frame1->Label( -text => 'Required date' );
     $lrequireddate->form(
-        -top  => [ $lordernumber, 8 ],
-        -left => [ %0,            0 ],
+        -top     => [ $lordernumber, 8 ],
+        -left    => [ %0,            0 ],
         -padleft => 5,
     );
 
     my $vrequireddate;
     my $drequireddate = $frame1->DateEntry(
+
         # -daynames   => \@daynames,
         -variable   => \$vrequireddate,
         -arrowimage => 'calmonth16',
@@ -213,13 +212,14 @@ sub run_screen {
 
     my $lshippeddate = $frame1->Label( -text => 'Shipped date' );
     $lshippeddate->form(
-        -top  => [ '&', $lrequireddate,  0 ],
-        -left => [ '&', $lorderdate,     0 ],
+        -top     => [ '&', $lrequireddate, 0 ],
+        -left    => [ '&', $lorderdate,    0 ],
         -padleft => 5,
     );
 
     my $vshippeddate;
     my $dshippeddate = $frame1->DateEntry(
+
         # -daynames   => \@daynames,
         -variable   => \$vshippeddate,
         -arrowimage => 'calmonth16',
@@ -234,7 +234,7 @@ sub run_screen {
     );
 
     $dshippeddate->form(
-        -top   => [ '&', $lshippeddate,    0 ],
+        -top   => [ '&',  $lshippeddate, 0 ],
         -right => [ %100, -5 ],
     );
 
@@ -242,8 +242,8 @@ sub run_screen {
 
     my $lstatuscode = $frame1->Label( -text => 'Status' );
     $lstatuscode->form(
-        -top  => [ $lrequireddate, 8 ],
-        -left => [ %0,             0 ],
+        -top     => [ $lrequireddate, 8 ],
+        -left    => [ %0,             0 ],
         -padleft => 5,
     );
 
@@ -257,8 +257,8 @@ sub run_screen {
     );
 
     $bstatuscode->form(
-        -top  => [ '&', $lstatuscode, 0 ],
-        -left => [ %0,  110 ],
+        -top       => [ '&', $lstatuscode, 0 ],
+        -left      => [ %0,  110 ],
         -padbottom => 7,
     );
 
@@ -289,10 +289,10 @@ sub run_screen {
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
-    )->pack(
+        )->pack(
         -expand => 1,
         -fill   => 'x'
-    );
+        );
 
     # $tcomments->form(
     #     -left => [ %0, 0 ],
@@ -305,7 +305,7 @@ sub run_screen {
     #
 
     #-- Toolbar
-    $self->make_toolbar_for_table('tm1', $frm_t);
+    $self->make_toolbar_for_table( 'tm1', $frm_t );
 
     my $header = $self->{scrcfg}->dep_table_header_info('tm1');
 
@@ -333,7 +333,7 @@ sub run_screen {
 
     $xtable->pack( -expand => 1, -fill => 'both' );
 
-    $xtable->init($frm_t, $header);
+    $xtable->init( $frm_t, $header );
 
     #- Ordertotal (ordertotal)
 
@@ -342,8 +342,8 @@ sub run_screen {
         -justify => 'right',
     );
     $eordertotal->form(
-        -top   => [ %0,   0 ],
-        -right => [ %100, -5 ],
+        -top       => [ %0,   0 ],
+        -right     => [ %100, -5 ],
         -padbottom => 5,
     );
 
@@ -370,11 +370,7 @@ sub run_screen {
     };
 
     # TableMatrix objects; just one for now :)
-    $self->{tm_controls} = {
-        rec => {
-            tm1 => \$xtable,
-        },
-    };
+    $self->{tm_controls} = { rec => { tm1 => \$xtable, }, };
 
     # Prepare screen configuration data for tables
     # foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
@@ -391,17 +387,19 @@ Calculate order line.
 =cut
 
 sub calculate_order_line {
-    my ($self, $row) = @_;
+    my ( $self, $row ) = @_;
 
     my $xt = ${ $self->{tm_controls}{rec}{tm1} };
 
-    my $cant = $xt->get("$row,3"); # print "Cant = $cant\n";
-    my $pret = $xt->get("$row,4"); # print "Pret = $pret\n";
+    my $cant = $xt->get("$row,3");    # print "Cant = $cant\n";
+    my $pret = $xt->get("$row,4");    # print "Pret = $pret\n";
 
     eval {
-        if ( $cant and $pret ) {
+        if ( $cant and $pret )
+        {
             my $valoare = sprintf( "%.2f", ( $cant * $pret ) );
             $xt->set( "$row,5", $valoare );
+
             # print "Valoare = $valoare\n";
         }
         else {
@@ -425,7 +423,7 @@ Calculate order values.
 =cut
 
 sub calculate_order {
-    my ($self, $xt) = @_;
+    my ( $self, $xt ) = @_;
 
     my $rows_no  = $xt->cget( -rows );
     my $rows_idx = --$rows_no;
@@ -480,4 +478,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::App::Test::Orders
+1;    # End of Tpda3::Tk::App::Test::Orders

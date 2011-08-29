@@ -13,11 +13,11 @@ Tpda3 - The third incarnation of Tpda!
 
 =head1 VERSION
 
-Version 0.22
+Version 0.23
 
 =cut
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 =head1 SYNOPSIS
 
@@ -125,7 +125,7 @@ sub _init {
         exit;
     }
 
-    $self->{gui}->start();                   # stuff to run at start
+    $self->{gui}->start();    # stuff to run at start
 
     return;
 }

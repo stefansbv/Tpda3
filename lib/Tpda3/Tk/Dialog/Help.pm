@@ -118,10 +118,10 @@ sub help_dialog {
         -foreground => 'blue',
         -label      => 'Document',
         -labelside  => 'acrosstop'
-      )->pack(
+        )->pack(
         -side => 'bottom',
         -fill => 'both'
-      );
+        );
 
     # Text
     $self->{ttext} = $frame1->Scrolled(
@@ -143,8 +143,8 @@ sub help_dialog {
     );
 
     # define some fonts.
-    my $basefont =
-      $self->{ttext}->cget('-font')->Clone( -family => 'Helvetica' );
+    my $basefont
+        = $self->{ttext}->cget('-font')->Clone( -family => 'Helvetica' );
     my $boldfont = $basefont->Clone( -weight => 'bold', -family => 'Arial' );
 
     # define a tag for bold font.

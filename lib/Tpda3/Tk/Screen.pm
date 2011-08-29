@@ -5,6 +5,7 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
+
 #use Tpda3::Tk::Text;
 
 use Tpda3::Utils;
@@ -35,7 +36,7 @@ Constructor method
 =cut
 
 sub new {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
     my $self = {};
 
@@ -86,7 +87,7 @@ If TM Id parameter is provided return a reference to that TM object.
 sub get_tm_controls {
     my ( $self, $tm_ds ) = @_;
 
-    return {} if ! exists $self->{tm_controls};
+    return {} if !exists $self->{tm_controls};
 
     if ($tm_ds) {
         return ${ $self->{tm_controls}{rec}{$tm_ds} };
@@ -116,11 +117,11 @@ toggle.  State can come as 0 | 1 and normal | disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $tm_ds, $btn_name, $state) = @_;
+    my ( $self, $tm_ds, $btn_name, $state ) = @_;
 
     return if not defined $self->{tb}{$tm_ds};
 
-    $self->{tb}{$tm_ds}->enable_tool($btn_name, $state);
+    $self->{tb}{$tm_ds}->enable_tool( $btn_name, $state );
 
     return;
 }
@@ -150,15 +151,15 @@ buttons.
 =cut
 
 sub make_toolbar_for_table {
-    my ($self, $tm_ds, $tbf) = @_;
+    my ( $self, $tm_ds, $tbf ) = @_;
 
     $self->{tb}{$tm_ds} = $tbf->TB();
 
-    my $attribs  = $self->{scrcfg}->dep_table_toolbars($tm_ds);
+    my $attribs = $self->{scrcfg}->dep_table_toolbars($tm_ds);
 
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    $self->{tb}{$tm_ds}->make_toolbar_buttons($toolbars, $attribs);
+    $self->{tb}{$tm_ds}->make_toolbar_buttons( $toolbars, $attribs );
 
     return;
 }
@@ -170,7 +171,7 @@ Add new row to the Tk::TableMatrix widget.
 =cut
 
 sub tmatrix_add_row {
-    my ($self, $tm_ds, $controller) = @_;
+    my ( $self, $tm_ds, $controller ) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
@@ -186,14 +187,14 @@ Remove row to the Tk::TableMatrix widget.
 =cut
 
 sub tmatrix_remove_row {
-    my ($self, $tm_ds, $controller) = @_;
+    my ( $self, $tm_ds, $controller ) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
     my $row = $tmx->get_active_row();
 
     if ($row) {
-        $tmx->remove_row($row, $controller);
+        $tmx->remove_row( $row, $controller );
     }
 
     return;
@@ -217,7 +218,7 @@ sub toolbar_names {
     # or better keep them sorted and ready to use in config
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    return ($toolbars, $attribs);
+    return ( $toolbars, $attribs );
 }
 
 =head1 AUTHOR
@@ -240,4 +241,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::Screen
+1;    # End of Tpda3::Tk::Screen

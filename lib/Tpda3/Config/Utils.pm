@@ -45,11 +45,11 @@ depending on the extension of the file.
 =cut
 
 sub config_file_load {
-    my ($self, $conf_file, $message) = @_;
+    my ( $self, $conf_file, $message ) = @_;
 
     my $log = get_logger();
 
-    if (! -f $conf_file) {
+    if ( !-f $conf_file ) {
         if ($message) {
             print "$message";
             exit;
@@ -60,8 +60,8 @@ sub config_file_load {
         }
     }
 
-    my $suf = ( fileparse($conf_file, qr/\.[^.]*/x) )[2];
-    if ( $suf =~ m{conf} )  {
+    my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
+    if ( $suf =~ m{conf} ) {
         return Tpda3::Config::Utils->load_conf($conf_file);
     }
     elsif ( $suf =~ m{yml} ) {
@@ -104,7 +104,7 @@ structure.
 sub load_yaml {
     my ( $self, $yaml_file ) = @_;
 
-    return YAML::Tiny::LoadFile( $yaml_file );
+    return YAML::Tiny::LoadFile($yaml_file);
 }
 
 =head2 find_subdirs
@@ -114,22 +114,16 @@ Find subdirectories of a directory, not recursively
 =cut
 
 sub find_subdirs {
-    my ($self, $dir) = @_;
+    my ( $self, $dir ) = @_;
 
     # Find all the sub directories of a given directory
-    my $rule = File::Find::Rule->new
-        ->mindepth(1)
-        ->maxdepth(1);
-    # Ignore git
-    $rule->or(
-        $rule->new
-            ->directory
-            ->name('.git')
-            ->prune
-            ->discard,
-        $rule->new);
+    my $rule = File::Find::Rule->new->mindepth(1)->maxdepth(1);
 
-    my @subdirs = $rule->directory->in( $dir );
+    # Ignore git
+    $rule->or( $rule->new->directory->name('.git')->prune->discard,
+        $rule->new );
+
+    my @subdirs = $rule->directory->in($dir);
 
     my @dbs = map { basename($_); } @subdirs;
 
@@ -146,16 +140,18 @@ sub save_yaml {
     my ( $self, $yaml_file, $key, $value ) = @_;
 
     my $yaml;
-    if (-f $yaml_file) {
+    if ( -f $yaml_file ) {
+
         # Open file
         $yaml = YAML::Tiny->read($yaml_file);
     }
     else {
+
         # Create a new YAML file
         $yaml = YAML::Tiny->new;
     }
 
-    $yaml->[0]->{geometry}{$key} = $value; # add new key => value
+    $yaml->[0]->{geometry}{$key} = $value;    # add new key => value
 
     # Save the file
     $yaml->write($yaml_file);
@@ -192,12 +188,13 @@ Copy files or die.
 =cut
 
 sub copy_files {
-    my ($self, $src_fqn, $dst_p) = @_;
+    my ( $self, $src_fqn, $dst_p ) = @_;
 
     if ( !-f $src_fqn ) {
         print "\nSource not found:\n $src_fqn\n";
         print "\nBACKUP and remove the configurations path,\n";
-        print " run again this command to recreate the configuration paths!\n";
+        print
+            " run again this command to recreate the configuration paths!\n";
         die;
     }
     if ( !-d $dst_p ) {
@@ -229,4 +226,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Config::Utils
+1;    # End of Tpda3::Config::Utils

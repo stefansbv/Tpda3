@@ -63,7 +63,7 @@ Show dialog and return selected record.
 =cut
 
 sub lookup {
-    my ($self, $view, $para, $filter) = @_;
+    my ( $self, $view, $para, $filter ) = @_;
 
     my $record;
     if ( $self->{_ws} =~ m{tk}ix ) {
@@ -120,4 +120,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Lookup
+1;    # End of Tpda3::Lookup

@@ -42,8 +42,8 @@ The screen layout
 sub run_screen {
     my ( $self, $inreg_p ) = @_;
 
-    my $gui     = $inreg_p->toplevel;
-    my $main_p  = $inreg_p->parent;
+    my $gui    = $inreg_p->toplevel;
+    my $main_p = $inreg_p->parent;
     $self->{bg} = $gui->cget('-background');
 
     # # For DateEntry day names
@@ -61,14 +61,14 @@ sub run_screen {
     );
     $frame1->grid(
         $frame1,
-        -row    => 0,
-        -column => 0,
-        -ipadx  => 3,
-        -sticky => 'nsew',
+        -row        => 0,
+        -column     => 0,
+        -ipadx      => 3,
+        -sticky     => 'nsew',
         -columnspan => 2,
     );
 
-    my $f1d = 110;              # distance from left
+    my $f1d = 110;    # distance from left
 
     # id_pers (id_pers)
     my $lid_pers = $frame1->Label( -text => 'Identificator' );
@@ -85,16 +85,14 @@ sub run_screen {
     );
     $eid_pers->form(
         -top  => [ '&', $lid_pers, 0 ],
-        -left => [ %0, $f1d ],
+        -left => [ %0,  $f1d ],
     );
 
     #-+ cnp
 
-    my $ecnp = $frame1->Entry(
-        -width => 13,
-    );
+    my $ecnp = $frame1->Entry( -width => 13, );
     $ecnp->form(
-        -top   => [ '&', $lid_pers, 0 ],
+        -top   => [ '&',  $lid_pers, 0 ],
         -right => [ %100, -5 ],
     );
     my $lcnp = $frame1->Label( -text => 'CNP', );
@@ -108,13 +106,11 @@ sub run_screen {
 
     my $lnume = $frame1->Label( -text => 'Nume' );
     $lnume->form(
-        -top  => [ $lid_pers, 8 ],
-        -left => [ %0,       0 ],
+        -top     => [ $lid_pers, 8 ],
+        -left    => [ %0,        0 ],
         -padleft => 5,
     );
-    my $enume = $frame1->Entry(
-        -width    => 18,
-    );
+    my $enume = $frame1->Entry( -width => 18, );
     $enume->form(
         -top  => [ '&', $lnume, 0 ],
         -left => [ %0,  $f1d ],
@@ -122,9 +118,7 @@ sub run_screen {
 
     #-+ prenume
 
-    my $eprenume = $frame1->Entry(
-        -width    => 25,
-    );
+    my $eprenume = $frame1->Entry( -width => 25, );
     $eprenume->form(
         -top   => [ '&',  $lnume, 0 ],
         -right => [ %100, -5 ],
@@ -139,15 +133,14 @@ sub run_screen {
     #-- Data nasterii
 
     my $vdata_nas;
-    my $ldata_nas = $frame1->Label(
-        -text => 'Data nașterii',
-    );
+    my $ldata_nas = $frame1->Label( -text => 'Data nașterii', );
     $ldata_nas->form(
-        -top  => [ $lnume, 8 ],
-        -left => [ %0, 0 ],
+        -top     => [ $lnume, 8 ],
+        -left    => [ %0,     0 ],
         -padleft => 5,
     );
     my $ddata_nas = $frame1->DateEntry(
+
         # -daynames   => \@daynames,
         -variable   => \$vdata_nas,
         -arrowimage => 'calmonth16',
@@ -162,7 +155,7 @@ sub run_screen {
     );
     $ddata_nas->form(
         -top  => [ '&', $ldata_nas, 0 ],
-        -left => [ %0, $f1d ],
+        -left => [ %0,  $f1d ],
     );
 
     my $my_font = $enume->cget('-font');    # font
@@ -176,13 +169,11 @@ sub run_screen {
         -padleft => 5
     );
 
-    my $eloc_ds = $frame1->Entry(
-        -width    => 30,
-    );
-    my ($eid_jud_ds, $ecod_p_ds);
+    my $eloc_ds = $frame1->Entry( -width => 30, );
+    my ( $eid_jud_ds, $ecod_p_ds );
     $eloc_ds->form(
         -top  => [ '&', $lloc_ds, 0 ],
-        -left => [ %0, $f1d ],
+        -left => [ %0,  $f1d ],
     );
 
     #-+ id_jud_ds
@@ -224,21 +215,17 @@ sub run_screen {
 
     #-- Judet (judet)
 
-    my $ljudet = $frame1->Label(
-        -text => 'Judet',
-    );
+    my $ljudet = $frame1->Label( -text => 'Judet', );
     $ljudet->form(
-        -left => [ %0,       0 ],
-        -top  => [ $lloc_ds, 8 ],
+        -left    => [ %0,       0 ],
+        -top     => [ $lloc_ds, 8 ],
         -padleft => 5,
     );
 
-    my $ejudet = $frame1->Entry(
-        -width => 25,
-    );
+    my $ejudet = $frame1->Entry( -width => 25, );
     $ejudet->form(
         -top  => [ '&', $ljudet, 0 ],
-        -left => [ %0, 80 ],
+        -left => [ %0,  80 ],
     );
 
     #-- id_judet (SMALLINT)
@@ -249,7 +236,7 @@ sub run_screen {
         -disabledforeground => 'black'
     );
     $eid_judet->form(
-        -top => [ '&', $ljudet, 0 ],
+        -top  => [ '&',     $ljudet, 0 ],
         -left => [ $ejudet, 6 ],
     );
 
@@ -258,7 +245,7 @@ sub run_screen {
     my $ladresa = $frame1->Label( -text => 'Adresă' );
     $ladresa->form(
         -top     => [ $ljudet, 10 ],
-        -left    => [ %0,        0 ],
+        -left    => [ %0,      0 ],
         -padleft => 5
     );
 
@@ -296,11 +283,11 @@ sub run_screen {
     # Required fields: fld_name => [#, Label] If there is no value in
     # the screen for this fields show a dialog message
     $self->{fld_label} = {
-        cnp       => [ 0, '  CNP' ],
-        nume      => [ 1, '  Nume' ],
-        prenume   => [ 2, '  Prenume' ],
-        adresa    => [ 4, '  Adresa' ],
-        gen       => [ 5, '  Gen' ],
+        cnp     => [ 0, '  CNP' ],
+        nume    => [ 1, '  Nume' ],
+        prenume => [ 2, '  Prenume' ],
+        adresa  => [ 4, '  Adresa' ],
+        gen     => [ 5, '  Gen' ],
     };
 
     return;
@@ -326,4 +313,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::App::Test::WidgetsAll
+1;    # End of Tpda3::Tk::App::Test::WidgetsAll

@@ -50,18 +50,20 @@ method. (From I<Class::Singleton> docs).
 =cut
 
 sub _new_instance {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
     my $self = bless {}, $class;
 
-    $args->{cfgmain} = 'etc/main.yml'; # hardcoded main config file name
+    $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file name
 
     # Load configuration and create accessors
     $self->config_main_load($args);
     if ( $args->{cfname} ) {
+
         # If no config name don't bother to load this
         # Interface configs
         $self->config_interface_load();
+
         # Application configs
         $self->config_application_load($args);
     }
@@ -123,8 +125,8 @@ sub config_main_load {
     $self->{_log}->trace("file: $main_qfn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
-    $msg   .= qq{\n  from '$main_qfn'!};
-    my $maincfg = Tpda3::Config::Utils->config_file_load($main_qfn, $msg);
+    $msg .= qq{\n  from '$main_qfn'!};
+    my $maincfg = Tpda3::Config::Utils->config_file_load( $main_qfn, $msg );
 
     # Base configuration methods
     # TODO: Rename this methods !!!
@@ -137,9 +139,9 @@ sub config_main_load {
         cfgen   => $maincfg->{general},
         cfrun   => $maincfg->{runtime},
         cfico   => catdir( $configpath, $maincfg->{resource}{icons} ),
-        user      => $args->{user},           # make accessors for user and pass
+        user      => $args->{user},         # make accessors for user and pass
         pass      => $args->{pass},
-        widgetset => $maincfg->{widgetset},   # Wx or Tk
+        widgetset => $maincfg->{widgetset}, # Wx or Tk
         cfextapps => $maincfg->{externalapps},
     };
 
@@ -177,7 +179,8 @@ sub config_interface_load {
         $self->{_log}->info("Loading '$section' config");
         $self->{_log}->trace("file: $cfg_file");
 
-        my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr
+            = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
         $self->{_log}->trace("Making accessors for: @accessor");
@@ -217,7 +220,8 @@ sub config_application_load {
         $msg .= qq{% tpda3 -init $cf_name\n};
         $msg .= qq{and Edit the configuration files in: };
         $msg .= $self->configdir() . qq{\n};
-        my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr
+            = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
         $self->{_log}->trace("runtime: Making accessors for: @accessor");
@@ -235,7 +239,7 @@ Return fully qualified application interface configuration file name.
 =cut
 
 sub config_iface_file_name {
-    my ($self, $section) = @_;
+    my ( $self, $section ) = @_;
 
     return catfile( $self->cfpath, $self->cfiface->{$section} );
 }
@@ -249,7 +253,9 @@ Return fully qualified application configuration file name.
 sub config_app_file_name {
     my ( $self, $section ) = @_;
 
-    my $fl = catfile( $self->cfapps, $self->cfname, $self->cfapp->{$section} );
+    my $fl
+        = catfile( $self->cfapps, $self->cfname, $self->cfapp->{$section} );
+
     #    print "$section: config_app_file_name is $fl \n";
 
     return $fl;
@@ -277,15 +283,15 @@ TODO Simplify this!
 =cut
 
 sub list_configs {
-    my ($self, $cfg_name_param) = @_;
+    my ( $self, $cfg_name_param ) = @_;
 
-    $cfg_name_param ||= q{};                 # default empty
+    $cfg_name_param ||= q{};    # default empty
 
     my $cfpath = $self->cfapps;
     my $conlst = Tpda3::Config::Utils->find_subdirs($cfpath);
 
     my $cc_no = scalar @{$conlst};
-    if ($cc_no == 0) {
+    if ( $cc_no == 0 ) {
         print "Connection configurations: none\n";
         print " in '$cfpath':\n";
         return;
@@ -297,7 +303,7 @@ sub list_configs {
             my $cfg_file = $self->config_file_name($cfg_name_param);
             print "Connection configuration:\n";
             print " > $cfg_name_param\n";
-            $self->list_configs_details($cfg_file, $cfpath);
+            $self->list_configs_details( $cfg_file, $cfpath );
             print " in '$cfpath':\n";
             return;
         }
@@ -335,7 +341,7 @@ sub list_configs_details {
     my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
     while ( my ( $key, $value ) = each( %{ $cfg_hr->{connection} } ) ) {
-        print sprintf("%*s", 10, $key), ' = ';
+        print sprintf( "%*s", 10, $key ), ' = ';
         print $value if defined $value;
         print "\n";
     }
@@ -351,13 +357,13 @@ now.
 =cut
 
 sub config_save_instance {
-    my ($self, $key, $value) = @_;
+    my ( $self, $key, $value ) = @_;
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile($self->cfapps, $self->cfname, $inst );
+    my $inst_qfn = catfile( $self->cfapps, $self->cfname, $inst );
 
-    Tpda3::Config::Utils->save_yaml($inst_qfn, $key, $value);
+    Tpda3::Config::Utils->save_yaml( $inst_qfn, $key, $value );
 
     return;
 }
@@ -374,9 +380,9 @@ sub config_load_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile($self->cfapps, $self->cfname, $inst );
+    my $inst_qfn = catfile( $self->cfapps, $self->cfname, $inst );
 
-    my $cfg_hr = Tpda3::Config::Utils->config_file_load( $inst_qfn );
+    my $cfg_hr = Tpda3::Config::Utils->config_file_load($inst_qfn);
 
     $self->make_accessors($cfg_hr);
 
@@ -407,7 +413,7 @@ sub config_init {
     }
 
     $self->configdir_make($new_cfname);
-    $self->configdir_populate($cfname, $new_cfname);
+    $self->configdir_populate( $cfname, $new_cfname );
 
     print "done.\n";
 
@@ -421,7 +427,7 @@ Return application configuration directory.
 =cut
 
 sub configdir {
-    my ($self, $cfname) = @_;
+    my ( $self, $cfname ) = @_;
 
     $cfname ||= $self->cfname;
 
@@ -435,7 +441,7 @@ Returns the share directory for the current application configuration.
 =cut
 
 sub sharedir {
-    my ($self, $cfname) = @_;
+    my ( $self, $cfname ) = @_;
 
     $cfname ||= $self->cfname;
 
@@ -449,15 +455,15 @@ Copy configuration files to the application configuration paths.
 =cut
 
 sub configdir_populate {
-    my ($self, $cfname, $new_cfname) = @_;
+    my ( $self, $cfname, $new_cfname ) = @_;
 
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname);
 
     # Alternate share directory
     if ( !-d $sharedir ) {
-        $sharedir = dist_dir('Tpda3-' . ucfirst $cfname);
-        $sharedir = catdir($sharedir, 'apps', $cfname);
+        $sharedir = dist_dir( 'Tpda3-' . ucfirst $cfname );
+        $sharedir = catdir( $sharedir, 'apps', $cfname );
     }
 
     $self->{_log}->info("Config dir is '$configdir'");
@@ -465,7 +471,7 @@ sub configdir_populate {
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
-          or Carp::croak( "Failed to copy user data to " . $configdir );
+        or Carp::croak( "Failed to copy user data to " . $configdir );
 
     return;
 }
@@ -490,4 +496,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Config
+1;    # End of Tpda3::Config

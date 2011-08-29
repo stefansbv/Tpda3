@@ -63,8 +63,10 @@ sub run_dialog {
     );
     $frame1->grid(
         $frame1,
-        -row    => 0, -column => 0,
-        -ipadx  => 3, -ipady  => 3,
+        -row    => 0,
+        -column => 0,
+        -ipadx  => 3,
+        -ipady  => 3,
         -sticky => 'nsew',
     );
 
@@ -74,7 +76,8 @@ sub run_dialog {
     $lfont->form(
         -left => [ %0, 0 ],
         -top  => [ %0, 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $efont = $frame1->Entry(
@@ -84,18 +87,18 @@ sub run_dialog {
     );
     $efont->form(
         -top  => [ $lfont, 0 ],
-        -left => [ %0, 10 ],
+        -left => [ %0,     10 ],
     );
 
     #- Limit
 
-    my $llimit = $frame1->Label(
-        -text => 'Limit number of records in list to',
-    );
+    my $llimit
+        = $frame1->Label( -text => 'Limit number of records in list to', );
     $llimit->form(
-        -left => [ %0, 0 ],
+        -left => [ %0,     0 ],
         -top  => [ $efont, 0 ],
-        -padx => 5, -pady => 5,
+        -padx => 5,
+        -pady => 5,
     );
 
     my $elimit = $frame1->Entry(
@@ -106,7 +109,7 @@ sub run_dialog {
     );
     $elimit->form(
         -top  => [ $llimit, 0 ],
-        -left => [ %0, 10 ],
+        -left => [ %0,      10 ],
     );
 
     #- Font button
@@ -119,8 +122,8 @@ sub run_dialog {
     );
 
     $fontb1->form(
-        -top  => [ '&', $lfont, 0 ],
-        -left => [ $efont,  10 ],
+        -top  => [ '&',    $lfont, 0 ],
+        -left => [ $efont, 10 ],
     );
 
     #-- Quit button frame
@@ -137,12 +140,12 @@ sub run_dialog {
     );
 
     my $qb = $frame2->Button(
-        -text => 'Close',
-        -width => 8,
+        -text    => 'Close',
+        -width   => 8,
         -command => sub {
             $self->dialog_quit;
         },
-    )->pack(-side => 'top');
+    )->pack( -side => 'top' );
 
     return;
 }
@@ -154,14 +157,16 @@ Show font dialog
 =cut
 
 sub dialog_show {
-    my ($self, $mw) = @_;
+    my ( $self, $mw ) = @_;
 
     my $fd = $mw->FontDialog(
         -nicefont => 0,
+
         #-font => $b->cget(-font),
-        -title => 'Font selection',
+        -title            => 'Font selection',
         -fixedfontsbutton => 1,
-        -nicefontsbutton => 0,
+        -nicefontsbutton  => 0,
+
         # -sampletext => $sampletext,
     );
 
@@ -228,4 +233,4 @@ if not, write to the Free Software Foundation, Inc.,
 
 =cut
 
-1; # End of Tpda3::Tk::Dialog::Configs
+1;    # End of Tpda3::Tk::Dialog::Configs

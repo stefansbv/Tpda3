@@ -40,16 +40,13 @@ sub create {
     my $model = shift;
 
     $self->{_view} = Tpda3::Wx::View->new(
-        $model,
-        undef,
-        -1,
-        'Tpda3::wxPerl',
+        $model, undef, -1, 'Tpda3::wxPerl',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDEFAULT_FRAME_STYLE,
     );
 
-    $self->{_view}->Show( 1 );
+    $self->{_view}->Show(1);
 
     return $self;
 }
@@ -60,7 +57,7 @@ Override OnInit from WxPerl
 
 =cut
 
-sub OnInit { 1 }
+sub OnInit {1}
 
 # sub OnExit {
 #     print "OnExit.\n";
@@ -86,4 +83,4 @@ the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::App
+1;    # End of Tpda3::Wx::App

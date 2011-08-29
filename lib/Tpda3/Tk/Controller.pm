@@ -73,22 +73,20 @@ sub new {
 
     my $model = Tpda3::Model->new();
 
-    my $view = Tpda3::Tk::View->new(
-        $model,
-    );
+    my $view = Tpda3::Tk::View->new($model);
 
     my $self = {
-        _model    => $model,
-        _app      => $view,                       # an alias as for Wx ...
-        _view     => $view,
-        _rscrcls  => undef,
-        _rscrobj  => undef,
-        _dscrcls  => undef,
-        _dscrobj  => undef,
-        _tblkeys  => undef,
-        _scrdata  => undef,
-        _cfg      => Tpda3::Config->instance(),
-        _log      => get_logger(),
+        _model   => $model,
+        _app     => $view,                       # an alias as for Wx ...
+        _view    => $view,
+        _rscrcls => undef,
+        _rscrobj => undef,
+        _dscrcls => undef,
+        _dscrobj => undef,
+        _tblkeys => undef,
+        _scrdata => undef,
+        _cfg     => Tpda3::Config->instance(),
+        _log     => get_logger(),
     };
 
     bless $self, $class;
@@ -143,6 +141,12 @@ sub start {
     return;
 }
 
+=head2 guide
+
+Quick help dialog.
+
+=cut
+
 sub guide {
     my $self = shift;
 
@@ -152,6 +156,7 @@ sub guide {
 
     $gd->help_dialog($gui);
 
+    return;
 }
 
 =head2 about
@@ -204,8 +209,8 @@ sub about {
 
     # Get application version
     my $app_class = $self->application_class;
-    (my $app_file = "$app_class.pm") =~ s{::}{/}g;
-    my ($APP_VER, $APP_NAME) = ('', '');
+    ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
+    my ( $APP_VER, $APP_NAME ) = ( '', '' );
     eval {
         require $app_file;
         $app_class->import();
@@ -226,7 +231,8 @@ sub about {
     $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
     $text->insert( 'end', "Copyright 2010-2011\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
-    $text->insert( 'end', "stefansbv at users . sourceforge . net", 'italic' );
+    $text->insert( 'end', "stefansbv at users . sourceforge . net",
+        'italic' );
     $text->insert( 'end', "\n\n" );
     $text->insert( 'end', "$APP_NAME\n", 'normal' );
     $text->insert( 'end', "Version " . $APP_VER . "\n", 'normal' );
@@ -255,7 +261,7 @@ sub _set_event_handlers {
     #-- Exit
     $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
-            return if ! defined $self->ask_to_save;
+            return if !defined $self->ask_to_save;
             $self->_view->on_quit;
         }
     );
@@ -278,8 +284,8 @@ sub _set_event_handlers {
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
             my $scr_name = $self->screen_string('rec') || 'main';
-            $self->_cfg->config_save_instance(
-                $scr_name, $self->_view->w_geometry() );
+            $self->_cfg->config_save_instance( $scr_name,
+                $self->_view->w_geometry() );
         }
     );
 
@@ -300,14 +306,15 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
             my $scr_name = $self->screen_string('rec') || 'main';
-            $self->_cfg
-                ->config_save_instance( $scr_name, $self->_view->w_geometry() );
+            $self->_cfg->config_save_instance( $scr_name,
+                $self->_view->w_geometry() );
         }
     );
 
     #-- Find mode
     $self->_view->get_toolbar_btn('tb_fm')->bind(
         '<ButtonRelease-1>' => sub {
+
             # From add mode forbid find mode
             $self->toggle_mode_find() if !$self->_model->is_mode('add');
         }
@@ -317,8 +324,8 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_fe')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('find')
-              ? $self->record_find_execute
-              : $self->_view->set_status( 'Not find mode','ms','orange' );
+                ? $self->record_find_execute
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
 
@@ -326,8 +333,8 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_fc')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('find')
-              ? $self->record_find_count
-              : $self->_view->set_status( 'Not find mode','ms','orange' );
+                ? $self->record_find_count
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
 
@@ -335,17 +342,20 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_pr')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('edit')
-              ? $self->screen_report_print()
-              : $self->_view->set_status( 'Not edit mode','ms','orange' );
+                ? $self->screen_report_print()
+                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
 
     #-- Take note
     $self->_view->get_toolbar_btn('tb_tn')->bind(
         '<ButtonRelease-1>' => sub {
-            ( $self->_model->is_mode('edit') or $self->_model->is_mode('add') )
-              ? $self->take_note()
-              : $self->_view->set_status( 'Not add|edit mode','ms','orange' );
+            (          $self->_model->is_mode('edit')
+                    or $self->_model->is_mode('add')
+                )
+                ? $self->take_note()
+                : $self->_view->set_status( 'Not add|edit mode',
+                'ms', 'orange' );
         }
     );
 
@@ -353,17 +363,20 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_tr')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('add')
-              ? $self->restore_note()
-              : $self->_view->set_status( 'Not add mode','ms','orange' );
+                ? $self->restore_note()
+                : $self->_view->set_status( 'Not add mode', 'ms', 'orange' );
         }
     );
 
     #-- Clear screen
     $self->_view->get_toolbar_btn('tb_cl')->bind(
         '<ButtonRelease-1>' => sub {
-            ( $self->_model->is_mode('edit') or $self->_model->is_mode('add') )
-              ? $self->screen_clear()
-              : $self->_view->set_status( 'Not add|edit mode','ms','orange' );
+            (          $self->_model->is_mode('edit')
+                    or $self->_model->is_mode('add')
+                )
+                ? $self->screen_clear()
+                : $self->_view->set_status( 'Not add|edit mode',
+                'ms', 'orange' );
         }
     );
 
@@ -371,8 +384,8 @@ sub _set_event_handlers {
     $self->_view->get_toolbar_btn('tb_rr')->bind(
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('edit')
-              ? $self->record_reload()
-              : $self->_view->set_status( 'Not edit mode','ms','orange' );
+                ? $self->record_reload()
+                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
 
@@ -400,7 +413,7 @@ sub _set_event_handlers {
     #-- Quit
     $self->_view->get_toolbar_btn('tb_qt')->bind(
         '<ButtonRelease-1>' => sub {
-            return if ! defined $self->ask_to_save;
+            return if !defined $self->ask_to_save;
             $self->_view->on_quit;
         }
     );
@@ -409,36 +422,37 @@ sub _set_event_handlers {
 
     $self->_view->bind(
         '<Control-q>' => sub {
-            return if ! defined $self->ask_to_save;
-            $self->_view->on_quit
+            return if !defined $self->ask_to_save;
+            $self->_view->on_quit;
         }
     );
     $self->_view->bind(
         '<F5>' => sub {
             $self->_model->is_mode('edit')
-              ? $self->record_reload()
-              : $self->_view->set_status( 'Not edit mode','ms','orange' );
+                ? $self->record_reload()
+                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
     $self->_view->bind(
         '<F7>' => sub {
+
             # From add mode forbid find mode
             $self->toggle_mode_find()
-              if $self->{_rscrcls} and !$self->_model->is_mode('add');
+                if $self->{_rscrcls} and !$self->_model->is_mode('add');
         }
     );
     $self->_view->bind(
         '<F8>' => sub {
             ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-              ? $self->record_find_execute
-              : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+                ? $self->record_find_execute
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
     $self->_view->bind(
         '<F9>' => sub {
             ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-              ? $self->record_find_count
-              : $self->_view->set_status( 'Not find mode','ms','orange' );
+                ? $self->record_find_count
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
 
@@ -465,17 +479,17 @@ sub _set_event_handler_nb {
     $nb->pageconfigure(
         $page,
         -raisecmd => sub {
-            if ($page eq 'lst') {
+            if ( $page eq 'lst' ) {
                 $self->on_page_lst_activate;
             }
-            elsif ($page eq 'rec') {
+            elsif ( $page eq 'rec' ) {
                 $self->on_page_rec_activate;
             }
-            elsif ($page eq 'det') {
+            elsif ( $page eq 'det' ) {
                 $self->on_page_det_activate;
             }
 
-            $self->_view->set_status('','ms'); # clear status message
+            $self->_view->set_status( '', 'ms' );    # clear status message
         },
     );
 
@@ -525,28 +539,28 @@ On page I<rec> activate.
 sub on_page_rec_activate {
     my $self = shift;
 
-    my $selected = $self->_view->list_read_selected(); # array reference
+    my $selected = $self->_view->list_read_selected();    # array reference
     unless ($selected) {
-        $self->_view->set_status('Nothing selected','ms','orange');
+        $self->_view->set_status( 'Nothing selected', 'ms', 'orange' );
         $self->set_app_mode('idle');
         return;
     }
 
-    my $pk_val_new = $selected->[0]; # first is the pk value
-    my $fk_val_new = $selected->[1]; # second the fk value
+    my $pk_val_new = $selected->[0];    # first is the pk value
+    my $fk_val_new = $selected->[1];    # second the fk value
 
-    my $pk_val_old = $self->screen_get_pk_val() || q{}; # empty for eq
+    my $pk_val_old = $self->screen_get_pk_val() || q{};    # empty for eq
     my $fk_val_old = $self->screen_get_fk_val() || q{};
 
-    $self->set_app_mode('edit'); # restore interface state
+    $self->set_app_mode('edit');    # restore interface state
 
-    if ($pk_val_new ne $pk_val_old ) {
-        $self->record_load_new($pk_val_new, $fk_val_new);
+    if ( $pk_val_new ne $pk_val_old ) {
+        $self->record_load_new( $pk_val_new, $fk_val_new );
     }
     else {
-        if (defined $fk_val_new) {
-            if ($fk_val_new ne $fk_val_old ) {
-                $self->record_load_new($pk_val_new, $fk_val_new);
+        if ( defined $fk_val_new ) {
+            if ( $fk_val_new ne $fk_val_old ) {
+                $self->record_load_new( $pk_val_new, $fk_val_new );
             }
         }
     }
@@ -597,8 +611,9 @@ sub on_page_det_activate {
     # Load detail record
     $self->record_load();
 
-    $self->_view->set_status('Record loaded (d)','ms','blue');
+    $self->_view->set_status( 'Record loaded (d)', 'ms', 'blue' );
     $self->set_app_mode('edit');
+
     # $self->_model->set_scrdata_rec(q{});    # empty
 
     return;
@@ -665,7 +680,7 @@ Check if the detail screen module is loaded, and load if it's not.
 =cut
 
 sub screen_detail_load {
-    my ($self, $dsm) = @_;
+    my ( $self, $dsm ) = @_;
 
     my $dscrstr = $self->screen_string('det');
 
@@ -704,20 +719,20 @@ The configuration is like this:
 =cut
 
 sub get_dsm_name {
-    my ($self, $detscr) = @_;
+    my ( $self, $detscr ) = @_;
 
     my $row = $self->tmatrix_get_selected;
 
     return unless defined $row and $row > 0;
 
-    my $col_name  = $detscr->{match};
+    my $col_name = $detscr->{match};
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-    my $rec = $tmx->cell_read($row, $col_name);
+    my $rec = $tmx->cell_read( $row, $col_name );
 
     my $col_value = $rec->{$col_name};
 
-    my @dsm = grep { $_->{value} eq $col_value } @{$detscr->{detail}};
+    my @dsm = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
 
     return $dsm[0]{name};
 }
@@ -729,12 +744,11 @@ Disable some menus at start.
 =cut
 
 sub _set_menus_enable {
-    my ($self, $state) = @_;
+    my ( $self, $state ) = @_;
 
     foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
-        $self->_view->get_menu_popup_item($mnu)->configure(
-            -state => $state,
-        );
+        $self->_view->get_menu_popup_item($mnu)
+            ->configure( -state => $state, );
     }
 }
 
@@ -754,10 +768,10 @@ sub _check_app_menus {
 
     my $appmenus = $self->_view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
-        my ($class, $module_file) = $self->screen_module_class($menu_item);
-        eval {require $module_file };
+        my ( $class, $module_file ) = $self->screen_module_class($menu_item);
+        eval { require $module_file };
         if ($@) {
-            $menu->entryconfigure($menu_item, -state => 'disabled');
+            $menu->entryconfigure( $menu_item, -state => 'disabled' );
         }
     }
 
@@ -815,7 +829,7 @@ configuration will be a little more complicated:
 =cut
 
 sub setup_lookup_bindings_entry {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     my $dict     = Tpda3::Lookup->new;
     my $ctrl_ref = $self->scrobj('rec')->get_controls();
@@ -830,14 +844,16 @@ sub setup_lookup_bindings_entry {
         next unless $bind_name;
 
         # If 'search' is a hashref, get the first key, else the value
-        my $search = ref $bindings->{$bind_name}{search}
-                   ? (keys %{ $bindings->{$bind_name}{search} })[0]
-                   : $bindings->{$bind_name}{search};
+        my $search
+            = ref $bindings->{$bind_name}{search}
+            ? ( keys %{ $bindings->{$bind_name}{search} } )[0]
+            : $bindings->{$bind_name}{search};
 
         # If 'search' is a hashref, get the first keys name attribute
-        my $column = ref $bindings->{$bind_name}{search}
-                   ? $bindings->{$bind_name}{search}{$search}{name}
-                   : $search ;
+        my $column
+            = ref $bindings->{$bind_name}{search}
+            ? $bindings->{$bind_name}{search}{$search}{name}
+            : $search;
 
         $self->_log->trace("Setup binding for '$bind_name'");
 
@@ -856,20 +872,20 @@ sub setup_lookup_bindings_entry {
             label => $field_cfg->{label},
             order => $field_cfg->{order},
         };
-        $rec->{$search}{name} = $column if $column; # add name attribute
+        $rec->{$search}{name} = $column if $column;    # add name attribute
 
         push @cols, $rec;
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
         my $flds;
-      SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
+    SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
             /array/i && do {
-                $flds = $self->fields_cfg_array($bindings->{$bind_name} );
+                $flds = $self->fields_cfg_array( $bindings->{$bind_name} );
                 last SWITCH;
             };
-            /hash/i  && do {
-                $flds = $self->fields_cfg_hash($bindings->{$bind_name} );
+            /hash/i && do {
+                $flds = $self->fields_cfg_hash( $bindings->{$bind_name} );
                 last SWITCH;
             };
             print "WW: Wrong bindings configuration!\n";
@@ -883,7 +899,7 @@ sub setup_lookup_bindings_entry {
         $ctrl_ref->{$column}[1]->bind(
             '<Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para, $filter );
-                $self->screen_write($record, 'fields' );
+                $self->screen_write( $record, 'fields' );
             }
         );
     }
@@ -925,10 +941,10 @@ sub setup_bindings_table {
 
         my $dispatch = {};
         foreach my $bind_type ( keys %{$bindings} ) {
-            next unless $bind_type;            # skip if just an empty tag
+            next unless $bind_type;    # skip if just an empty tag
 
             my $bnd = $bindings->{$bind_type};
-            if ($bind_type eq 'lookup') {
+            if ( $bind_type eq 'lookup' ) {
                 foreach my $bind_name ( keys %{$bnd} ) {
                     next unless $bind_name;    # skip if just an empty tag
                     my $lk_bind = $bnd->{$bind_name};
@@ -936,7 +952,7 @@ sub setup_bindings_table {
                     @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
                 }
             }
-            elsif ($bind_type eq 'method') {
+            elsif ( $bind_type eq 'method' ) {
                 foreach my $bind_name ( keys %{$bnd} ) {
                     next unless $bind_name;    # skip if just an empty tag
                     my $mt_bind = $bnd->{$bind_name};
@@ -957,20 +973,21 @@ sub setup_bindings_table {
             'Tpda3::Tk::TM',
             '<Return>',
             sub {
-                my $r  = $tm->index( 'active', 'row' );
-                my $c  = $tm->index( 'active', 'col' );
+                my $r = $tm->index( 'active', 'row' );
+                my $c = $tm->index( 'active', 'col' );
 
                 # Table refresh
                 $tm->activate('origin');
                 $tm->activate("$r,$c");
                 $tm->reread();
 
-                my $ci = $tm->cget( -cols ) - 1; # max col index
-                my $sc = $self->method_for($dispatch, $bindings, $r,$c, $tm_ds);
+                my $ci = $tm->cget( -cols ) - 1;    # max col index
+                my $sc = $self->method_for( $dispatch, $bindings, $r, $c,
+                    $tm_ds );
                 my $ac = $c;
-                $sc ||= 1;          # skip cols
-                $ac += $sc;         # new active col
-                $tm->activate( "$r,$ac" );
+                $sc ||= 1;                          # skip cols
+                $ac += $sc;                         # new active col
+                $tm->activate("$r,$ac");
                 $tm->see('active');
                 Tk->break;
             }
@@ -987,7 +1004,7 @@ Return an entry in the dispatch table for a I<lookup> type binding.
 =cut
 
 sub add_dispatch_for_lookup {
-    my ($self, $bnd) = @_;
+    my ( $self, $bnd ) = @_;
 
     my $bindcol = 'colsub' . $bnd->{bindcol};
 
@@ -1016,12 +1033,12 @@ the configuration, using a dispatch table.
 =cut
 
 sub method_for {
-    my ($self, $dispatch, $bindings, $r, $c, $tm_ds) = @_;
+    my ( $self, $dispatch, $bindings, $r, $c, $tm_ds ) = @_;
 
     my $skip_cols;
     my $proc = "colsub$c";
     if ( exists $dispatch->{$proc} ) {
-        $skip_cols = $dispatch->{$proc}->($self, $bindings, $r, $c, $tm_ds);
+        $skip_cols = $dispatch->{$proc}->( $self, $bindings, $r, $c, $tm_ds );
     }
 
     return $skip_cols;
@@ -1036,26 +1053,27 @@ with the results.
 =cut
 
 sub lookup {
-    my ($self, $bnd, $r, $c, $tm_ds) = @_;
+    my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
 
-    my $lk_para = $self->get_lookup_setings($bnd, $r, $c, $tm_ds);
+    my $lk_para = $self->get_lookup_setings( $bnd, $r, $c, $tm_ds );
 
     # Check and set filter
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->scrcfg('rec')->dep_table_column_attr($tm_ds,$fld,'id');
-        $filter = $tmx->cell_read($r, $col);
+        my $col = $self->scrcfg('rec')
+            ->dep_table_column_attr( $tm_ds, $fld, 'id' );
+        $filter = $tmx->cell_read( $r, $col );
     }
 
-    my $dict   = Tpda3::Lookup->new;
+    my $dict = Tpda3::Lookup->new;
     my $record = $dict->lookup( $self->_view, $lk_para, $filter );
 
     $tmx->write_row( $r, $c, $record, $tm_ds );
 
-    my $skip_cols = scalar @{ $lk_para->{columns} }; # skip ahead cols number
+    my $skip_cols = scalar @{ $lk_para->{columns} };  # skip ahead cols number
 
     return $skip_cols;
 }
@@ -1067,11 +1085,11 @@ Call a method from the Screen module on I<Return> key.
 =cut
 
 sub method {
-    my ($self, $bnd, $r, $c) = @_;
+    my ( $self, $bnd, $r, $c ) = @_;
 
     # Filter on bindcol = $c
     my @names = grep { $bnd->{method}{$_}{bindcol} == $c }
-                keys %{ $bnd->{method} };
+        keys %{ $bnd->{method} };
     my $bindings = $bnd->{method}{ $names[0] };
 
     my $method = $bindings->{subname};
@@ -1082,7 +1100,7 @@ sub method {
         print "WW: '$method' not implemented!\n";
     }
 
-    return 1;                   # skip_cols
+    return 1;    # skip_cols
 }
 
 =head2 get_lookup_setings
@@ -1149,27 +1167,31 @@ An example of a returned data structure, for the Orders screen:
 =cut
 
 sub get_lookup_setings {
-    my ($self, $bnd, $r, $c, $tm_ds) = @_;
+    my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
 
     # Filter on bindcol = $c
     my @names = grep { $bnd->{lookup}{$_}{bindcol} == $c }
-                keys %{ $bnd->{lookup} };
+        keys %{ $bnd->{lookup} };
     my $bindings = $bnd->{lookup}{ $names[0] };
 
     # If 'search' is a hashref, get the first key, else the value
-    my $search = ref $bindings->{search}
-               ? (keys %{ $bindings->{search} })[0]
-               : $bindings->{search};
+    my $search
+        = ref $bindings->{search}
+        ? ( keys %{ $bindings->{search} } )[0]
+        : $bindings->{search};
 
     # If 'search' is a hashref, get the first keys name attribute
-    my $column = ref $bindings->{search}
-               ? $bindings->{search}{$search}{name}
-               : $search;
+    my $column
+        = ref $bindings->{search}
+        ? $bindings->{search}{$search}{name}
+        : $search;
 
     # If 'filter'
-    my $filter = $bindings->{filter}
-               ? $bindings->{filter}
-               : q{};
+    my $filter
+        = $bindings->{filter}
+        ? $bindings->{filter}
+        : q{};
+
     # print "WW: Filter setting = $filter \n";
 
     $self->_log->trace("Setup binding for $search:$column");
@@ -1182,7 +1204,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->scrcfg('rec')->dep_table_column($tm_ds, $column);
+    my $field_cfg = $self->scrcfg('rec')->dep_table_column( $tm_ds, $column );
 
     my @cols;
     my $rec = {};
@@ -1191,20 +1213,20 @@ sub get_lookup_setings {
         label => $field_cfg->{label},
         order => $field_cfg->{order},
     };
-    $rec->{$search}{name} = $column if $column; # add name attribute
+    $rec->{$search}{name} = $column if $column;    # add name attribute
 
     push @cols, $rec;
 
     # Detect the configuration style and add the 'fields' to the
     # columns list
     my $flds;
-  SWITCH: for ( ref $bindings->{field} ) {
+SWITCH: for ( ref $bindings->{field} ) {
         /array/i && do {
-            $flds = $self->fields_cfg_array($bindings, $tm_ds);
+            $flds = $self->fields_cfg_array( $bindings, $tm_ds );
             last SWITCH;
         };
-        /hash/i  && do {
-            $flds = $self->fields_cfg_hash($bindings, $tm_ds);
+        /hash/i && do {
+            $flds = $self->fields_cfg_hash( $bindings, $tm_ds );
             last SWITCH;
         };
         print "WW: Wrong bindings configuration!\n";
@@ -1232,11 +1254,12 @@ sub fields_cfg_array {
     foreach my $lookup_field ( @{ $bindings->{field} } ) {
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg =
-              $self->scrcfg('rec')->dep_table_column( $tm_ds, $lookup_field );
+            $field_cfg = $self->scrcfg('rec')
+                ->dep_table_column( $tm_ds, $lookup_field );
         }
         else {
-            $field_cfg = $self->scrcfg('rec')->main_table_column($lookup_field);
+            $field_cfg
+                = $self->scrcfg('rec')->main_table_column($lookup_field);
         }
         my $rec = {};
         $rec->{$lookup_field} = {
@@ -1266,8 +1289,8 @@ sub fields_cfg_hash {
         my $scr_field = $bindings->{field}{$lookup_field}{name};
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg =
-              $self->scrcfg('rec')->dep_table_columns( $tm_ds, $scr_field );
+            $field_cfg = $self->scrcfg('rec')
+                ->dep_table_columns( $tm_ds, $scr_field );
         }
         else {
             $field_cfg = $self->scrcfg('rec')->main_table_column($scr_field);
@@ -1293,7 +1316,7 @@ Set application mode
 =cut
 
 sub set_app_mode {
-    my ($self, $mode) = @_;
+    my ( $self, $mode ) = @_;
 
     $self->_model->set_mode($mode);
 
@@ -1310,8 +1333,8 @@ sub set_app_mode {
         print "WW: '$mode' not implemented!\n";
     }
 
-    return 1;                       # to make ok from Test::More happy
-                                    # probably missing something :) TODO!
+    return 1;    # to make ok from Test::More happy
+                 # probably missing something :) TODO!
 }
 
 =head2 is_record
@@ -1347,8 +1370,8 @@ sub on_screen_mode_idle {
     $self->controls_state_set('off');
 
     my $nb = $self->_view->get_notebook();
-    $nb->pageconfigure('det', -state => 'disabled');
-    $nb->pageconfigure('lst', -state => 'normal');
+    $nb->pageconfigure( 'det', -state => 'disabled' );
+    $nb->pageconfigure( 'lst', -state => 'normal' );
 
     return;
 }
@@ -1362,7 +1385,7 @@ color as specified in the configuration.
 =cut
 
 sub on_screen_mode_add {
-    my ($self, ) = @_;
+    my ( $self, ) = @_;
 
     # Empty the main controls and TM, if any
 
@@ -1375,8 +1398,8 @@ sub on_screen_mode_add {
     $self->controls_state_set('edit');
 
     my $nb = $self->_view->get_notebook();
-    $nb->pageconfigure('lst', -state => 'disabled');
-    $nb->pageconfigure('det', -state => 'disabled');
+    $nb->pageconfigure( 'lst', -state => 'disabled' );
+    $nb->pageconfigure( 'det', -state => 'disabled' );
 
     return;
 }
@@ -1417,8 +1440,9 @@ sub on_screen_mode_edit {
     $self->controls_state_set('edit');
 
     my $nb = $self->_view->get_notebook();
+
     # $nb->pageconfigure('det', -state => 'normal');
-    $nb->pageconfigure('lst', -state => 'normal');
+    $nb->pageconfigure( 'lst', -state => 'normal' );
 
     return;
 }
@@ -1433,7 +1457,7 @@ sub on_screen_mode_sele {
     my $self = shift;
 
     my $nb = $self->_view->get_notebook();
-    $nb->pageconfigure('det', -state => 'disabled');
+    $nb->pageconfigure( 'det', -state => 'disabled' );
 
     return;
 }
@@ -1448,11 +1472,11 @@ sub _control_states_init {
     my $self = shift;
 
     $self->{control_states} = {
-        off  => {
+        off => {
             state      => 'disabled',
             background => 'disabled_bgcolor',
         },
-        on   => {
+        on => {
             state      => 'normal',
             background => 'from_config',
         },
@@ -1533,7 +1557,7 @@ page.
 =cut
 
 sub scrcfg {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     $page ||= $self->_view->get_nb_current_page();
 
@@ -1550,7 +1574,7 @@ the required page.
 =cut
 
 sub scrobj {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     $page ||= $self->_view->get_nb_current_page();
 
@@ -1572,7 +1596,7 @@ Main application class name.
 sub application_class {
     my $self = shift;
 
-    my $app_name  = $self->_cfg->application->{module};
+    my $app_name = $self->_cfg->application->{module};
 
     return "Tpda3::Tk::App::${app_name}";
 }
@@ -1584,13 +1608,13 @@ Return screen module class and file name.
 =cut
 
 sub screen_module_class {
-    my ($self, $module) = @_;
+    my ( $self, $module ) = @_;
 
     my $module_class = $self->application_class . "::${module}";
 
-    (my $module_file = "$module_class.pm") =~ s{::}{/}g;
+    ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
 
-    return ($module_class, $module_file);
+    return ( $module_class, $module_file );
 }
 
 =head2 screen_module_load
@@ -1611,7 +1635,7 @@ sub screen_module_load {
     if ( $self->{_rscrcls} ) {
         Class::Unload->unload( $self->{_rscrcls} );
 
-        if ( ! Class::Inspector->loaded( $self->{_rscrcls} ) ) {
+        if ( !Class::Inspector->loaded( $self->{_rscrcls} ) ) {
             $self->_log->trace("Unloaded '$self->{_rscrcls}' screen");
         }
         else {
@@ -1624,15 +1648,16 @@ sub screen_module_load {
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
 
-    my ($class, $module_file) = $self->screen_module_class($module);
-    eval {require $module_file };
+    my ( $class, $module_file ) = $self->screen_module_class($module);
+    eval { require $module_file };
     if ($@) {
+
         # TODO: Decide what is optimal to do here?
         print "WW: Can't load '$module_file'\n";
         return;
     }
 
-    unless ($class->can('run_screen') ) {
+    unless ( $class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
@@ -1641,19 +1666,19 @@ sub screen_module_load {
     }
 
     # New screen instance
-    $self->{_rscrobj} = $class->new( $rscrstr );
+    $self->{_rscrobj} = $class->new($rscrstr);
     $self->_log->trace("New screen instance: $module");
 
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_detail;
     if ($has_det) {
-        $self->_view->create_notebook_panel('det', 'Details');
+        $self->_view->create_notebook_panel( 'det', 'Details' );
         $self->_set_event_handler_nb('det');
     }
 
     # Show screen
     my $nb = $self->_view->get_notebook();
-    $self->{_rscrobj}->run_screen( $nb );
+    $self->{_rscrobj}->run_screen($nb);
 
     # Store currently loaded screen class
     $self->{_rscrcls} = $class;
@@ -1692,12 +1717,12 @@ sub screen_module_load {
 
     $self->_set_menus_enable('normal');
 
-    $self->_view->set_status('','ms');
+    $self->_view->set_status( '', 'ms' );
 
     $self->_model->unset_scrdata_rec();
 
-    return 1;                       # to make ok from Test::More happy
-                                    # probably missing something :) TODO!
+    return 1;    # to make ok from Test::More happy
+                 # probably missing something :) TODO!
 }
 
 =head2 set_event_handler_screen
@@ -1708,12 +1733,12 @@ the TableMatrix widget.
 =cut
 
 sub set_event_handler_screen {
-    my ($self, $tm_ds) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     # Get ToolBar button atributes
     my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
 
-    foreach my $tb_btn (keys %{$attribs}) {
+    foreach my $tb_btn ( keys %{$attribs} ) {
         my $method = $attribs->{$tb_btn}{method};
         $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
 
@@ -1723,18 +1748,19 @@ sub set_event_handler_screen {
             $scrobj = $self->scrobj('rec');
         }
         else {
+
             # Fallback to $self
             $scrobj = $self;
         }
 
-        $self->scrobj('rec')->get_toolbar_btn($tm_ds, $tb_btn)->bind(
+        $self->scrobj('rec')->get_toolbar_btn( $tm_ds, $tb_btn )->bind(
             '<ButtonRelease-1>' => sub {
                 return
                     unless $self->_model->is_mode('add')
                         or $self->_model->is_mode('edit');
 
-                $scrobj->$method($tm_ds, $self);
-                $self->_model->set_scrdata_rec(1); # modified
+                $scrobj->$method( $tm_ds, $self );
+                $self->_model->set_scrdata_rec(1);    # modified
                 $self->toggle_detail_tab;
             }
         );
@@ -1764,7 +1790,7 @@ sub screen_module_detail_load {
     if ( $self->{_dscrcls} ) {
         Class::Unload->unload( $self->{_dscrcls} );
 
-        if ( ! Class::Inspector->loaded( $self->{_dscrcls} ) ) {
+        if ( !Class::Inspector->loaded( $self->{_dscrcls} ) ) {
             $self->_log->info("Unloaded '$self->{_dscrcls}' screen");
         }
         else {
@@ -1774,13 +1800,13 @@ sub screen_module_detail_load {
 
     $self->_set_event_handler_nb('det');
 
-    my ($class, $module_file) = $self->screen_module_class($module);
-    eval {require $module_file };
+    my ( $class, $module_file ) = $self->screen_module_class($module);
+    eval { require $module_file };
     if ($@) {
         croak "EE: Can't load '$module_file'\n";
     }
 
-    unless ($class->can('run_screen') ) {
+    unless ( $class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
@@ -1810,7 +1836,7 @@ sub screen_module_detail_load {
     # Load lists into JBrowseEntry or JComboBox widgets
     $self->screen_init();
 
-    $self->_view->set_status('','ms');
+    $self->_view->set_status( '', 'ms' );
 
     # Set FK column name
     $self->screen_set_fk_col();
@@ -1825,23 +1851,23 @@ Return a lower case string of the current screen module name.
 =cut
 
 sub screen_string {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     $page ||= $self->_view->get_nb_current_page();
 
     my $module;
-    if ($page eq 'rec') {
+    if ( $page eq 'rec' ) {
         $module = $self->{_rscrcls};
     }
-    elsif ($page eq 'det') {
-        $module = $self->{_dscrcls} || q{}; # empty
+    elsif ( $page eq 'det' ) {
+        $module = $self->{_dscrcls} || q{};    # empty
     }
     else {
         print "WW: screen_string called with page '$page'\n";
         return;
     }
 
-    my $scrstr = ( split /::/, $module )[-1] || q{}; # or nothing
+    my $scrstr = ( split /::/, $module )[-1] || q{};    # or nothing
 
     return lc $scrstr;
 }
@@ -1901,21 +1927,21 @@ sub screen_init {
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        next unless $ctrl_ref->{$field}[0]; # Undefined widget variable
+        next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
 
         my $para = $self->scrcfg('rec')->{lists}{$field};
 
-        next unless ref $para eq 'HASH';   # Undefined, skip
+        next unless ref $para eq 'HASH';       # Undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_a_ref = $self->{_model}->get_codes($field, $para);
+        my $cod_a_ref = $self->{_model}->get_codes( $field, $para );
 
         if ( $ctrltype eq 'm' ) {
 
             # JComboBox
             if ( $ctrl_ref->{$field}[1] ) {
                 $ctrl_ref->{$field}[1]->removeAllItems();
-                $ctrl_ref->{$field}[1]->configure(-choices => $cod_a_ref);
+                $ctrl_ref->{$field}[1]->configure( -choices => $cod_a_ref );
             }
         }
         elsif ( $ctrltype eq 'l' ) {
@@ -1947,7 +1973,7 @@ the application, and different pages.
 sub toggle_interface_controls {
     my $self = shift;
 
-    my ($toolbars, $attribs) = $self->_view->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->_view->toolbar_names();
 
     my $mode = $self->_model->get_appmode;
     my $page = $self->_view->get_nb_current_page();
@@ -1970,10 +1996,10 @@ sub toggle_interface_controls {
             #-- Restore note
             if ( $name eq 'tb_tr' and $self->{_rscrcls} ) {
                 my $data_file = $self->storable_file_name;
-                $status =
-                  $mode eq 'add'
-                  ? 'normal'
-                  : 'disabled';
+                $status
+                    = $mode eq 'add'
+                    ? 'normal'
+                    : 'disabled';
                 $status = 'disabled' if !-f $data_file;
             }
         }
@@ -2020,7 +2046,7 @@ sub toggle_screen_interface_controls {
 
     #- Toolbar
 
-    my ($toolbars, $attribs) = $self->scrobj()->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->scrobj()->toolbar_names();
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
@@ -2057,7 +2083,7 @@ Clear the screen: empty all controls.
 sub screen_clear {
     my $self = shift;
 
-    return unless ref $self->scrobj('rec');  # check if screen loaded
+    return unless ref $self->scrobj('rec');    # check if screen loaded
 
     $self->record_clear;
 
@@ -2068,7 +2094,7 @@ sub screen_clear {
     #     $self->set_app_mode('idle') unless $page eq 'det';
     # }
 
-    $self->_view->set_status( 'Cleared','ms','orange' );
+    $self->_view->set_status( 'Cleared', 'ms', 'orange' );
 
     return;
 }
@@ -2151,7 +2177,7 @@ sub record_find_execute {
 
     # Table configs
     my $main_table = $self->scrcfg('rec')->main_table;
-    my $columns = $self->scrcfg('rec')->main_table_columns;
+    my $columns    = $self->scrcfg('rec')->main_table_columns;
 
     my $params = {};
 
@@ -2159,33 +2185,33 @@ sub record_find_execute {
     $params->{columns} = $self->list_column_names();
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
         # Create a where clause like this:
         #  field1 IS NOT NULL and field2 IS NULL
         # for entry values equal to '%' or '!'
-        $findtype = q{notnull}  if $value eq q{%};
-        $findtype = q{isnull}   if $value eq q{!};
+        $findtype = q{notnull} if $value eq q{%};
+        $findtype = q{isnull}  if $value eq q{!};
 
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $main_table->{view};   # use view instead of table
+    $params->{table} = $main_table->{view};        # use view instead of table
     $params->{pkcol} = $main_table->{pkcol}{name};
 
     my $ary_ref = $self->_model->query_records_find($params);
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($ary_ref);
-    if ($record_count > 0) {
+    if ( $record_count > 0 ) {
         $self->_view->list_raise();
     }
 
     # Set mode to sele if found
-    if ($record_count > 0) {
+    if ( $record_count > 0 ) {
         $self->set_app_mode('sele');
     }
 
@@ -2211,15 +2237,15 @@ sub record_find_count {
     my $params = {};
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
         # Create a where clause like this:
         #  field1 IS NOT NULL and field2 IS NULL
         # for entry values equal to '%' or '!'
-        $findtype = q{notnull}  if $value eq q{%};
-        $findtype = q{isnull}   if $value eq q{!};
+        $findtype = q{notnull} if $value eq q{%};
+        $findtype = q{isnull}  if $value eq q{!};
 
         $params->{where}{$field} = [ $value, $findtype ];
     }
@@ -2273,20 +2299,20 @@ sub screen_report_print {
     # $report_name =
     #     $self->{tpda}{cfg_ref}{conf_dir} .'/'. $reppath .'/'. $report;
 
-    # # Metaviewxp
-    # if (defined($param) and defined($param2) and defined($param3)) {
-    #     # print "3 parameters!\n";
-    #     $cmd = "$repxp -preview -param$param -param$param2 -param$param3 $report_name";
-    # } elsif (defined($param) and defined($param2)) {
-    #     # print "2 parameters!\n";
-    #     $cmd = "$repxp -preview -param$param -param$param2 $report_name";
-    # } elsif (defined($param)) {
-    #     # print "1 parameter!\n";
-    #     $cmd = "$repxp -preview -param$param $report_name";
-    # } else {
-    #     # print "0 parameters?\n";
-    #     return;
-    # }
+# # Metaviewxp
+# if (defined($param) and defined($param2) and defined($param3)) {
+#     # print "3 parameters!\n";
+#     $cmd = "$repxp -preview -param$param -param$param2 -param$param3 $report_name";
+# } elsif (defined($param) and defined($param2)) {
+#     # print "2 parameters!\n";
+#     $cmd = "$repxp -preview -param$param -param$param2 $report_name";
+# } elsif (defined($param)) {
+#     # print "1 parameter!\n";
+#     $cmd = "$repxp -preview -param$param $report_name";
+# } else {
+#     # print "0 parameters?\n";
+#     return;
+# }
 
     # # print $cmd."\n";
     # if (system($cmd)) {
@@ -2325,46 +2351,46 @@ no values.
 =cut
 
 sub screen_read {
-     my $self = shift;
+    my $self = shift;
 
-     # Initialize
-     $self->{_scrdata} = {};
+    # Initialize
+    $self->{_scrdata} = {};
 
-     my $scrobj = $self->scrobj; # current screen object
-     my $scrcfg = $self->scrcfg; # current screen config
+    my $scrobj = $self->scrobj;    # current screen object
+    my $scrcfg = $self->scrcfg;    # current screen config
 
-     my $ctrl_ref = $scrobj->get_controls();
+    my $ctrl_ref = $scrobj->get_controls();
 
-     return unless scalar keys %{$ctrl_ref};
+    return unless scalar keys %{$ctrl_ref};
 
-     # Scan and write to controls
-     foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
-         my $fld_cfg = $scrcfg->main_table_column($field);
+    # Scan and write to controls
+    foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
+        my $fld_cfg = $scrcfg->main_table_column($field);
 
-         # Control config attributes
-         my $ctrltype = $fld_cfg->{ctrltype};
-         my $ctrlrw   = $fld_cfg->{rw};
+        # Control config attributes
+        my $ctrltype = $fld_cfg->{ctrltype};
+        my $ctrlrw   = $fld_cfg->{rw};
 
         # Skip READ ONLY fields if not FIND status
         if ( !$self->_model->is_mode('find') ) {
             next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
         }
 
-         # Run the appropriate sub according to control (widget) type
-         my $sub_name = "control_read_$ctrltype";
-         if ( $self->can($sub_name) ) {
-             unless ( $ctrl_ref->{$field}[1] ) {
-                 print "EE: Undefined field '$field', check configuration!\n";
-                 next;
-             }
-             $self->$sub_name( $ctrl_ref, $field );
-         }
-         else {
-             print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
-         }
-     }
+        # Run the appropriate sub according to control (widget) type
+        my $sub_name = "control_read_$ctrltype";
+        if ( $self->can($sub_name) ) {
+            unless ( $ctrl_ref->{$field}[1] ) {
+                print "EE: Undefined field '$field', check configuration!\n";
+                next;
+            }
+            $self->$sub_name( $ctrl_ref, $field );
+        }
+        else {
+            print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
+        }
+    }
 
-     return;
+    return;
 }
 
 =head2 control_read_e
@@ -2385,6 +2411,7 @@ sub control_read_e {
         $value = Tpda3::Utils->trim($value);
 
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (e): $field = $value\n";
     }
     else {
@@ -2392,6 +2419,7 @@ sub control_read_e {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
+
             # print "Screen (e): $field = undef\n";
         }
     }
@@ -2417,6 +2445,7 @@ sub control_read_t {
         $value = Tpda3::Utils->trim($value);
 
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (t): $field = $value\n";
     }
     else {
@@ -2424,6 +2453,7 @@ sub control_read_t {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
+
             # print "Screen (t): $field = undef\n";
         }
     }
@@ -2454,20 +2484,21 @@ sub control_read_d {
     #         my ( $y, $m, $d ) =
     #           $self->{utils}->dateentry_parse_date( $dstyle, $value );
 
-    #         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
-    #     }
-    # }
-    # else {
-    #     # default to ISO
-    # }
+#         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
+#     }
+# }
+# else {
+#     # default to ISO
+# }
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;    # m=multiline
 
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (d): $field = $value\n";
     }
     else {
@@ -2475,6 +2506,7 @@ sub control_read_d {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
+
             # print "Screen (d): $field = undef\n";
         }
     }
@@ -2491,15 +2523,16 @@ Read contents of a Tk::JComboBox control.
 sub control_read_m {
     my ( $self, $ctrl_ref, $field ) = @_;
 
-    my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
+    my $value = ${ $ctrl_ref->{$field}[0] };    # Value from variable
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;                    # m=multiline
 
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (m): $field = $value\n";
     }
     else {
@@ -2507,6 +2540,7 @@ sub control_read_m {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
+
             # print "Screen (m): $field = undef\n";
         }
     }
@@ -2529,9 +2563,10 @@ sub control_read_l {
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;    # m=multiline
 
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (l): $field = $value\n";
     }
     else {
@@ -2539,6 +2574,7 @@ sub control_read_l {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
+
             # print "Screen (l): $field = undef\n";
         }
     }
@@ -2559,6 +2595,7 @@ sub control_read_c {
 
     if ( $value == 1 ) {
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (c): $field = $value\n";
     }
     else {
@@ -2566,6 +2603,7 @@ sub control_read_c {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = $value;
+
             # print "Screen (c): $field = undef\n";
         }
     }
@@ -2583,17 +2621,20 @@ sub control_read_r {
     my ( $self, $ctrl_ref, $field ) = @_;
 
     my $value = ${ $ctrl_ref->{$field}[0] };
-    $value = q{} if !defined $value; # empty string
+    $value = q{} if !defined $value;    # empty string
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
         $self->{_scrdata}{$field} = $value;
+
         # print "Screen (r): $field = $value\n";
     }
     else {
+
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{"$field:r"} = undef;
+
             # print "Screen (r): $field = undef\n";
         }
     }
@@ -2625,16 +2666,16 @@ present to, at least as 'undef'.
 =cut
 
 sub screen_write {
-    my ($self, $record_ref, $option) = @_;
+    my ( $self, $record_ref, $option ) = @_;
 
-    $option ||= 'record';             # default option record
+    $option ||= 'record';    # default option record
 
     # $self->_log->trace("Write '$option' screen controls");
 
     # Current page
     my $page = $self->_view->get_nb_current_page();
 
-    my ($ctrl_ref, $cfg_ref);
+    my ( $ctrl_ref, $cfg_ref );
     if ( $page eq 'rec' ) {
         $ctrl_ref = $self->scrobj('rec')->get_controls();
         $cfg_ref  = $self->scrcfg('rec');
@@ -2648,15 +2689,13 @@ sub screen_write {
         return;
     }
 
-    return unless scalar keys %{$ctrl_ref};  # no controls?
+    return unless scalar keys %{$ctrl_ref};    # no controls?
 
     foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
         my $fld_cfg = $cfg_ref->main_table_column($field);
 
         my $ctrl_state;
-        eval {
-            $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state );
-        };
+        eval { $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state ); };
         if ($@) {
             print "WW: Undefined field '$field', check configuration (w)!\n";
             next;
@@ -2676,7 +2715,7 @@ sub screen_write {
         }
         elsif ( $option eq 'clear' ) {
             my $rw = $fld_cfg->{rw};
-            next if $rw eq 'r'; # 'det' page fields with data from 'rec'
+            next if $rw eq 'r';    # 'det' page fields with data from 'rec'
         }
         else {
             warn "Should never get here!\n";
@@ -2742,7 +2781,7 @@ Set selected table row from I<tm1>.
 =cut
 
 sub tmatrix_set_selected {
-    my ($self, $row) = @_;
+    my ( $self, $row ) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
 
@@ -2762,8 +2801,8 @@ Toggle find mode, ask to save record if modified.
 sub toggle_mode_find {
     my $self = shift;
 
-    my $answer = $self->ask_to_save; # if $self->_model->is_modified;
-    if (! defined $answer) {
+    my $answer = $self->ask_to_save;    # if $self->_model->is_modified;
+    if ( !defined $answer ) {
         $self->_view->get_toolbar_btn('tb_fm')->deselect;
         return;
     }
@@ -2772,7 +2811,7 @@ sub toggle_mode_find {
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('find');
 
-    $self->_view->set_status( '','ms' ); # clear messages
+    $self->_view->set_status( '', 'ms' );    # clear messages
 
     return;
 }
@@ -2787,7 +2826,7 @@ sub toggle_mode_add {
     my $self = shift;
 
     if ( $self->_model->is_mode('edit') ) {
-        my $answer = $self->ask_to_save; # if $self->_model->is_modified;
+        my $answer = $self->ask_to_save;    # if $self->_model->is_modified;
         if ( !defined $answer ) {
             $self->_view->get_toolbar_btn('tb_ad')->deselect;
             return;
@@ -2798,7 +2837,7 @@ sub toggle_mode_add {
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('add');
 
-    $self->_view->set_status( '','ms' ); # clear messages
+    $self->_view->set_status( '', 'ms' );    # clear messages
 
     return;
 }
@@ -2850,10 +2889,11 @@ sub controls_state_set {
 
         # Configure controls
         eval {
-            $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state, );
+            $ctrl_ref->{$field}[1]->configure( -state      => $ctrl_state, );
             $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
         };
         if ($@) {
+
             # print "Problems with '$field'\n";
         }
     }
@@ -2870,10 +2910,10 @@ Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
 sub control_write_e {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Tip Entry 'e'
-    $ctrl_ref->{$field}[1]->delete( 0, 'end'  );
+    $ctrl_ref->{$field}[1]->delete( 0, 'end' );
     $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
 
     return;
@@ -2888,7 +2928,7 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 sub control_write_t {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Tip TextEntry 't'
     $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
@@ -2906,17 +2946,18 @@ Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
 sub control_write_d {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Date should come from database in ISO format
-    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date('iso', $value);
+    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
 
     # Get configured date style and format accordingly
-    my $dstyle = 'iso'; #$self->{conf}->get_misc_config('datestyle');
-    if ($dstyle and $value) {
-        $value = Tpda3::Utils->dateentry_format_date($dstyle, $y, $m, $d);
+    my $dstyle = 'iso';    #$self->{conf}->get_misc_config('datestyle');
+    if ( $dstyle and $value ) {
+        $value = Tpda3::Utils->dateentry_format_date( $dstyle, $y, $m, $d );
     }
     else {
+
         # default to ISO
     }
 
@@ -2934,11 +2975,11 @@ Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
 sub control_write_m {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    if ( $value ) {
+    if ($value) {
         $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
     }
     else {
-        ${ $ctrl_ref->{$field}[0] } = q{}; # Empty
+        ${ $ctrl_ref->{$field}[0] } = q{};    # Empty
     }
 
     return;
@@ -2954,7 +2995,7 @@ must test with a key -> value pair like 'not set' => '?empty?'.
 sub control_write_l {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    return unless defined $value; # Empty
+    return unless defined $value;    # Empty
 
     $ctrl_ref->{$field}[1]->set_selected_value($value);
 
@@ -2972,7 +3013,7 @@ sub control_write_c {
 
     $value = 0 unless $value;
     if ( $value == 1 ) {
-       $ctrl_ref->{$field}[1]->select;
+        $ctrl_ref->{$field}[1]->select;
     }
     else {
         $ctrl_ref->{$field}[1]->deselect;
@@ -2997,7 +3038,7 @@ Write to a Tk::RadiobuttonGroup widget.
 sub control_write_r {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    if ( $value ) {
+    if ($value) {
         ${ $ctrl_ref->{$field}[0] } = $value;
     }
     else {
@@ -3014,7 +3055,7 @@ Return settings for controls, according to the state of the application.
 =cut
 
 sub control_states {
-    my ($self, $state) = @_;
+    my ( $self, $state ) = @_;
 
     return $self->{control_states}{$state};
 }
@@ -3029,17 +3070,17 @@ list control on the I<List> page.
 =cut
 
 sub record_load_new {
-    my ($self, $pk_val, $fk_val) = @_;
+    my ( $self, $pk_val, $fk_val ) = @_;
 
-    $self->screen_set_pk_val($pk_val);                    # save PK value
-    $self->screen_set_fk_val($fk_val) if defined $fk_val; # and FK value
+    $self->screen_set_pk_val($pk_val);    # save PK value
+    $self->screen_set_fk_val($fk_val) if defined $fk_val;    # and FK value
 
-    $self->tmatrix_set_selected();     # initialize selector
+    $self->tmatrix_set_selected();    # initialize selector
 
     $self->record_load();
 
     if ( $self->_model->is_loaded ) {
-        $self->_view->set_status('Record loaded','ms','blue');
+        $self->_view->set_status( 'Record loaded', 'ms', 'blue' );
     }
 
     return;
@@ -3060,7 +3101,7 @@ sub record_reload {
     my $page = $self->_view->get_nb_current_page();
 
     # Save PK-value
-    my $pk_val = $self->screen_get_pk_val; # get old pk-val
+    my $pk_val = $self->screen_get_pk_val;    # get old pk-val
 
     $self->record_clear;
 
@@ -3074,10 +3115,10 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-    $self->_view->set_status("Record reloaded",'ms','blue');
+    $self->_view->set_status( "Record reloaded", 'ms', 'blue' );
 
-    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
-                                       # undef = unloaded
+    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                          # undef = unloaded
 
     return;
 }
@@ -3105,7 +3146,7 @@ sub record_load {
     #- Dependent table(s), (if any)
 
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
-        my $tm_params = $self->dep_table_metadata($tm_ds, 'qry');
+        my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
 
         my $records = $self->_model->table_batch_query($tm_params);
 
@@ -3122,8 +3163,8 @@ sub record_load {
     # Save record as witness reference for comparison
     $self->save_screendata( $self->storable_file_name('orig') );
 
-    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
-                                       # undef = unloaded
+    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                          # undef = unloaded
 
     return;
 }
@@ -3141,7 +3182,7 @@ sub event_record_delete {
 
     return if $answer eq 'cancel' or $answer =~ /^N/i;
 
-    $self->list_update_remove(); # first remove from list
+    $self->list_update_remove();    # first remove from list
 
     $self->record_delete();
 
@@ -3164,25 +3205,25 @@ sub record_delete {
 
     my $record = {};
     $record->{metadata} = $self->main_table_metadata('del');
-    push @record, $record;         # rec data at index 0
+    push @record, $record;    # rec data at index 0
 
     #-  Dependent table(s), if any
 
     my $deprec = {};
-    my $tm_dss = $self->scrobj->get_tm_controls(); #
+    my $tm_dss = $self->scrobj->get_tm_controls();    #
 
     foreach my $tm_ds ( keys %{$tm_dss} ) {
-        $deprec->{$tm_ds}{metadata} =
-            $self->dep_table_metadata($tm_ds, 'del');
+        $deprec->{$tm_ds}{metadata}
+            = $self->dep_table_metadata( $tm_ds, 'del' );
     }
-    push @record, $deprec if scalar keys %{$deprec}; # det data at index 1
+    push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
-    $self->_model->store_record_delete(\@record);
+    $self->_model->store_record_delete( \@record );
 
     $self->set_app_mode('idle');
 
-    $self->_model->unset_scrdata_rec(); # false = loaded,  true = modified,
-                                        # undef = unloaded
+    $self->_model->unset_scrdata_rec();    # false = loaded,  true = modified,
+                                           # undef = unloaded
 
     return;
 }
@@ -3196,12 +3237,12 @@ Clear the screen.
 sub record_clear {
     my $self = shift;
 
-    $self->screen_write(undef, 'clear'); # clear the controls
+    $self->screen_write( undef, 'clear' );    # clear the controls
 
     $self->screen_set_pk_val();
 
-    $self->_model->unset_scrdata_rec();  # false = loaded,  true = modified,
-                                         # undef = unloaded
+    $self->_model->unset_scrdata_rec();    # false = loaded,  true = modified,
+                                           # undef = unloaded
     return;
 }
 
@@ -3216,7 +3257,8 @@ sub ask_to_save {
     my $self = shift;
 
     if (   $self->_model->is_mode('edit')
-        or $self->_model->is_mode('add') ) {
+        or $self->_model->is_mode('add') )
+    {
 
         if ( $self->record_changed ) {
 
@@ -3227,21 +3269,18 @@ sub ask_to_save {
                 -buttons => [qw{Da Renunt Nu}],
             );
             $db->geometry('300x150');
-            $db->bind(
-                '<Escape>',
-                sub { $db->Subwidget('B_Renunt')->invoke }
-            );
+            $db->bind( '<Escape>',
+                sub { $db->Subwidget('B_Renunt')->invoke } );
 
             #
             my $dialog_text = "Inregistarea a fost modificata.\n\n";
-            $dialog_text   .= "Doriti sa salvati inregistrarea?";
-            my $scrolled = $db->Label(
-                -text => $dialog_text,
-            )->pack(
+            $dialog_text .= "Doriti sa salvati inregistrarea?";
+            my $scrolled = $db->Label( -text => $dialog_text, )->pack(
                 -side => 'bottom',
                 -padx => 20,
                 -pady => 20,
             );
+
             #
 
             # Position buttons to the right
@@ -3284,7 +3323,7 @@ action.
 =cut
 
 sub ask_to {
-    my ($self, $for_action) = @_;
+    my ( $self, $for_action ) = @_;
 
     # Using a dialog defined on site because the one defined
     # in View.pm, shows up behind the main window in KDE
@@ -3293,30 +3332,25 @@ sub ask_to {
         -buttons => [qw{Da Renunt Nu}],
     );
     $db->geometry('300x150');
-    $db->bind(
-        '<Escape>',
-        sub { $db->Subwidget('B_Renunt')->invoke }
-    );
+    $db->bind( '<Escape>', sub { $db->Subwidget('B_Renunt')->invoke } );
 
     #- Dialog texts
 
     my $dialog_text = '';
-    if ($for_action eq 'save') {
+    if ( $for_action eq 'save' ) {
         $dialog_text = "Inregistarea a fost modificata.\n\n";
-        $dialog_text   .= "Doriti sa salvati inregistrarea?";
+        $dialog_text .= "Doriti sa salvati inregistrarea?";
     }
-    elsif ($for_action eq 'save_insert') {
+    elsif ( $for_action eq 'save_insert' ) {
         $dialog_text = "Inregistare noua.\n\n";
-        $dialog_text   .= "Doriti sa salvati inregistrarea?";
+        $dialog_text .= "Doriti sa salvati inregistrarea?";
     }
-    elsif ($for_action eq 'delete') {
+    elsif ( $for_action eq 'delete' ) {
         $dialog_text = "Stergere inregistare.\n\n";
-        $dialog_text   .= "Doriti sa stergeti inregistrarea?";
+        $dialog_text .= "Doriti sa stergeti inregistrarea?";
     }
 
-    my $scrolled = $db->Label(
-        -text => $dialog_text,
-    )->pack(
+    my $scrolled = $db->Label( -text => $dialog_text, )->pack(
         -side => 'bottom',
         -padx => 20,
         -pady => 20,
@@ -3356,11 +3390,11 @@ sub record_save {
 
         $self->record_reload();
 
-        $self->list_update_add();   # insert the new record in the list
+        $self->list_update_add();    # insert the new record in the list
     }
     elsif ( $self->_model->is_mode('edit') ) {
         if ( !$self->is_record ) {
-            $self->_view->set_status('Empty screen','ms','orange' );
+            $self->_view->set_status( 'Empty screen', 'ms', 'orange' );
             return;
         }
 
@@ -3376,8 +3410,8 @@ sub record_save {
     # Save record as witness reference for comparison
     $self->save_screendata( $self->storable_file_name('orig') );
 
-    $self->_model->set_scrdata_rec(0); # false = loaded,  true = modified,
-                                       # undef = unloaded
+    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                          # undef = unloaded
 
     $self->toggle_detail_tab;
 
@@ -3391,7 +3425,7 @@ Insert record.
 =cut
 
 sub record_save_insert {
-    my ($self, $record) = @_;
+    my ( $self, $record ) = @_;
 
     # Ask first
     # my $answer = $self->_view->{dialog2}->Show();
@@ -3407,7 +3441,7 @@ sub record_save_insert {
         $self->screen_write( { $pk_col => $pk_val }, 'fields' );
         $self->set_app_mode('edit');
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
-        $self->screen_set_pk_val($pk_val); # save PK value
+        $self->screen_set_pk_val($pk_val);    # save PK value
     }
     else {
         $self->_view->set_status( 'Failed', 'ms', 'darkred' );
@@ -3436,7 +3470,7 @@ sub list_update_add {
         push @list, $current->[0]->{data}{$field};
     }
 
-    $self->_view->list_populate([\@list]); # AoA
+    $self->_view->list_populate( [ \@list ] );    # AoA
 
     return;
 }
@@ -3454,7 +3488,7 @@ sub list_update_remove {
     my $pk_val = $self->screen_get_pk_val();
     my $fk_val = $self->screen_get_fk_val();
 
-    $self->_view->list_remove_selected($pk_val, $fk_val);
+    $self->_view->list_remove_selected( $pk_val, $fk_val );
 
     return;
 }
@@ -3467,11 +3501,11 @@ structure read from the screen widgets and compare them.
 =cut
 
 sub record_changed {
-    my ($self, ) = @_;
+    my ( $self, ) = @_;
 
     my $witness_file = $self->storable_file_name('orig');
-    unless (-f $witness_file) {
-        $self->_view->set_status( 'Error!','ms','orange' );
+    unless ( -f $witness_file ) {
+        $self->_view->set_status( 'Error!', 'ms', 'orange' );
         croak "Can't find saved data for comparison!\n";
         return;
     }
@@ -3480,7 +3514,7 @@ sub record_changed {
 
     my $record = $self->get_screen_data_record('upd');
 
-    return $self->_model->record_compare($witness, $record);
+    return $self->_model->record_compare( $witness, $record );
 }
 
 =head2 take_note
@@ -3493,11 +3527,12 @@ record.  An easy way of making multiple records based on a template.
 sub take_note {
     my $self = shift;
 
-    my $msg = $self->save_screendata( $self->storable_file_name )
-            ? 'Note taken'
-            : 'Note take failed';
+    my $msg
+        = $self->save_screendata( $self->storable_file_name )
+        ? 'Note taken'
+        : 'Note take failed';
 
-    $self->_view->set_status( $msg, 'ms','blue' );
+    $self->_view->set_status( $msg, 'ms', 'blue' );
 
     return;
 }
@@ -3512,11 +3547,12 @@ easy way of making multiple records based on a template.
 sub restore_note {
     my $self = shift;
 
-    my $msg = $self->restore_screendata( $self->storable_file_name )
-            ? 'Note restored'
-            : 'Note restore failed';
+    my $msg
+        = $self->restore_screendata( $self->storable_file_name )
+        ? 'Note restored'
+        : 'Note restore failed';
 
-    $self->_view->set_status( $msg, 'ms','blue' );
+    $self->_view->set_status( $msg, 'ms', 'blue' );
 
     return;
 }
@@ -3529,17 +3565,16 @@ extension.
 =cut
 
 sub storable_file_name {
-    my ($self, $orig) = @_;
+    my ( $self, $orig ) = @_;
 
     my $suffix = q{};
     $suffix = '-orig' if $orig;
 
     # Store record data to file
-    my $data_file = catfile(
-        $self->_cfg->cfapps,
-        $self->_cfg->cfname,
+    my $data_file
+        = catfile( $self->_cfg->cfapps, $self->_cfg->cfname,
         $self->screen_string . $suffix . q{.dat},
-    );
+        );
 
     return $data_file;
 }
@@ -3553,7 +3588,7 @@ dependent table(s) data and meta-data.
 =cut
 
 sub get_screen_data_record {
-    my ($self, $for_sql) = @_;
+    my ( $self, $for_sql ) = @_;
 
     $self->screen_read();
 
@@ -3566,19 +3601,19 @@ sub get_screen_data_record {
     $record->{metadata} = $self->main_table_metadata($for_sql);
 
     #-- Data
-    while ( my ( $field, $value ) = each( %{$self->{_scrdata} } ) ) {
+    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
-    push @record, $record;         # rec data at index 0
+    push @record, $record;    # rec data at index 0
 
     #-  Dependent table(s), if any
 
     my $deprec = {};
-    my $tm_dss = $self->scrobj->get_tm_controls(); #
+    my $tm_dss = $self->scrobj->get_tm_controls();    #
 
     foreach my $tm_ds ( keys %{$tm_dss} ) {
-        $deprec->{$tm_ds}{metadata} =
-            $self->dep_table_metadata($tm_ds, $for_sql);
+        $deprec->{$tm_ds}{metadata}
+            = $self->dep_table_metadata( $tm_ds, $for_sql );
         my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
         ( $deprec->{$tm_ds}{data}, undef ) = $tmx->data_read();
 
@@ -3588,7 +3623,7 @@ sub get_screen_data_record {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
     }
-    push @record, $deprec if scalar keys %{$deprec}; # det data at index 1
+    push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
     return \@record;
 }
@@ -3600,24 +3635,26 @@ Retrieve main table meta-data from the screen configuration.
 =cut
 
 sub main_table_metadata {
-    my ($self, $for_sql) = @_;
+    my ( $self, $for_sql ) = @_;
 
     my $metadata = {};
 
     #- Get PK field name and value and FK if exists
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
-    my ($fk_col, $fk_val);
+    my ( $fk_col, $fk_val );
+
     # my $has_dep = 0;
     # if ($self->scrcfg->screen->{style} eq 'dependent') {
     #     $has_dep = 1;
-        $fk_col = $self->screen_get_fk_col;
-        $fk_val = $self->screen_get_fk_val;
+    $fk_col = $self->screen_get_fk_col;
+    $fk_val = $self->screen_get_fk_val;
+
     # }
 
-    if ($for_sql eq 'qry') {
+    if ( $for_sql eq 'qry' ) {
         $metadata->{table} = $self->scrcfg->main_table_view;
-        $metadata->{where}{$pk_col} = $pk_val; # pk
+        $metadata->{where}{$pk_col} = $pk_val;    # pk
         $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
     elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
@@ -3625,7 +3662,7 @@ sub main_table_metadata {
         $metadata->{where}{$pk_col} = $pk_val;    # pk
         $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
-    elsif ($for_sql eq 'ins') {
+    elsif ( $for_sql eq 'ins' ) {
         $metadata->{table} = $self->scrcfg->main_table_name;
         $metadata->{pkcol} = $pk_col;
     }
@@ -3644,7 +3681,7 @@ Retrieve dependent table meta-data from the screen configuration.
 =cut
 
 sub dep_table_metadata {
-    my ($self, $tm_ds, $for_sql) = @_;
+    my ( $self, $tm_ds, $for_sql ) = @_;
 
     my $metadata = {};
 
@@ -3652,15 +3689,15 @@ sub dep_table_metadata {
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
 
-    if ($for_sql eq 'qry') {
+    if ( $for_sql eq 'qry' ) {
         $metadata->{table} = $self->scrcfg->dep_table_view($tm_ds);
-        $metadata->{where}{$pk_col} = $pk_val; # pk
+        $metadata->{where}{$pk_col} = $pk_val;    # pk
     }
-    elsif ($for_sql eq 'upd' or $for_sql eq 'del') {
+    elsif ( $for_sql eq 'upd' or $for_sql eq 'del' ) {
         $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
-        $metadata->{where}{$pk_col} = $pk_val; # pk
+        $metadata->{where}{$pk_col} = $pk_val;    # pk
     }
-    elsif ($for_sql eq 'ins') {
+    elsif ( $for_sql eq 'ins' ) {
         $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
     }
     else {
@@ -3686,7 +3723,7 @@ Save screen data to temp file with Storable.
 =cut
 
 sub save_screendata {
-    my ($self, $data_file) = @_;
+    my ( $self, $data_file ) = @_;
 
     my $record = $self->get_screen_data_record('upd');
 
@@ -3700,7 +3737,7 @@ Restore screen data from file saved with Storable.
 =cut
 
 sub restore_screendata {
-    my ($self, $data_file) = @_;
+    my ( $self, $data_file ) = @_;
 
     unless ( -f $data_file ) {
         print "$data_file not found!\n";
@@ -3708,14 +3745,14 @@ sub restore_screendata {
     }
 
     my $rec = retrieve($data_file);
-    unless (defined $rec) {
+    unless ( defined $rec ) {
         warn "Unable to retrieve from $data_file!\n";
         return;
     }
 
     #- Main table
 
-    my $mainrec = $rec->[0];                 # main record is first
+    my $mainrec = $rec->[0];    # main record is first
 
     # Dont't want to restore the Id field, remove it
     my $where = $mainrec->{metadata}{where};
@@ -3725,7 +3762,7 @@ sub restore_screendata {
 
     #- Dependent table(s), if any
 
-    my $deprec = $rec->[1];                 # dependent records follow
+    my $deprec = $rec->[1];     # dependent records follow
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
         my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
@@ -3776,7 +3813,7 @@ Store primary key column value for the current screen.
 =cut
 
 sub screen_set_pk_val {
-    my ($self, $pk_val) = @_;
+    my ( $self, $pk_val ) = @_;
 
     my $pk_col = $self->screen_get_pk_col;
 
@@ -3811,7 +3848,7 @@ Return foreign key column name for the current screen.
 =cut
 
 sub screen_get_fk_col {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     $page ||= $self->_view->get_nb_current_page();
 
@@ -3843,7 +3880,7 @@ Store foreign key column value for the current screen.
 =cut
 
 sub screen_set_fk_val {
-    my ($self, $fk_val) = @_;
+    my ( $self, $fk_val ) = @_;
 
     my $fk_col = $self->screen_get_fk_col;
 
@@ -3909,4 +3946,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Tk::Controller
+1;    # End of Tpda3::Tk::Controller

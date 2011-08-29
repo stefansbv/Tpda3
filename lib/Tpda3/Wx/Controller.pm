@@ -5,8 +5,8 @@ use warnings;
 
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
-                 EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
-                 EVT_LIST_ITEM_ACTIVATED);
+    EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
+    EVT_LIST_ITEM_ACTIVATED);
 
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -53,20 +53,18 @@ sub new {
 
     my $model = Tpda3::Model->new();
 
-    my $app = Tpda3::Wx::App->create(
-        $model,
-    );
+    my $app = Tpda3::Wx::App->create($model);
 
     my $self = {
-        _model   => $model,
-        _app     => $app,
-        _view    => $app->{_view},
-        _scrcls  => undef,
-        _scrobj  => undef,
-        _scrcfg  => undef,
-        _scrstr  => undef,
-        _cfg     => Tpda3::Config->instance(),
-        _log     => get_logger(),
+        _model  => $model,
+        _app    => $app,
+        _view   => $app->{_view},
+        _scrcls => undef,
+        _scrobj => undef,
+        _scrcfg => undef,
+        _scrstr => undef,
+        _cfg    => Tpda3::Config->instance(),
+        _log    => get_logger(),
     };
 
     bless $self, $class;
@@ -77,9 +75,9 @@ sub new {
 
     $self->_set_event_handlers;
 
-    $self->_set_menus_enable(0); # disable find mode menus
+    $self->_set_menus_enable(0);    # disable find mode menus
 
-    $self->_check_app_menus();   # disable if no screen
+    $self->_check_app_menus();      # disable if no screen
 
     return $self;
 }
@@ -99,7 +97,7 @@ sub start {
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
         $self->{timer} = Wx::Timer->new( $self->_view, 1 );
-        $self->{timer}->Start(500, 1); # one shot
+        $self->{timer}->Start( 500, 1 );    # one shot
     }
     else {
         $self->_model->toggle_db_connect();
@@ -124,14 +122,15 @@ sub start_delayed {
     require Tpda3::Wx::Dialog::Login;
     $self->{dlg} = Tpda3::Wx::Dialog::Login->new();
 
-    my $dialog = $self->{dlg}->login_dialog($self->_view);
+    my $dialog = $self->{dlg}->login_dialog( $self->_view );
     if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
-        my ($user, $pass) = $dialog->get_login();
+        my ( $user, $pass ) = $dialog->get_login();
         $self->_cfg->user($user);
         $self->_cfg->pass($pass);
     }
 
     if ( $self->_cfg->user and $self->_cfg->pass ) {
+
         # Connect to database
         $self->_model->toggle_db_connect();
     }
@@ -156,8 +155,8 @@ sub about {
 
     Wx::MessageBox(
         "Tpda3 - v0.03\n(C) 2010-2011 Stefan Suciu\n\n"
-            . " - WxPerl $Wx::VERSION\n"
-            . " - " . Wx::wxVERSION_STRING,
+            . " - WxPerl $Wx::VERSION\n" . " - "
+            . Wx::wxVERSION_STRING,
         'About Tpda3',
         wxOK | wxICON_INFORMATION | wxCENTRE,
         $self->_view,
@@ -191,9 +190,9 @@ sub _set_event_handlers {
 
     EVT_MENU $self->_view, wxID_ABOUT, sub {
         $self->about();
-    }; # Change icons !!!
+    };    # Change icons !!!
 
-    EVT_MENU $self->_view, wxID_EXIT,  sub {
+    EVT_MENU $self->_view, wxID_EXIT, sub {
         $self->_view->on_quit;
     };
 
@@ -224,7 +223,6 @@ sub _set_event_handlers {
         }
     };
 
-
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -232,67 +230,73 @@ sub _set_event_handlers {
         my $menu_id = $self->_view->get_menu_popup_item($item)->GetId;
         EVT_MENU $self->_view, $menu_id, sub {
             $self->screen_module_load($item);
-        }
+            }
     }
 
     #- Toolbar
 
     #-- Attach to desktop - pin (save geometry to config file)
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_at')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_at')->GetId,
+        sub {
         my $scr_name = $self->{_scrstr} || 'main';
-        $self->_cfg->config_save_instance(
-            $scr_name,
-            $self->_view->w_geometry,
-        );
-    };
+        $self->_cfg->config_save_instance( $scr_name,
+            $self->_view->w_geometry, );
+        };
 
     #-- Find mode toggle
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId,
+        sub {
+
         # From add mode forbid find mode
         if ( !$self->_model->is_mode('add') ) {
             $self->toggle_mode_find();
         }
-    };
+        };
 
     #-- Find execute
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fe')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fe')->GetId,
+        sub {
         if ( $self->_model->is_mode('find') ) {
             $self->record_find_execute;
         }
         else {
             print "WARN: Not in find mode\n";
         }
-    };
+        };
 
     #-- Find count
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId,
+        sub {
         if ( $self->_model->is_mode('find') ) {
             $self->record_find_count;
         }
         else {
             print "WARN: Not in find mode\n";
         }
-    };
+        };
 
     #-- Reload
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_rr')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_rr')->GetId,
+        sub {
         if ( $self->_model->is_mode('edit') ) {
             $self->record_reload();
         }
         else {
             print "WARN: Not in edit mode\n";
         }
-    };
+        };
 
     #-- Add mode
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId,
+        sub {
         $self->toggle_mode_add();
-    };
+        };
 
     #-- Quit
-    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId, sub {
+    EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId,
+        sub {
         $self->_view->on_quit;
-    };
+        };
 
     #-- Make more key bindings (alternative to the menu entries)
 
@@ -340,7 +344,7 @@ sub _set_event_handler_nb {
 
     #-- Enter on list item activates record page
     EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
-        $self->_view->get_notebook->SetSelection(0); # 'rec'
+        $self->_view->get_notebook->SetSelection(0);    # 'rec'
     };
 
     return;
@@ -386,13 +390,13 @@ Disable some menus at start.
 =cut
 
 sub _set_menus_enable {
-    my ($self, $enable) = @_;
+    my ( $self, $enable ) = @_;
 
     my $mn = $self->_view->get_menubar();
 
     foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
         my $mn_id = $self->_view->get_menu_popup_item($mnu)->GetId;
-        $mn->Enable($mn_id, $enable);
+        $mn->Enable( $mn_id, $enable );
     }
 }
 
@@ -411,10 +415,10 @@ sub _check_app_menus {
     my $appmenus = $self->_view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
         my $menu_id = $self->_view->get_menu_popup_item($menu_item)->GetId;
-        my ($class, $module_file) = $self->screen_module_class($menu_item);
-        eval {require $module_file };
+        my ( $class, $module_file ) = $self->screen_module_class($menu_item);
+        eval { require $module_file };
         if ($@) {
-            $menu->Enable($menu_id, 0);
+            $menu->Enable( $menu_id, 0 );
         }
     }
 
@@ -451,6 +455,7 @@ sub setup_lookup_bindings {
 
     foreach my $lookup ( keys %{$bindings} ) {
         unless ( $ctrl_ref->{$lookup}[1] ) {
+
             # Skip nonexistent
             $self->_log->trace("Wrong binding config for '$lookup'");
             next;
@@ -458,7 +463,7 @@ sub setup_lookup_bindings {
 
         $self->_log->trace("Setup binding for '$lookup'");
 
-        my $para = {                     # parameter for Search dialog
+        my $para = {    # parameter for Search dialog
             table  => $bindings->{$lookup}{table},
             lookup => $lookup,
         };
@@ -479,7 +484,7 @@ sub setup_lookup_bindings {
             # Multiple fields returned as array
             foreach my $fld ( @{ $bindings->{$lookup}{field} } ) {
                 my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-                my $rec = {};
+                my $rec       = {};
                 $rec->{$fld} = {
                     width => $field_cfg->{width},
                     label => $field_cfg->{label},
@@ -489,10 +494,11 @@ sub setup_lookup_bindings {
             }
         }
         else {
+
             # One field, no array
             my $fld       = $bindings->{$lookup}{field};
             my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-            my $rec = {};
+            my $rec       = {};
             $rec->{$fld} = {
                 width => $field_cfg->{width},
                 label => $field_cfg->{label},
@@ -505,9 +511,10 @@ sub setup_lookup_bindings {
 
         EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$lookup}[1], sub {
             my $record = $dict->lookup( $self->_view, $para );
+
             # A lookup field can not be cleared in Tpda
             # TODO: In Tpda3.
-            $self->screen_write($record, 'fields');
+            $self->screen_write( $record, 'fields' );
         };
     }
 
@@ -521,7 +528,7 @@ Set application mode
 =cut
 
 sub set_app_mode {
-    my ($self, $mode) = @_;
+    my ( $self, $mode ) = @_;
 
     $self->_model->set_mode($mode);
 
@@ -569,8 +576,9 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->screen_write(undef, 'clear');      # Empty the main controls
-#    $self->control_tmatrix_write();
+    $self->screen_write( undef, 'clear' );    # Empty the main controls
+
+    #    $self->control_tmatrix_write();
     $self->controls_state_set('off');
     $self->_log->trace("Mode has changed to 'idle'");
 
@@ -586,25 +594,26 @@ color as specified in the configuration.
 =cut
 
 sub on_screen_mode_add {
-    my ($self, ) = @_;
+    my ( $self, ) = @_;
 
     $self->_log->trace("Mode has changed to 'add'");
 
-    # Test record data
-    # my $record_ref = {
-    #     productcode        => 'S700_2047',
-    #     productname        => 'HMS Bounty',
-    #     buyprice           => '39.83',
-    #     msrp               => '90.52',
-    #     productvendor      => 'Unimax Art Galleries',
-    #     productscale       => '1:700',
-    #     quantityinstock    => '3501',
-    #     productline        => 'Ships',
-    #     productlinecode    => '2',
-    #     productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
-    # };
+# Test record data
+# my $record_ref = {
+#     productcode        => 'S700_2047',
+#     productname        => 'HMS Bounty',
+#     buyprice           => '39.83',
+#     msrp               => '90.52',
+#     productvendor      => 'Unimax Art Galleries',
+#     productscale       => '1:700',
+#     quantityinstock    => '3501',
+#     productline        => 'Ships',
+#     productlinecode    => '2',
+#     productdescription => 'Measures 30 inches Long x 27 1/2 inches High x 4 3/4 inches Wide. Many extras including rigging, long boats, pilot house, anchors, etc. Comes with three masts, all square-rigged.',
+# };
 
-    $self->screen_write(undef, 'clear');
+    $self->screen_write( undef, 'clear' );
+
     # $self->control_tmatrix_write();
     $self->controls_state_set('edit');
 
@@ -621,8 +630,8 @@ content in the I<Screen> and change the background to light green.
 sub on_screen_mode_find {
     my $self = shift;
 
-    $self->screen_write(undef, 'clear'); # Empty the controls
-    # $self->control_tmatrix_write();
+    $self->screen_write( undef, 'clear' );   # Empty the controls
+                                             # $self->control_tmatrix_write();
     $self->controls_state_set('find');
     $self->_log->trace("Mode has changed to 'find'");
 
@@ -671,11 +680,11 @@ sub _control_states_init {
     $self->_log->trace('Control states data structure init');
 
     $self->{control_states} = {
-        off  => {
+        off => {
             state      => 'disabled',
             background => 'disabled_bgcolor',
         },
-        on   => {
+        on => {
             state      => 'normal',
             background => 'from_config',
         },
@@ -771,15 +780,15 @@ Return screen module class and file name.
 =cut
 
 sub screen_module_class {
-    my ($self, $screen_module) = @_;
+    my ( $self, $screen_module ) = @_;
 
     my $app_module = $self->_cfg->application->{module};
 
     my $module_class = "Tpda3::Wx::App::${app_module}::${screen_module}";
 
-    (my $module_file = "$module_class.pm") =~ s{::}{/}g;
+    ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
 
-    return ($module_class, $module_file);
+    return ( $module_class, $module_file );
 }
 
 =head2 screen_module_load
@@ -803,9 +812,10 @@ sub screen_module_load {
     # Unload current screen
     if ( $self->{_scrcls} ) {
         Class::Unload->unload( $self->{_scrcls} );
+
         # Class::Unload->unload( 'Tpda3::Config::Screen' );
 
-        if ( ! Class::Inspector->loaded( $self->{_scrcls} ) ) {
+        if ( !Class::Inspector->loaded( $self->{_scrcls} ) ) {
             $self->_log->trace("Unloaded '$self->{_scrcls}' screen");
         }
         else {
@@ -817,15 +827,16 @@ sub screen_module_load {
     $self->_view->create_notebook();
     $self->_set_event_handler_nb();
 
-    my ($class, $module_file) = $self->screen_module_class($module);
-    eval {require $module_file };
+    my ( $class, $module_file ) = $self->screen_module_class($module);
+    eval { require $module_file };
     if ($@) {
+
         # TODO: Decide what is optimal to do here?
         print "Can't load '$module_file'\n";
         return;
     }
 
-    unless ($class->can('run_screen') ) {
+    unless ( $class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
@@ -865,12 +876,12 @@ sub screen_module_load {
     }
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
-    $self->_view->SetSize( $x, $y, $w, $h ); # wxSIZE_AUTO
-    # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
+    $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
+           # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
 
     # Event handlers
-    $self->_set_event_handler_screen(); # if $screen_type eq 'tablematrix';
-    #-- Lookup bindings
+    $self->_set_event_handler_screen();    # if $screen_type eq 'tablematrix';
+                                           #-- Lookup bindings
     $self->setup_lookup_bindings();
 
     # Store currently loaded screen class
@@ -880,19 +891,20 @@ sub screen_module_load {
 
     # List header
     my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
-    my $fields = $self->_scrcfg->maintable->{columns};
+    my $fields      = $self->_scrcfg->maintable->{columns};
     my $header_attr = {};
-    foreach my $col ( @header_cols ) {
+    foreach my $col (@header_cols) {
+
         # Width config is in chars.  Using chars_number x char_width
         # to compute the with in pixels
         my $label_len = length $fields->{$col}{label};
-        my $width = $fields->{$col}{width};
+        my $width     = $fields->{$col}{width};
         $width = $label_len >= $width ? $label_len + 2 : $width;
         my $char_width = $self->_view->GetCharWidth();
         $header_attr->{$col} = {
-            label =>  $fields->{$col}{label},
-            width =>  $width * $char_width,
-            order =>  $fields->{$col}{order},
+            label => $fields->{$col}{label},
+            width => $width * $char_width,
+            order => $fields->{$col}{order},
         };
     }
     $self->_view->make_list_header( \@header_cols, $header_attr );
@@ -909,8 +921,8 @@ sub screen_module_load {
 
     $self->_set_menus_enable(1);
 
-    return 1;                       # to make ok from Test::More happy
-                                    # probably missing something :) TODO!
+    return 1;    # to make ok from Test::More happy
+                 # probably missing something :) TODO!
 }
 
 =head2 screen_lists_populate
@@ -945,14 +957,14 @@ sub screen_lists_populate {
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        next unless $ctrl_ref->{$field}[0]; # Undefined widget variable
+        next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
 
         my $para = $self->_scrcfg->{lists}{$field};
 
-        next unless ref $para eq 'HASH';   # Undefined, skip
+        next unless ref $para eq 'HASH';       # Undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_h_ref = $self->{_model}->get_codes($field, $para);
+        my $cod_h_ref = $self->{_model}->get_codes( $field, $para );
 
         if ( $ctrltype eq 'm' ) {
 
@@ -969,14 +981,13 @@ sub screen_lists_populate {
 
             my @lvpairs;
             while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-                push( @lvpairs,{ value => $code, label => $label });
+                push( @lvpairs, { value => $code, label => $label } );
             }
 
             # MatchingBE
             if ( $ctrl_ref->{$field}[1] ) {
-                $ctrl_ref->{$field}[1]->configure(
-                    -labels_and_values => \@lvpairs,
-                );
+                $ctrl_ref->{$field}[1]
+                    ->configure( -labels_and_values => \@lvpairs, );
             }
         }
     }
@@ -994,7 +1005,7 @@ the application.
 sub toggle_interface_controls {
     my $self = shift;
 
-    my ($toolbars, $attribs) = $self->{_view}->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->{_view}->toolbar_names();
 
     my $mode = $self->_model->get_appmode;
 
@@ -1027,7 +1038,7 @@ sub toggle_screen_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $state = $attribs->{$name}{state}{$mode};
-        $self->_screen->enable_tool($name, $state);
+        $self->_screen->enable_tool( $name, $state );
     }
 
     return;
@@ -1045,10 +1056,9 @@ list control on the I<List> page.
 sub record_load_new {
     my $self = shift;
 
-
     my $pk_id = $self->_view->list_read_selected();
-    if ( ! defined $pk_id ) {
-        $self->_view->set_status('Nothing selected','ms');
+    if ( !defined $pk_id ) {
+        $self->_view->set_status( 'Nothing selected', 'ms' );
         return;
     }
 
@@ -1077,15 +1087,15 @@ sub record_reload {
     my $pk_col   = $table_hr->{pkcol}{name};
 
     my $ctrl_ref = $self->_screen->get_controls();
-    $self->control_read_e($ctrl_ref, $pk_col);
+    $self->control_read_e( $ctrl_ref, $pk_col );
 
     my $pk_id = $self->{scrdata}{$pk_col};
-    if ( ! defined $pk_id ) {
-        $self->_view->set_status('Reload failed!','ms');
+    if ( !defined $pk_id ) {
+        $self->_view->set_status( 'Reload failed!', 'ms' );
         return;
     }
 
-    $self->screen_write(undef, 'clear'); # clear the controls
+    $self->screen_write( undef, 'clear' );    # clear the controls
     $self->record_load($pk_id);
 
     return;
@@ -1098,7 +1108,7 @@ Load the selected record in screen
 =cut
 
 sub record_load {
-    my ($self, $pk_id) = @_;
+    my ( $self, $pk_id ) = @_;
 
     # Table metadata
     my $table_hr  = $self->_scrcfg->maintable;
@@ -1107,7 +1117,7 @@ sub record_load {
 
     # Construct where, add findtype info
     my $params = {};
-    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{table} = $table_hr->{view};    # use view instead of table
     $params->{where}{$pk_col} = [ $pk_id, $fields_hr->{$pk_col}{findtype} ];
     $params->{pkcol} = $pk_col;
 
@@ -1131,8 +1141,8 @@ sub record_load {
     #     $self->control_tmatrix_write($records);
     # }
 
-    return 1;                       # to make ok from Test::More happy
-                                    # probably missing something :) TODO!
+    return 1;    # to make ok from Test::More happy
+                 # probably missing something :) TODO!
 }
 
 =head2 record_find_execute
@@ -1183,12 +1193,12 @@ sub record_find_execute {
     $params->{columns} = $self->_scrcfg->found_cols->{col};
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+    while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
         $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{table} = $table_hr->{view};          # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_view->list_init();
@@ -1221,12 +1231,12 @@ sub record_find_count {
     my $params = {};
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{$self->{scrdata} } ) ) {
+    while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
         $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};   # use view instead of table
+    $params->{table} = $table_hr->{view};          # use view instead of table
     $params->{pkcol} = $table_hr->{pkcol}{name};
 
     $self->_model->query_records_count($params);
@@ -1241,45 +1251,45 @@ Read screen controls (widgets) and save in a Perl data stucture.
 =cut
 
 sub screen_read {
-     my ($self, $all) = @_;
+    my ( $self, $all ) = @_;
 
-     # Initialize
-     $self->{scrdata} = {};
+    # Initialize
+    $self->{scrdata} = {};
 
-     my $ctrl_ref = $self->_screen->get_controls();
-     return unless scalar keys %{$ctrl_ref};
+    my $ctrl_ref = $self->_screen->get_controls();
+    return unless scalar keys %{$ctrl_ref};
 
-     # Scan and write to controls
-     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
+    # Scan and write to controls
+    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
-         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
+        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
 
-         # Control config attributes
-         my $ctrltype = $fld_cfg->{ctrltype};
-         my $ctrlrw   = $fld_cfg->{rw};
+        # Control config attributes
+        my $ctrltype = $fld_cfg->{ctrltype};
+        my $ctrlrw   = $fld_cfg->{rw};
 
-         # print " Field: $field \[$ctrltype\]\n";
+        # print " Field: $field \[$ctrltype\]\n";
 
-         # Skip READ ONLY fields if not FIND status
-         # Read ALL if $all == true (don't skip)
-         if ( ! ( $all or $self->_model->is_mode('find') ) ) {
-             if ($ctrlrw eq 'r') {
-                 print " skiping RO field '$field'\n";
-                 next;
-             }
-         }
+        # Skip READ ONLY fields if not FIND status
+        # Read ALL if $all == true (don't skip)
+        if ( !( $all or $self->_model->is_mode('find') ) ) {
+            if ( $ctrlrw eq 'r' ) {
+                print " skiping RO field '$field'\n";
+                next;
+            }
+        }
 
-         # Run appropriate sub according to control (entry widget) type
-         my $sub_name = "control_read_$ctrltype";
-         if ( $self->can($sub_name) ) {
-             $self->$sub_name( $ctrl_ref, $field );
-         }
-         else {
-             print "WARN: No '$ctrltype' ctrl type for reading '$field'!\n";
-         }
-     }
+        # Run appropriate sub according to control (entry widget) type
+        my $sub_name = "control_read_$ctrltype";
+        if ( $self->can($sub_name) ) {
+            $self->$sub_name( $ctrl_ref, $field );
+        }
+        else {
+            print "WARN: No '$ctrltype' ctrl type for reading '$field'!\n";
+        }
+    }
 
-     return;
+    return;
 }
 
 =head2 control_read_e
@@ -1384,18 +1394,18 @@ sub control_read_d {
     #         my ( $y, $m, $d ) =
     #           $self->{utils}->dateentry_parse_date( $dstyle, $value );
 
-    #         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
-    #     }
-    # }
-    # else {
-    #     # default to ISO
-    # }
+#         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
+#     }
+# }
+# else {
+#     # default to ISO
+# }
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;    # m=multiline
 
         $self->{scrdata}{$field} = $value;
         print "Screen (d): $field = $value\n";
@@ -1426,13 +1436,13 @@ sub control_read_m {
         return;
     }
 
-    my $value = ${ $ctrl_ref->{$field}[0] }; # Value from variable
+    my $value = ${ $ctrl_ref->{$field}[0] };    # Value from variable
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;                    # m=multiline
 
         $self->{scrdata}{$field} = $value;
         print "Screen (m): $field = $value\n";
@@ -1469,7 +1479,7 @@ sub control_read_l {
     if ( $value =~ /\S+/ ) {
 
         # Delete '\n' from end
-        $value =~ s/\n$//mg;        # m=multiline
+        $value =~ s/\n$//mg;    # m=multiline
 
         $self->{scrdata}{$field} = $value;
         print "Screen (l): $field = $value\n";
@@ -1510,17 +1520,17 @@ present to, at least as 'undef'.
 =cut
 
 sub screen_write {
-    my ($self, $record_ref, $option) = @_;
+    my ( $self, $record_ref, $option ) = @_;
 
-    $option ||= 'record';             # default option record
+    $option ||= 'record';    # default option record
 
     # $self->_log->trace("Write '$option' screen controls");
 
     my $ctrl_ref = $self->_screen->get_controls();
 
-    return unless scalar keys %{$ctrl_ref};  # no controls?
+    return unless scalar keys %{$ctrl_ref};    # no controls?
 
-  FIELD:
+FIELD:
     foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
 
         my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
@@ -1721,7 +1731,7 @@ sub controls_state_set {
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
-                $ctrl_state = 0;             # 'disabled'
+                $ctrl_state = 0;                               # 'disabled'
                 $bg_color   = $self->_screen->get_bgcolor();
             }
         }
@@ -1729,9 +1739,9 @@ sub controls_state_set {
         # Configure controls
         $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
         $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
-        $ctrl_ref->{$field}[1]->SetBackgroundColour(
-            Wx::Colour->new($bg_color)
-          ) if $bg_color;
+        $ctrl_ref->{$field}[1]
+            ->SetBackgroundColour( Wx::Colour->new($bg_color) )
+            if $bg_color;
     }
 
     return;
@@ -1746,7 +1756,7 @@ Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
 sub control_write_e {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Tip Entry 'e'
     $ctrl_ref->{$field}[1]->Clear;
@@ -1764,12 +1774,12 @@ Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
 sub control_write_t {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Tip TextEntry 't'
     $ctrl_ref->{$field}[1]->ClearAll;
     $ctrl_ref->{$field}[1]->AppendText($value);
-    $ctrl_ref->{$field}[1]->AppendText( "\n" );
+    $ctrl_ref->{$field}[1]->AppendText("\n");
 
     return;
 }
@@ -1783,17 +1793,18 @@ Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
 sub control_write_d {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    $value = q{} unless defined $value; # Empty
+    $value = q{} unless defined $value;    # Empty
 
     # Date should come from database in ISO format
-    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date('iso', $value);
+    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
 
     # Get configured date style and format accordingly
-    my $dstyle = 'iso'; #$self->{conf}->get_misc_config('datestyle');
-    if ($dstyle and $value) {
-        $value = Tpda3::Utils->dateentry_format_date($dstyle, $y, $m, $d);
+    my $dstyle = 'iso';    #$self->{conf}->get_misc_config('datestyle');
+    if ( $dstyle and $value ) {
+        $value = Tpda3::Utils->dateentry_format_date( $dstyle, $y, $m, $d );
     }
     else {
+
         # default to ISO
     }
 
@@ -1811,11 +1822,11 @@ Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
 sub control_write_m {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    if ( $value ) {
+    if ($value) {
         $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
     }
     else {
-        ${ $ctrl_ref->{$field}[0] } = q{}; # Empty
+        ${ $ctrl_ref->{$field}[0] } = q{};    # Empty
     }
 
     return;
@@ -1831,7 +1842,7 @@ must test with a key -> value pair like 'not set' => '?empty?'.
 sub control_write_l {
     my ( $self, $ctrl_ref, $field, $value ) = @_;
 
-    return unless defined $value; # Empty
+    return unless defined $value;    # Empty
 
     $ctrl_ref->{$field}[1]->set_selected_value($value);
 
@@ -1845,7 +1856,7 @@ Return settings for controls, according to the state of the application.
 =cut
 
 sub control_states {
-    my ($self, $state) = @_;
+    my ( $self, $state ) = @_;
 
     return $self->{control_states}{$state};
 }
@@ -1981,4 +1992,4 @@ the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::Controller
+1;    # End of Tpda3::Wx::Controller

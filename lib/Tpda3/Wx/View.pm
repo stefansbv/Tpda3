@@ -51,7 +51,7 @@ sub new {
 
     #- The Frame
 
-    my $self = __PACKAGE__->SUPER::new( @_ );
+    my $self = __PACKAGE__->SUPER::new(@_);
 
     Wx::InitAllImageHandlers();
 
@@ -124,12 +124,11 @@ sub _set_model_callbacks {
     );
 
     my $so = $self->_model->get_stdout_observable;
-    $so->add_callback( sub{ $self->set_status( $_[0], 'ms') } );
+    $so->add_callback( sub { $self->set_status( $_[0], 'ms' ) } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
-    $apm->add_callback(
-        sub { $self->update_gui_components(); } );
+    $apm->add_callback( sub { $self->update_gui_components(); } );
 
     return;
 }
@@ -147,24 +146,24 @@ sub update_gui_components {
 
     my $mode = $self->_model->get_appmode();
 
-    $self->set_status($mode, 'md');          # update statusbar
+    $self->set_status( $mode, 'md' );    # update statusbar
 
-    SWITCH: {
-          $mode eq 'find' && do {
-              $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
-              $self->{_tb}->toggle_tool_check( 'tb_fm', 1 );
-              last SWITCH;
-          };
-          $mode eq 'add' && do {
-              $self->{_tb}->toggle_tool_check( 'tb_ad', 1 );
-              $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
-              last SWITCH;
-          };
+SWITCH: {
+        $mode eq 'find' && do {
+            $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+            $self->{_tb}->toggle_tool_check( 'tb_fm', 1 );
+            last SWITCH;
+        };
+        $mode eq 'add' && do {
+            $self->{_tb}->toggle_tool_check( 'tb_ad', 1 );
+            $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+            last SWITCH;
+        };
 
-          # Else
-          $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
-          $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
-      }
+        # Else
+        $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+        $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+    }
 
     return;
 }
@@ -202,7 +201,7 @@ sub _create_app_menu {
 
     my $attribs = $self->_cfg->appmenubar;
 
-    $self->make_menus($attribs, 1);  # insert starting with position 1
+    $self->make_menus( $attribs, 1 );    # insert starting with position 1
 
     return;
 }
@@ -214,9 +213,9 @@ Make menus.
 =cut
 
 sub make_menus {
-    my ($self, $attribs, $position) = @_;
+    my ( $self, $attribs, $position ) = @_;
 
-    $position = $position ||= 0;             # default
+    $position = $position ||= 0;    # default
 
     my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
 
@@ -225,12 +224,13 @@ sub make_menus {
 
         $self->{$menu_name} = Wx::Menu->new();
 
-        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        my @popups
+            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
         foreach my $id (@popups) {
             $self->make_popup_item(
                 $self->{$menu_name},
                 $attribs->{$menu_name}{popup}{$id},
-                $attribs->{$menu_name}{id} . $id, # menu Id
+                $attribs->{$menu_name}{id} . $id,    # menu Id
             );
         }
 
@@ -261,11 +261,12 @@ sub get_app_menus_list {
     my $self = shift;
 
     my $attribs = $self->_cfg->appmenubar;
-    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+    my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my @menulist;
     foreach my $menu_name ( @{$menus} ) {
-        my @popups = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
+        my @popups
+            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
         foreach my $item (@popups) {
             push @menulist, $attribs->{$menu_name}{popup}{$item}{name};
         }
@@ -290,15 +291,12 @@ sub make_popup_item {
     $id = wxID_EXIT  if $item->{name} eq q{mn_qt};
 
     my $label = $item->{label};
-    $label .= "\t" . $item->{key} if $item->{key}; # add shortcut key
+    $label .= "\t" . $item->{key} if $item->{key};    # add shortcut key
 
-    $self->{ $item->{name} } = $menu->Append(
-        $id,
-        Tpda3::Utils->ins_underline_mark(
-            $label,
-            $item->{underline},
-        ),
-    );
+    $self->{ $item->{name} }
+        = $menu->Append( $id,
+        Tpda3::Utils->ins_underline_mark( $label, $item->{underline}, ),
+        );
 
     $menu->AppendSeparator() if $item->{sep} eq 'after';
 
@@ -340,11 +338,11 @@ sub _create_toolbar {
 
     my $tb = Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE );
 
-    my ($toolbars, $attribs) = $self->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->toolbar_names();
 
     my $ico_path = $self->{_cfg}->cfico;
 
-    $tb->make_toolbar_buttons($toolbars, $attribs, $ico_path);
+    $tb->make_toolbar_buttons( $toolbars, $attribs, $ico_path );
 
     $self->SetToolBar($tb);
 
@@ -370,7 +368,7 @@ sub toolbar_names {
     # or better keep them sorted and ready to use in config
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    return ($toolbars, $attribs);
+    return ( $toolbars, $attribs );
 }
 
 =head2 enable_tool
@@ -382,9 +380,9 @@ State can come as 0|1 and normal|disabled.
 =cut
 
 sub enable_tool {
-    my ($self, $btn_name, $state) = @_;
+    my ( $self, $btn_name, $state ) = @_;
 
-    $self->{_tb}->enable_tool($btn_name, $state);
+    $self->{_tb}->enable_tool( $btn_name, $state );
 
     return;
 }
@@ -399,11 +397,12 @@ the rest have variable widths.
 sub _create_statusbar {
     my $self = shift;
 
-    $self->{_sb} = $self->CreateStatusBar( 3 );
+    $self->{_sb} = $self->CreateStatusBar(3);
 
     $self->SetStatusWidths( -1, 46, 120 );
 
-    $self->{_sb}->SetStatusStyles(wxSB_NORMAL, wxSB_RAISED, wxSB_NORMAL); #wxSB_NORMAL, wxSB_RAISED, wxSB_FLAT
+    $self->{_sb}->SetStatusStyles( wxSB_NORMAL, wxSB_RAISED, wxSB_NORMAL )
+        ;    #wxSB_NORMAL, wxSB_RAISED, wxSB_FLAT
 
     return;
 }
@@ -430,13 +429,13 @@ sub dialog_popup {
     my ( $self, $msgtype, $msg ) = @_;
 
     if ( $msgtype eq 'Error' ) {
-        Wx::MessageBox( $msg, $msgtype, wxOK|wxICON_ERROR, $self )
+        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_ERROR, $self );
     }
     elsif ( $msgtype eq 'Warning' ) {
-        Wx::MessageBox( $msg, $msgtype, wxOK|wxICON_WARNING, $self )
+        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_WARNING, $self );
     }
     else {
-        Wx::MessageBox( $msg, $msgtype, wxOK|wxICON_INFORMATION, $self )
+        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_INFORMATION, $self );
     }
 }
 
@@ -449,16 +448,16 @@ Yes - No message dialog.
 sub action_confirmed {
     my ( $self, $msg ) = @_;
 
-    my( $answer ) =  Wx::MessageBox(
+    my ($answer) = Wx::MessageBox(
         $msg,
         'Confirm',
-        Wx::wxYES_NO(),  # if you use Wx ':everything', it's wxYES_NO
-        undef,           # you needn't pass anything, much less $frame
-     );
+        Wx::wxYES_NO(),    # if you use Wx ':everything', it's wxYES_NO
+        undef,             # you needn't pass anything, much less $frame
+    );
 
-     if( $answer == Wx::wxYES() ) {
-         return 1;
-     }
+    if ( $answer == Wx::wxYES() ) {
+        return 1;
+    }
 }
 
 =head2 create_notebook
@@ -476,45 +475,43 @@ sub create_notebook {
 
     #- NoteBook
 
-    $self->{_nb} = Tpda3::Wx::Notebook->new( $self );
+    $self->{_nb} = Tpda3::Wx::Notebook->new($self);
 
     #-- Panels
 
-    $self->{_nb}->create_notebook_page('rec', 'Record');
-    $self->{_nb}->create_notebook_page('lst', 'List');
+    $self->{_nb}->create_notebook_page( 'rec', 'Record' );
+    $self->{_nb}->create_notebook_page( 'lst', 'List' );
+
     # $self->{_nb}->create_notebook_page('det', 'Details');
 
     $self->{_rc} = Wx::Perl::ListCtrl->new(
-        $self->{_nb}{lst}, -1,
+        $self->{_nb}{lst},
+        -1,
         [ -1, -1 ],
         [ -1, -1 ],
         Wx::wxLC_REPORT | Wx::wxLC_SINGLE_SEL,
     );
 
-    $self->{_rc}->InsertColumn( 0, 'Empty', wxLIST_FORMAT_LEFT, 50  );
+    $self->{_rc}->InsertColumn( 0, 'Empty', wxLIST_FORMAT_LEFT, 50 );
 
     #-- Top
 
     my $lst_main_sz = Wx::BoxSizer->new(wxVERTICAL);
 
-    my $lst_sbs = Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new(
-            $self->{_nb}{lst},
-            -1,
-            ' List ',
-        ),
-        wxHORIZONTAL,
-    );
+    my $lst_sbs
+        = Wx::StaticBoxSizer->new(
+        Wx::StaticBox->new( $self->{_nb}{lst}, -1, ' List ', ), wxHORIZONTAL,
+        );
 
     $lst_sbs->Add( $self->{_rc}, 1, wxEXPAND, 0 );
     $lst_main_sz->Add( $lst_sbs, 1, wxALL | wxEXPAND, 5 );
 
-    $self->{_nb}{lst}->SetSizer( $lst_main_sz );
+    $self->{_nb}{lst}->SetSizer($lst_main_sz);
 
     #--
 
     my $main_sizer = Wx::BoxSizer->new(wxVERTICAL);
-    $main_sizer->Add($self->{_nb}, 1, wxEXPAND, 0);
+    $main_sizer->Add( $self->{_nb}, 1, wxEXPAND, 0 );
     $self->SetSizer($main_sizer);
     $self->Layout();
 
@@ -528,7 +525,7 @@ Return the notebook handler
 =cut
 
 sub get_notebook {
-    my ($self, $page) = @_;
+    my ( $self, $page ) = @_;
 
     if ($page) {
         return $self->{_nb}{$page};
@@ -595,9 +592,9 @@ Return the control instance by name.
 =cut
 
 sub get_control_by_name {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
-    return $self->{$name},
+    return $self->{$name},;
 }
 
 =head2 log_config_options
@@ -691,7 +688,7 @@ Set new value for a controll
 =cut
 
 sub control_set_value {
-    my ($self, $name, $value) = @_;
+    my ( $self, $name, $value ) = @_;
 
     return unless defined $value;
 
@@ -699,7 +696,7 @@ sub control_set_value {
 
     $ctrl->ClearAll;
     $ctrl->AppendText($value);
-    $ctrl->AppendText( "\n" );
+    $ctrl->AppendText("\n");
     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 
 }
@@ -711,14 +708,14 @@ Append value to a control.
 =cut
 
 sub control_append_value {
-    my ($self, $name, $value) = @_;
+    my ( $self, $name, $value ) = @_;
 
     return unless defined $value;
 
     my $ctrl = $self->get_control_by_name($name);
 
     $ctrl->AppendText($value);
-    $ctrl->AppendText( "\n" );
+    $ctrl->AppendText("\n");
     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 }
 
@@ -729,13 +726,14 @@ Toggle the icon in the status bar
 =cut
 
 sub toggle_status_cn {
-    my ($self, $status) = @_;
+    my ( $self, $status ) = @_;
 
     if ($status) {
-        $self->set_status($self->_cfg->connection->{dbname},'db','darkgreen');
+        $self->set_status( $self->_cfg->connection->{dbname},
+            'db', 'darkgreen' );
     }
     else {
-        $self->set_status('','db');
+        $self->set_status( '', 'db' );
     }
 
     return;
@@ -748,7 +746,7 @@ Make header for list
 =cut
 
 sub make_list_header {
-    my ($self, $header_cols, $header_attr) = @_;
+    my ( $self, $header_cols, $header_attr ) = @_;
 
     # Delete all items and all columns
     $self->get_listcontrol->ClearAll();
@@ -758,19 +756,16 @@ sub make_list_header {
     foreach my $col ( @{$header_cols} ) {
         my $attr = $header_attr->{$col};
 
-        $self->get_listcontrol->InsertColumn(
-            $colcnt,
-            $attr->{label},
-            wxLIST_FORMAT_LEFT,
-            $attr->{width},
-        );
+        $self->get_listcontrol->InsertColumn( $colcnt, $attr->{label},
+            wxLIST_FORMAT_LEFT, $attr->{width}, );
 
         if ( defined $attr->{order} ) {
-            # TODO: Figure out how to sort
-            # if ($attr->{order} eq 'N') {
-            #     $self->{_rc}->columnGet($colcnt)
-            #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
-            # }
+
+           # TODO: Figure out how to sort
+           # if ($attr->{order} eq 'N') {
+           #     $self->{_rc}->columnGet($colcnt)
+           #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
+           # }
         }
         else {
             warn " Warning: no sort option for '$col'\n";
@@ -789,7 +784,7 @@ Return text item from list control row and col
 =cut
 
 sub get_list_text_col {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
     return $self->get_listcontrol->GetItemText( $row, $col );
 }
@@ -801,13 +796,13 @@ Get entire row text from a list control as array ref.
 =cut
 
 sub get_list_text_row {
-    my ($self, $row) = @_;
+    my ( $self, $row ) = @_;
 
     my $col_cnt = $self->get_listcontrol->GetColumnCount() - 1;
 
     my @row_text;
-    foreach my $col (0..$col_cnt) {
-        push @row_text, $self->get_list_text_col($row, $col);
+    foreach my $col ( 0 .. $col_cnt ) {
+        push @row_text, $self->get_list_text_col( $row, $col );
     }
 
     return \@row_text;
@@ -820,7 +815,7 @@ Set text item from list control row and col
 =cut
 
 sub set_list_text {
-    my ($self, $row, $col, $text) = @_;
+    my ( $self, $row, $col, $text ) = @_;
     $self->get_listcontrol->SetItemText( $row, $col, $text );
 }
 
@@ -831,7 +826,7 @@ Set item data from list control
 =cut
 
 sub set_list_data {
-    my ($self, $item, $data_href) = @_;
+    my ( $self, $item, $data_href ) = @_;
     $self->get_listcontrol->SetItemData( $item, $data_href );
 }
 
@@ -842,8 +837,8 @@ Return item data from list control
 =cut
 
 sub get_list_data {
-    my ($self, $item) = @_;
-    return $self->get_listcontrol->GetItemData( $item );
+    my ( $self, $item ) = @_;
+    return $self->get_listcontrol->GetItemData($item);
 }
 
 =head2 list_item_select_first
@@ -858,7 +853,7 @@ sub list_item_select_first {
     my $items_no = $self->get_list_max_index();
 
     if ( $items_no > 0 ) {
-        $self->get_listcontrol->Select(0, 1);
+        $self->get_listcontrol->Select( 0, 1 );
     }
 }
 
@@ -873,6 +868,7 @@ sub list_item_select_last {
 
     my $lst = $self->get_listcontrol;
     my $idx = $self->get_list_max_index() - 1;
+
     #$lst->Select( $idx, 1 );
     #$lst->EnsureVisible($idx);
     $self->{_rc}->Select( $idx, 1 );
@@ -929,7 +925,7 @@ Insert string item in list control
 =cut
 
 sub list_string_item_insert {
-    my ($self, $indice) = @_;
+    my ( $self, $indice ) = @_;
     $self->get_listcontrol->InsertStringItem( $indice, 'dummy' );
 }
 
@@ -940,7 +936,7 @@ Delete list control item
 =cut
 
 sub list_item_clear {
-    my ($self, $item) = @_;
+    my ( $self, $item ) = @_;
     $self->get_listcontrol->DeleteItem($item);
 }
 
@@ -1010,7 +1006,7 @@ sub list_populate {
         return;
     }
 
-    my $ary_ref = $self->_model->query_records_find($paramdata);
+    my $ary_ref    = $self->_model->query_records_find($paramdata);
     my $record_cnt = scalar @{$ary_ref};
 
     my $list = $self->get_listcontrol();
@@ -1019,21 +1015,21 @@ sub list_populate {
     foreach my $record ( @{$ary_ref} ) {
         my $col_max = scalar @{ $paramdata->{columns} };
 
-         $list->InsertStringItem( $row_cnt, 'dummy' );
-        for ( my $col = 0 ; $col < $col_max ; $col++ ) {
+        $list->InsertStringItem( $row_cnt, 'dummy' );
+        for ( my $col = 0; $col < $col_max; $col++ ) {
             $list->SetItemText( $row_cnt, $col, $record->[$col] );
         }
 
         $row_cnt++;
 
-        $self->set_status("$row_cnt records fetched", 'ms');
+        $self->set_status( "$row_cnt records fetched", 'ms' );
 
         # Progress bar
         # my $p = floor( $row_cnt * 10 / $record_cnt ) * 10;
         # if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status("$row_cnt records listed", 'ms');
+    $self->set_status( "$row_cnt records listed", 'ms' );
 
     # $self->{progres} = 0;
 
@@ -1081,7 +1077,7 @@ sub list_read_selected {
     }
 
     my $sel_no = $self->get_listcontrol->GetSelectedItemCount();
-    if ($sel_no <= 0) {
+    if ( $sel_no <= 0 ) {
         print "No record selected\n";
         return;
     }
@@ -1089,7 +1085,7 @@ sub list_read_selected {
     my $row = $self->get_list_selected_index();
 
     # Return column 0 in the row
-    my $selected_value = $self->get_list_text_col( $row, 0 ); # col 0
+    my $selected_value = $self->get_list_text_col( $row, 0 );    # col 0
 
     if ( defined $selected_value ) {
 
@@ -1167,4 +1163,4 @@ the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::Wx::View
+1;    # End of Tpda3::Wx::View

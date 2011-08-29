@@ -40,10 +40,8 @@ ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
 
 #- Test the test screens :)
 
-$a->{gui}{_view}->after(
-    $delay * 1000,
-    sub { ok($a->{gui}->screen_module_load('Products'), 'Load Screen' ); }
-);
+$a->{gui}{_view}->after( $delay * 1000,
+    sub { ok( $a->{gui}->screen_module_load('Products'), 'Load Screen' ); } );
 
 #-- Test application states
 
