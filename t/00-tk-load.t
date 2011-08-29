@@ -15,7 +15,7 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
     else {
-        plan tests => 15;
+        plan tests => 19;
     }
 }
 
@@ -32,8 +32,11 @@ use_ok('Tpda3::Db::Connection::Firebird');
 use_ok('Tpda3::Db::Connection::Sqlite');
 use_ok('Tpda3::Model');
 use_ok('Tpda3::Observable');
-
 use_ok('Tpda3::Tk::Controller');
-use_ok('Tpda3::Tk::ToolBar');
 use_ok('Tpda3::Tk::View');
 use_ok('Tpda3::Tk::Screen');
+use_ok('Tpda3::Tk::TB');
+use_ok('Tpda3::Tk::TM');
+use_ok('Tpda3::Tk::Entry');
+use_ok('Tpda3::Tk::Text');
+use_ok('Tpda3::Tk::Validation');

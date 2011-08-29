@@ -521,15 +521,17 @@ sub build_where {
 
     while ( my ( $field, $attrib ) = each( %{ $rec->{where} } ) ) {
 
+        my $searchstr = $attrib->[0];
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
-            croak "Config error: unknown 'findtype' configured for '$field'";
+            croak "Configuration error: unknown 'findtype' for '$field'";
         }
 
         if ( $find_type eq 'contains' ) {
+            my $cmp = $self->cmp_function($searchstr);
             $where->{$field} =
-                { -like => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
+                { $cmp => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
         }
         elsif ( $find_type eq 'allstr' ) {
             $where->{$field} = $attrib->[0];
@@ -558,6 +560,45 @@ sub build_where {
     }
 
     return $where;
+}
+
+=head2 cmp_function
+
+Compare function to use in SQL::Abstract, falls back to I<LIKE> for
+unrecognised I>driver> names.
+
+For B<Postgresql> and B<Firebird> uses functions that ignore case.
+
+If the search string contains at least one upper case letter, make a
+case sensitive search, else case insensitive.
+
+=cut
+
+sub cmp_function {
+    my ($self, $search_str) = @_;
+
+    my $ignore_case = 1;
+    if ($search_str =~ m/\p{IsLu}{1,}/ ) {
+        $ignore_case = 0;
+    }
+
+    my $driver = $self->_cfg->connection->{driver};
+
+    my $cmp;
+  SWITCH: for ($driver) {
+        /^$/ && warn "EE: Unknown database driver name!\n";
+        /postgresql/i && do {
+            $cmp = $ignore_case ? '-ILIKE' : '-LIKE';
+            last SWITCH; };
+        /firebird/i   && do {
+            $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
+            last SWITCH; };
+        # Default
+        warn "EE: Unknown database driver name: $driver!\n";
+        $cmp = '-LIKE';
+    }
+
+    return $cmp;
 }
 
 =head2 get_codes

@@ -2064,15 +2064,15 @@ screen and used to control the behavior of count and search.
 
 All controls from the screen with I<findtype> configured other than
 I<none>, are read. The values are used to create a perl data structure
-used by the SQL::Alstract module to build a SQL WHERE clause.
+used by the SQL::Abstract module to build an SQL WHERE clause.
 
 The accepted values for I<findtype> are:
 
 =over
 
-=item contains - like
+=item contains - Translated to LIKE | CONTAINING I<%searchstring%>
 
-=item allstr   - field = value
+=item allstr   - field = I<searchstring>
 
 =item date     - Used for date widgets, see below
 
