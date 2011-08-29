@@ -1,0 +1,33 @@
+# Avoid version control files.
+\B\.git\b
+\.gitignore
+
+# Avoid Makemaker generated and utility files.
+\bMakefile$
+\bblib
+\bMakeMaker-\d
+\bpm_to_blib$
+\bblibdirs$
+^MANIFEST\.SKIP$
+
+# Avoid Module::Build generated and utility files.
+\bBuild$
+\b_build
+\bcover_db
+
+# Avoid temp and backup files.
+~$
+\.tmp$
+\.old$
+\.bak$
+\#$
+\b\.#
+\.log$
+
+# Other
+^classicmodels$
+^MYMETA.json$
+^MYMETA.yml$
+^errors.txt$
+\.tar.gz$
+\.zip$
