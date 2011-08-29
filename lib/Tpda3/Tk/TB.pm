@@ -57,6 +57,12 @@ sub make_toolbar_buttons {
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
         next if $name eq 'tb_at';
+
+        # Skip buttons from Help window
+        next if $name eq 'tb3gd';
+        next if $name eq 'tb3gp';
+        next if $name eq 'tb3qt';
+
         $self->enable_tool( $name, 'disabled' );
     }
 
@@ -65,7 +71,10 @@ sub make_toolbar_buttons {
 
 =head2 _item_normal
 
-Create a normal toolbar button
+Create a normal toolbar button.
+
+A callback can be defined in the attribs data structure like a
+methodname string or a code reference.
 
 =cut
 
@@ -74,10 +83,21 @@ sub _item_normal {
 
     $self->separator if $attribs->{sep} =~ m{before};
 
-    $self->{$name} = $self->ToolButton(
-        -image => $attribs->{icon},
-        -tip   => $attribs->{tooltip},
-    );
+    my $callback = ref $attribs->{method} eq 'CODE' ? $attribs->{method} : '';
+
+    if ($callback) {
+        $self->{$name} = $self->ToolButton(
+            -image   => $attribs->{icon},
+            -tip     => $attribs->{tooltip},
+            -command => $callback,
+        );
+    }
+    else {
+        $self->{$name} = $self->ToolButton(
+            -image => $attribs->{icon},
+            -tip   => $attribs->{tooltip},
+        );
+    }
 
     $self->separator if $attribs->{sep} =~ m{after};
 
@@ -86,7 +106,10 @@ sub _item_normal {
 
 =head2 _item_check
 
-Create a check toolbar button
+Create a check toolbar button.
+
+A callback can be defined in the attribs data structure like a
+methodname string or a code reference.
 
 =cut
 
@@ -95,12 +118,25 @@ sub _item_check {
 
     $self->separator if $attribs->{sep} =~ m{before};
 
-    $self->{$name} = $self->ToolButton(
-        -image       => $attribs->{icon},
-        -type        => 'Checkbutton',
-        -indicatoron => 0,
-        -tip         => $attribs->{tooltip},
-    );
+    my $callback = ref $attribs->{method} eq 'CODE' ? $attribs->{method} : '';
+
+    if ($callback) {
+        $self->{$name} = $self->ToolButton(
+            -image       => $attribs->{icon},
+            -type        => 'Checkbutton',
+            -indicatoron => 0,
+            -tip         => $attribs->{tooltip},
+            -command     => $callback,
+        );
+    }
+    else {
+        $self->{$name} = $self->ToolButton(
+            -image       => $attribs->{icon},
+            -type        => 'Checkbutton',
+            -indicatoron => 0,
+            -tip         => $attribs->{tooltip},
+        );
+    }
 
     $self->separator if $attribs->{sep} =~ m{after};
 
