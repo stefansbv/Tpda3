@@ -322,7 +322,7 @@ sub run_screen {
 
     # Required fields: fld_name => [#, Label]
     # If there is no value in the screen for this fields show a dialog message
-    $self->{req_controls} = {
+    $self->{rq_controls} = {
         customername     => [ 0, '  Customer name' ],
         contactlastname  => [ 1, '  Contact last name' ],
         contactfirstname => [ 2, '  Contact first name' ],

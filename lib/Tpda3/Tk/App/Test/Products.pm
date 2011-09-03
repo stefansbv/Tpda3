@@ -36,12 +36,9 @@ The screen layout
 sub run_screen {
     my ( $self, $nb ) = @_;
 
-    # my $gui     = $inreg_p->toplevel;
-    # my $main_p  = $inreg_p->parent;
-    # $self->{bg} = $gui->cget('-background');
-
     my $rec_page = $nb->page_widget('rec');
     my $det_page = $nb->page_widget('det');
+
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
@@ -288,7 +285,7 @@ sub run_screen {
 
     # Required fields: fld_name => [#, Label]
     # If there is no value in the screen for this fields show a dialog message
-    $self->{req_controls} = {
+    $self->{rq_controls} = {
         productcode        => [ 0, '  Product code' ],
         productname        => [ 1, '  Product name' ],
         productlinecode    => [ 2, '  Product Line' ],

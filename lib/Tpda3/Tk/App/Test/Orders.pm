@@ -372,6 +372,14 @@ sub run_screen {
     # TableMatrix objects; just one for now :)
     $self->{tm_controls} = { rec => { tm1 => \$xtable, }, };
 
+    # Required fields: fld_name => [#, Label]
+    # If there is no value in the screen for this fields show a dialog message
+    $self->{rq_controls} = {
+        orderdate      => [ 0, '  Order date' ],
+        requireddate   => [ 1, '  Required date' ],
+        customernumber => [ 2, '  Customer number' ],
+    };
+
     # Prepare screen configuration data for tables
     # foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
     #     $validation->init_cfgdata( 'deptable', $tm_ds );

@@ -97,6 +97,24 @@ sub get_tm_controls {
     }
 }
 
+=head2 get_rq_controls
+
+Get a HoA reference data structure with the field names that are
+required to have values as keys and labels as values.
+
+Usually all fields from the table marked in the I<SQL> structure as
+I<NOT NULL>.
+
+=cut
+
+sub get_rq_controls {
+    my $self = shift;
+
+    return {} if !exists $self->{rq_controls};
+
+    return $self->{rq_controls};
+}
+
 =head2 get_toolbar_btn
 
 Return a toolbar button when we know its name.

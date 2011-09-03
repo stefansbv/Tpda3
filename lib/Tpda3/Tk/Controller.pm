@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -3374,13 +3376,18 @@ sub ask_to {
 
 Save record.  Different procedures for different modes.
 
+First, check if required data present in screen.
+
 =cut
 
 sub record_save {
     my $self = shift;
 
     if ( $self->_model->is_mode('add') ) {
+
         my $record = $self->get_screen_data_record('ins');
+
+        return if !$self->if_check_required_data($record);
 
         my $answer = $self->ask_to('save_insert');
 
@@ -3416,6 +3423,71 @@ sub record_save {
     $self->toggle_detail_tab;
 
     return;
+}
+
+=head2 required_data
+
+Check if required data is present in the screen.
+
+There are two list used in this method, the list of the non empty
+fields from the screen and the list of the fields that require to have
+a value.
+
+This lists are compared and we build a new list with those items which
+appear only in the second list, and build a message string with it.
+
+Example I<Screen> data structure for the required field:
+
+  $self->{rq_controls} = {
+       productcode        => [ 0, '  Product code' ],
+       productname        => [ 1, '  Product name' ],
+       ...
+  };
+
+Returns I<true> if all required fields have values.
+
+BUG: Dialog not always has focus in GNU/Linux.
+
+=cut
+
+sub if_check_required_data {
+    my ($self, $record) = @_;
+
+    my $ok_to_save = 1;
+
+    my $ctrl_req = $self->scrobj('rec')->get_rq_controls();
+    if ( !scalar keys %{$ctrl_req} ) {
+        my $warn_str = 'WW: Unimplemented screen data check in '
+            . ucfirst $self->screen_string('rec');
+        $self->_log->info($warn_str);
+
+        return $ok_to_save;
+    }
+
+    my @scr_fields = keys $record->[0]{data};
+
+    my @req_fields = keys %{$ctrl_req};
+
+    my $lc = List::Compare->new('--unsorted', \@scr_fields, \@req_fields);
+
+    my @required = $lc->get_complement;
+
+    # Build a sorted, by index 0, message data structure
+    my $messages = [];
+    foreach my $field (@required) {
+        $messages->[ $ctrl_req->{$field}[0] ] = $ctrl_req->{$field}[1];
+        $ok_to_save = 0;
+    }
+
+    my @message = grep { defined } @{$messages};    # remove undef elements
+
+    if ( !$ok_to_save ) {
+        my $textstr = "Required data:\n\n" . join( "\n", @message );
+        $self->_view->{dialog1}->configure( -text => $textstr );
+        $self->_view->{dialog1}->Show();
+    }
+
+    return $ok_to_save;
 }
 
 =head2 record_save_insert
@@ -3599,6 +3671,7 @@ sub get_screen_data_record {
     #-- Metadata
     my $record = {};
     $record->{metadata} = $self->main_table_metadata($for_sql);
+    $record->{data}     = {};
 
     #-- Data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
