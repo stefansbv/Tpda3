@@ -71,7 +71,7 @@ sub new {
     return $self;
 }
 
-=head2 _init_cfgdata
+=head2 init_cfgdata
 
 Prepare configuration data for the I<column_name_from_idx> sub.  Data
 is a hashref with column names as keys and column index as values.
