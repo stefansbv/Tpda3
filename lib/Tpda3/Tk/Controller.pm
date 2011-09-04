@@ -467,6 +467,12 @@ Separate event handler for NoteBook because must be initialized only
 after the NoteBook is (re)created and that happens when a new screen is
 required (selected from the applications menu) to load.
 
+Known limitation: Doesn't ask to save the record when the user changes
+from the I<Detail> page to the I<Record> page.
+
+Note: Tried to emulate L<on_page_leave>using I<raisecmd> but without
+success, for (now) obvious reasons.
+
 =cut
 
 sub _set_event_handler_nb {
@@ -481,14 +487,18 @@ sub _set_event_handler_nb {
     $nb->pageconfigure(
         $page,
         -raisecmd => sub {
-            if ( $page eq 'lst' ) {
-                $self->on_page_lst_activate;
-            }
-            elsif ( $page eq 'rec' ) {
-                $self->on_page_rec_activate;
-            }
-            elsif ( $page eq 'det' ) {
-                $self->on_page_det_activate;
+            $self->_view->set_nb_current($page);
+
+        #-- On page activate
+
+        SWITCH: {
+                $page eq 'lst'
+                    && do { $self->on_page_lst_activate; last SWITCH; };
+                $page eq 'rec'
+                    && do { $self->on_page_rec_activate; last SWITCH; };
+                $page eq 'det'
+                    && do { $self->on_page_det_activate; last SWITCH; };
+                print "EE: \$page is not in (lst rec det)\n";
             }
 
             $self->_view->set_status( '', 'ms' );    # clear status message
@@ -519,14 +529,13 @@ row and the data is saved, enable the I<Detail> tab, else disable.
 sub toggle_detail_tab {
     my $self = shift;
 
-    my $nbk = $self->_view->get_notebook();
     my $sel = $self->tmatrix_get_selected;
 
     if ( $sel and !$self->_model->is_modified ) {
-        $nbk->pageconfigure( 'det', -state => 'normal' );
+        $self->_view->nb_set_page_state( 'det', 'normal');
     }
     else {
-        $nbk->pageconfigure( 'det', -state => 'disabled' );
+        $self->_view->nb_set_page_state( 'det', 'disabled');
     }
 
     return;
@@ -534,12 +543,18 @@ sub toggle_detail_tab {
 
 =head2 on_page_rec_activate
 
-On page I<rec> activate.
+If the previous page is L<List>, then get the selected item from the
+L<List> widget and load the coresponding record from the database in
+the I<rec> screen.
 
 =cut
 
 sub on_page_rec_activate {
     my $self = shift;
+
+    $self->_view->nb_set_page_state( 'lst', 'normal');
+
+    return unless $self->_view->get_nb_previous_page eq 'lst';
 
     my $selected = $self->_view->list_read_selected();    # array reference
     unless ($selected) {
@@ -617,6 +632,8 @@ sub on_page_det_activate {
     $self->set_app_mode('edit');
 
     # $self->_model->set_scrdata_rec(q{});    # empty
+
+    $self->_view->nb_set_page_state( 'lst', 'disabled');
 
     return;
 }
@@ -1563,7 +1580,11 @@ sub scrcfg {
 
     $page ||= $self->_view->get_nb_current_page();
 
-    warn "Wrong page (scrcfg): $page!\n" if $page eq 'lst';
+    if ( $page eq 'lst' ) {
+        warn "Wrong page (scrcfg): $page!\n";
+
+        return;
+    }
 
     return $self->scrobj($page)->{scrcfg};
 }
@@ -2853,7 +2874,7 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->info("Screen 'rec' controls state is '$state'");
+    $self->_log->trace("Screen 'rec' controls state is '$state'");
 
     my $page = $self->_view->get_nb_current_page();
 
@@ -3256,7 +3277,9 @@ cancel. Reset modified status.
 =cut
 
 sub ask_to_save {
-    my $self = shift;
+    my ($self, $page) = @_;
+
+    return 0 if !$self->is_record;
 
     if (   $self->_model->is_mode('edit')
         or $self->_model->is_mode('add') )
@@ -3283,18 +3306,16 @@ sub ask_to_save {
                 -pady => 20,
             );
 
-            #
-
             # Position buttons to the right
             # Source: PM by lamprecht on Apr 22, 2011 at 22:09 UTC
-            # my $bframe = $db->Subwidget('bottom');
-            # for ($bframe->children) {
-            #     $_->packForget;
-            #     $_->pack(-side => 'right',
-            #              -padx => 3,
-            #              -pady => 3,
-            #          );
-            # }
+            my $bframe = $db->Subwidget('bottom');
+            for ($bframe->children) {
+                $_->packForget;
+                $_->pack(-side => 'right',
+                         -padx => 3,
+                         -pady => 3,
+                     );
+            }
 
             # Does'n work as expected :(
             # Rise and Show dialog by qumsieh on Oct 08, 2004
@@ -3573,9 +3594,10 @@ structure read from the screen widgets and compare them.
 =cut
 
 sub record_changed {
-    my ( $self, ) = @_;
+    my $self = shift;
 
     my $witness_file = $self->storable_file_name('orig');
+
     unless ( -f $witness_file ) {
         $self->_view->set_status( 'Error!', 'ms', 'orange' );
         croak "Can't find saved data for comparison!\n";
@@ -3631,8 +3653,11 @@ sub restore_note {
 
 =head2 storable_file_name
 
-Note file name defaults to the name of the screen with a I<dat>
-extension.
+Return a file name build using the name of the configuration (by
+convention the lower characters screen name) with a I<dat> extension.
+
+If I<orig> parameter then add an I<-orig> string to the screen name.
+Used for the witness files.
 
 =cut
 
@@ -3645,7 +3670,7 @@ sub storable_file_name {
     # Store record data to file
     my $data_file
         = catfile( $self->_cfg->cfapps, $self->_cfg->cfname,
-        $self->screen_string . $suffix . q{.dat},
+        $self->scrcfg->screen_name . $suffix . q{.dat},
         );
 
     return $data_file;
@@ -3799,6 +3824,8 @@ sub save_screendata {
     my ( $self, $data_file ) = @_;
 
     my $record = $self->get_screen_data_record('upd');
+
+    $self->_log->info("Saving screen data in '$data_file'");
 
     return store( $record, $data_file );
 }

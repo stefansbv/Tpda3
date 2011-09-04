@@ -115,6 +115,18 @@ sub config_scr_file_name {
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
 }
 
+=head2 screen_name
+
+Screen name.
+
+=cut
+
+sub screen_name {
+    my $self = shift;
+
+    return $self->screen->{name};
+}
+
 =head2 screen_detail
 
 Return details screen data structure.

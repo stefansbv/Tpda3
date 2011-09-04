@@ -89,7 +89,9 @@ sub new {
 
     $self->define_dialogs();
 
-    $self->{lookup} = undef;    # info about list header
+    $self->{lookup}  = undef;    # info about list header
+    $self->{nb_prev} = q{};
+    $self->{nb_curr} = q{};
 
     return $self;
 }
@@ -679,6 +681,27 @@ sub get_nb_current_page {
     return $self->get_notebook->raised();
 }
 
+sub set_nb_current {
+    my ( $self, $page ) = @_;
+
+    $self->{nb_prev} = $self->{nb_curr};    # previous tab name
+    $self->{nb_curr} = $page;               # current tab name
+
+    return;
+}
+
+=head2 get_nb_previous_page
+
+NOTE: $nb->info('focusprev') doesn't work.
+
+=cut
+
+sub get_nb_previous_page {
+    my $self = shift;
+
+    return $self->{nb_prev};
+}
+
 =head2 notebook_page_clean
 
 Clean a page of the Tk::NoteBook widget, remove all child widgets.
@@ -696,6 +719,20 @@ sub notebook_page_clean {
             $widget->destroy;
         }
     );
+
+    return;
+}
+
+=head2 nb_set_page_state
+
+Enable/disable notebook pages.
+
+=cut
+
+sub nb_set_page_state {
+    my ($self, $page, $state) = @_;
+
+    $self->get_notebook()->pageconfigure( $page, -state => $state );
 
     return;
 }

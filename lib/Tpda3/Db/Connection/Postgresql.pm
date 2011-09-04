@@ -58,7 +58,7 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->info("Database driver is: $conf->{driver}");
+    $log->trace("Database driver is: $conf->{driver}");
     $log->trace("Parameters:");
     $log->trace("  => Database = $conf->{dbname}\n");
     $log->trace("  => Host     = $conf->{host}\n");

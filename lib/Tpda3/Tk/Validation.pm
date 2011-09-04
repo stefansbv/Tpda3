@@ -36,8 +36,8 @@ our $VERSION = '0.03';
     my $xtable = $frm_t->Scrolled(
         'TableMatrix',
         ...
-        -validate       => 1,
-        -vcmd           => sub { $validation->validate_table_cell('tm1',@_) },
+        -validate => 1,
+        -vcmd     => sub { $validation->validate_table_cell('tm1',@_) },
     );
 
 =head1 METHODS
