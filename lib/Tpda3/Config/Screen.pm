@@ -126,7 +126,7 @@ sub config_scr_file_name {
 
     my $cfg = $self->_cfg;
 
-    return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
+    return catfile( $cfg->configdir, 'scr', $file_name );
 }
 
 =head2 get_defaultreport_file

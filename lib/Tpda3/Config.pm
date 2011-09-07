@@ -253,8 +253,7 @@ Return fully qualified application configuration file name.
 sub config_app_file_name {
     my ( $self, $section ) = @_;
 
-    my $fl
-        = catfile( $self->cfapps, $self->cfname, $self->cfapp->{$section} );
+    my $fl = catfile( $self->configdir, $self->cfapp->{$section} );
 
     #    print "$section: config_app_file_name is $fl \n";
 
@@ -270,7 +269,7 @@ Return full path to connection file.
 sub config_file_name {
     my ( $self, $cfg_name ) = @_;
 
-    return catfile( $self->cfapps, $cfg_name, $self->cfapp->{conninfo} );
+    return catfile( $self->configdir, $self->cfapp->{conninfo} );
 }
 
 =head2 list_configs
@@ -361,7 +360,7 @@ sub config_save_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile( $self->cfapps, $self->cfname, $inst );
+    my $inst_qfn = catfile( $self->configdir, $inst );
 
     Tpda3::Config::Utils->save_yaml( $inst_qfn, $key, $value );
 
@@ -380,7 +379,7 @@ sub config_load_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile( $self->cfapps, $self->cfname, $inst );
+    my $inst_qfn = catfile( $self->configdir, $inst );
 
     my $cfg_hr = Tpda3::Config::Utils->config_file_load($inst_qfn);
 
@@ -485,7 +484,7 @@ Return reports path.
 sub reports_path {
     my $self = shift;
 
-    return catdir( $self->cfapps, $self->cfname, 'rep' );
+    return catdir( $self->configdir, 'rep' );
 }
 
 =head1 AUTHOR

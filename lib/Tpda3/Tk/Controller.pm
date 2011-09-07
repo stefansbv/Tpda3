@@ -3659,7 +3659,7 @@ sub storable_file_name {
 
     # Store record data to file
     my $data_file
-        = catfile( $self->_cfg->cfapps, $self->_cfg->cfname,
+        = catfile( $self->_cfg->configdir,
         $self->scrcfg->screen_name . $suffix . q{.dat},
         );
 
@@ -4014,6 +4014,32 @@ sub list_column_names {
     push @{$columns}, @{$header_cols};
 
     return $columns;
+}
+
+=head2 DESTROY
+
+Cleanup on destroy.  Remove I<Storable> data files from the
+configuration directory.
+
+=cut
+
+sub DESTROY {
+    my $self = shift;
+
+    my $dir = $self->_cfg->configdir;
+    my @files = glob("$dir/*.dat");
+
+    foreach my $file (@files) {
+        if ( -f $file ) {
+            my $cnt = unlink $file;
+            if ( $cnt == 1 ) {
+                # print "Cleanup: $file\n";
+            }
+            else {
+                $self->_log->error("EE, cleaning up: $file");
+            }
+        }
+    }
 }
 
 =head1 AUTHOR
