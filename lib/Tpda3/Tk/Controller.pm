@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -1803,10 +1801,6 @@ sub screen_module_detail_load {
 
     my $dscrstr = lc $module;
 
-    # Load the new screen configuration
-    # $self->{_dscrcfg} = Tpda3::Config::Screen->new();
-    # $self->{_dscrcfg}->config_screen_load($dscrstr);
-
     $self->_view->notebook_page_clean('det');
 
     # Unload current screen
@@ -2293,54 +2287,44 @@ sub screen_report_print {
 
     return unless ref $self->scrobj('rec');
 
-    # my $script = $self->{tpda}{conf}->get_screen_conf_raport('script');
-    # my $report = $self->{tpda}{conf}->get_screen_conf_raport('content');
-    # print "report ($script) = $report\n";
+    my $pk_col = $self->screen_get_pk_col;
+    my $pk_val = $self->screen_get_pk_val;
 
-    # # ID (name, width)
-    # my $pk_href = $self->{tpda}{conf}->get_screen_conf_table('pk_col');
-    # my $pk_col_name = $pk_href->{name};
-    # my $eobj = $self->_screen->get_eobj_rec();
-    # my $id_val = $eobj->{$pk_col_name}[3]->get;
-    # # print "$pk_col_name = $id_val\n";
+    my $param;
+    if ($pk_val) {
+        # Default paramneter ID
+        $param = "$pk_col=$pk_val";
+    } else {
+        # Atentie
+        my $textstr = "Load a record first";
+        print " $textstr\n";
+        return;
+    }
 
-    # if ($id_val) {
-    #     # Default paramneter ID
-    #     $param = "$pk_col_name=$id_val";
-    # } else {
-    #     # Atentie
-    #     my $textstr = "Load a record first";
-    #     $self->{mw}{dialog1}->configure( -text => $textstr );
-    #     $self->{mw}{dialog1}->Show();
-    #     return;
-    # }
+    my $report_exe       = $self->_cfg->cfextapps->{repmanexe};
+    my $report_file = $self->scrcfg('rec')->get_defaultreport_file;
 
-    # Configurari
-    my $repxp   = $self->_cfg->cfextapps->{repmanexe};
-    my $reppath = $self->_cfg->cfextapps->{reportspath};
+    my $options = qq{-preview -param$param};
 
-    # $report_name =
-    #     $self->{tpda}{cfg_ref}{conf_dir} .'/'. $reppath .'/'. $report;
+    $self->_log->info("Report previwer: $report_exe");
+    $self->_log->info("Report file: $report_file");
 
-# # Metaviewxp
-# if (defined($param) and defined($param2) and defined($param3)) {
-#     # print "3 parameters!\n";
-#     $cmd = "$repxp -preview -param$param -param$param2 -param$param3 $report_name";
-# } elsif (defined($param) and defined($param2)) {
-#     # print "2 parameters!\n";
-#     $cmd = "$repxp -preview -param$param -param$param2 $report_name";
-# } elsif (defined($param)) {
-#     # print "1 parameter!\n";
-#     $cmd = "$repxp -preview -param$param $report_name";
-# } else {
-#     # print "0 parameters?\n";
-#     return;
-# }
+    # Metaviewxp
+    my $cmd;
+    if ( defined $param ) {
+        print "1 parameter!\n";
+        $cmd = qq{$report_exe $options $report_file};
+    }
+    else {
+        print "0 parameters?\n";
+        return;
+    }
 
-    # # print $cmd."\n";
-    # if (system($cmd)) {
-    #     print "Raportare esuata\n";
-    # }
+    $self->_log->debug("Report cmd: $cmd.");
+
+    if ( system $cmd ) {
+        $self->_view->set_status( 'Report failed!', 'ms' );
+    }
 
     return;
 }
@@ -3279,6 +3263,8 @@ cancel. Reset modified status.
 sub ask_to_save {
     my ($self, $page) = @_;
 
+    return 0 unless $self->{_rscrcls}; # do we have record screen?
+
     return 0 if !$self->is_record;
 
     if (   $self->_model->is_mode('edit')
@@ -3485,7 +3471,7 @@ sub if_check_required_data {
         return $ok_to_save;
     }
 
-    my @scr_fields = keys $record->[0]{data};
+    my @scr_fields = keys %{ $record->[0]{data} };
 
     my @req_fields = keys %{$ctrl_req};
 

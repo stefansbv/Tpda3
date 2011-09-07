@@ -476,6 +476,18 @@ sub configdir_populate {
     return;
 }
 
+=head2 reports_path
+
+Return reports path.
+
+=cut
+
+sub reports_path {
+    my $self = shift;
+
+    return catdir( $self->cfapps, $self->cfname, 'rep' );
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>

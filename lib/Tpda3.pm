@@ -13,11 +13,11 @@ Tpda3 - The third incarnation of Tpda!
 
 =head1 VERSION
 
-Version 0.23
+Version 0.25
 
 =cut
 
-our $VERSION = '0.23';
+our $VERSION = '0.25';
 
 =head1 SYNOPSIS
 

@@ -135,13 +135,13 @@ toolbar:
       rec:
         idle: disabled
         add:  normal
-        edit: normal
+        edit: disabled
         find: disabled
         sele: disabled
       det:
         idle: disabled
         add:  disabled
-        edit: normal
+        edit: disabled
         find: disabled
         sele: disabled
   tb_rr:

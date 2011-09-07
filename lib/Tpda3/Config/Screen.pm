@@ -43,7 +43,9 @@ Constructor method.
 sub new {
     my ( $class, $args ) = @_;
 
-    my $self = {};
+    my $self = {
+        _cfg => Tpda3::Config->instance(),
+    };
 
     bless $self, $class;
 
@@ -101,6 +103,18 @@ sub config_screen_load {
     return;
 }
 
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{_cfg};
+}
+
 =head2 config_scr_file_name
 
 Return fully qualified screen configuration file name.
@@ -110,9 +124,34 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    my $cfg = Tpda3::Config->instance();
+    my $cfg = $self->_cfg;
 
     return catfile( $cfg->cfapps, $cfg->cfname, 'scr', $file_name );
+}
+
+=head2 get_defaultreport_file
+
+Return default report path, used by the print tool button.
+
+=cut
+
+sub get_defaultreport_file {
+    my $self = shift;
+
+    return catfile( $self->_cfg->reports_path, $self->defaultreport->{file} );
+}
+
+=head2 get_defaultreport_name
+
+Return default report description, used by the print tool button, for
+the baloon label.
+
+=cut
+
+sub get_defaultreport_name {
+    my $self = shift;
+
+    return $self->defaultreport->{name};
 }
 
 =head2 screen_name

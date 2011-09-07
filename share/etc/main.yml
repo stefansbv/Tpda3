@@ -19,5 +19,4 @@ general:
 resource:
   icons: etc/interfaces/icons
 externalapps:
-  repmanexe: /opt/repman/repman/printrep.bin
-  reportspath: reports
+  repmanexe: ~/bin/repman/printrep.bin
