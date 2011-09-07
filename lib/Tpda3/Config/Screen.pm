@@ -166,6 +166,18 @@ sub screen_name {
     return $self->screen->{name};
 }
 
+=head2 screen_description
+
+Return screen description string.
+
+=cut
+
+sub screen_description {
+    my $self = shift;
+
+    return $self->screen->{description};
+}
+
 =head2 screen_detail
 
 Return details screen data structure.

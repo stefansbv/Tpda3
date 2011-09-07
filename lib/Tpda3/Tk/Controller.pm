@@ -1679,7 +1679,7 @@ sub screen_module_load {
     }
 
     unless ( $class->can('run_screen') ) {
-        my $msg = "Error! Screen '$class' can not 'run_screen'";
+        my $msg = "EE: Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
 
@@ -1741,6 +1741,10 @@ sub screen_module_load {
     $self->_view->set_status( '', 'ms' );
 
     $self->_model->unset_scrdata_rec();
+
+    # Change application title
+    my $descr = $self->scrcfg('rec')->screen_description;
+    $self->_view->title(' Tpda3 - ' . $descr) if $descr;
 
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
@@ -3263,7 +3267,7 @@ cancel. Reset modified status.
 sub ask_to_save {
     my ($self, $page) = @_;
 
-    return 0 unless $self->{_rscrcls}; # do we have record screen?
+    return unless $self->{_rscrcls}; # do we have record screen?
 
     return 0 if !$self->is_record;
 
