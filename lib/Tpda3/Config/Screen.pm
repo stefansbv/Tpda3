@@ -138,7 +138,10 @@ Return default report path, used by the print tool button.
 sub get_defaultreport_file {
     my $self = shift;
 
-    return catfile( $self->_cfg->reports_path, $self->defaultreport->{file} );
+    return catfile( $self->_cfg->reports_path, $self->defaultreport->{file} )
+        if $self->defaultreport->{file};
+
+    return;
 }
 
 =head2 get_defaultreport_name

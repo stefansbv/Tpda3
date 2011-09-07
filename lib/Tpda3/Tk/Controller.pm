@@ -2004,36 +2004,29 @@ sub toggle_interface_controls {
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
 
-        #- Conditions
+        #- Corrections
 
-        unless ( $page eq 'lst' ) {
-
-            #-- Take note button
-            if ( $name eq 'tb_tn' and $self->{_rscrcls} ) {
-                $status = 'normal' if $mode eq 'add';
-                $status = 'disabled' unless $is_rec;
-            }
+        unless ( ( $page eq 'lst' ) and $self->{_rscrcls} ) {
 
             #-- Restore note
-            if ( $name eq 'tb_tr' and $self->{_rscrcls} ) {
+
+            if ( ( $name eq 'tb_tr' ) and ( $status eq 'normal' ) ) {
                 my $data_file = $self->storable_file_name;
+                $status = 'disabled' if !-f $data_file;
+            }
+
+            #-- Print preview.
+
+            # Activate only if default report configured for screen
+            if ( ( $name eq 'tb_pr' ) and ( $status eq 'normal' ) ) {
                 $status
-                    = $mode eq 'add'
+                    = $self->scrcfg('rec')->get_defaultreport_file
                     ? 'normal'
                     : 'disabled';
-                $status = 'disabled' if !-f $data_file;
             }
         }
 
-        # Print preview
-        # Activate only if default report configured for screen
-        # if ( $name eq 'tb_pr' and $self->{_rscrcls} ) {
-        #     $status = $self->_cfg->defaultreport
-        #             ? 'normal'
-        #             : 'disabled';
-        # }
-
-        #-- List tab
+        #- List tab
         $status = 'disabled' if $page eq 'lst';
 
         #- Set status for toolbar buttons
@@ -2305,7 +2298,7 @@ sub screen_report_print {
         return;
     }
 
-    my $report_exe       = $self->_cfg->cfextapps->{repmanexe};
+    my $report_exe  = $self->_cfg->cfextapps->{repmanexe};
     my $report_file = $self->scrcfg('rec')->get_defaultreport_file;
 
     my $options = qq{-preview -param$param};
@@ -3267,7 +3260,7 @@ cancel. Reset modified status.
 sub ask_to_save {
     my ($self, $page) = @_;
 
-    return unless $self->{_rscrcls}; # do we have record screen?
+    return 0 unless $self->{_rscrcls}; # do we have record screen?
 
     return 0 if !$self->is_record;
 
