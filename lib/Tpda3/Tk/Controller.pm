@@ -258,6 +258,35 @@ sub _set_event_handlers {
 
     #- Base menu
 
+    #-- Toggle find mode - Menu
+    $self->_view->get_menu_popup_item('mn_fm')->configure(
+        -command => sub {
+            return if !defined $self->ask_to_save;
+
+            # From add mode forbid find mode
+            $self->toggle_mode_find() if !$self->_model->is_mode('add');
+
+        }
+    );
+
+    #-- Toggle execute find - Menu
+    $self->_view->get_menu_popup_item('mn_fe')->configure(
+        -command => sub {
+            $self->_model->is_mode('find')
+                ? $self->record_find_execute
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+        }
+    );
+
+    #-- Toggle execute count - Menu
+    $self->_view->get_menu_popup_item('mn_fc')->configure(
+        -command => sub {
+            $self->_model->is_mode('find')
+                ? $self->record_find_count
+                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+        }
+    );
+
     #-- Exit
     $self->_view->get_menu_popup_item('mn_qt')->configure(
         -command => sub {
@@ -420,12 +449,15 @@ sub _set_event_handlers {
 
     #-- Make some key bindings
 
+    #-- Quit Ctrl-q
     $self->_view->bind(
         '<Control-q>' => sub {
             return if !defined $self->ask_to_save;
             $self->_view->on_quit;
         }
     );
+
+    #-- Reload - F5
     $self->_view->bind(
         '<F5>' => sub {
             $self->_model->is_mode('edit')
@@ -433,6 +465,8 @@ sub _set_event_handlers {
                 : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
+
+    #-- Toggle find mode - F7
     $self->_view->bind(
         '<F7>' => sub {
 
@@ -441,6 +475,8 @@ sub _set_event_handlers {
                 if $self->{_rscrcls} and !$self->_model->is_mode('add');
         }
     );
+
+    #-- Execute find - F8
     $self->_view->bind(
         '<F8>' => sub {
             ( $self->{_rscrcls} and $self->_model->is_mode('find') )
@@ -448,6 +484,8 @@ sub _set_event_handlers {
                 : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
         }
     );
+
+    #-- Execute count - F9
     $self->_view->bind(
         '<F9>' => sub {
             ( $self->{_rscrcls} and $self->_model->is_mode('find') )
@@ -2375,9 +2413,13 @@ sub screen_read {
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        # Skip READ ONLY fields if not FIND status
+        # Skip all read only fields if not FIND mode, and 'r' in find
+        # mode
         if ( !$self->_model->is_mode('find') ) {
             next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
+        }
+        else {
+            next if $ctrlrw eq 'r';
         }
 
         # Run the appropriate sub according to control (widget) type

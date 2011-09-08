@@ -50,6 +50,40 @@ our $VERSION = '0.10';
 
 =head1 METHODS
 
+=head2 ClassInit
+
+
+
+=cut
+
+sub ClassInit {
+    my ( $class, $mw ) = @_;
+
+    $class->SUPER::ClassInit($mw);
+
+    # Swap some bindings
+    $mw->bind($class ,'<Control-Left>',['MoveCell',0,-1]);
+    $mw->bind($class ,'<Left>',
+                  sub {
+                      my $w = shift;
+                      my $Ev = $w->XEvent;
+                      my $posn = $w->icursor;
+                      $w->icursor($posn - 1);
+                  }
+              );
+    $mw->bind($class ,'<Control-Right>',['MoveCell',0,1]);
+    $mw->bind($class ,'<Right>',
+                  sub {
+                      my $w = shift;
+                      my $Ev = $w->XEvent;
+                      my $posn = $w->icursor;
+                      $w->icursor($posn + 1);
+                  }
+              );
+
+    return;
+}
+
 =head2 Populate
 
 Constructor method.
