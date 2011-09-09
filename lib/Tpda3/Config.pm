@@ -122,7 +122,7 @@ sub config_main_load {
     # Main config file name, load
     my $main_qfn = catfile( $configpath, $args->{cfgmain} );
     $self->{_log}->info("Loading 'main' config");
-    $self->{_log}->trace("file: $main_qfn");
+    $self->{_log}->info("file: $main_qfn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
     $msg .= qq{\n  from '$main_qfn'!};
@@ -154,6 +154,8 @@ sub config_main_load {
     $self->{_log}->trace("Making accessors for: @accessor");
 
     $self->make_accessors($main_hr);
+
+    $self->{_log}->info("Loading 'main' config ... done");
 
     return $maincfg;
 }
@@ -269,7 +271,7 @@ Return full path to connection file.
 sub config_file_name {
     my ( $self, $cfg_name ) = @_;
 
-    return catfile( $self->configdir, $self->cfapp->{conninfo} );
+    return catfile( $self->configdir($cfg_name), $self->cfapp->{conninfo} );
 }
 
 =head2 list_configs
@@ -291,7 +293,7 @@ sub list_configs {
 
     my $cc_no = scalar @{$conlst};
     if ( $cc_no == 0 ) {
-        print "Connection configurations: none\n";
+        print "Configurations: none\n";
         print " in '$cfpath':\n";
         return;
     }
@@ -314,7 +316,7 @@ sub list_configs {
     else {
 
         # List all if connection file exists
-        print "Connection configurations:\n";
+        print "Configurations:\n";
         foreach my $cfg_name ( @{$conlst} ) {
             my $cfg_file = $self->config_file_name($cfg_name);
             if ( -f $cfg_file ) {

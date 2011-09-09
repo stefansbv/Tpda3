@@ -588,6 +588,8 @@ the I<rec> screen.
 sub on_page_rec_activate {
     my $self = shift;
 
+    $self->set_app_mode('edit');    # restore interface state
+
     $self->_view->nb_set_page_state( 'lst', 'normal');
 
     return unless $self->_view->get_nb_previous_page eq 'lst';
@@ -604,8 +606,6 @@ sub on_page_rec_activate {
 
     my $pk_val_old = $self->screen_get_pk_val() || q{};    # empty for eq
     my $fk_val_old = $self->screen_get_fk_val() || q{};
-
-    $self->set_app_mode('edit');    # restore interface state
 
     if ( $pk_val_new ne $pk_val_old ) {
         $self->record_load_new( $pk_val_new, $fk_val_new );
@@ -2057,10 +2057,8 @@ sub toggle_interface_controls {
 
             # Activate only if default report configured for screen
             if ( ( $name eq 'tb_pr' ) and ( $status eq 'normal' ) ) {
-                $status
-                    = $self->scrcfg('rec')->get_defaultreport_file
-                    ? 'normal'
-                    : 'disabled';
+                $status = 'disabled' if
+                    !$self->scrcfg('rec')->get_defaultreport_file;
             }
         }
 
