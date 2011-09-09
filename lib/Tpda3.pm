@@ -9,7 +9,7 @@ use Log::Log4perl qw(get_logger);
 
 =head1 NAME
 
-Tpda3 - The third incarnation of Tpda!
+Tpda3 - Tpda3 (Tiny Perl Database Application 3.
 
 =head1 VERSION
 
@@ -21,21 +21,28 @@ our $VERSION = '0.27';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
+B<Tpda3> is a classic desktop database application framework.
 
     use Tpda3;
 
-    my $foo = Tpda3->new();
+    #-- Minimal options:
+
+    my $opts = {};
+
+    $opts->{user} = $user;
+    $opts->{pass} = $pass;
+    $opts->{cfname} = $cfname;
+
+    Tpda3->new( $opts )->run;
 
 =head1 DESCRIPTION
 
-B<Tpda3> (Tiny Perl Database Application) is a classic desktop
-database application framework, written in Perl, that aims to follow
-the Model View Controller (MVC) architecture.  Tpda3 has PerlTk and
-wxPerl support for the GUI part and Firebird, PostgreSQL and (limited)
-SQLite support for the database.
+B<Tpda3> (Tiny Perl Database Application 3) is the successor of Tpda,
+a classic desktop database application framework, written in Perl,
+that aims to follow the Model View Controller (MVC) architecture.
+
+Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
+PostgreSQL and (limited) SQLite support for the database.
 
 This project has two components, the B<Tpda3> I<runtime> and the
 B<Tpda3> I<applications>.
@@ -49,18 +56,16 @@ after the main I<Frame> is created, the user can select a I<Screen>
 from the menu.  Then the I<runtime> will create a I<NoteBook> with two
 pages named I<Record> and I<List>. In the I<Record> page will create
 the controls of the selected I<Screen>.  The I<List> page holds a list
-control widget used for the search results.
+control widget used for the search results.  A I<Details> page can
+also be used with the proper configuration options.
 
-TODO:
+This application is designed to be flexible, as a consequence the
+configurations are quite complex.
 
-This application is designed to be very flexible, as a consequence the
-configurations are ...
-
-...
-
-The application configuration file, located in the F<.tpda3>
-tree in F<< apps/<appname>/etc/application.yml >>, has a (new) option
-named I<widgetset> with Tk and Wx as valid values (case insensitive).
+Another new feature of Tpda3 is the suuport for I<wxPerl>.  The
+application configuration file, located in the F<.tpda3> tree in F<<
+apps/<appname>/etc/application.yml >>, has a (new) option named
+I<widgetset> with Tk and Wx as valid values (case insensitive).
 
 This is the main module of the application.
 
@@ -132,7 +137,7 @@ sub _init {
 
 =head2 run
 
-Execute the application
+Execute the application.
 
 =cut
 
@@ -160,7 +165,7 @@ You can find documentation for this module with the perldoc command.
 
     perldoc Tpda3
 
-You can also look for information at:
+You can also look for information at: http://tpda.sourceforge.net
 
 =head1 ACKNOWLEDGEMENTS
 

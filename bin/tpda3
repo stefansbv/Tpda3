@@ -88,7 +88,7 @@ sub tpda3_version {
 
     my $ver = $Tpda3::VERSION;
     print
-"Tpda3 (Tiny Perl Database Application) v$ver\n(C) 2010-2011 Stefan Suciu\n\n";
+"Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2011 Stefan Suciu\n\n";
 }
 
 __END__
