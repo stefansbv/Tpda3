@@ -129,6 +129,18 @@ sub config_scr_file_name {
     return catfile( $cfg->configdir, 'scr', $file_name );
 }
 
+=head2 app_dateformat
+
+Date format configuration.
+
+=cut
+
+sub app_dateformat {
+    my $self = shift;
+
+    return $self->_cfg->application->{dateformat} || 'iso';
+}
+
 =head2 get_defaultreport_file
 
 Return default report path, used by the print tool button.

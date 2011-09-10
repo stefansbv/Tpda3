@@ -8,4 +8,4 @@ application:
   limits:
     search: 100
     lookup: 50
-
+  dateformat: usa

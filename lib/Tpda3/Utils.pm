@@ -75,7 +75,7 @@ sub dateentry_parse_date {
     # Default date style format
     $format = 'iso' unless $format;
 
-SWITCH: for ($format) {
+  SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_parse_date'\n";
         /german/i && do {
             ( $d, $m, $y )
@@ -89,7 +89,7 @@ SWITCH: for ($format) {
         };
         /usa/i && do {
             ( $m, $d, $y )
-                = ( $date =~ m{([0-9]{4})\/([0-9]{2})\/([0-9]{4})} );
+                = ( $date =~ m{([0-9]{2})\/([0-9]{2})\/([0-9]{4})} );
             last SWITCH;
         };
 
@@ -115,7 +115,7 @@ sub dateentry_format_date {
     # Default date style format
     $format = 'iso' unless $format;
 
-SWITCH: for ($format) {
+  SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_format_date'\n";
         /german/i && do {
             $date = sprintf( "%02d.%02d.%4d", $d, $m, $y );

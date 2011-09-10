@@ -2517,23 +2517,27 @@ sub control_read_d {
     # Value from variable or empty string
     my $value = ${ $ctrl_ref->{$field}[0] } || q{};
 
-    # # Get configured date style and format accordingly
-    # my $dstyle = $self->{conf}->get_misc_config('datestyle');
-    # if ($dstyle and $value) {
+    # Get configured date style and format accordingly
+    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
 
-    #     # Skip date formatting for find mode
-    #     if ( !$self->is_app_status_find ) {
+    if ( $date_format and $value ) {
 
-    #         # Date should go to database in ISO format
-    #         my ( $y, $m, $d ) =
-    #           $self->{utils}->dateentry_parse_date( $dstyle, $value );
+        # Skip date formatting for find mode
+        if ( !$self->_model->is_mode('find') ) {
 
-#         $value = $self->{utils}->dateentry_format_date( 'iso', $y, $m, $d );
-#     }
-# }
-# else {
-#     # default to ISO
-# }
+            # Date should go to database in ISO format
+            my ( $y, $m, $d )
+                = Tpda3::Utils
+                ->dateentry_parse_date( $date_format, $value );
+
+            $value
+                = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
+        }
+    }
+    else {
+
+        # defaults to ISO
+    }
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2992,17 +2996,23 @@ sub control_write_d {
 
     $value = q{} unless defined $value;    # Empty
 
-    # Date should come from database in ISO format
-    my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
+    if ($value) {
 
-    # Get configured date style and format accordingly
-    my $dstyle = 'iso';    #$self->{conf}->get_misc_config('datestyle');
-    if ( $dstyle and $value ) {
-        $value = Tpda3::Utils->dateentry_format_date( $dstyle, $y, $m, $d );
-    }
-    else {
+        # Date should come from database in ISO format
+        my ( $y, $m, $d )
+            = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
 
-        # default to ISO
+        # Get configured date style and format accordingly
+        my $date_format = $self->_cfg->application->{dateformat} || 'iso';
+
+        if ( $date_format and $value ) {
+            $value = Tpda3::Utils->dateentry_format_date( $date_format,
+                $y, $m, $d );
+        }
+        else {
+
+            # default to ISO
+        }
     }
 
     ${ $ctrl_ref->{$field}[0] } = $value;

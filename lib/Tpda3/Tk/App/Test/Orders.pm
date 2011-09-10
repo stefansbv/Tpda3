@@ -48,6 +48,9 @@ sub run_screen {
     my $validation
         = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
+    my $date_format = $self->{scrcfg}->app_dateformat();
+    print "Date format is $date_format\n";
+
     #- Top Frame
 
     my $frm_top = $rec_page->Frame()->pack(
@@ -158,11 +161,10 @@ sub run_screen {
         -variable   => \$vorderdate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
-            my ( $y, $m, $d ) = ( $_[0] =~ m/(\d*)\-(\d*)\-(\d*)/ );
-            return ( $y, $m, $d );
+            Tpda3::Utils->dateentry_parse_date( $date_format, @_ );
         },
         -formatcmd => sub {
-            sprintf( "%04d\-%02d\-%02d", $_[0], $_[1], $_[2] );
+            Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
     );
@@ -195,11 +197,10 @@ sub run_screen {
         -variable   => \$vrequireddate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
-            my ( $y, $m, $d ) = ( $_[0] =~ m/(\d*)\-(\d*)\-(\d*)/ );
-            return ( $y, $m, $d );
+            Tpda3::Utils->dateentry_parse_date( $date_format, @_ );
         },
         -formatcmd => sub {
-            sprintf( "%04d\-%02d\-%02d", $_[0], $_[1], $_[2] );
+            Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
     );
@@ -225,11 +226,10 @@ sub run_screen {
         -variable   => \$vshippeddate,
         -arrowimage => 'calmonth16',
         -parsecmd   => sub {
-            my ( $y, $m, $d ) = ( $_[0] =~ m/(\d*)\-(\d*)\-(\d*)/ );
-            return ( $y, $m, $d );
+            Tpda3::Utils->dateentry_parse_date( $date_format, @_ );
         },
         -formatcmd => sub {
-            sprintf( "%04d\-%02d\-%02d", $_[0], $_[1], $_[2] );
+            Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
     );
