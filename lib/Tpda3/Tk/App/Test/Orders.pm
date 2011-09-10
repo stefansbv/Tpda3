@@ -45,7 +45,8 @@ sub run_screen {
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
-    my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
+    my $validation
+        = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
     #- Top Frame
 

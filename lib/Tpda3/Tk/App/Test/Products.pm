@@ -42,7 +42,8 @@ sub run_screen {
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
-    my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
+    my $validation
+        = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
     #- Frame1 - Products
 
@@ -187,6 +188,10 @@ sub run_screen {
         -justify            => 'right',
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
+        -validate => 'key',
+        -vcmd     => sub {
+            $validation->validate_entry( 'quantityinstock', @_ );
+        },
     );
     $equantityinstock->form(
         -top  => [ '&', $lquantityinstock, 0 ],
@@ -208,6 +213,10 @@ sub run_screen {
         -justify            => 'right',
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
+        -validate => 'key',
+        -vcmd     => sub {
+            $validation->validate_entry( 'buyprice', @_ );
+        },
     );
     $ebuyprice->form(
         -top  => [ '&', $lbuyprice, 0 ],
@@ -228,6 +237,10 @@ sub run_screen {
         -justify            => 'right',
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
+        -validate => 'key',
+        -vcmd     => sub {
+            $validation->validate_entry( 'msrp', @_ );
+        },
     );
     $emsrp->form(
         -top  => [ '&', $lmsrp, 0 ],
