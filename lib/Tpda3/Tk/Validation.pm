@@ -20,7 +20,8 @@ our $VERSION = '0.03';
 
     require Tpda3::Tk::Validation;
 
-    my $validation = Tpda3::Tk::Validation->new( $self->{scrcfg} );
+    my $validation
+        = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
     # In 'run_screen' method of a screen module:
 
@@ -49,7 +50,7 @@ Constructor method
 =cut
 
 sub new {
-    my ( $class, $scrcfg ) = @_;
+    my ( $class, $scrcfg, $view ) = @_;
 
     my $self = {};
 
@@ -67,6 +68,7 @@ sub new {
     bless $self, $class;
 
     $self->{_cfg} = $scrcfg;
+    $self->{view} = $view;
 
     return $self;
 }
@@ -148,7 +150,7 @@ sub validate_entry {
 
     my ( $type, $width, $places ) = $self->maintable_attribs($column);
 
-    return $self->validate( $type, $p1, $width, $places );
+    return $self->validate( $type, $p1, $width, $places, $column );
 }
 
 =head2 validate_table_cell
@@ -167,7 +169,7 @@ sub validate_table_cell {
     my ( $type, $width, $places )
         = $self->deptable_attribs( $tm_ds, $column );
 
-    return $self->validate( $type, $new, $width, $places );
+    return $self->validate( $type, $new, $width, $places, $column );
 }
 
 =head2 validate
@@ -177,10 +179,10 @@ Validate sub calls the appropriate function for data validation.
 =cut
 
 sub validate {
-    my ( $self, $proc, $p1, $maxlen, $places ) = @_;
+    my ( $self, $proc, $p1, $maxlen, $places, $column ) = @_;
 
     if ( !$proc ) {
-        print "EE: Config error, no procedure for validation!\n";
+        print "EE: Config error for '$column', no proc for validation!\n";
         return;
     }
 
@@ -208,13 +210,11 @@ sub alpha {
     my $pattern = qr/^\p{IsAlpha}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"alpha:$maxlen", "red");
+        $self->{view}->set_status( "alpha:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -232,13 +232,11 @@ sub alphanum {
     my $pattern = qr/^[\p{IsAlnum} +-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"alphanum:$maxlen", "red");
+        $self->{view}->set_status( "alphanum:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -256,13 +254,11 @@ sub alphanumplus {
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"alphanum+:$maxlen", "red");
+        $self->{view}->set_status( "alphanum+:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -280,13 +276,11 @@ sub integer {
     my $pattern = qr/^\p{IsDigit}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen", "red");
+        $self->{view}->set_status( "integer:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -308,17 +302,16 @@ sub numeric {
     my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
         $maxlen - $places - 1, $places;
 
-  # my $pattern =
-  #   qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
+# TODO:
+# my $pattern =
+#     qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"digit:$maxlen:$places", "red");
+        $self->{view}->set_status( "numeric:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -335,13 +328,11 @@ sub anychar {
     my $pattern = qr/^\p{IsPrint}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        #        $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-       #        $self->{tpda}{gui}->refresh_sb('ll',"anychar:$maxlen", "red");
+        $self->{view}->set_status( "anychar:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -360,13 +351,11 @@ sub email {
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"alphanum+:$maxlen", "red");
+        $self->{view}->set_status( "email:$maxlen", 'ms' );
         return 0;
     }
 }
@@ -383,13 +372,11 @@ sub date {
     my $pattern = sprintf "\^[0-9]{2}\.[0-9]{2}\.[0-9]{4}\$", $maxlen;
 
     if ( $myvar =~ m/$pattern/ ) {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"");
+        $self->{view}->set_status( '', 'ms' );    # clear messages
         return 1;
     }
     else {
-
-        # $self->{tpda}{gui}->refresh_sb('ll',"date:dmy|mdy", "red");
+        $self->{view}->set_status( "date:$maxlen", 'ms' );
         return 0;
     }
 }

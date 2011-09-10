@@ -302,7 +302,7 @@ sub list_configs {
     if ($cfg_name_param) {
         if ( grep { $cfg_name_param eq $_ } @{$conlst} ) {
             my $cfg_file = $self->config_file_name($cfg_name_param);
-            print "Connection configuration:\n";
+            print "Configuration:\n";
             print " > $cfg_name_param\n";
             $self->list_configs_details( $cfg_file, $cfpath );
             print " in '$cfpath':\n";
