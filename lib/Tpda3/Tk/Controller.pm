@@ -21,6 +21,7 @@ use Tpda3::Tk::View;
 use Tpda3::Tk::Dialog::Login;
 use Tpda3::Tk::Dialog::Help;
 use Tpda3::Lookup;
+use Tpda3::Generator;
 
 use File::Spec::Functions qw(catfile);
 
@@ -372,6 +373,15 @@ sub _set_event_handlers {
         '<ButtonRelease-1>' => sub {
             $self->_model->is_mode('edit')
                 ? $self->screen_report_print()
+                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+        }
+    );
+
+    #-- Generate default document button
+    $self->_view->get_toolbar_btn('tb_gr')->bind(
+        '<ButtonRelease-1>' => sub {
+            $self->_model->is_mode('edit')
+                ? $self->screen_document_generate()
                 : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
@@ -2060,6 +2070,15 @@ sub toggle_interface_controls {
                 $status = 'disabled' if
                     !$self->scrcfg('rec')->get_defaultreport_file;
             }
+
+            #-- Generate document
+
+            # Activate only if default document template configured
+            # for screen
+            if ( ( $name eq 'tb_gr' ) and ( $status eq 'normal' ) ) {
+                $status = 'disabled' if
+                    !$self->scrcfg('rec')->get_defaultdocument_file;
+            }
         }
 
         #- List tab
@@ -2334,7 +2353,7 @@ sub screen_report_print {
         return;
     }
 
-    my $report_exe  = $self->_cfg->cfextapps->{repmanexe};
+    my $report_exe  = $self->_cfg->cfextapps->{repman}{exe_path};
     my $report_file = $self->scrcfg('rec')->get_defaultreport_file;
 
     my $options = qq{-preview -param$param};
@@ -2362,6 +2381,23 @@ sub screen_report_print {
     return;
 }
 
+sub screen_document_generate {
+    my $self = shift;
+
+    return unless ref $self->scrobj('rec');
+
+    my $record = $self->get_screen_data_record('qry', 'all');
+
+    my $model_file  = $self->scrcfg('rec')->get_defaultdocument_file;
+    my $output_path = $self->_cfg->config_tex_output_path();
+
+    my $gen = Tpda3::Generator->new();
+
+    $gen->tex_from_template($record, $model_file, $output_path);
+
+    return;
+}
+
 =head2 screen_read
 
 Read screen controls (widgets) and save in a Perl data stucture.
@@ -2372,7 +2408,10 @@ Returns different data for different application modes.
 
 =item I<Find> mode
 
-Reads all fields regardles of the configured I<rw> attribute.
+Read the fields that have the configured I<rw> attribute set to I<rw>
+and and I<ro> ignoring the fields with I<r>, but also ignoring the
+fields with no values.
+
 
 =item I<Edit> mode
 
@@ -2388,10 +2427,14 @@ no values.
 
 =back
 
+Option to read all fields regardles of the configured I<rw> attribute.
+
+TODO: Find a better attribute name than I<rw>.
+
 =cut
 
 sub screen_read {
-    my $self = shift;
+    my ($self, $all) = @_;
 
     # Initialize
     $self->{_scrdata} = {};
@@ -2411,13 +2454,13 @@ sub screen_read {
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        # Skip all read only fields if not FIND mode, and 'r' in find
-        # mode
-        if ( !$self->_model->is_mode('find') ) {
-            next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
-        }
-        else {
-            next if $ctrlrw eq 'r';
+        if ( !$all ) {
+            if ( $self->_model->is_mode('find') ) {
+                next if $ctrlrw eq 'r';
+            }
+            else {
+                next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
+            }
         }
 
         # Run the appropriate sub according to control (widget) type
@@ -3718,9 +3761,9 @@ dependent table(s) data and meta-data.
 =cut
 
 sub get_screen_data_record {
-    my ( $self, $for_sql ) = @_;
+    my ( $self, $for_sql, $all ) = @_;
 
-    $self->screen_read();
+    $self->screen_read($all);
 
     my @record;
 

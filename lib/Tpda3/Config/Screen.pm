@@ -124,9 +124,7 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    my $cfg = $self->_cfg;
-
-    return catfile( $cfg->configdir, 'scr', $file_name );
+    return catfile( $self->_cfg->configdir, 'scr', $file_name );
 }
 
 =head2 app_dateformat
@@ -143,7 +141,7 @@ sub app_dateformat {
 
 =head2 get_defaultreport_file
 
-Return default report path, used by the print tool button.
+Return default report path and file, used by the print tool button.
 
 =cut
 
@@ -167,6 +165,35 @@ sub get_defaultreport_name {
     my $self = shift;
 
     return $self->defaultreport->{name};
+}
+
+=head2 get_defaultdocument_file
+
+
+
+=cut
+
+sub get_defaultdocument_file {
+    my $self = shift;
+
+    return catfile( $self->_cfg->config_tex_model_path,
+        $self->defaultdocument->{file} )
+        if $self->defaultdocument->{file};
+
+    return;
+}
+
+=head2 get_defaultdocument_name
+
+Return default document description, used by the edit tool button, for
+the baloon label.
+
+=cut
+
+sub get_defaultdocument_name {
+    my $self = shift;
+
+    return $self->defaultdocument->{name};
 }
 
 =head2 screen_name

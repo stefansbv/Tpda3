@@ -43,6 +43,11 @@ recommends 'Tk::DateEntry'        => '1.39';
 recommends 'Tk::TableMatrix'      => '1.23';
 recommends 'Tk::RadiobuttonGroup' => '0.2.2';
 
+#- For generatig PDF from TeX
+
+requires 'IPC::Run3'             => '0';
+requires 'Template'              => '0';
+
 #- and/or Wx
 
 recommends 'Wx'                 => '0.970101';

@@ -489,6 +489,60 @@ sub reports_path {
     return catdir( $self->configdir, 'rep' );
 }
 
+sub documents_path {
+    my $self = shift;
+
+    return catdir( $self->configdir, 'tex' );
+}
+
+=head2 config_tex_path
+
+Return TeX documents base path.
+
+=cut
+
+sub config_tex_path {
+    my $self = shift;
+
+    return catdir( $self->configdir, 'tex' );
+}
+
+=head2 config_tex_model_path
+
+Return TeX documents model path.
+
+=cut
+
+sub config_tex_model_path {
+    my $self = shift;
+
+    return catdir( $self->config_tex_path, 'model' );
+}
+
+=head2 config_tex_output_path
+
+Return TeX documents output path.
+
+=cut
+
+sub config_tex_output_path {
+    my $self = shift;
+
+    return catdir( $self->config_tex_path, 'output' );
+}
+
+=head2 docspath
+
+Default documents output path.
+
+=cut
+
+sub docs_path {
+    my $self = shift;
+
+    return $self->_cfrun->{docspath};
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>

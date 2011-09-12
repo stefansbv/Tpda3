@@ -11,12 +11,12 @@ application:
   appmenu:  etc/menu.yml
 runtime:
   instance: etc/instance.yml
-general:
-  # Connections template path
-  conntmpl: template/connection.yml
-  menutmpl: template/menu.yml
-  apptmpl:  template/application.yml
+  docspath: /tmp
 resource:
   icons: etc/interfaces/icons
 externalapps:
-  repmanexe: ~/bin/repman/printrep.bin
+  repman:
+    exe_path: ~/bin/repman/printrep.bin
+  pdflatex:
+    exe_path: /usr/share/texmf/bin/pdflatex
+    options: -halt-on-error

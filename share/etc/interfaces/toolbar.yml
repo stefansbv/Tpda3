@@ -70,6 +70,26 @@ toolbar:
     icon:    fileprint16
     tooltip: Print (preview)
     help:    Print (preview) default report
+    sep:     none
+    state:
+      rec:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add:  disabled
+        edit: normal
+        find: disabled
+        sele: disabled
+  tb_gr:
+    id:      1005
+    type:    _item_normal
+    icon:    edit16
+    tooltip: Generate document
+    help:    Generate default document
     sep:     after
     state:
       rec:
@@ -81,11 +101,11 @@ toolbar:
       det:
         idle: disabled
         add:  disabled
-        edit: disabled
+        edit: normal
         find: disabled
         sele: disabled
   tb_tn:
-    id:      1005
+    id:      1006
     type:    _item_normal
     icon:    apppencil16
     tooltip: Take note
@@ -105,7 +125,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_tr:
-    id:      1006
+    id:      1007
     type:    _item_normal
     icon:    actredo16
     tooltip: Restore note
@@ -125,7 +145,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_cl:
-    id:      1007
+    id:      1008
     type:    _item_normal
     icon:    filenew16
     tooltip: Clear
@@ -145,7 +165,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_rr:
-    id:      1008
+    id:      1009
     type:    _item_normal
     icon:    actreload16
     tooltip: Refresh
@@ -165,7 +185,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_ad:
-    id:      1009
+    id:      1010
     type:    _item_check
     icon:    actitemadd16
     tooltip: Add record
@@ -185,7 +205,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_rm:
-    id:      1010
+    id:      1011
     type:    _item_normal
     icon:    actitemdelete16
     tooltip: Remove record
@@ -205,7 +225,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_sv:
-    id:      1011
+    id:      1012
     type:    _item_normal
     icon:    filesave16
     tooltip: Save record
@@ -225,7 +245,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_at:
-    id:      1012
+    id:      1013
     type:    _item_normal
     icon:    actattach16
     tooltip: Attach to desktop, here
@@ -245,7 +265,7 @@ toolbar:
         find: disabled
         sele: normal
   tb_qt:
-    id:      1013
+    id:      1014
     type:    _item_normal
     icon:    actexit16
     tooltip: Quit
