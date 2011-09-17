@@ -68,13 +68,18 @@ Get a data structure containing references to the widgets.
 =cut
 
 sub get_controls {
-    my $self = shift;
+    my ($self, $field) = @_;
 
     # croak "'get_controls' not implemented.\n"
     #     unless exists $self->{controls}
     #         and scalar %{ $self->{controls} };
 
-    return $self->{controls};
+    if ($field) {
+        return $self->{controls}{$field};
+    }
+    else {
+        return $self->{controls};
+    }
 }
 
 =head2 get_tm_controls

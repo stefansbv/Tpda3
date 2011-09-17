@@ -23,6 +23,7 @@ use Tpda3::Tk::Dialog::Help;
 use Tpda3::Lookup;
 use Tpda3::Generator;
 
+use File::Basename;
 use File::Spec::Functions qw(catfile);
 
 =head1 NAME
@@ -598,7 +599,7 @@ the I<rec> screen.
 sub on_page_rec_activate {
     my $self = shift;
 
-    $self->set_app_mode('edit');    # restore interface state
+    $self->toggle_interface_controls;
 
     $self->_view->nb_set_page_state( 'lst', 'normal');
 
@@ -618,11 +619,13 @@ sub on_page_rec_activate {
     my $fk_val_old = $self->screen_get_fk_val() || q{};
 
     if ( $pk_val_new ne $pk_val_old ) {
+        $self->set_app_mode('edit');
         $self->record_load_new( $pk_val_new, $fk_val_new );
     }
     else {
         if ( defined $fk_val_new ) {
             if ( $fk_val_new ne $fk_val_old ) {
+                $self->set_app_mode('edit');
                 $self->record_load_new( $pk_val_new, $fk_val_new );
             }
         }
@@ -964,7 +967,7 @@ sub setup_lookup_bindings_entry {
         $ctrl_ref->{$column}[1]->bind(
             '<Return>' => sub {
                 my $record = $dict->lookup( $self->_view, $para, $filter );
-                $self->screen_write( $record, 'fields' );
+                $self->screen_write($record);
             }
         );
     }
@@ -1447,13 +1450,15 @@ When in I<add> mode set status to I<normal> and clear all controls
 content in the I<Screen> and change the background to the default
 color as specified in the configuration.
 
+Create an empty record and write it to the controls. If default values
+are defined for some fileds, then fill in that value.
+
 =cut
 
 sub on_screen_mode_add {
     my ( $self, ) = @_;
 
     # Empty the main controls and TM, if any
-
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
@@ -1461,6 +1466,10 @@ sub on_screen_mode_add {
     }
 
     $self->controls_state_set('edit');
+
+    # Fill in the default values
+    my $record = $self->get_screen_data_record('ins');
+    $self->screen_write( $record->[0]{data} );
 
     my $nb = $self->_view->get_notebook();
     $nb->pageconfigure( 'lst', -state => 'disabled' );
@@ -1971,14 +1980,16 @@ Load options in Listbox like widgets - JCombobox support only.
 All JBrowseEntry or JComboBox widgets must have a <lists> record in
 config to define where the data for the list come from:
 
- <lists>
+Data source for list widgets (JCombobox)
+
+ <lists_ds>
      <statuscode>
          table   = status
          code    = code
          name    = description
          default = none
      </statuscode>
- </lists>
+ </lists_ds>
 
 =cut
 
@@ -2381,6 +2392,12 @@ sub screen_report_print {
     return;
 }
 
+=head2 screen_document_generate
+
+Generate default document assigned to screen.
+
+=cut
+
 sub screen_document_generate {
     my $self = shift;
 
@@ -2393,7 +2410,30 @@ sub screen_document_generate {
 
     my $gen = Tpda3::Generator->new();
 
-    $gen->tex_from_template($record, $model_file, $output_path);
+    unless (-f $model_file) {
+        $self->_view->set_status( 'Template not found', 'ms' );
+        return;
+    }
+
+    #-- Generate LaTeX document from template
+
+    my ($model, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
+
+    my $tex_file = $gen->tex_from_template($record, $model, $output_path);
+    unless (-f $tex_file) {
+        $self->_view->set_status( 'Failed: template -> LaTeX', 'ms' );
+        return;
+    }
+
+    #-- Generate PDF from LaTeX
+
+    my $pdf_file = $gen->pdf_from_latex($tex_file);
+    unless (-f $pdf_file) {
+        $self->_view->set_status( 'Failed: LaTeX -> PDF', 'ms' );
+        return;
+    }
+
+    $self->_view->set_status( "PDF: $pdf_file", 'ms' );
 
     return;
 }
@@ -2446,7 +2486,7 @@ sub screen_read {
 
     return unless scalar keys %{$ctrl_ref};
 
-    # Scan and write to controls
+    # Scan read from controls
     foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
         my $fld_cfg = $scrcfg->main_table_column($field);
 
@@ -2470,7 +2510,7 @@ sub screen_read {
                 print "EE: Undefined field '$field', check configuration!\n";
                 next;
             }
-            $self->$sub_name( $ctrl_ref, $field );
+            $self->$sub_name($field);
         }
         else {
             print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
@@ -2487,9 +2527,11 @@ Read contents of a Tk::Entry control.
 =cut
 
 sub control_read_e {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = $ctrl_ref->{$field}[1]->get;
+    my $control = $self->scrobj()->get_controls($field)->[1];
+
+    my $value = $control->get;
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2521,9 +2563,11 @@ Read contents of a Tk::Text control.
 =cut
 
 sub control_read_t {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = $ctrl_ref->{$field}[1]->get( '0.0', 'end' );
+    my $control = $self->scrobj()->get_controls($field)->[1];
+
+    my $value = $control->get( '0.0', 'end' );
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2555,10 +2599,12 @@ Read contents of a Tk::DateEntry control.
 =cut
 
 sub control_read_d {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[0];
 
     # Value from variable or empty string
-    my $value = ${ $ctrl_ref->{$field}[0] } || q{};
+    my $value = ${$control} || q{};
 
     # Get configured date style and format accordingly
     my $date_format = $self->_cfg->application->{dateformat} || 'iso';
@@ -2612,9 +2658,11 @@ Read contents of a Tk::JComboBox control.
 =cut
 
 sub control_read_m {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = ${ $ctrl_ref->{$field}[0] };    # Value from variable
+    my $control = $self->scrobj()->get_controls($field)->[0];
+
+    my $value = ${$control};    # value from variable
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2646,9 +2694,11 @@ Read contents of a Tk::MatchingBE control.
 =cut
 
 sub control_read_l {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = $ctrl_ref->{$field}[1]->get_selected_value() || q{};
+    my $control = $self->scrobj()->get_controls($field)->[1];
+
+    my $value = $control->get_selected_value() || q{};
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2680,9 +2730,11 @@ Read state of a Checkbox.
 =cut
 
 sub control_read_c {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = ${ $ctrl_ref->{$field}[0] };
+    my $control = $self->scrobj()->get_controls($field)->[0];
+
+    my $value = ${$control};
 
     if ( $value == 1 ) {
         $self->{_scrdata}{$field} = $value;
@@ -2709,10 +2761,11 @@ Read RadiobuttonGroup.
 =cut
 
 sub control_read_r {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = ${ $ctrl_ref->{$field}[0] };
-    $value = q{} if !defined $value;    # empty string
+    my $control = $self->scrobj()->get_controls($field)->[0];
+
+    my $value = ${$control} || q{};
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -2735,81 +2788,41 @@ sub control_read_r {
 
 =head2 screen_write
 
-Write record to screen.  It first turns controls I<on> to allow write.
-
-First parameter is a hash reference with the field names as keys.
-
-The second parameter is optional and can have the following values:
-
-=over
-
-=item record - write the entire record to controls, undef values too
-
-=item fields - write only the fields present in the hash reference
-
-=item clear  - clear all widgets contents
-
-=back
-
-If the second parameter is present, obviously the first has to be
-present to, at least as 'undef'.
+Write record to screen.  The parameter is a hash reference with the
+field names as keys.  I<undef> value clears the control.
 
 =cut
 
 sub screen_write {
-    my ( $self, $record_ref, $option ) = @_;
+    my ( $self, $record ) = @_;
 
-    $option ||= 'record';    # default option record
-
-    # $self->_log->trace("Write '$option' screen controls");
-
-    # Current page
+    #- Use current page
     my $page = $self->_view->get_nb_current_page();
 
-    my ( $ctrl_ref, $cfg_ref );
-    if ( $page eq 'rec' ) {
-        $ctrl_ref = $self->scrobj('rec')->get_controls();
-        $cfg_ref  = $self->scrcfg('rec');
-    }
-    elsif ( $page eq 'det' ) {
-        $ctrl_ref = $self->scrobj('det')->get_controls();
-        $cfg_ref  = $self->scrcfg('det');
-    }
-    else {
-        warn "Wrong page: $page!\n";
-        return;
-    }
+    return if $page eq 'lst';
 
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};    # no controls?
 
+    my $cfg_ref = $self->scrcfg($page);
+
+    my $cfgdeps = $self->scrcfg($page)->dependencies;
+
     foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
-        my $fld_cfg = $cfg_ref->main_table_column($field);
 
-        my $ctrl_state;
-        eval { $ctrl_state = $ctrl_ref->{$field}[1]->cget( -state ); };
-        if ($@) {
-            print "WW: Undefined field '$field', check configuration (w)!\n";
-            next;
-        }
-        $ctrl_ref->{$field}[1]->configure( -state => 'normal' );
+        # Skip field if not in record or not dependent
+        next
+            unless ( exists $record->{$field}
+            or $self->is_dependent( $field, $cfgdeps ) );
 
-        # Control config attributes
-        my $ctrltype = $fld_cfg->{ctrltype};
+        my $fldcfg = $cfg_ref->main_table_column($field);
 
-        my $value;
-        if ( $option eq 'record' ) {
-            $value = $record_ref->{ lc $field };
-        }
-        elsif ( $option eq 'fields' ) {
-            $value = $record_ref->{ lc $field };
-            next if !$value;
-        }
-        elsif ( $option eq 'clear' ) {
-            my $rw = $fld_cfg->{rw};
-            next if $rw eq 'r';    # 'det' page fields with data from 'rec'
-        }
-        else {
-            warn "Should never get here!\n";
+        my $value = $record->{$field} || $fldcfg->{default};
+
+        # Process dependencies
+        my $state;
+        if (exists $cfgdeps->{$field} ) {
+            $state = $self->dependencies($field, $cfgdeps, $record);
         }
 
         if ($value) {
@@ -2817,33 +2830,94 @@ sub screen_write {
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
 
-            # Should make $value = 0, than format as number ?
-            my $places = $fld_cfg->{places};
-            if ($places) {
-                if ( $places > 0 ) {
-
-                    # if places > 0, format as number
-                    $value = sprintf( "%.${places}f", $value );
-                }
+            # Number
+            if ( $fldcfg->{validation} eq 'numeric' ) {
+                $self->format_as_number( $value, $fldcfg->{places} );
             }
         }
 
-        # Run appropriate sub according to control (entry widget) type
-        my $sub_name = qq{control_write_$ctrltype};
-        if ( $self->can($sub_name) ) {
-            $self->$sub_name( $ctrl_ref, $field, $value );
-        }
-        else {
-            print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
-        }
-
-        # Restore state
-        $ctrl_ref->{$field}[1]->configure( -state => $ctrl_state );
+        $self->ctrl_write_to($field, $value, $state);
     }
 
-    # $self->_log->trace("Write finished (restored controls states)");
+    return;
+}
+
+=head2 ctrl_write_to
+
+Run the appropriate sub according to control (entry widget) type.
+
+=cut
+
+sub ctrl_write_to {
+    my ($self, $field, $value, $state) = @_;
+
+    my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
+
+    my $sub_name = qq{control_write_$ctrltype};
+    if ( $self->can($sub_name) ) {
+        $self->$sub_name($field, $value, $state);
+    }
+    else {
+        print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
+    }
 
     return;
+}
+
+sub make_empty_record {
+    my $self = shift;
+
+    my $page    = $self->_view->get_nb_current_page();
+    my $cfg_ref = $self->scrcfg($page);
+
+    my $record = {};
+    foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
+        $record->{$field} = undef;
+    }
+
+    return $record;
+}
+
+sub is_dependent {
+    my ( $self, $field, $depcfg ) = @_;
+
+    return exists $depcfg->{$field};
+}
+
+sub dependencies {
+    my ($self, $field, $depcfg, $record) = @_;
+
+    my $depon_field = $depcfg->{$field}{depends_on};
+    # print "  '$field' depends on '$depon_field'\n";
+
+    $self->control_read_e($depon_field);
+    my $depon_value = $self->{_scrdata}{$depon_field};
+
+    # print "  depon_value is $depon_value\n";
+    unless ($depon_value) {
+        $depon_value = $record->{$depon_field} || q{};
+    }
+
+    my $value_dep = $depcfg->{$field}{condition}{value_dep};
+    my $value_set = $depcfg->{$field}{condition}{value_set};
+    my $state_set = $depcfg->{$field}{condition}{state_set};
+
+    # print "  value_dep = '$value_dep'\n";
+    # print "  value_set = '$value_set'\n";
+    # print "  state_set = '$state_set'\n";
+
+    $value_dep       = Tpda3::Utils->trim($value_dep);
+    $depon_value = Tpda3::Utils->trim($depon_value);
+
+    my $ctrl_state;
+    if ( $value_dep eq $depon_value ) {
+        $ctrl_state = $state_set;
+    }
+    else {
+        $ctrl_state = $depcfg->{$field}{default};
+    }
+
+    return $ctrl_state;
 }
 
 =head2 tmatrix_get_selected
@@ -2992,6 +3066,25 @@ sub controls_state_set {
     return;
 }
 
+=head2 formated
+
+Return trimed and formated value if places is greater than 0.
+
+TODO: Should make $value = 0, than format as number?
+
+=cut
+
+sub format_as_number {
+    my ( $self, $value, $places ) = @_;
+
+    # If places > 0, format as number
+    if ( $places and ( $places > 0 ) ) {
+        $value = sprintf( "%.${places}f", $value );
+    }
+
+    return $value;
+}
+
 =head2 control_write_e
 
 Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
@@ -2999,13 +3092,20 @@ Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_e {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[1];
+
+    $state = $state || $control->cget ('-state');
 
     $value = q{} unless defined $value;    # Empty
 
-    # Tip Entry 'e'
-    $ctrl_ref->{$field}[1]->delete( 0, 'end' );
-    $ctrl_ref->{$field}[1]->insert( 0, $value ) if $value;
+    $control->configure( -state => 'normal' );
+
+    $control->delete( 0, 'end' );
+    $control->insert( 0, $value ) if $value;
+
+    $control->configure( -state => $state );
 
     return;
 }
@@ -3017,13 +3117,15 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[1];
 
     $value = q{} unless defined $value;    # Empty
 
     # Tip TextEntry 't'
-    $ctrl_ref->{$field}[1]->delete( '1.0', 'end' );
-    $ctrl_ref->{$field}[1]->insert( '1.0', $value ) if $value;
+    $control->delete( '1.0', 'end' );
+    $control->insert( '1.0', $value ) if $value;
 
     return;
 }
@@ -3035,7 +3137,9 @@ Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_d {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[0];
 
     $value = q{} unless defined $value;    # Empty
 
@@ -3058,7 +3162,7 @@ sub control_write_d {
         }
     }
 
-    ${ $ctrl_ref->{$field}[0] } = $value;
+    ${$control} = $value;
 
     return;
 }
@@ -3070,13 +3174,15 @@ Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field);
 
     if ($value) {
-        $ctrl_ref->{$field}[1]->setSelected( $value, -type => 'value' );
+        $control->[1]->setSelected( $value, -type => 'value' );
     }
     else {
-        ${ $ctrl_ref->{$field}[0] } = q{};    # Empty
+        ${ $control->[0] } = q{};    # Empty
     }
 
     return;
@@ -3090,11 +3196,13 @@ must test with a key -> value pair like 'not set' => '?empty?'.
 =cut
 
 sub control_write_l {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
 
     return unless defined $value;    # Empty
 
-    $ctrl_ref->{$field}[1]->set_selected_value($value);
+    my $control = $self->scrobj()->get_controls($field)->[1];
+
+    $control->set_selected_value($value);
 
     return;
 }
@@ -3106,24 +3214,19 @@ Write to a Tk::Checkbox widget.
 =cut
 
 sub control_write_c {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[1];
 
     $value = 0 unless $value;
     if ( $value == 1 ) {
-        $ctrl_ref->{$field}[1]->select;
+        $control->select;
     }
     else {
-        $ctrl_ref->{$field}[1]->deselect;
+        $control->deselect;
     }
 
-    # TODO: Bindings for Checkbox
-    # # Execute sub defined in screen bound to checkbox
-    # # Sub name must be: 'sw_' + 'field_name'
-    # # Check if sub exists is defined first
-    # my $sub_name = "sw_$field";
-    # if ( $self->{scrobj}->can($sub_name) ) {
-    #     $self->{scrobj}->$sub_name;
-    # }
+    return;
 }
 
 =head2 control_write_r
@@ -3133,13 +3236,15 @@ Write to a Tk::RadiobuttonGroup widget.
 =cut
 
 sub control_write_r {
-    my ( $self, $ctrl_ref, $field, $value ) = @_;
+    my ( $self, $field, $value ) = @_;
+
+    my $control = $self->scrobj()->get_controls($field)->[0];
 
     if ($value) {
-        ${ $ctrl_ref->{$field}[0] } = $value;
+        ${$control} = $value;
     }
     else {
-        ${ $ctrl_ref->{$field}[0] } = undef;
+        ${$control} = undef;
     }
 
     return;
@@ -3334,7 +3439,9 @@ Clear the screen.
 sub record_clear {
     my $self = shift;
 
-    $self->screen_write( undef, 'clear' );    # clear the controls
+    my $record = $self->make_empty_record();
+
+    $self->screen_write($record);
 
     $self->screen_set_pk_val();
 
@@ -3607,7 +3714,7 @@ sub record_save_insert {
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
-        $self->screen_write( { $pk_col => $pk_val }, 'fields' );
+        $self->screen_write( { $pk_col => $pk_val } );
         $self->set_app_mode('edit');
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
         $self->screen_set_pk_val($pk_val);    # save PK value
@@ -3934,7 +4041,7 @@ sub restore_screendata {
     my $where = $mainrec->{metadata}{where};
     delete $mainrec->{data}{$_} for keys %{$where};
 
-    $self->screen_write( $mainrec->{data}, 'record' );
+    $self->screen_write( $mainrec->{data} );
 
     #- Dependent table(s), if any
 

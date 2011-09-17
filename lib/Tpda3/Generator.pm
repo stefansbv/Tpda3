@@ -18,17 +18,21 @@ Tpda3::Generator - The Generator
 
 =head1 VERSION
 
-Version 0.01
+Version 0.05
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
    use Tpda3::Generator;
 
    my $gen = Tpda3::Generator->new();
+
+   my $tex_file = $gen->tex_from_template($record, $model, $output_path);
+
+   my $pdf_file = $gen->pdf_from_latex($tex_file);
 
 =head1 METHODS
 
@@ -54,7 +58,7 @@ sub new {
 
 =head2 _log
 
-Return log instance variable
+Return log instance variable.
 
 =cut
 
@@ -64,35 +68,35 @@ sub _log {
     return $self->{_log};
 }
 
+=head2 _cfg
+
+Return config instance variable.
+
+=cut
+
 sub _cfg {
     my $self = shift;
 
     return $self->{_cfg};
 }
 
+=head2 tex_from_template
+
+Generate LaTeX source from TT template.
+
+=cut
+
 sub tex_from_template {
-    my ($self, $record, $model_file, $output_path) = @_;
+    my ($self, $record, $model, $output_path) = @_;
 
-    #-- Generate TeX
+    my $file_in  = "$model.tt";
+    my $file_out = "$model.tex";
 
-    $self->_log->info("Generating LaTeX from '$model_file'");
+    $self->_log->info("Generating '$model.tex' from '$file_in'");
 
-    my ($name, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
-
-    my $file_in   = $model_file;
-    my $latex_src = "$name.tex";
-
-    if ( !-f $file_in ) {
-        print " $file_in NOT found\n";
-        return;
-    }
-
-    print "File in  = $file_in\n";
-    print "File out = $latex_src\n";
-
-    my $cnt = unlink $latex_src;
+    my $cnt = unlink $file_out;
     if ($cnt == 1) {
-        print "Removed temp file: $latex_src\n";
+        $self->_log->trace("Removed temp file: $file_out");
     }
 
     my $tt = Template->new({
@@ -103,46 +107,42 @@ sub tex_from_template {
         RELATIVE     => 1,
     });
 
-    # Cleanup values and prepare for LaTeX, (translate '&' in '\&')
-    foreach my $field ( keys %{$record->[0]{data}} ) {
-        if (defined $record->[0]{data}{$field}) {
-            $record->[0]{data}{$field} =~ s/^\s+//;
-            $record->[0]{data}{$field} =~ s/\s+$//;
-            $record->[0]{data}{$field} =~ s/[\n\r]/ /;
-            $record->[0]{data}{$field} =~ s/,(\w)/, $1/;
-            $record->[0]{data}{$field} =~ s/&/\\&/;
+    my $rec = $record->[0]{data};    # only the data
+
+    #- Cleanup values and prepare for LaTeX, (translate '&' in '\&')
+
+    foreach my $field ( keys %{$rec} ) {
+        if (defined $rec->{$field}) {
+            $rec->{$field} =~ s/^\s+//;
+            $rec->{$field} =~ s/\s+$//;
+            $rec->{$field} =~ s/[\n\r]/ /;
+            $rec->{$field} =~ s/,(\w)/, $1/;
+            $rec->{$field} =~ s/&/\\&/;
         }
     }
 
     eval {
-        $tt->process( $file_in, $record->[0]{data},
-            $latex_src, binmode => ':utf8' );
+        $tt->process( $file_in, {rec => $rec},
+            $file_out, binmode => ':utf8' );
     };
     if ($@) {
-        print " Failed!\n";
+        $self->_log->info("Generating '$model.tex' from '$file_in' failed");
+        return;
     }
 
-    my $tex_file = catfile($output_path, $latex_src);
-
-    #-- Generate PDF
-
-     $self->pdf_from_latex($tex_file);
-
-    return;
+    return catfile($output_path, $file_out);
 }
+
+=head2 pdf_from_latex
+
+Generate PDF from LaTeX source.
+
+=cut
 
 sub pdf_from_latex {
     my ($self, $tex_file) = @_;
 
-    if ( -f $tex_file ) {
-        print "File in  = $tex_file\n";
-    }
-    else {
-        print " $tex_file NOT found\n";
-        return;
-    }
-
-    print " Generating pdf ...\n";
+    $self->_log->info("Generating PDF from '$tex_file'");
 
     my $pdflatex_exe = $self->_cfg->cfextapps->{pdflatex}{exe_path};
     my $pdflatex_opt = $self->_cfg->cfextapps->{pdflatex}{options};
@@ -151,33 +151,18 @@ sub pdf_from_latex {
     $pdflatex_opt .= ' -output-directory=' . qq{"$docspath"};
 
     my $cmd = qq{"$pdflatex_exe" $pdflatex_opt "$tex_file"};
-    print "cmd: $cmd\n";
+    # print "cmd: $cmd\n";
 
-    #-- From PerlMonks
-    # http://www.perlmonks.org/index.pl?node_id=766502
     run3 $cmd, undef, \my @out, \my @err;
 
-    # The output should be logged !!!
-    print "STDOUT: $_" for @out;
-    print "STDERR: $_" for @err;
+    # print "STDOUT: $_" for @out;
+    # print "STDERR: $_" for @err;
+    # $self->_log->debug("II: @out");
+    $self->_log->debug("EE: @err");
 
-    # PDF file path and name
-    # Get file name from tex source fqn
-    # my (undef, undef, $pdf_fn) = File::Spec->splitpath($tex_file);
+    my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
 
-    # $pdf_fn =~ s/\.tex$/\.pdf/g; # Change the extension
-    # my $pdf_qn = catfile($outdir, $pdf_fn);
-
-    # if ( -f $pdf_qn ) {
-    #     print "File $pdf_qn generated.\n";
-    #     $self->{tpda}{gui}->refresh_sb( 'll', "Out: $pdf_qn", 'blue' );
-    # }
-    # else {
-    #     print " Error: $pdf_qn NOT found!\n";
-    #     $self->{tpda}{gui}->refresh_sb( 'll', "Error!", 'red' );
-    # }
-
-    return;
+    return catfile($docspath, "$name.pdf");
 }
 
 =head1 AUTHOR
@@ -197,6 +182,8 @@ You can find documentation for this module with the perldoc command.
     perldoc Tpda3::Generator
 
 =head1 ACKNOWLEDGEMENTS
+
+PerlMonks: ikegami (http://www.perlmonks.org/index.pl?node_id=766502)
 
 =head1 LICENSE AND COPYRIGHT
 
