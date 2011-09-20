@@ -1977,7 +1977,7 @@ sub update_geometry {
 
 Load options in Listbox like widgets - JCombobox support only.
 
-All JBrowseEntry or JComboBox widgets must have a <lists> record in
+All JBrowseEntry or JComboBox widgets must have a <lists_ds> record in
 config to define where the data for the list come from:
 
 Data source for list widgets (JCombobox)
@@ -2009,9 +2009,9 @@ sub screen_init {
 
         next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
 
-        my $para = $self->scrcfg('rec')->{lists}{$field};
+        my $para = $self->scrcfg('rec')->{lists_ds}{$field};
 
-        next unless ref $para eq 'HASH';       # Undefined, skip
+        next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
         my $cod_a_ref = $self->{_model}->get_codes( $field, $para );
@@ -3117,15 +3117,19 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
     my $control = $self->scrobj()->get_controls($field)->[1];
+
+    $state = $state || $control->cget ('-state');
 
     $value = q{} unless defined $value;    # Empty
 
     # Tip TextEntry 't'
     $control->delete( '1.0', 'end' );
     $control->insert( '1.0', $value ) if $value;
+
+    $control->configure( -state => $state );
 
     return;
 }
@@ -3137,9 +3141,11 @@ Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_d {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
-    my $control = $self->scrobj()->get_controls($field)->[0];
+    my $control = $self->scrobj()->get_controls($field);
+
+    $state = $state || $control->[1]->cget ('-state');
 
     $value = q{} unless defined $value;    # Empty
 
@@ -3162,7 +3168,9 @@ sub control_write_d {
         }
     }
 
-    ${$control} = $value;
+    ${ $control->[0] } = $value;
+
+    $control->[1]->configure( -state => $state );
 
     return;
 }
@@ -3174,9 +3182,11 @@ Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
     my $control = $self->scrobj()->get_controls($field);
+
+    $state = $state || $control->[1]->cget ('-state');
 
     if ($value) {
         $control->[1]->setSelected( $value, -type => 'value' );
@@ -3184,6 +3194,8 @@ sub control_write_m {
     else {
         ${ $control->[0] } = q{};    # Empty
     }
+
+    $control->[1]->configure( -state => $state );
 
     return;
 }
@@ -3196,13 +3208,17 @@ must test with a key -> value pair like 'not set' => '?empty?'.
 =cut
 
 sub control_write_l {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
     return unless defined $value;    # Empty
 
     my $control = $self->scrobj()->get_controls($field)->[1];
 
+    $state = $state || $control->cget ('-state');
+
     $control->set_selected_value($value);
+
+    $control->configure( -state => $state );
 
     return;
 }
@@ -3214,9 +3230,11 @@ Write to a Tk::Checkbox widget.
 =cut
 
 sub control_write_c {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
     my $control = $self->scrobj()->get_controls($field)->[1];
+
+    $state = $state || $control->cget ('-state');
 
     $value = 0 unless $value;
     if ( $value == 1 ) {
@@ -3225,6 +3243,8 @@ sub control_write_c {
     else {
         $control->deselect;
     }
+
+    $control->configure( -state => $state );
 
     return;
 }
@@ -3236,16 +3256,20 @@ Write to a Tk::RadiobuttonGroup widget.
 =cut
 
 sub control_write_r {
-    my ( $self, $field, $value ) = @_;
+    my ( $self, $field, $value, $state ) = @_;
 
-    my $control = $self->scrobj()->get_controls($field)->[0];
+    my $control = $self->scrobj()->get_controls($field);
+
+    $state = $state || $control->[1]->cget('-state');
 
     if ($value) {
-        ${$control} = $value;
+        ${ $control->[0] } = $value;
     }
     else {
-        ${$control} = undef;
+        ${ $control->[0] } = undef;
     }
+
+    $control->[1]->configure( -state => $state );
 
     return;
 }

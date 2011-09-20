@@ -453,6 +453,25 @@ sub sharedir {
 
 Copy configuration files to the application configuration paths.
 
+The applications I<sharedir> is determined using the following
+algorithm: L<Tpda3-> + upper case of the I<configname> if the
+I<configname> contains digits or upper case first letter from the
+I<configname> otherwise.
+
+This is an workaround of the fact that applications have different
+distribution names than the L<Tpda3> run time.
+
+Ideally the share dirs for all the applications would be copied under
+L<Tpda3/>, but there is no option (yet?) to do that using
+L<Module::Install> or L<Module::Build>.
+
+As a consequence the application names must have the name made like
+this:
+
+   Tpda3-Appname and the I<configname>: appname
+ or
+   Tpda3-APP2NAME and the I<configname>: app2name
+
 =cut
 
 sub configdir_populate {
@@ -463,7 +482,9 @@ sub configdir_populate {
 
     # Alternate share directory
     if ( !-d $sharedir ) {
-        $sharedir = dist_dir( 'Tpda3-' . ucfirst $cfname );
+        # Funny algorithm to get the distribution name :)
+        my $distname = $cfname =~ m{\d} ? uc $cfname : ucfirst $cfname;
+        $sharedir = dist_dir( 'Tpda3-' . $distname );
         $sharedir = catdir( $sharedir, 'apps', $cfname );
     }
 
