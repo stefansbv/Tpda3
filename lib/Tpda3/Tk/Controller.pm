@@ -594,12 +594,20 @@ If the previous page is L<List>, then get the selected item from the
 L<List> widget and load the coresponding record from the database in
 the I<rec> screen.
 
+- activate
+
 =cut
 
 sub on_page_rec_activate {
     my $self = shift;
 
-    $self->toggle_interface_controls;
+    if ( $self->_model->is_mode('sele') ) {
+        $self->set_app_mode('edit');
+    }
+    else {
+        $self->toggle_interface_controls;
+        # $self->toggle_screen_interface_controls;            EXPERIMENT
+    }
 
     $self->_view->nb_set_page_state( 'lst', 'normal');
 
@@ -612,6 +620,8 @@ sub on_page_rec_activate {
         return;
     }
 
+    #- Compare PK values, load record only if different
+
     my $pk_val_new = $selected->[0];    # first is the pk value
     my $fk_val_new = $selected->[1];    # second the fk value
 
@@ -619,13 +629,11 @@ sub on_page_rec_activate {
     my $fk_val_old = $self->screen_get_fk_val() || q{};
 
     if ( $pk_val_new ne $pk_val_old ) {
-        $self->set_app_mode('edit');
         $self->record_load_new( $pk_val_new, $fk_val_new );
     }
     else {
         if ( defined $fk_val_new ) {
             if ( $fk_val_new ne $fk_val_old ) {
-                $self->set_app_mode('edit');
                 $self->record_load_new( $pk_val_new, $fk_val_new );
             }
         }
@@ -1712,12 +1720,17 @@ sub screen_module_load {
     # Unload current screen
     if ( $self->{_rscrcls} ) {
         Class::Unload->unload( $self->{_rscrcls} );
-
-        if ( !Class::Inspector->loaded( $self->{_rscrcls} ) ) {
-            $self->_log->trace("Unloaded '$self->{_rscrcls}' screen");
-        }
-        else {
+        if ( Class::Inspector->loaded( $self->{_rscrcls} ) ) {
             $self->_log->trace("Error unloading '$self->{_rscrcls}' screen");
+        }
+
+        # Unload current details screen
+        if ( $self->{_dscrcls} ) {
+            Class::Unload->unload( $self->{_dscrcls} );
+            if ( Class::Inspector->loaded( $self->{_dscrcls} ) ) {
+                $self->_log->info("Error unloading '$self->{_dscrcls}' dscreen");
+            }
+            $self->{_dscrcls} = undef;
         }
     }
 
@@ -1867,11 +1880,7 @@ sub screen_module_detail_load {
     # Unload current screen
     if ( $self->{_dscrcls} ) {
         Class::Unload->unload( $self->{_dscrcls} );
-
-        if ( !Class::Inspector->loaded( $self->{_dscrcls} ) ) {
-            $self->_log->info("Unloaded '$self->{_dscrcls}' screen");
-        }
-        else {
+        if ( Class::Inspector->loaded( $self->{_dscrcls} ) ) {
             $self->_log->info("Error unloading '$self->{_dscrcls}' dscreen");
         }
     }
@@ -2150,6 +2159,30 @@ sub toggle_screen_interface_controls {
             $self->scrobj($page)->enable_tool( $tm_ds, $name, $status );
         }
     }
+
+    #- Other controls
+
+    # my $cfg_ref = $self->scrcfg($page);
+    # my $cfgdeps = $self->scrcfg($page)->dependencies;
+
+    # foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
+
+    #     # Skip field if not in record or not dependent
+    #     next
+    #         unless $self->is_dependent( $field, $cfgdeps );
+
+    #     my $fldcfg = $cfg_ref->main_table_column($field);
+
+    #     # Process dependencies
+    #     my $state;
+    #     if (exists $cfgdeps->{$field} ) {
+    #         $state = $self->dependencies($field, $cfgdeps);
+    #     }
+
+    #     print "Set state of '$field' to '$state'\n";
+    #     my $control = $self->scrobj()->get_controls($field)->[1];
+    #     $control->configure( -state => $state );
+    # }
 
     return;
 }
@@ -2449,8 +2482,8 @@ Returns different data for different application modes.
 =item I<Find> mode
 
 Read the fields that have the configured I<rw> attribute set to I<rw>
-and and I<ro> ignoring the fields with I<r>, but also ignoring the
-fields with no values.
+and I<ro> ignoring the fields with I<r>, but also ignoring the fields
+with no values.
 
 
 =item I<Edit> mode
@@ -2495,15 +2528,12 @@ sub screen_read {
         my $ctrlrw   = $fld_cfg->{rw};
 
         if ( !$all ) {
-            if ( $self->_model->is_mode('find') ) {
-                next if $ctrlrw eq 'r';
-            }
-            else {
+            unless ( $self->_model->is_mode('find') ) {
                 next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
             }
         }
 
-        # Run the appropriate sub according to control (widget) type
+        # Call the appropriate method according to control (widget) type
         my $sub_name = "control_read_$ctrltype";
         if ( $self->can($sub_name) ) {
             unless ( $ctrl_ref->{$field}[1] ) {

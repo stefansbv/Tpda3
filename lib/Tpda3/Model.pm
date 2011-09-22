@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -1141,8 +1139,8 @@ sub record_compare {
 
     #print Dumper( $witness, $record );
 
-    print 'Structures of $witness and $record are ',
-        $dc->Cmp ? "" : "not ", "identical.\n";
+    # print 'Structures of $witness and $record are ',
+    #     $dc->Cmp ? "" : "not ", "identical.\n";
 
     return !$dc->Cmp;
 }
