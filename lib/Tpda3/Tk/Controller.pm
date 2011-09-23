@@ -2847,7 +2847,8 @@ sub screen_write {
 
         my $fldcfg = $cfg_ref->main_table_column($field);
 
-        my $value = $record->{$field} || $fldcfg->{default};
+        my $value = $record->{$field}
+            || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
 
         # Process dependencies
         my $state;
