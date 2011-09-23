@@ -590,11 +590,14 @@ sub toggle_detail_tab {
 
 =head2 on_page_rec_activate
 
-If the previous page is L<List>, then get the selected item from the
-L<List> widget and load the coresponding record from the database in
-the I<rec> screen.
+When the L<Record> page is activated, do:
 
-- activate
+If the previous page is L<List>, then get the selected item from the
+L<List> widget and load the corresponding record from the database in
+the I<rec> screen, but only if it is not already loaded.
+
+If the previous page is L<Details>, toggle toolbar buttons state for
+the current page.
 
 =cut
 
@@ -617,6 +620,7 @@ sub on_page_rec_activate {
     unless ($selected) {
         $self->_view->set_status( 'Nothing selected', 'ms', 'orange' );
         $self->set_app_mode('idle');
+
         return;
     }
 
@@ -632,6 +636,7 @@ sub on_page_rec_activate {
         $self->record_load_new( $pk_val_new, $fk_val_new );
     }
     else {
+        # For detail screens in 'rec' page
         if ( defined $fk_val_new ) {
             if ( $fk_val_new ne $fk_val_old ) {
                 $self->record_load_new( $pk_val_new, $fk_val_new );
@@ -2836,25 +2841,26 @@ sub screen_write {
 
     my $cfg_ref = $self->scrcfg($page);
 
-    my $cfgdeps = $self->scrcfg($page)->dependencies;
+    # my $cfgdeps = $self->scrcfg($page)->dependencies;
 
     foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
 
         # Skip field if not in record or not dependent
         next
             unless ( exists $record->{$field}
-            or $self->is_dependent( $field, $cfgdeps ) );
+                         # or $self->is_dependent( $field, $cfgdeps )
+                 );
 
         my $fldcfg = $cfg_ref->main_table_column($field);
 
         my $value = $record->{$field}
             || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
 
-        # Process dependencies
+        # # Process dependencies
         my $state;
-        if (exists $cfgdeps->{$field} ) {
-            $state = $self->dependencies($field, $cfgdeps, $record);
-        }
+        # if (exists $cfgdeps->{$field} ) {
+        #     $state = $self->dependencies($field, $cfgdeps, $record);
+        # }
 
         if ($value) {
 
@@ -2909,47 +2915,47 @@ sub make_empty_record {
     return $record;
 }
 
-sub is_dependent {
-    my ( $self, $field, $depcfg ) = @_;
+# sub is_dependent {
+#     my ( $self, $field, $depcfg ) = @_;
 
-    return exists $depcfg->{$field};
-}
+#     return exists $depcfg->{$field};
+# }
 
-sub dependencies {
-    my ($self, $field, $depcfg, $record) = @_;
+# sub dependencies {
+#     my ($self, $field, $depcfg, $record) = @_;
 
-    my $depon_field = $depcfg->{$field}{depends_on};
-    # print "  '$field' depends on '$depon_field'\n";
+#     my $depon_field = $depcfg->{$field}{depends_on};
+#     # print "  '$field' depends on '$depon_field'\n";
 
-    $self->control_read_e($depon_field);
-    my $depon_value = $self->{_scrdata}{$depon_field};
+#     $self->control_read_e($depon_field);
+#     my $depon_value = $self->{_scrdata}{$depon_field};
 
-    # print "  depon_value is $depon_value\n";
-    unless ($depon_value) {
-        $depon_value = $record->{$depon_field} || q{};
-    }
+#     # print "  depon_value is $depon_value\n";
+#     unless ($depon_value) {
+#         $depon_value = $record->{$depon_field} || q{};
+#     }
 
-    my $value_dep = $depcfg->{$field}{condition}{value_dep};
-    my $value_set = $depcfg->{$field}{condition}{value_set};
-    my $state_set = $depcfg->{$field}{condition}{state_set};
+#     my $value_dep = $depcfg->{$field}{condition}{value_dep};
+#     my $value_set = $depcfg->{$field}{condition}{value_set};
+#     my $state_set = $depcfg->{$field}{condition}{state_set};
 
-    # print "  value_dep = '$value_dep'\n";
-    # print "  value_set = '$value_set'\n";
-    # print "  state_set = '$state_set'\n";
+#     # print "  value_dep = '$value_dep'\n";
+#     # print "  value_set = '$value_set'\n";
+#     # print "  state_set = '$state_set'\n";
 
-    $value_dep       = Tpda3::Utils->trim($value_dep);
-    $depon_value = Tpda3::Utils->trim($depon_value);
+#     $value_dep       = Tpda3::Utils->trim($value_dep);
+#     $depon_value = Tpda3::Utils->trim($depon_value);
 
-    my $ctrl_state;
-    if ( $value_dep eq $depon_value ) {
-        $ctrl_state = $state_set;
-    }
-    else {
-        $ctrl_state = $depcfg->{$field}{default};
-    }
+#     my $ctrl_state;
+#     if ( $value_dep eq $depon_value ) {
+#         $ctrl_state = $state_set;
+#     }
+#     else {
+#         $ctrl_state = $depcfg->{$field}{default};
+#     }
 
-    return $ctrl_state;
-}
+#     return $ctrl_state;
+# }
 
 =head2 tmatrix_get_selected
 
