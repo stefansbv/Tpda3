@@ -62,6 +62,9 @@ sub make_toolbar_buttons {
         next if $name eq 'tb3gd';
         next if $name eq 'tb3gp';
         next if $name eq 'tb3qt';
+        # And from RepMan window
+        next if $name eq 'tb4pr';
+        next if $name eq 'tb4qt';
 
         $self->enable_tool( $name, 'disabled' );
     }

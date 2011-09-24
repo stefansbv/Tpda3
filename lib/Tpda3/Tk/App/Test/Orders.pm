@@ -3,6 +3,8 @@ package Tpda3::Tk::App::Test::Orders;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Tk::widgets qw(DateEntry JComboBox);    #  MatchingBE
 
 use base 'Tpda3::Tk::Screen';
@@ -311,7 +313,6 @@ sub run_screen {
     my $header = $self->{scrcfg}->dep_table_header_info('tm1');
 
     #-- TableMatrix
-    # my $xtable = Tpda3::Tk::TM($frm_t, $header);
 
     my $xtvar1 = {};
     my $xtable = $frm_t->Scrolled(
@@ -322,7 +323,6 @@ sub run_screen {
         -height         => -1,
         -ipadx          => 3,
         -titlerows      => 1,
-        -validate       => 1,
         -variable       => $xtvar1,
         -selectmode     => 'single',
         -colstretchmode => 'unset',
@@ -336,6 +336,7 @@ sub run_screen {
 
     $xtable->pack( -expand => 1, -fill => 'both' );
 
+    print Dumper( $header);
     $xtable->init( $frm_t, $header );
 
     #- Ordertotal (ordertotal)

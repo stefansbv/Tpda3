@@ -20,6 +20,7 @@ use Tpda3::Model;
 use Tpda3::Tk::View;
 use Tpda3::Tk::Dialog::Login;
 use Tpda3::Tk::Dialog::Help;
+use Tpda3::Tk::Dialog::RepMan;
 use Tpda3::Lookup;
 use Tpda3::Generator;
 
@@ -157,6 +158,18 @@ sub guide {
     my $gd = Tpda3::Tk::Dialog::Help->new;
 
     $gd->help_dialog($gui);
+
+    return;
+}
+
+sub repman {
+    my $self = shift;
+
+    my $gui = $self->_view;
+
+    my $gd = Tpda3::Tk::Dialog::RepMan->new;
+
+    $gd->repman_dialog($gui);
 
     return;
 }
@@ -309,6 +322,11 @@ sub _set_event_handlers {
         -command => sub {
             $self->about;
         }
+    );
+
+    #-- Preview ReporMan report
+    $self->_view->get_menu_popup_item('mn_pr')->configure(
+        -command => sub { $self->repman; }
     );
 
     #-- Save geometry

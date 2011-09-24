@@ -39,11 +39,18 @@ menubar:
     underline: 0
     popup:
       1:
+        name: mn_pr
+        label: Preview report
+        underline: 0
+        sep: none
+        key: Alt-p
+      2:
         name: mn_sg
         label: Save window geometry
         underline: 12
         sep: none
         key: Alt-g
+
   menu_help:
     id:    5003
     label: Help
