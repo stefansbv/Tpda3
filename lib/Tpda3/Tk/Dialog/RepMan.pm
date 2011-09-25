@@ -9,6 +9,7 @@ use utf8;
 use Tk;
 use IO::File;
 
+use Tpda3::Config;
 use Tpda3::Tk::TB;
 use Tpda3::Tk::TM;
 
@@ -46,7 +47,9 @@ sub new {
     my $self = {
         tb4 => {},    # ToolBar
         tlw => {},    # TopLevel
-        _tm => undef,
+        _tm => undef, # TableMatrix
+        _rl => undef, # report titles list
+        _rd => undef, # report details
     };
 
     return bless( $self, $class );
@@ -90,7 +93,7 @@ sub repman_dialog {
             'icon'    => 'fileprint16',
             'sep'     => 'none',
             'help'    => 'Preview and print report',
-            'method'  => sub { $self->prevew_report(); },
+            'method'  => sub { $self->preview_report(); },
             'type'    => '_item_normal',
             'id'      => '20101',
         },
@@ -161,7 +164,7 @@ sub repman_dialog {
         -rows           => 6,
         -cols           => 3,
         -width          => -1,
-        -height         => -1,
+        -height         => 6,
         -ipadx          => 3,
         -titlerows      => 1,
         -variable       => $xtvar1,
@@ -172,6 +175,45 @@ sub repman_dialog {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
+    );
+
+    #-- Bindings for selection handling
+
+    # Clean up if mouse leaves the widget
+    $self->{_tm}->bind(
+        '<FocusOut>',
+        sub {
+            my $w = shift;
+            $w->selectionClear('all');
+        }
+    );
+
+    # Highlight the cell under the mouse
+    $self->{_tm}->bind(
+        '<Motion>',
+        sub {
+            my $w  = shift;
+            my $Ev = $w->XEvent;
+            if ( $w->selectionIncludes( '@' . $Ev->x . "," . $Ev->y ) ) {
+                Tk->break;
+            }
+            $w->selectionClear('all');
+            $w->selectionSet( '@' . $Ev->x . "," . $Ev->y );
+            Tk->break;
+        }
+    );
+
+    # MouseButton 1 toggles the value of the cell
+    $self->{_tm}->bind(
+        '<1>',
+        sub {
+            my $w = shift;
+            $w->focus;
+            my ($rc) = @{ $w->curselection };
+            my ( $r, $c ) = split( ',', $rc );
+            $self->{_tm}->set_selected($r);
+            $self->load_report_details($view);
+        }
     );
 
     $self->{_tm}->pack( -expand => 1, -fill => 'both' );
@@ -211,23 +253,23 @@ sub repman_dialog {
         -left => [ %0, $f1d ],
     );
 
-    #-+ id_user
+    # #-+ id_user
 
-    my $eid_user = $frame2->Entry(
-        -width => 12,
-    );
-    $eid_user->form(
-        -top   => [ '&', $lid_rep, 0 ],
-        -right => [ %100, -10 ],
-    );
-    my $lid_user = $frame2->Label(
-        -text => 'User',
-    );
-    $lid_user->form(
-        -top   => [ '&', $lid_rep, 0 ],
-        -right => [ $eid_user, -15 ],
-        -padleft => 5,
-    );
+    # my $eid_user = $frame2->Entry(
+    #     -width => 12,
+    # );
+    # $eid_user->form(
+    #     -top   => [ '&', $lid_rep, 0 ],
+    #     -right => [ %100, -10 ],
+    # );
+    # my $lid_user = $frame2->Label(
+    #     -text => 'User',
+    # );
+    # $lid_user->form(
+    #     -top   => [ '&', $lid_rep, 0 ],
+    #     -right => [ $eid_user, -15 ],
+    #     -padleft => 5,
+    # );
 
     #-- repofile
 
@@ -447,7 +489,6 @@ sub repman_dialog {
     # Type_of_find: 0=none, 1=all number, 2=contains_str, 3=all_str
     $self->{controls} = {
         id_rep   => [ 'e','r',undef,$eid_rep  ,'disabled', $bg   ,undef, 0 ],
-        id_user  => [ 'e','r',undef,$eid_user ,'disabled', $bg   ,undef, 0 ],
         repofile => [ 'e','r',undef,$erepofile,'disabled', $bg   ,undef, 0 ],
         paradef1 => [ 'e','r',undef,$eparadef1,'disabled', $bg   ,undef, 0 ],
         parahnt1 => [ 'e','w',undef,$eparahnt1,'disabled','white',undef, 0 ],
@@ -461,28 +502,20 @@ sub repman_dialog {
         des      => [ 't','r',undef,$tdes     ,'disabled', $bg   ,undef, 0 ],
     };
 
-    # Get all report data from table, suppose there ary just a few
-    # because all data is loaded into memory
-    # Maybe use a filter for user?
-    # $self->{rlol} = $self->{tpda}{conn}->tbl_get_reports(
-    #     'reports',
-    #      undef,
-    #      undef,
-    # );
-
+    #-- TM header
 
     my $header = {
         colstretch => '1',
         columns    => {
             repno => {
-                places => 0,
-                width  => 3,
+                places     => 0,
+                width      => 3,
                 validation => 'numeric',
                 order      => 'N',
                 id         => 0,
                 label      => '#',
-                    tag => 'ro_center',
-                rw      => 'ro'
+                tag        => 'ro_center',
+                rw         => 'ro'
             },
             title => {
                 places     => 0,
@@ -494,15 +527,26 @@ sub repman_dialog {
                 tag        => 'ro_left',
                 rw         => 'ro'
             },
+            repid => {
+                places     => 0,
+                width      => 3,
+                validation => 'numeric',
+                order      => 'N',
+                id         => 2,
+                label      => 'Id',
+                tag        => 'ro_center',
+                rw         => 'ro'
+            },
+
         },
-        selectorcol => undef,
+        selectorcol => 3,
     };
 
     $self->{_tm}->init( $frm_t, $header );
 
-    # $self->{_tm}->configure(-state => 'disabled');
+    $self->load_report_list($view, $header->{selectorcol} );
 
-    $self->load_report_list($view);
+    $self->{_tm}->configure(-state => 'disabled');
 
     return;
 }
@@ -522,53 +566,67 @@ sub dlg_exit {
 }
 
 sub load_report_list {
-    my ($self, $view) = @_;
+    my ($self, $view, $sc) = @_;
 
     my $args = {};
     $args->{table}    = 'reports';
-    $args->{colslist} = [qw{id_rep id_user repofile title des}];
+    $args->{colslist} = [qw{id_rep title}]; #  id_user
     $args->{where}    = undef;
     $args->{order}    = 'title';
 
     my $reports_list = $view->{_model}->table_batch_query($args);
 
-    print Dumper( $reports_list);
-
-    my @rep_titles;
-    foreach my $rec (@{$reports_list}) {
+    my $recno = 0;
+    foreach my $rec ( @{$reports_list} ) {
+        $recno++;
         my $titles = {
-            repno => $rec->{id_rep},
+            repno => $recno,
+            repid => $rec->{id_rep},
             title => $rec->{title},
         };
 
-        push @rep_titles, $titles;
+        push @{ $self->{_rl} }, $titles;
     }
 
     # Clear and fill
     $self->{_tm}->clear_all();
-    $self->{_tm}->fill(\@rep_titles);
+    $self->{_tm}->fill( $self->{_rl} );
+    $self->{_tm}->tmatrix_make_selector($sc);
 
     return;
 }
 
-sub load_details {
-    my ($self, $nr_crt) = @_;
+sub load_report_details {
+    my ($self, $view) = @_;
 
-    print "Selected # $nr_crt\n";
+    my $selected_row = $self->{_tm}->get_selected;
 
-    my $idx = $nr_crt - 1;  # index for array
-    my $id_record = ${ $self->{rlol} }[$idx][0]; # First id 'id_record'
+    my $idx    = $selected_row - 1;                 # index for array
+    my $id_rep = $self->{_rl}->[$idx]{repid};
+
+    print "Selected # $selected_row ID: $id_rep\n";
+
+    my $args = {};
+    $args->{table}    = 'reports';
+    $args->{colslist} = [qw{id_rep repofile title des script
+                            paradef1 parahnt1 paraval1
+                            paradef2 parahnt2 paraval2
+                            paradef3 parahnt3 paraval3}];
+    $args->{where}    = {id_rep => $id_rep};
+    $args->{order}    = 'title';
+
+    $self->{_rd} = $view->{_model}->table_batch_query($args);
 
     # Get widgets object defs from dialog
     my $eobj = $self->get_controls();
-    $self->{tpda}->screen_read($eobj);
-    $self->{tpda}->load_report_screendata($id_record, $eobj);
-
-    # Read screen data
-    $self->{tpda}->screen_read($eobj, 'true');
 
     # Reset bg color for all 'parahnt' widgets
     foreach my $field ( keys %{$eobj} ) {
+        my $start_idx = $field eq 'des' ? "1.0" : 0; # 'des' is a text control
+        my $value = $self->{_rd}->[0]{$field};
+        $eobj->{$field}[3]->delete( $start_idx, 'end' );
+        $eobj->{$field}[3]->insert( $start_idx, $value ) if $value;
+
         if ($field =~ m{parahnt[0-9]:e} ) {
             $eobj->{$field}[3]->configure(
                 -background => 'white',
@@ -578,84 +636,85 @@ sub load_details {
 
     # Make bg color lightgreen for 'parahnt' field
     # when 'paradef' field contains a ':'
-    while ( my ( $field, $value ) = each( %{ $self->{tpda}{scrdata} } ) ) {
-
-        # Scan value fields from dialog screen
-        # 'paradef' and 'paraval' entry types == 'e'!
-        if ( $field =~ m{paradef([0-9]):e} ) {
-            my $idx = $1;
-            my $def = $self->{tpda}{scrdata}{"paradef$idx:e"};
-            if ( $def =~ m{:} ) {
-                my $hnt_field = "parahnt$idx";
-                $eobj->{$hnt_field}[3]->configure(
-                    -state      => 'normal',
-                    -background => 'lightgreen',
-                );
-            }
-        }
-    }
-
-    return;
-}
-
-sub run_report {
-    my $self = shift;
-
-    my $inreg_ref = $self->{rlol}; # Report data
-
-    # my $indice = $self->{rbox}->curselection;    # print "indice $indice\n";
-
-    # unless ( $indice =~ m/\d/ ) {
-    #     $self->{rbox}->selectionSet(0);
-    #     $indice = $self->{rbox}->curselection;
-    # }
-    # unless ( $indice =~ m/\d/ ) {
-    #     print "Nothing selected?\n";
-    #     return;
-    # }
-
-    # my $nr_crt = $self->{rbox}->getRow($indice);  # Selected item
-
-    # # Get widgets object defs from dialog
-    # my $eobj = $self->get_controls();
-    # # Read screen data
-    # $self->{tpda}->screen_read($eobj, 'true');
-
-    # # Get parameter details from Entries
-    # my $parameters = q{};        # Empty
     # while ( my ( $field, $value ) = each( %{ $self->{tpda}{scrdata} } ) ) {
 
     #     # Scan value fields from dialog screen
     #     # 'paradef' and 'paraval' entry types == 'e'!
-    #     if ( $field =~ m{paraval([0-9]):e} ) {
+    #     if ( $field =~ m{paradef([0-9]):e} ) {
     #         my $idx = $1;
-    #         my $val = $value;
-
     #         my $def = $self->{tpda}{scrdata}{"paradef$idx:e"};
-    #         next if not $def;
-    #         # separator is
-    #         # : for values entered into paraval field using dialog
-    #         # . for values entered into paraval field
-    #         my ($tbl, $fld) = split(/[.:]/, $def);
-    #         $parameters .= "-param$fld=$val ";
+    #         if ( $def =~ m{:} ) {
+    #             my $hnt_field = "parahnt$idx";
+    #             $eobj->{$hnt_field}[3]->configure(
+    #                 -state      => 'normal',
+    #                 -background => 'lightgreen',
+    #             );
+    #         }
     #     }
     # }
-    # print "Parameters: [ $parameters ]\n";
 
-    # # Get report filename
-    # my $report = $self->{tpda}{scrdata}{'repofile:e'};
+    return;
+}
 
-    # # run Script
-    # # if ($script) {
-    # #     print " run Script NOT implemented\n";
-    # #     # $script = 'main::' . $script;
-    # #     # no strict 'refs';
-    # #     # my $retval = &{$script}();
-    # # }
+sub preview_report {
+    my $self = shift;
 
-    # # Metaviewxp param for pages:  -from 1 -to 1
-    # my $printrepxp = $self->{tpda}{conf}->get_repman_params('repman_exe');
-    # my $repo_path  = $self->{tpda}{conf}->get_repman_params('repo_path');
+    print Dumper( $self->{_rd} );
+
+    # Get widgets object defs from dialog
+    my $eobj = $self->get_controls();
+
+    # Reset bg color for all 'parahnt' widgets
+
+    # Get parameter details from Entries
+    my $parameters = q{};        # Empty
+    foreach my $field ( keys %{$eobj} ) {
+        next if $field eq 'des';
+
+        my $value = $eobj->{$field}[3]->get;
+        print "$field -> $value\n";
+        # Scan value fields from dialog screen
+        # 'paradef' and 'paraval' entry types == 'e'!
+        if ( $field =~ m{paraval([0-9])} ) {
+            my $idx = $1;
+            print "idx: $idx\n";
+
+            my $def = $eobj->{"paradef$idx"}[3]->get;
+            print " def is $def\n";
+            next if not $def;
+
+            # separator is
+            # : for values entered into paraval field using dialog
+            # . for values entered into paraval field
+            my ( $tbl, $fld ) = split( /[.:]/, $def );
+            $parameters .= "-param$fld=$value ";
+        }
+    }
+    print "Parameters: [ $parameters ]\n";
+
+    # Get report filename
+    my $report_file = $self->{_rd}[0]{repofile};
+
+    my $cfg = Tpda3::Config->instance();
+
+    my $report_path = $cfg->config_rep_file($report_file);
+    unless (-f $report_path) {
+        print "Report file not found: $report_path\n";
+        return;
+    }
+    print " $report_path\n";
+
+    #-- run Script
+    # if ($script) {
+    #     print " run Script NOT implemented\n";
+    #     $script = 'main::' . $script;
+    #     no strict 'refs';
+    #     my $retval = &{$script}();
+    # }
+
+    # Metaviewxp param for pages:  -from 1 -to 1
+
+    # my $report_exe  = $self->_cfg->cfextapps->{repman}{exe_path};
 
     # my $conf_dir = $self->{tpda}->get_config_path('conf_dir');
     # my $report_file = catfile($conf_dir, $repo_path, $report);

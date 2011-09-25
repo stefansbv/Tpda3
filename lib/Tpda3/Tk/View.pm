@@ -203,8 +203,7 @@ SWITCH: {
 =head2 set_geometry_main
 
 Set main window geometry.  Load instance config, than set geometry for
-the window.  Fall back to a hardwired default if no instance config
-yet.
+the window.  Fall back to default if no instance config yet.
 
 =cut
 
@@ -215,10 +214,14 @@ sub set_geometry_main {
 
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{'main'};
+        my $go = $self->_cfg->geometry();
+        if (exists $go->{main}) {
+            $geom = $go->{main};
+        }
     }
-    else {
-        $geom = '492x80+20+20';    # default
+    unless ($geom) {
+        # Failed, set main geom from config
+        $geom = $self->_cfg->cfgeom->{main};
     }
 
     $self->geometry($geom);
@@ -678,7 +681,11 @@ Return the current page of the Tk::NoteBook widget.
 sub get_nb_current_page {
     my $self = shift;
 
-    return $self->get_notebook->raised();
+    my $nb = $self->get_notebook;
+
+    return unless ref $nb;
+
+    return $nb->raised();
 }
 
 sub set_nb_current {
@@ -857,7 +864,7 @@ Return window geometry
 
 =cut
 
-sub w_geometry {
+sub get_geometry {
     my $self = shift;
 
     my $wsys = $self->windowingsystem;

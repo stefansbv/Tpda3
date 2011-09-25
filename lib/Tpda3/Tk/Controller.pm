@@ -329,12 +329,15 @@ sub _set_event_handlers {
         -command => sub { $self->repman; }
     );
 
+    #-- Preview ReporMan report
+    $self->_view->get_menu_popup_item('mn_er')->configure(
+        -command => sub { $self->screen_module_load('Reports'); }
+    );
+
     #-- Save geometry
     $self->_view->get_menu_popup_item('mn_sg')->configure(
         -command => sub {
-            my $scr_name = $self->screen_string('rec') || 'main';
-            $self->_cfg->config_save_instance( $scr_name,
-                $self->_view->w_geometry() );
+            $self->save_geometry();
         }
     );
 
@@ -354,9 +357,7 @@ sub _set_event_handlers {
     #-- Attach to desktop - pin (save geometry to config file)
     $self->_view->get_toolbar_btn('tb_at')->bind(
         '<ButtonRelease-1>' => sub {
-            my $scr_name = $self->screen_string('rec') || 'main';
-            $self->_cfg->config_save_instance( $scr_name,
-                $self->_view->w_geometry() );
+            $self->save_geometry();
         }
     );
 
@@ -1666,6 +1667,8 @@ sub scrcfg {
 
     $page ||= $self->_view->get_nb_current_page();
 
+    return unless $page;
+
     if ( $page eq 'lst' ) {
         warn "Wrong page (scrcfg): $page!\n";
 
@@ -1809,9 +1812,6 @@ sub screen_module_load {
     # Set PK column name
     $self->screen_set_pk_col();
 
-    # Update window geometry
-    $self->update_geometry();
-
     $self->set_app_mode('idle');
 
     # List header
@@ -1838,6 +1838,9 @@ sub screen_module_load {
     # Change application title
     my $descr = $self->scrcfg('rec')->screen_description;
     $self->_view->title(' Tpda3 - ' . $descr) if $descr;
+
+    # Update window geometry
+    $self->set_geometry();
 
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
@@ -1982,27 +1985,49 @@ sub screen_string {
     return lc $scrstr;
 }
 
-=head2 update_geometry
+sub save_geometry {
+    my $self = shift;
 
-Update window geometry from instance config if exists or from
-defaults.
+    my $scr_name = $self->scrcfg()
+        ? $self->scrcfg()->screen_name
+        : 'main';
+
+    $self->_cfg->config_save_instance(
+        $scr_name,
+        $self->_view->get_geometry()
+    );
+
+    return;
+}
+
+=head2 set_geometry
+
+Set window geometry from instance config if exists or from defaults.
 
 =cut
 
-sub update_geometry {
+sub set_geometry {
     my $self = shift;
+
+    my $scr_name
+        = $self->scrcfg()
+        ? $self->scrcfg()->screen_name
+        : return;
 
     my $geom;
     if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->screen_string('rec') };
-        unless ($geom) {
-            $geom = $self->scrcfg('rec')->screen->{geometry};
+        my $go = $self->_cfg->geometry();
+        if (exists $go->{$scr_name}) {
+            $geom = $go->{$scr_name};
         }
     }
-    else {
+    unless ($geom) {
         $geom = $self->scrcfg('rec')->screen->{geometry};
     }
+
     $self->_view->set_geometry($geom);
+
+    return;
 }
 
 =head2 screen_init

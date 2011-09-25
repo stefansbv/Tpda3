@@ -45,6 +45,12 @@ menubar:
         sep: none
         key: Alt-p
       2:
+        name: mn_er
+        label: Edit reports data
+        underline: 0
+        sep: none
+        key: Alt-e
+      3:
         name: mn_sg
         label: Save window geometry
         underline: 12

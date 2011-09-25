@@ -134,6 +134,7 @@ sub config_main_load {
         cfpath  => $configpath,
         cfapps  => catdir( $configpath, 'apps' ),
         cfetc   => catdir( $configpath, 'etc' ),
+        cfgeom  => $maincfg->{geometry},
         cfiface => $maincfg->{interface},
         cfapp   => $maincfg->{application},
         cfgen   => $maincfg->{general},
@@ -143,6 +144,7 @@ sub config_main_load {
         pass      => $args->{pass},
         widgetset => $maincfg->{widgetset}, # Wx or Tk
         cfextapps => $maincfg->{externalapps},
+
     };
 
     # Setup when GUI runtime
@@ -498,16 +500,22 @@ sub configdir_populate {
     return;
 }
 
-=head2 reports_path
+=head2 config_rep_path
 
 Return reports path.
 
 =cut
 
-sub reports_path {
+sub config_rep_path {
     my $self = shift;
 
     return catdir( $self->configdir, 'rep' );
+}
+
+sub config_rep_file {
+    my ($self, $rep_file) = @_;
+
+    return catfile( $self->config_rep_path, $rep_file );
 }
 
 sub documents_path {
