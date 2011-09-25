@@ -69,7 +69,8 @@ sub repman_dialog {
 
     my $f1d = 110;              # distance from left
 
-    # Main frame
+    #- Toolbar frame
+
     my $tbf0 = $self->{tlw}->Frame();
     $tbf0->pack(
         -side   => 'top',
@@ -145,21 +146,26 @@ sub repman_dialog {
     #- Main frame
 
     my $mf = $self->{'tlw'}->Frame();
-    $mf->pack( -side => 'top', -anchor => 'n', -fill => 'both' );
+    $mf->pack(
+        -side   => 'top',
+        -anchor => 'n',
+        -expand => 0,
+        -fill   => 'both',
+    );
 
-    # Frame1
+    #-  Frame top - TM
 
-    my $frm_t = $mf->LabFrame(
+    my $frm_top = $mf->LabFrame(
         -foreground => 'blue',
         -label      => 'List',
         -labelside  => 'acrosstop'
     )->pack(
-        -expand => 1,
-        -fill   => 'both',
+        -expand => 0,
+        -fill   => 'x',
     );
 
     my $xtvar1 = {};
-    $self->{_tm} = $frm_t->Scrolled(
+    $self->{_tm} = $frm_top->Scrolled(
         'TM',
         -rows           => 6,
         -cols           => 3,
@@ -175,6 +181,10 @@ sub repman_dialog {
         -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
+    );
+    $self->{_tm}->pack(
+        -expand => 1,
+        -fill => 'both',
     );
 
     #-- Bindings for selection handling
@@ -216,25 +226,23 @@ sub repman_dialog {
         }
     );
 
-    $self->{_tm}->pack( -expand => 1, -fill => 'both' );
+    #-  Frame middle - Entries
 
-    # Frame2
-
-    my $frame2 = $mf->LabFrame(
+    my $frm_middle = $mf->LabFrame(
         -foreground => 'blue',
-        -label      => 'Options',
+        -label      => 'Details',
         -labelside  => 'acrosstop'
     );
-    $frame2->pack(
-        -expand => 1,
-        -fill   => 'both',
+    $frm_middle->pack(
+        -expand => 0,
+        -fill   => 'x',
         -ipadx  => 3,
         -ipady  => 3,
     );
 
     #-- ID report (id_rep)
 
-    my $lid_rep = $frame2->Label(
+    my $lid_rep = $frm_middle->Label(
         -text => 'ID report',
     );
     $lid_rep->form(
@@ -243,7 +251,7 @@ sub repman_dialog {
         -padleft => 10,
     );
     #--
-    my $eid_rep = $frame2->Entry(
+    my $eid_rep = $frm_middle->Entry(
         -width => 12,
         -disabledbackground => $bg,
         -disabledforeground => 'black',
@@ -255,14 +263,14 @@ sub repman_dialog {
 
     # #-+ id_user
 
-    # my $eid_user = $frame2->Entry(
+    # my $eid_user = $frm_middle->Entry(
     #     -width => 12,
     # );
     # $eid_user->form(
     #     -top   => [ '&', $lid_rep, 0 ],
     #     -right => [ %100, -10 ],
     # );
-    # my $lid_user = $frame2->Label(
+    # my $lid_user = $frm_middle->Label(
     #     -text => 'User',
     # );
     # $lid_user->form(
@@ -273,202 +281,134 @@ sub repman_dialog {
 
     #-- repofile
 
-    my $lrepofile = $frame2->Label(
-        -text => 'Report file',
-    );
+    my $lrepofile = $frm_middle->Label( -text => 'Report file', );
     $lrepofile->form(
-        -top  => [ $lid_rep, 5 ],
-        -left => [ %0, 0 ],
+        -top     => [ $lid_rep, 5 ],
+        -left    => [ %0,       0 ],
         -padleft => 10,
     );
-    my $erepofile = $frame2->Entry(
-        -width => 45,
+
+    my $erepofile = $frm_middle->Entry(
+        -width              => 40,
         -disabledbackground => $bg,
         -disabledforeground => 'black',
     );
     $erepofile->form(
         -top  => [ '&', $lrepofile, 0 ],
-        -left => [ %0, $f1d ],
+        -left => [ %0,  $f1d ],
     );
 
     #-- Parameter 1
 
-    #-- Label
-    my $lparadef1 = $frame2->Label( -text => 'Parameter 1' );
-    $lparadef1->form(
-        -top     => [ $lrepofile, 5 ],
+    #-- label
+    my $lparameter1 = $frm_middle->Label( -text => 'Parameter 1' );
+    $lparameter1->form(
+        -top     => [ $lrepofile, 8 ],
         -left    => [ %0, 0 ],
         -padleft => 10,
     );
-    # -- Entry field
-    my $eparadef1 = $frame2->Entry(
-        -width => 12,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-    );
-    $eparadef1->form(
-        -top  => [ '&', $lparadef1, 0 ],
-        -left => [ %0, $f1d ],
-    );
-    # -- Entry name
-    my $eparahnt1 = $frame2->Entry(
-        -width => 22,
+
+    #-- hint
+    my $eparahnt1 = $frm_middle->Entry(
+        -width => 30,
     );
     $eparahnt1->form(
-        -top  => [ '&', $lparadef1, 0 ],
-        -left => [ $eparadef1, 5 ],
+        -top  => [ '&', $lparameter1, 0 ],
+        -left => [ %0, $f1d ],
     );
-    #-- binding
-    my $eparaval1;
-    # $eparahnt1->bind(
-    #     '<KeyPress-Return>' => sub {
-    #         $self->{cautare}->pDict(
-    #             $mw,
-    #             split(':',$eparadef1->get), # table, field (2 params)
-    #             {
-    #                 denumire => $eparahnt1,
-    #                 id_terti => $eparaval1,
-    #             },
-    #         );
-    #     }
-    # );
-    #-- Entry value
-    $eparaval1 = $frame2->Entry(
+
+    #-- value
+    my $eparaval1 = $frm_middle->Entry(
         -width => 8,
     );
     $eparaval1->form(
-        -top  => [ '&', $lparadef1, 0 ],
-        -left => [ $eparahnt1, 5 ],
+        -top   => [ '&', $lparameter1, 0 ],
+        -right => [ '&', $erepofile,   0 ],
     );
 
     #-- Parameter 2
 
-    #-- Label
-    my $lparadef2 = $frame2->Label( -text => 'Parameter 2' );
-    $lparadef2->form(
-        -top     => [ $lparadef1, 5 ],
+    #-- label
+    my $lparameter2 = $frm_middle->Label( -text => 'Parameter 2' );
+    $lparameter2->form(
+        -top     => [ $lparameter1, 8 ],
         -left    => [ %0, 0 ],
         -padleft => 10,
     );
-    # -- Entry field
-    my $eparadef2 = $frame2->Entry(
-        -width => 12,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-    );
-    $eparadef2->form(
-        -top  => [ '&', $lparadef2, 0 ],
-        -left => [ %0, $f1d ],
-    );
-    #--
-    my $eparahnt2 = $frame2->Entry(
-        -width => 22,
+
+    #-- hint
+    my $eparahnt2 = $frm_middle->Entry(
+        -width => 30,
     );
     $eparahnt2->form(
-        -top  => [ '&', $lparadef2, 0 ],
-        -left => [ $eparadef2, 5 ],
+        -top  => [ '&', $lparameter2, 0 ],
+        -left => [ %0, $f1d ],
     );
-    #-- binding
-    my $eparaval2;
-    # $eparahnt2->bind(
-    #     '<KeyPress-Return>' => sub {
-    #         $self->{cautare}->pDict(
-    #             $mw,
-    #             split(':',$eparadef2->get),
-    #             {
-    #                 denumire => $eparahnt2,
-    #                 id_terti => $eparaval2,
-    #             },
-    #         );
-    #     }
-    # );
-    #-- Value
-    $eparaval2 = $frame2->Entry(
+
+    #-- value
+    my $eparaval2 = $frm_middle->Entry(
         -width => 8,
     );
     $eparaval2->form(
-        -top  => [ '&', $lparadef2, 0 ],
-        -left => [ $eparahnt2, 5 ],
+        -top   => [ '&', $lparameter2, 0 ],
+        -right => [ '&', $erepofile,   0 ],
     );
 
     #-- Parameter 3
 
-    #-- Label
-    my $lparadef3 = $frame2->Label( -text => 'Parameter 3' );
-    $lparadef3->form(
-        -top     => [ $lparadef2, 5 ],
+    #-- label
+    my $lparameter3 = $frm_middle->Label( -text => 'Parameter 3' );
+    $lparameter3->form(
+        -top     => [ $lparameter2, 8 ],
         -left    => [ %0, 0 ],
         -padleft => 10,
     );
-    # -- Entry field
-    my $eparadef3 = $frame2->Entry(
-        -width => 12,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-    );
-    $eparadef3->form(
-        -top  => [ '&', $lparadef3, 0 ],
-        -left => [ %0, $f1d ],
-    );
-    #--
-    my $eparahnt3 = $frame2->Entry(
-        -width => 22,
+
+    #-- hint
+    my $eparahnt3 = $frm_middle->Entry(
+        -width => 30,
     );
     $eparahnt3->form(
-        -top  => [ '&', $lparadef3, 0 ],
-        -left => [ $eparadef3, 5 ],
+        -top  => [ '&', $lparameter3, 0 ],
+        -left => [ %0, $f1d ],
     );
-    #-- binding
-    my $eparaval3;
-    # $eparahnt3->bind(
-    #     '<KeyPress-Return>' => sub {
-    #         $self->{cautare}->pDict(
-    #             $mw,
-    #             split(':',$eparahnt3->get),
-    #             {
-    #                 denumire => $eparahnt3,
-    #                 id_terti => $eparaval3,
-    #             },
-    #         );
-    #     }
-    # );
-    #-- Value
-    $eparaval3 = $frame2->Entry(
+
+    #-- value
+    my $eparaval3 = $frm_middle->Entry(
         -width => 8,
     );
     $eparaval3->form(
-        -top  => [ '&', $lparadef3, 0 ],
-        -left => [ $eparahnt3, 5 ],
+        -top   => [ '&', $lparameter3, 0 ],
+        -right => [ '&', $erepofile,   0 ],
     );
 
-    # Frame 3 - Description
+    #-  Frame Bottom - Description
 
-    my $frame3 = $mf->LabFrame(
+    my $frm_bottom = $mf->LabFrame(
         -foreground => 'blue',
         -label      => 'Description',
         -labelside  => 'acrosstop',
     );
-    $frame3->pack(
+    $frm_bottom->pack(
         -expand => 1,
         -fill   => 'both',
-        -ipadx  => 3,
-        -ipady  => 3,
-    );
+     );
 
     #- Detalii
 
-    my $tdes = $frame3->Scrolled(
+    my $tdes = $frm_bottom->Scrolled(
         'Text',
-        -width => 40,
-        -height => 3,
-        -wrap => 'word',
+        -width      => 40,
+        -height     => 3,
+        -wrap       => 'word',
         -scrollbars => 'e',
         -background => 'white',
     );
-    #--
     $tdes->pack(
         -expand => 1,
-        -fill   => 'both'
+        -fill   => 'both',
+        -padx   => 5,
+        -pady   => 5,
     );
 
     my $fonttdes = $tdes->cget('-font');
@@ -490,13 +430,10 @@ sub repman_dialog {
     $self->{controls} = {
         id_rep   => [ 'e','r',undef,$eid_rep  ,'disabled', $bg   ,undef, 0 ],
         repofile => [ 'e','r',undef,$erepofile,'disabled', $bg   ,undef, 0 ],
-        paradef1 => [ 'e','r',undef,$eparadef1,'disabled', $bg   ,undef, 0 ],
         parahnt1 => [ 'e','w',undef,$eparahnt1,'disabled','white',undef, 0 ],
         paraval1 => [ 'e','w',undef,$eparaval1,'normal'  ,'white',undef, 0 ],
-        paradef2 => [ 'e','r',undef,$eparadef2,'disabled', $bg   ,undef, 0 ],
         parahnt2 => [ 'e','w',undef,$eparahnt2,'disabled','white',undef, 0 ],
         paraval2 => [ 'e','w',undef,$eparaval2,'normal'  ,'white',undef, 0 ],
-        paradef3 => [ 'e','r',undef,$eparadef3,'disabled', $bg   ,undef, 0 ],
         parahnt3 => [ 'e','w',undef,$eparahnt3,'disabled','white',undef, 0 ],
         paraval3 => [ 'e','w',undef,$eparaval3,'normal'  ,'white',undef, 0 ],
         des      => [ 't','r',undef,$tdes     ,'disabled', $bg   ,undef, 0 ],
@@ -542,11 +479,13 @@ sub repman_dialog {
         selectorcol => 3,
     };
 
-    $self->{_tm}->init( $frm_t, $header );
+    $self->{_tm}->init( $frm_top, $header );
 
     $self->load_report_list($view, $header->{selectorcol} );
 
     $self->{_tm}->configure(-state => 'disabled');
+
+    $self->load_report_details($view);
 
     return;
 }
@@ -603,8 +542,6 @@ sub load_report_details {
 
     my $idx    = $selected_row - 1;                 # index for array
     my $id_rep = $self->{_rl}->[$idx]{repid};
-
-    print "Selected # $selected_row ID: $id_rep\n";
 
     my $args = {};
     $args->{table}    = 'reports';

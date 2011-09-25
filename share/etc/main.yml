@@ -3,7 +3,7 @@
 # Don't touch!, not for users ;)
 ---
 geometry:
-  main: 492x80+20+20
+  main: 520x80+20+20
 interface:
   toolbar: etc/interfaces/toolbar.yml
   menubar: etc/interfaces/menubar.yml
