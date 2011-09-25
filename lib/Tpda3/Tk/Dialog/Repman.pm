@@ -2,8 +2,6 @@ package Tpda3::Tk::Dialog::Repman;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 
 use Tk;
@@ -70,6 +68,7 @@ sub run_screen {
 
     $self->{tlw} = $view->Toplevel();
     $self->{tlw}->title('Preview and print reports');
+    $self->{tlw}->geometry('480x520');
 
     my $f1d = 110;              # distance from left
 
@@ -149,11 +148,10 @@ sub run_screen {
 
     #- Main frame
 
-    my $mf = $self->{'tlw'}->Frame();
+    my $mf = $self->{tlw}->Frame();
     $mf->pack(
         -side   => 'top',
-        -anchor => 'n',
-        -expand => 0,
+        -expand => 1,
         -fill   => 'both',
     );
 
@@ -164,17 +162,17 @@ sub run_screen {
         -label      => 'List',
         -labelside  => 'acrosstop'
     )->pack(
-        -expand => 0,
-        -fill   => 'x',
+        -expand => 1,
+        -fill   => 'both',
     );
 
     my $xtvar1 = {};
     $self->{_tm} = $frm_top->Scrolled(
         'TM',
-        -rows           => 6,
+        -rows           => 5,
         -cols           => 3,
         -width          => -1,
-        -height         => 6,
+        -height         => -1,
         -ipadx          => 3,
         -titlerows      => 1,
         -variable       => $xtvar1,
@@ -431,7 +429,7 @@ sub run_screen {
     my $tdescr = $frm_bottom->Scrolled(
         'Text',
         -width      => 40,
-        -height     => 3,
+        -height     => 2,
         -wrap       => 'word',
         -scrollbars => 'e',
         -background => 'white',
@@ -444,17 +442,6 @@ sub run_screen {
     );
 
     my $fonttdes = $tdescr->cget('-font');
-
-    #-- End Frame 3
-
-    # Definim dialoguri
-    my $dialog1 = $mf->Dialog(
-        -text           => 'Nimic de cautat!',
-        -bitmap         => 'question',
-        -title          => 'Info',
-        -default_button => 'OK',
-        -buttons        => [qw/OK/]
-    );
 
     # Entry objects
     $self->{controls} = {
@@ -509,6 +496,8 @@ sub load_report_list {
 
     my $reports_list = $view->{_model}->table_batch_query($args);
 
+    # return unless scalar @{$reports_list} > 0;
+
     my $recno = 0;
     foreach my $rec ( @{$reports_list} ) {
         $recno++;
@@ -533,6 +522,8 @@ sub load_report_details {
     my ($self, $view) = @_;
 
     my $selected_row = $self->{_tm}->get_selected;
+
+    return unless $selected_row;
 
     my $idx    = $selected_row - 1;                 # index for array
     my $id_rep = $self->{_rl}->[$idx]{id_rep};
@@ -698,7 +689,7 @@ sub update_value {
     my $dict   = Tpda3::Lookup->new;
     my $record = $dict->lookup( $view, $para );
 
-    #- Update value control
+    #- Update control value
 
     my $eobj = $self->get_controls();
     my $field_val = "paraval$p_no";

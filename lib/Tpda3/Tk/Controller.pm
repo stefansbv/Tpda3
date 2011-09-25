@@ -323,14 +323,14 @@ sub _set_event_handlers {
         }
     );
 
-    #-- Preview ReporMan report
+    #-- Preview RepMan report
     $self->_view->get_menu_popup_item('mn_pr')->configure(
         -command => sub { $self->repman; }
     );
 
-    #-- Preview ReporMan report
+    #-- Edit RepMan report metadata
     $self->_view->get_menu_popup_item('mn_er')->configure(
-        -command => sub { $self->screen_module_load('Reports'); }
+        -command => sub { $self->screen_module_load('Reports','tools'); }
     );
 
     #-- Save geometry
@@ -1719,9 +1719,15 @@ Return screen module class and file name.
 =cut
 
 sub screen_module_class {
-    my ( $self, $module ) = @_;
+    my ( $self, $module, $from_tools ) = @_;
 
-    my $module_class = $self->application_class . "::${module}";
+    my $module_class;
+    if ($from_tools) {
+        $module_class = "Tpda3::Tk::Tools::${module}";
+    }
+    else {
+        $module_class = $self->application_class . "::${module}";
+    }
 
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
 
@@ -1735,7 +1741,7 @@ Load screen chosen from the menu.
 =cut
 
 sub screen_module_load {
-    my ( $self, $module ) = @_;
+    my ( $self, $module, $from_tools ) = @_;
 
     my $rscrstr = lc $module;
 
@@ -1764,7 +1770,8 @@ sub screen_module_load {
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
 
-    my ( $class, $module_file ) = $self->screen_module_class($module);
+    my ( $class, $module_file )
+        = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };
     if ($@) {
 

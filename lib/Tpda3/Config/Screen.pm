@@ -138,7 +138,16 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    return catfile( $self->_cfg->configdir, 'scr', $file_name );
+    my $conf_fn = catfile( $self->_cfg->configdir, 'scr', $file_name );
+
+    if (-f $conf_fn) {
+        return $conf_fn;
+    }
+    else {
+
+        # Fallback to alternative location (tools)
+        return catfile( $self->_cfg->cfpath, 'scr', $file_name );
+    }
 }
 
 =head2 app_dateformat
