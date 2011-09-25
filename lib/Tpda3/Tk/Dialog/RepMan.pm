@@ -12,6 +12,7 @@ use IO::File;
 use Tpda3::Config;
 use Tpda3::Tk::TB;
 use Tpda3::Tk::TM;
+use Tpda3::Utils;
 
 =head1 NAME
 
@@ -596,41 +597,11 @@ sub load_report_details {
 sub preview_report {
     my $self = shift;
 
-    print Dumper( $self->{_rd} );
-
-    # Get widgets object defs from dialog
-    my $eobj = $self->get_controls();
-
-    # Reset bg color for all 'parahnt' widgets
-
-    # Get parameter details from Entries
-    my $parameters = q{};        # Empty
-    foreach my $field ( keys %{$eobj} ) {
-        next if $field eq 'des';
-
-        my $value = $eobj->{$field}[3]->get;
-        print "$field -> $value\n";
-        # Scan value fields from dialog screen
-        # 'paradef' and 'paraval' entry types == 'e'!
-        if ( $field =~ m{paraval([0-9])} ) {
-            my $idx = $1;
-            print "idx: $idx\n";
-
-            my $def = $eobj->{"paradef$idx"}[3]->get;
-            print " def is $def\n";
-            next if not $def;
-
-            # separator is
-            # : for values entered into paraval field using dialog
-            # . for values entered into paraval field
-            my ( $tbl, $fld ) = split( /[.:]/, $def );
-            $parameters .= "-param$fld=$value ";
-        }
-    }
-    print "Parameters: [ $parameters ]\n";
-
     # Get report filename
     my $report_file = $self->{_rd}[0]{repofile};
+
+    my $parameters = $self->get_parameters();
+    print "Parameters: [ $parameters ]\n";
 
     my $cfg = Tpda3::Config->instance();
 
@@ -639,36 +610,54 @@ sub preview_report {
         print "Report file not found: $report_path\n";
         return;
     }
-    print " $report_path\n";
-
-    #-- run Script
-    # if ($script) {
-    #     print " run Script NOT implemented\n";
-    #     $script = 'main::' . $script;
-    #     no strict 'refs';
-    #     my $retval = &{$script}();
-    # }
+    print "Report file: $report_path\n";
 
     # Metaviewxp param for pages:  -from 1 -to 1
 
-    # my $report_exe  = $self->_cfg->cfextapps->{repman}{exe_path};
+    my $report_exe  = $cfg->cfextapps->{repman}{exe_path};
+    print "repman exe: $report_exe \n";
 
-    # my $conf_dir = $self->{tpda}->get_config_path('conf_dir');
-    # my $report_file = catfile($conf_dir, $repo_path, $report);
-
-    # my $cmd;
-    # if ($parameters) {
-    #     $cmd = "$printrepxp -preview $parameters \"$report_file\"";
-    # }
-    # else {
-    #     $cmd = "$printrepxp -preview \"$report_file\"";
-    # }
-    # print $cmd. "\n";
-    # if ( system($cmd) ) {
-    #     print "metaprintxp failed\n";
-    # }
+    my $cmd = qq{$report_exe -preview $parameters "$report_path"};
+    print $cmd. "\n";
+    if ( system $cmd ) {
+        print "metaprintxp failed\n";
+    }
 
     return;
+}
+
+=head2 get_parameters
+
+Build parameter list from screen entry values.
+
+=cut
+
+sub get_parameters {
+    my $self = shift;
+
+    my $eobj = $self->get_controls();
+
+    my $parameters = q{};    # empty
+
+    foreach my $i ( 1 .. 3 ) {
+        # print "\nParameter $i\t";
+        my $field_def = "paradef$i";
+        my $field_val = "paraval$i";
+
+        my $def = $self->{_rd}[0]{$field_def} || q{};
+
+        my $val = $eobj->{$field_val}[3]->get;
+        if ( $val =~ /\S+/ ) {
+            $val = Tpda3::Utils->trim($val);
+
+            my ( $tbl, $fld ) = split( /[.:]/, $def );
+            $parameters .= "-param$fld=$val ";
+
+            # print "[$def] $val\n";
+        }
+    }
+
+    return $parameters;
 }
 
 sub get_controls { return $_[0]->{controls}; }
