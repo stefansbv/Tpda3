@@ -15,12 +15,11 @@ use Storable qw (store retrieve);
 
 use Tpda3::Utils;
 use Tpda3::Config;
-use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Tk::View;
 use Tpda3::Tk::Dialog::Login;
 use Tpda3::Tk::Dialog::Help;
-use Tpda3::Tk::Dialog::RepMan;
+use Tpda3::Tk::Dialog::Repman;
 use Tpda3::Lookup;
 use Tpda3::Generator;
 
@@ -167,9 +166,9 @@ sub repman {
 
     my $gui = $self->_view;
 
-    my $gd = Tpda3::Tk::Dialog::RepMan->new;
+    my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
 
-    $gd->repman_dialog($gui);
+    $gd->run_screen($gui);
 
     return;
 }

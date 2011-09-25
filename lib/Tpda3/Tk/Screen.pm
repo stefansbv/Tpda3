@@ -10,6 +10,7 @@ use Tpda3::Tk::Entry;
 
 use Tpda3::Utils;
 use Tpda3::Tk::TB;
+use Tpda3::Config::Screen;
 
 require Tpda3::Tk::Validation;
 

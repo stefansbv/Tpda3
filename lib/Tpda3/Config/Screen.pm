@@ -75,11 +75,32 @@ sub _make_accessors {
 
 =head2 config_screen_load
 
-Load a config files at request
+Load a Screen configuration files at request and make accessors.
 
 =cut
 
 sub config_screen_load {
+    my ( $self, $scrcls ) = @_;
+
+    my $log = get_logger();
+
+    my $cfg_data = $self->config_screen_load_file($scrcls);
+
+    my @accessor = keys %{$cfg_data};
+    $log->info("Making accessors for: @accessor");
+
+    $self->_make_accessors($cfg_data);
+
+    return;
+}
+
+=head2 config_screen_load_file
+
+Load a Screen configuration files at request.
+
+=cut
+
+sub config_screen_load_file {
     my ( $self, $scrcls ) = @_;
 
     my $log = get_logger();
@@ -91,16 +112,9 @@ sub config_screen_load {
     $msg .= qq{\n  from '$cfg_file'!};
 
     $log->info("Loading '$file_name' config");
-    $log->trace("file: $cfg_file");
+    $log->trace(" file: $cfg_file");
 
-    my $cfg_data = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
-
-    my @accessor = keys %{$cfg_data};
-    $log->trace("Making accessors for: @accessor");
-
-    $self->_make_accessors($cfg_data);
-
-    return;
+    return Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 }
 
 =head2 _cfg

@@ -1,4 +1,4 @@
-package Tpda3::Tk::Dialog::RepMan;
+package Tpda3::Tk::Dialog::Repman;
 
 use strict;
 use warnings;
@@ -13,6 +13,9 @@ use Tpda3::Config;
 use Tpda3::Tk::TB;
 use Tpda3::Tk::TM;
 use Tpda3::Utils;
+use Tpda3::Lookup;
+
+use base q{Tpda3::Tk::Screen};
 
 =head1 NAME
 
@@ -45,15 +48,15 @@ Constructor method.
 sub new {
     my $class = shift;
 
-    my $self = {
-        tb4 => {},    # ToolBar
-        tlw => {},    # TopLevel
-        _tm => undef, # TableMatrix
-        _rl => undef, # report titles list
-        _rd => undef, # report details
-    };
+    my $self = $class->SUPER::new(@_);
 
-    return bless( $self, $class );
+    $self->{tb4} = {};       # ToolBar
+    $self->{tlw} = {};       # TopLevel
+    $self->{_tm} = undef;    # TableMatrix
+    $self->{_rl} = undef;    # report titles list
+    $self->{_rd} = undef;    # report details
+
+    return $self;
 }
 
 =head2 search_dialog
@@ -62,7 +65,7 @@ Define and show search dialog.
 
 =cut
 
-sub repman_dialog {
+sub run_screen {
     my ( $self, $view ) = @_;
 
     $self->{tlw} = $view->Toplevel();
@@ -319,12 +322,20 @@ sub repman_dialog {
     );
 
     #-- value
-    my $eparaval1 = $frm_middle->Entry(
-        -width => 8,
-    );
+    my $eparaval1 = $frm_middle->Entry( -width => 8, );
     $eparaval1->form(
         -top   => [ '&', $lparameter1, 0 ],
         -right => [ '&', $erepofile,   0 ],
+    );
+
+    #-- button
+    my $add1val = $frm_middle->Button(
+        -image   => 'edit16',
+        -command => [\&update_value, $self, $view, 1],
+    );
+    $add1val->form(
+        -top  => [ '&', $lparameter1, 0 ],
+        -left => [ $eparaval1, 3 ],
     );
 
     #-- Parameter 2
@@ -355,6 +366,16 @@ sub repman_dialog {
         -right => [ '&', $erepofile,   0 ],
     );
 
+    #-- button
+    my $add2val = $frm_middle->Button(
+        -image   => 'edit16',
+        -command => [\&update_value, $self, $view, 2],
+    );
+    $add2val->form(
+        -top  => [ '&', $lparameter2, 0 ],
+        -left => [ $eparaval2, 3 ],
+    );
+
     #-- Parameter 3
 
     #-- label
@@ -383,6 +404,16 @@ sub repman_dialog {
         -right => [ '&', $erepofile,   0 ],
     );
 
+    #-- button
+    my $add3val = $frm_middle->Button(
+        -image   => 'edit16',
+        -command => [\&update_value, $self, $view, 3],
+    );
+    $add3val->form(
+        -top  => [ '&', $lparameter3, 0 ],
+        -left => [ $eparaval3, 3 ],
+    );
+
     #-  Frame Bottom - Description
 
     my $frm_bottom = $mf->LabFrame(
@@ -397,7 +428,7 @@ sub repman_dialog {
 
     #- Detalii
 
-    my $tdes = $frm_bottom->Scrolled(
+    my $tdescr = $frm_bottom->Scrolled(
         'Text',
         -width      => 40,
         -height     => 3,
@@ -405,14 +436,14 @@ sub repman_dialog {
         -scrollbars => 'e',
         -background => 'white',
     );
-    $tdes->pack(
+    $tdescr->pack(
         -expand => 1,
         -fill   => 'both',
         -padx   => 5,
         -pady   => 5,
     );
 
-    my $fonttdes = $tdes->cget('-font');
+    my $fonttdes = $tdescr->cget('-font');
 
     #-- End Frame 3
 
@@ -425,60 +456,22 @@ sub repman_dialog {
         -buttons        => [qw/OK/]
     );
 
-    # Entry objects fld_name => [0-tip_entry, 1-w|r-updatable? 2-var_asoc,
-    #               3-var_obiect, 4-state, 5-color, 6-decimals, 7-type_of_find]
-    # Type_of_find: 0=none, 1=all number, 2=contains_str, 3=all_str
+    # Entry objects
     $self->{controls} = {
-        id_rep   => [ 'e','r',undef,$eid_rep  ,'disabled', $bg   ,undef, 0 ],
-        repofile => [ 'e','r',undef,$erepofile,'disabled', $bg   ,undef, 0 ],
-        parahnt1 => [ 'e','w',undef,$eparahnt1,'disabled','white',undef, 0 ],
-        paraval1 => [ 'e','w',undef,$eparaval1,'normal'  ,'white',undef, 0 ],
-        parahnt2 => [ 'e','w',undef,$eparahnt2,'disabled','white',undef, 0 ],
-        paraval2 => [ 'e','w',undef,$eparaval2,'normal'  ,'white',undef, 0 ],
-        parahnt3 => [ 'e','w',undef,$eparahnt3,'disabled','white',undef, 0 ],
-        paraval3 => [ 'e','w',undef,$eparaval3,'normal'  ,'white',undef, 0 ],
-        des      => [ 't','r',undef,$tdes     ,'disabled', $bg   ,undef, 0 ],
+        repofile => [ undef, $erepofile ],
+        id_rep   => [ undef, $eid_rep   ],
+        descr    => [ undef, $tdescr    ],
+        parahnt1 => [ undef, $eparahnt1 ],
+        paraval1 => [ undef, $eparaval1 ],
+        parahnt2 => [ undef, $eparahnt2 ],
+        paraval2 => [ undef, $eparaval2 ],
+        parahnt3 => [ undef, $eparahnt3 ],
+        paraval3 => [ undef, $eparaval3 ],
     };
 
     #-- TM header
 
-    my $header = {
-        colstretch => '1',
-        columns    => {
-            repno => {
-                places     => 0,
-                width      => 3,
-                validation => 'numeric',
-                order      => 'N',
-                id         => 0,
-                label      => '#',
-                tag        => 'ro_center',
-                rw         => 'ro'
-            },
-            title => {
-                places     => 0,
-                width      => 25,
-                validation => 'alphanum',
-                order      => 'A',
-                id         => 1,
-                label      => 'Report name',
-                tag        => 'ro_left',
-                rw         => 'ro'
-            },
-            repid => {
-                places     => 0,
-                width      => 3,
-                validation => 'numeric',
-                order      => 'N',
-                id         => 2,
-                label      => 'Id',
-                tag        => 'ro_center',
-                rw         => 'ro'
-            },
-
-        },
-        selectorcol => 3,
-    };
+    my $header = $self->{scrcfg}->dep_table_header_info('tm2');
 
     $self->{_tm}->init( $frm_top, $header );
 
@@ -500,7 +493,7 @@ Quit Dialog.
 sub dlg_exit {
     my $self = shift;
 
-    $self->{'tlw'}->destroy;
+    $self->{tlw}->destroy;
 
     return;
 }
@@ -509,7 +502,7 @@ sub load_report_list {
     my ($self, $view, $sc) = @_;
 
     my $args = {};
-    $args->{table}    = 'reports';
+    $args->{table}    = $self->{scrcfg}->maintable->{name}; # reports
     $args->{colslist} = [qw{id_rep title}]; #  id_user
     $args->{where}    = undef;
     $args->{order}    = 'title';
@@ -520,9 +513,9 @@ sub load_report_list {
     foreach my $rec ( @{$reports_list} ) {
         $recno++;
         my $titles = {
-            repno => $recno,
-            repid => $rec->{id_rep},
-            title => $rec->{title},
+            repno  => $recno,
+            id_rep => $rec->{id_rep},
+            title  => $rec->{title},
         };
 
         push @{ $self->{_rl} }, $titles;
@@ -542,54 +535,53 @@ sub load_report_details {
     my $selected_row = $self->{_tm}->get_selected;
 
     my $idx    = $selected_row - 1;                 # index for array
-    my $id_rep = $self->{_rl}->[$idx]{repid};
+    my $id_rep = $self->{_rl}->[$idx]{id_rep};
+
+    #- main table
 
     my $args = {};
     $args->{table}    = 'reports';
-    $args->{colslist} = [qw{id_rep repofile title des script
-                            paradef1 parahnt1 paraval1
-                            paradef2 parahnt2 paraval2
-                            paradef3 parahnt3 paraval3}];
+    $args->{colslist} = [qw{id_rep repofile title descr}];
     $args->{where}    = {id_rep => $id_rep};
     $args->{order}    = 'title';
 
     $self->{_rd} = $view->{_model}->table_batch_query($args);
 
-    # Get widgets object defs from dialog
+    #- dependent table
+
+    $args = {};
+    $args->{table} = $self->{scrcfg}->deptable->{tm1}{name};    # reports_det
+    $args->{colslist}
+        = [qw{id_rep id_art hint tablename resultfield searchfield headerlist }];
+    $args->{where} = { id_rep => $id_rep };
+    $args->{order} = 'id_art';
+
+    $self->{_rdd} = $view->{_model}->table_batch_query($args);
+
+    # print Dumper('Det:', $self->{_rdd} );
+
     my $eobj = $self->get_controls();
 
-    # Reset bg color for all 'parahnt' widgets
-    foreach my $field ( keys %{$eobj} ) {
-        my $start_idx = $field eq 'des' ? "1.0" : 0; # 'des' is a text control
-        my $value = $self->{_rd}->[0]{$field};
-        $eobj->{$field}[3]->delete( $start_idx, 'end' );
-        $eobj->{$field}[3]->insert( $start_idx, $value ) if $value;
+    #- Write report detail data to controls
 
-        if ($field =~ m{parahnt[0-9]:e} ) {
-            $eobj->{$field}[3]->configure(
-                -background => 'white',
-            );
-        }
+    #-- main fields
+
+    foreach my $field ( keys %{$eobj} ) {
+        my $start_idx = $field eq 'descr' ? "1.0" : 0; # 'descr' is Text
+        my $value = $self->{_rd}->[0]{$field};
+        $eobj->{$field}[1]->delete( $start_idx, 'end' );
+        $eobj->{$field}[1]->insert( $start_idx, $value ) if $value;
     }
 
-    # Make bg color lightgreen for 'parahnt' field
-    # when 'paradef' field contains a ':'
-    # while ( my ( $field, $value ) = each( %{ $self->{tpda}{scrdata} } ) ) {
+    #-- parameters
 
-    #     # Scan value fields from dialog screen
-    #     # 'paradef' and 'paraval' entry types == 'e'!
-    #     if ( $field =~ m{paradef([0-9]):e} ) {
-    #         my $idx = $1;
-    #         my $def = $self->{tpda}{scrdata}{"paradef$idx:e"};
-    #         if ( $def =~ m{:} ) {
-    #             my $hnt_field = "parahnt$idx";
-    #             $eobj->{$hnt_field}[3]->configure(
-    #                 -state      => 'normal',
-    #                 -background => 'lightgreen',
-    #             );
-    #         }
-    #     }
-    # }
+    foreach my $i ( 1 .. 3 ) {
+        my $field = "parahnt$i";
+        my $idx = $i - 1;
+        my $value = $self->{_rdd}[$idx]{hint};
+        $eobj->{$field}[1]->delete( 0, 'end' );
+        $eobj->{$field}[1]->insert( 0, $value ) if $value;
+    }
 
     return;
 }
@@ -640,26 +632,81 @@ sub get_parameters {
     my $parameters = q{};    # empty
 
     foreach my $i ( 1 .. 3 ) {
-        # print "\nParameter $i\t";
         my $field_def = "paradef$i";
         my $field_val = "paraval$i";
 
         my $def = $self->{_rd}[0]{$field_def} || q{};
 
-        my $val = $eobj->{$field_val}[3]->get;
+        my $val = $eobj->{$field_val}[1]->get;
         if ( $val =~ /\S+/ ) {
             $val = Tpda3::Utils->trim($val);
 
-            my ( $tbl, $fld ) = split( /[.:]/, $def );
-            $parameters .= "-param$fld=$val ";
+            my $ii  = $i - 1;
+            my $rdd = $self->{_rdd}[$ii];
+            my $fld = $rdd->{resultfield};
 
-            # print "[$def] $val\n";
+            $parameters .= "-param$fld=$val ";
         }
     }
 
     return $parameters;
 }
 
-sub get_controls { return $_[0]->{controls}; }
+sub update_value {
+    my ($self, $view, $p_no) = @_;
+
+    # print Dumper( $self->{_rd}, $self->{_rdd} );
+
+    my $ii   = $p_no - 1;
+    my $rd  = $self->{_rd}[$ii];
+    my $rdd = $self->{_rdd}[$ii];
+
+    return if scalar keys %{$rdd} == 0;
+
+    #- Compose the parameter for the 'Search' dialog
+
+    my $table = $rdd->{tablename};
+    my $resultfield = $rdd->{resultfield};
+    my $searchfield = $rdd->{searchfield};
+
+    my $conf = $self->{scrcfg}->config_screen_load_file('persactiv');
+    my $attr = $conf->{maintable}{columns};
+
+    my $para = {
+        table   => $table,
+        search  => $rdd->{searchfield},
+        columns => [],
+    };
+
+    my @headerlist = split /,\ */, $rdd->{headerlist};
+    my @fields;
+    push @fields, $searchfield, @headerlist, $resultfield;
+
+    my @cols;
+    foreach my $field (@fields) {
+        my $rec = {};
+        $rec->{$field} = {
+            width => $attr->{$field}{width},
+            label => $attr->{$field}{label},
+            order => $attr->{$field}{order},
+        };
+        push @cols, $rec;
+    }
+
+    $para->{columns} = [@cols];    # add columns info to parameters
+
+    my $dict   = Tpda3::Lookup->new;
+    my $record = $dict->lookup( $view, $para );
+
+    #- Update value control
+
+    my $eobj = $self->get_controls();
+    my $field_val = "paraval$p_no";
+    my $value = $record->{$resultfield};
+    $eobj->{$field_val}[1]->delete( 0, 'end' );
+    $eobj->{$field_val}[1]->insert( 0, $value ) if $value;
+
+    return;
+}
 
 1;
