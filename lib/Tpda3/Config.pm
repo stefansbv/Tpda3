@@ -3,6 +3,8 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger :levels);
 
 use File::HomeDir;
@@ -83,8 +85,8 @@ sub make_accessors {
     __PACKAGE__->mk_accessors( keys %{$cfg_hr} );
 
     # Add data to object
-    foreach ( keys %{$cfg_hr} ) {
-        $self->$_( $cfg_hr->{$_} );
+    foreach my $name ( keys %{$cfg_hr} ) {
+        $self->$name( $cfg_hr->{$name} );
     }
 
     return;
@@ -110,41 +112,47 @@ sub config_main_load {
         sharedir => 'share',
     )->configdir;
 
+    my $base_methods_hr = {
+        cfpath => $configpath,
+        cfapps => catdir( $configpath, 'apps' ),
+        cfetc  => catdir( $configpath, 'etc' ),
+        user   => $args->{user},                   # make accessors for user
+        pass   => $args->{pass},                   # and pass
+    };
+    $self->make_accessors($base_methods_hr);
+
     # Log init
     # Can't do before we know the application config path
-    my $log_qfn = catfile( $configpath, 'etc/log.conf' );
-    Log::Log4perl->init($log_qfn);
+    my $log_fqn = catfile( $configpath, 'etc/log.conf' );
+    Log::Log4perl->init($log_fqn);
+    # Log::Log4perl::Appender->new(
+    #     "Log::Log4perl::Appender::File",
+    #     name      => "Logfile",
+    #     filename  => "/tmp/my.log");
 
     $self->{_log} = get_logger();
     $self->{_log}->info('-------------------------');
     $self->{_log}->info('*** NEW SESSION BEGIN ***');
 
     # Main config file name, load
-    my $main_qfn = catfile( $configpath, $args->{cfgmain} );
+    my $main_fqn = catfile( $configpath, $args->{cfgmain} );
     $self->{_log}->info("Loading 'main' config");
-    $self->{_log}->info("file: $main_qfn");
+    $self->{_log}->info("file: $main_fqn");
 
     my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
-    $msg .= qq{\n  from '$main_qfn'!};
-    my $maincfg = Tpda3::Config::Utils->config_file_load( $main_qfn, $msg );
+    $msg .= qq{\n  from '$main_fqn'!};
+    my $maincfg = Tpda3::Config::Utils->config_file_load( $main_fqn, $msg );
 
-    # Base configuration methods
-    # TODO: Rename this methods !!!
+    # FIXIT: Refactor
     my $main_hr = {
-        cfpath  => $configpath,
-        cfapps  => catdir( $configpath, 'apps' ),
-        cfetc   => catdir( $configpath, 'etc' ),
-        cfgeom  => $maincfg->{geometry},
-        cfiface => $maincfg->{interface},
-        cfapp   => $maincfg->{application},
-        cfgen   => $maincfg->{general},
-        cfrun   => $maincfg->{runtime},
-        cfico   => catdir( $configpath, $maincfg->{resource}{icons} ),
-        user      => $args->{user},         # make accessors for user and pass
-        pass      => $args->{pass},
-        widgetset => $maincfg->{widgetset}, # Wx or Tk
+        cfgeom    => $maincfg->{geometry},
+        cfiface   => $maincfg->{interface},
+        cfapp     => $maincfg->{application},
+        cfgen     => $maincfg->{general},
+        cfrun     => $maincfg->{runtime},
+        widgetset => $maincfg->{widgetset},      # Wx or Tk
         cfextapps => $maincfg->{externalapps},
-
+        cfico     => catdir( $configpath, $maincfg->{resource}{icons} ),
     };
 
     # Setup when GUI runtime
@@ -364,9 +372,9 @@ sub config_save_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile( $self->configdir, $inst );
+    my $inst_fqn = catfile( $self->configdir, $inst );
 
-    Tpda3::Config::Utils->save_yaml( $inst_qfn, $key, $value );
+    Tpda3::Config::Utils->save_yaml( $inst_fqn, $key, $value );
 
     return;
 }
@@ -383,9 +391,9 @@ sub config_load_instance {
 
     my $inst = $self->cfrun->{instance};
 
-    my $inst_qfn = catfile( $self->configdir, $inst );
+    my $inst_fqn = catfile( $self->configdir, $inst );
 
-    my $cfg_hr = Tpda3::Config::Utils->config_file_load($inst_qfn);
+    my $cfg_hr = Tpda3::Config::Utils->config_file_load($inst_fqn);
 
     $self->make_accessors($cfg_hr);
 
@@ -577,8 +585,6 @@ sub docs_path {
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>
 
 =head1 BUGS
-
-None known.
 
 Please report any bugs or feature requests to the author.
 

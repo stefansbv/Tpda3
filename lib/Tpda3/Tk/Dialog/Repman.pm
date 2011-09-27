@@ -643,12 +643,20 @@ sub get_parameters {
     return $parameters;
 }
 
+=head2 update_value
+
+Callback to update the value of the paramater, using the I<Search>
+dialog.
+
+Prerequisite: configuration file name is the same as the main table
+name.  Underscore chars are ignored (removed).
+
+=cut
+
 sub update_value {
     my ($self, $view, $p_no) = @_;
 
-    # print Dumper( $self->{_rd}, $self->{_rdd} );
-
-    my $ii   = $p_no - 1;
+    my $ii  = $p_no - 1;
     my $rd  = $self->{_rd}[$ii];
     my $rdd = $self->{_rdd}[$ii];
 
@@ -656,11 +664,12 @@ sub update_value {
 
     #- Compose the parameter for the 'Search' dialog
 
-    my $table = $rdd->{tablename};
+    ( my $table = $rdd->{tablename} ) =~ s{_}{}gmx; # remove '_' chars
+
     my $resultfield = $rdd->{resultfield};
     my $searchfield = $rdd->{searchfield};
 
-    my $conf = $self->{scrcfg}->config_screen_load_file('persactiv');
+    my $conf = $self->{scrcfg}->config_screen_load_file($table);
     my $attr = $conf->{maintable}{columns};
 
     my $para = {

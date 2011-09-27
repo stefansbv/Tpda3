@@ -28,6 +28,12 @@ menubar:
         sep: none
         key: F9
       4:
+        name: mn_pr
+        label: Preview report
+        underline: 0
+        sep: before
+        key: Alt-p
+      5:
         name: mn_qt
         label: Quit
         underline: 1
@@ -39,18 +45,12 @@ menubar:
     underline: 0
     popup:
       1:
-        name: mn_pr
-        label: Preview report
-        underline: 0
-        sep: none
-        key: Alt-p
-      2:
         name: mn_er
         label: Edit reports data
         underline: 0
         sep: none
         key: Alt-e
-      3:
+      2:
         name: mn_sg
         label: Save window geometry
         underline: 12
