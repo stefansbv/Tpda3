@@ -600,7 +600,7 @@ sub preview_report {
     my $report_exe  = $cfg->cfextapps->{repman}{exe_path};
     print "repman exe: $report_exe \n";
 
-    my $cmd = qq{$report_exe -preview $parameters "$report_path"};
+    my $cmd = qq{"$report_exe" -preview $parameters "$report_path"};
     print $cmd. "\n";
     if ( system $cmd ) {
         print "metaprintxp failed\n";

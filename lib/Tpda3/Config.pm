@@ -3,8 +3,6 @@ package Tpda3::Config;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use Log::Log4perl qw(get_logger :levels);
 
 use File::HomeDir;
@@ -578,6 +576,17 @@ sub docs_path {
     my $self = shift;
 
     return $self->_cfrun->{docspath};
+}
+
+=head2 get_log_filename
+
+Return a file name and path for logging.
+
+=cut
+
+sub get_log_filename {
+
+    return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
 
 =head1 AUTHOR

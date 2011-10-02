@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!perl
 
 use strict;
 use warnings;
@@ -90,8 +90,6 @@ sub tpda3_version {
     print
 "Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2011 Stefan Suciu\n\n";
 }
-
-__END__
 
 =head1 NAME
 

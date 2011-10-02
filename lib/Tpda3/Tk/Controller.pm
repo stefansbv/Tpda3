@@ -2060,19 +2060,19 @@ sub screen_init {
     my $self = shift;
 
     # Entry objects hash
-    my $ctrl_ref = $self->scrobj('rec')->get_controls();
+    my $ctrl_ref = $self->scrobj()->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
-    foreach my $field ( keys %{ $self->scrcfg('rec')->main_table_columns } ) {
+    foreach my $field ( keys %{ $self->scrcfg()->main_table_columns } ) {
 
         # Control config attributes
-        my $fld_cfg  = $self->scrcfg('rec')->main_table_column($field);
+        my $fld_cfg  = $self->scrcfg()->main_table_column($field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
         next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
 
-        my $para = $self->scrcfg('rec')->{lists_ds}{$field};
+        my $para = $self->scrcfg()->{lists_ds}{$field};
 
         next unless ref $para eq 'HASH';       # undefined, skip
 
@@ -2493,14 +2493,18 @@ sub screen_document_generate {
     my $record = $self->get_screen_data_record('qry', 'all');
 
     my $model_file  = $self->scrcfg('rec')->get_defaultdocument_file;
-    my $output_path = $self->_cfg->config_tex_output_path();
-
-    my $gen = Tpda3::Generator->new();
-
     unless (-f $model_file) {
         $self->_view->set_status( 'Template not found', 'ms' );
         return;
     }
+
+    my $output_path = $self->_cfg->config_tex_output_path();
+    unless (-d $output_path) {
+        $self->_view->set_status( 'Output path not found', 'ms' );
+        return;
+    }
+
+    my $gen = Tpda3::Generator->new();
 
     #-- Generate LaTeX document from template
 
