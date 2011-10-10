@@ -2508,9 +2508,7 @@ sub screen_document_generate {
 
     #-- Generate LaTeX document from template
 
-    my ($model, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
-
-    my $tex_file = $gen->tex_from_template($record, $model, $output_path);
+    my $tex_file = $gen->tex_from_template($record, $model_file, $output_path);
     unless (-f $tex_file) {
         $self->_view->set_status( 'Failed: template -> LaTeX', 'ms' );
         return;

@@ -87,12 +87,13 @@ Generate LaTeX source from TT template.
 =cut
 
 sub tex_from_template {
-    my ($self, $record, $model, $output_path) = @_;
+    my ($self, $record, $model_file, $output_path) = @_;
 
-    my $file_in  = "$model.tt";
+    my ($model, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
+
     my $file_out = "$model.tex";
 
-    $self->_log->info("Generating '$model.tex' from '$file_in'");
+    $self->_log->info("Generating '$model.tex' from '$model.tt'");
 
     my $cnt = unlink $file_out;
     if ($cnt == 1) {
@@ -122,11 +123,11 @@ sub tex_from_template {
     }
 
     eval {
-        $tt->process( $file_in, {rec => $rec},
+        $tt->process( $model_file, {rec => $rec},
             $file_out, binmode => ':utf8' );
     };
     if ($@) {
-        $self->_log->info("Generating '$model.tex' from '$file_in' failed");
+        $self->_log->info("Generating '$file_out' from '$model.tt' failed");
         return;
     }
 
