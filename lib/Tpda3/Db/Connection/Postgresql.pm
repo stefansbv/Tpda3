@@ -14,11 +14,11 @@ Tpda3::Db::Connection::Postgresql - Connect to a PostgreSQL database.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.05
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -103,8 +103,6 @@ sub db_connect {
 Table info 'short'.  The 'table_info' method from the Pg driver
 doesn't seem to be reliable.
 
-TODO: Implement using SQL::Abstract !
-
 =cut
 
 sub table_info_short {
@@ -148,8 +146,6 @@ sub table_info_short {
 
 Check if table exists in the database.
 
-TODO: Implement using SQL::Abstract !
-
 =cut
 
 sub table_exists {
@@ -184,8 +180,6 @@ sub table_exists {
 
 Get the primary key field name of the table.
 
-TODO: Implement using SQL::Abstract !
-
 =cut
 
 sub table_keys {
@@ -198,7 +192,6 @@ sub table_keys {
 
     $log->info("Geting '$table' table primary key(s) names");
 
-    #  From http://www.alberton.info/postgresql_meta_info.html
     my $sql = qq( SELECT kcu.column_name
                    FROM information_schema.table_constraints tc
                      LEFT JOIN information_schema.key_column_usage kcu
@@ -216,8 +209,6 @@ sub table_keys {
 
     my $pkf;
     try {
-
-        # List of lists
         $pkf = $self->{_dbh}->selectcol_arrayref($sql);
     }
     catch {
@@ -320,6 +311,11 @@ Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 None known.
 
 Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGEMENTS
+
+Information schema queries by Lorenzo Alberton from
+http://www.alberton.info/postgresql_meta_info.html
 
 =head1 LICENSE AND COPYRIGHT
 
