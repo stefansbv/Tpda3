@@ -253,12 +253,12 @@ sub table_list {
 
     $log->info('Geting list of tables');
 
-    my $sql = qq( SELECT table_name
+    my $sql = q{ SELECT table_name
                       FROM information_schema.tables
                       WHERE table_type = 'BASE TABLE'
                         AND table_schema NOT IN
                             ('pg_catalog', 'information_schema');
-    );
+    };
 
     $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
     $self->{_dbh}->{RaiseError} = 0;
@@ -273,6 +273,42 @@ sub table_list {
     };
 
     return $table_list;
+}
+
+=head2 sequences_list
+
+Return list of sequences from the database.
+
+=cut
+
+sub sequences_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of sequences');
+
+    my $sql = q{SELECT relname
+    FROM pg_class
+    WHERE relkind = 'S' AND relnamespace IN (
+        SELECT oid
+            FROM pg_namespace
+            WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $seq_list;
+    try {
+        $seq_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $seq_list;
 }
 
 =head1 AUTHOR
