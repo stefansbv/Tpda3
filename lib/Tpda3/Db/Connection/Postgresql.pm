@@ -84,7 +84,7 @@ sub db_connect {
         );
     }
     catch {
-        $log->fatal("Transaction aborted: $_")
+        $log->error("Transaction aborted: $_")
             or print STDERR "$_\n";
     };
 
@@ -128,8 +128,6 @@ sub table_info_short {
 
     my $flds_ref;
     try {
-
-        # List of lists
         my $sth = $self->{_dbh}->prepare($sql);
         $sth->execute;
         $flds_ref = $sth->fetchall_hashref('pos');
@@ -300,6 +298,55 @@ sub sequences_list {
     };
 
     return $seq_list;
+}
+
+=head2 constraints_list
+
+Return list of constraints for a table from the database.
+
+=cut
+
+sub constraints_list {
+    my ($self, $table) = @_;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of constraints');
+
+    my $sql = qq{SELECT tc.constraint_name
+                      , tc.constraint_type
+                      , kcu.column_name
+                      , ccu.table_name AS references_table
+                      , ccu.column_name AS references_field
+                    FROM information_schema.table_constraints tc
+                      LEFT JOIN information_schema.key_column_usage kcu
+                        ON tc.constraint_catalog = kcu.constraint_catalog
+                        AND tc.constraint_schema = kcu.constraint_schema
+                        AND tc.constraint_name = kcu.constraint_name
+                      LEFT JOIN information_schema.referential_constraints rc
+                        ON tc.constraint_catalog = rc.constraint_catalog
+                        AND tc.constraint_schema = rc.constraint_schema
+                        AND tc.constraint_name = rc.constraint_name
+                      LEFT JOIN information_schema.constraint_column_usage ccu
+                        ON rc.unique_constraint_catalog = ccu.constraint_catalog
+                        AND rc.unique_constraint_schema = ccu.constraint_schema
+                        AND rc.unique_constraint_name = ccu.constraint_name
+                    WHERE tc.table_name = '$table'};
+
+    $self->{_dbh}{ChopBlanks} = 1;    # trim CHAR fields
+
+    my $flds_ref;
+    try {
+        my $sth = $self->{_dbh}->prepare($sql);
+        $sth->execute;
+        $flds_ref = $sth->fetchall_hashref('constraint_type');
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $flds_ref;
 }
 
 =head1 AUTHOR
