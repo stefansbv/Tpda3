@@ -1848,10 +1848,6 @@ sub screen_module_load {
     # Update window geometry
     $self->set_geometry();
 
-    # my $main_table = $self->scrcfg('rec')->main_table_name;
-    # print "Main table is $main_table\n";
-    # $self->_model->get_constraints_list($main_table);
-
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
 }
@@ -3826,7 +3822,9 @@ Insert record.
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
-    my $pk_val = $self->_model->prepare_record_insert($record);
+    my $messages = $self->scrobj()->get_msg_strings();
+
+    my $pk_val = $self->_model->prepare_record_insert($record, $messages);
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
@@ -3835,13 +3833,10 @@ sub record_save_insert {
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
         $self->screen_set_pk_val($pk_val);    # save PK value
     }
-#     else {
-# #        $self->_view->set_status( 'Failed', 'ms', 'darkred' );
-#         return;
-#     }
 
     return $pk_val;
 }
+
 
 =head2 list_update_add
 

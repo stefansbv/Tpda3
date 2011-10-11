@@ -2,8 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
@@ -11,6 +9,7 @@ use SQL::Abstract;
 use List::Compare;
 use Data::Compare;
 use Regexp::Common;
+use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Config;
 use Tpda3::Observable;
@@ -106,13 +105,13 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set(1);    # yes
-        $self->_print('Connected');
+        $self->_print('info#Connected');
 
         # print "Connected\n";
     }
     else {
         $self->get_connection_observable->set(0);    # no ;)
-        $self->_print('Connection error!');
+        $self->_print('error#Connection error');
         print "Connection error!\n";
     }
 
@@ -130,7 +129,7 @@ sub _disconnect {
 
     $self->{_dbh}->disconnect;
     $self->get_connection_observable->set(0);
-    $self->_print('Disconnected');
+    $self->_print('info#Disconnected');
 
     return;
 }
@@ -180,9 +179,9 @@ Put a message on a text controll
 =cut
 
 sub _print {
-    my ( $self, $msg ) = @_;
+    my ( $self, $data ) = @_;
 
-    $self->get_stdout_observable->set($msg);
+    $self->get_stdout_observable->set($data);
 
     return;
 }
@@ -344,11 +343,10 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
-    $self->_print("$record_count records found");
+    $self->_print("info#$record_count records");
 
     return;
 }
@@ -382,12 +380,11 @@ sub query_records_find {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     my $record_count = scalar @{$ary_ref};
-    $self->_print("$record_count records listed");
+    $self->_print("info#$record_count records");
 
     return $ary_ref;
 }
@@ -413,8 +410,7 @@ sub query_record {
         $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return $hash_ref;
@@ -448,8 +444,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return \@records;
@@ -482,8 +477,7 @@ sub query_dictionary {
         $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return $ary_ref;
@@ -543,7 +537,7 @@ sub build_where {
         elsif ( $find_type eq 'date' ) {
             my $ret = Tpda3::Utils->process_date_string( $attrib->[0] );
             if ( $ret eq 'dataerr' ) {
-                $self->_print("Wrong search parameter!");
+                $self->_print('warn#Wrong search parameter');
                 return;
             }
             else {
@@ -636,7 +630,7 @@ Using the RETURNING ...
 =cut
 
 sub table_record_insert {
-    my ( $self, $table, $pkcol, $record ) = @_;
+    my ( $self, $table, $pkcol, $record, $msgs ) = @_;
 
     my $sql = SQL::Abstract->new();
 
@@ -650,9 +644,7 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->error_show($_);
-        # $self->_print("Database error!");
-        # croak("Transaction aborted: $_");
+        $self->error_show($_, $msgs);
     };
 
     return $pk_id;
@@ -676,8 +668,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return 1;
@@ -701,8 +692,7 @@ sub table_record_select {
         $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return $hash_ref;
@@ -734,8 +724,7 @@ sub table_batch_insert {
             $sth->execute(@bind);
         }
         catch {
-            $self->_print("Database error!");
-            croak("Transaction aborted: $_");
+            $self->error_show($_);
         };
     }
 
@@ -766,8 +755,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return;
@@ -784,7 +772,7 @@ construct the SQL commands.
 =cut
 
 sub prepare_record_insert {
-    my ( $self, $record ) = @_;
+    my ( $self, $record, $msgs ) = @_;
 
     my $mainrec = $record->[0];    # main record first
 
@@ -796,7 +784,7 @@ sub prepare_record_insert {
 
     #- Main record
 
-    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata );
+    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata, $msgs );
 
     return unless $pk_id;
 
@@ -1124,8 +1112,7 @@ sub table_selectcol_as_array {
         $records = $self->{_dbh}->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
     };
 
     return $records;
@@ -1153,35 +1140,31 @@ sub record_compare {
 
 =head2 error_show
 
-Try to parse the error string from the database and compose a user
-friendly message.
+Parse the error string from the database and pass the relevant text to
+the L<status_message> method in the View class.
+
+TODO: Test and extend for Firebird.
+
+Quick hack for making the messages more user friendly using a hash
+data structure implemented in the screen module.  Eventually will be
+replaced by a properly implemented localisation API.
 
 =cut
 
 sub error_show {
-    my ($self, $error_str) = @_;
+    my ($self, $error, $msgs) = @_;
 
-    print "EE: $error_str\n";
+    my $log = get_logger();
+    $log->error($error);
 
     my $msg = q{};
-    ($msg) = $error_str =~ m/($RE{quoted})/smi;
+    ($msg) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
     $msg =~ s{['"]}{}gmi;
 
-    my $error_type;
-    if ( $_ =~ m{duplicate key}smi ) {
-        $error_type = 'Duplicate';
-    }
-    elsif ( $_ =~ m{null value}smi ) {
-        $error_type = 'Required field';
-    }
-    else {
-        $error_type = 'Unknown DB error, check log file';
-        $msg = q{};
-        return;
-    }
+    $msgs ||= {};                                 # avoid error on
+    $msg = $msgs->{$msg} if exists $msgs->{$msg}; # user friendly message
 
-    $self->_print("$error_type $msg::darkred");
-    print "MSG: $error_type $msg\n";
+    $self->_print("error#$msg");
 
     return;
 }

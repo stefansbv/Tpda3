@@ -134,7 +134,7 @@ sub _set_model_callbacks {
 
     # Show message in status bar
     my $so = $self->_model->get_stdout_observable;
-    $so->add_callback( sub { $self->set_status( $_[0], 'ms' ) } );
+    $so->add_callback( sub { $self->status_message( $_[0] ) } );
 
     # When the status changes, update gui components
     my $apm = $self->_model->get_appmode_observable;
@@ -475,17 +475,51 @@ sub get_statusbar {
     return $self->{_sb}{$sb_id};
 }
 
+=head2 status_message
+
+Message types:
+
+=over
+
+=item error  message with I<darkred> color
+
+=item warn   message with I<yellow> color
+
+=item info   message with I<darkgreen> color
+
+=back
+
+=cut
+
+sub status_message {
+    my ($self, $text) = @_;
+
+    (my $type, $text) = split /#/, $text, 2;
+    my $color;
+
+  SWITCH: {
+        $type eq 'error' && do { $color = 'darkred';   last SWITCH; };
+        $type eq 'info'  && do { $color = 'darkgreen'; last SWITCH; };
+        $type eq 'warn'  && do { $color = 'orange';    last SWITCH; };
+
+        # Default
+        $color = 'red';
+    }
+
+    $self->set_status( $text, 'ms', $color );
+
+    return;
+}
+
 =head2 set_status
 
 Display message in the status bar.  Colour name can also be passed to
-the method in the message string separated by double colon.
+the method in the message string separated by a # char.
 
 =cut
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
-
-    ($text, $color) = split /::/, $text, 2;
 
     my $sb = $self->get_statusbar($sb_id);
 
