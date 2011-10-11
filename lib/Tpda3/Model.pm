@@ -2,12 +2,15 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Try::Tiny;
 use SQL::Abstract;
 use List::Compare;
 use Data::Compare;
+use Regexp::Common;
 
 use Tpda3::Config;
 use Tpda3::Observable;
@@ -647,8 +650,9 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->_print("Database error!");
-        croak("Transaction aborted: $_");
+        $self->error_show($_);
+        # $self->_print("Database error!");
+        # croak("Transaction aborted: $_");
     };
 
     return $pk_id;
@@ -769,7 +773,7 @@ sub table_record_delete {
     return;
 }
 
-=head2 store_record_insert
+=head2 prepare_record_insert
 
 Inserts a record.
 
@@ -779,7 +783,7 @@ construct the SQL commands.
 
 =cut
 
-sub store_record_insert {
+sub prepare_record_insert {
     my ( $self, $record ) = @_;
 
     my $mainrec = $record->[0];    # main record first
@@ -793,6 +797,8 @@ sub store_record_insert {
     #- Main record
 
     my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata );
+
+    return unless $pk_id;
 
     #- Dependent records
 
@@ -821,7 +827,7 @@ sub store_record_insert {
     return $pk_id;
 }
 
-=head2 store_record_update
+=head2 prepare_record_update
 
 Updates a record.
 
@@ -851,7 +857,7 @@ appear.
 
 =cut
 
-sub store_record_update {
+sub prepare_record_update {
     my ( $self, $record ) = @_;
 
     #- Main record
@@ -892,13 +898,13 @@ sub store_record_update {
     return 1;
 }
 
-=head2 store_record_delete
+=head2 prepare_record_delete
 
 Delete all detail records and then the record.
 
 =cut
 
-sub store_record_delete {
+sub prepare_record_delete {
     my ( $self, $record ) = @_;
 
     #- Dependent records
@@ -1143,6 +1149,41 @@ sub record_compare {
     #     $dc->Cmp ? "" : "not ", "identical.\n";
 
     return !$dc->Cmp;
+}
+
+=head2 error_show
+
+Try to parse the error string from the database and compose a user
+friendly message.
+
+=cut
+
+sub error_show {
+    my ($self, $error_str) = @_;
+
+    print "EE: $error_str\n";
+
+    my $msg = q{};
+    ($msg) = $error_str =~ m/($RE{quoted})/smi;
+    $msg =~ s{['"]}{}gmi;
+
+    my $error_type;
+    if ( $_ =~ m{duplicate key}smi ) {
+        $error_type = 'Duplicate';
+    }
+    elsif ( $_ =~ m{null value}smi ) {
+        $error_type = 'Required field';
+    }
+    else {
+        $error_type = 'Unknown DB error, check log file';
+        $msg = q{};
+        return;
+    }
+
+    $self->_print("$error_type $msg::darkred");
+    print "MSG: $error_type $msg\n";
+
+    return;
 }
 
 =head1 AUTHOR

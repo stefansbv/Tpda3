@@ -132,6 +132,7 @@ sub _set_model_callbacks {
     my $co = $self->_model->get_connection_observable;
     $co->add_callback( sub { $self->toggle_status_cn( $_[0] ); } );
 
+    # Show message in status bar
     my $so = $self->_model->get_stdout_observable;
     $so->add_callback( sub { $self->set_status( $_[0], 'ms' ) } );
 
@@ -476,12 +477,15 @@ sub get_statusbar {
 
 =head2 set_status
 
-Set message to status bar
+Display message in the status bar.  Colour name can also be passed to
+the method in the message string separated by double colon.
 
 =cut
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
+
+    ($text, $color) = split /::/, $text, 2;
 
     my $sb = $self->get_statusbar($sb_id);
 
@@ -1012,7 +1016,7 @@ sub list_populate {
         $self->get_recordlist->insert( 'end', $record );
         $self->get_recordlist->see('end');
         $row_count++;
-        $self->set_status( "$row_count records fetched", 'ms' );
+#        $self->set_status( "$row_count records fetched", 'ms' );
         $self->get_recordlist->update;
 
         # Progress bar
@@ -1020,7 +1024,7 @@ sub list_populate {
         if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status( "$row_count records listed", 'ms' );
+#    $self->set_status( "$row_count records listed", 'ms' );
 
     # Activate and select last
     $self->get_recordlist->selectionClear( 0, 'end' );

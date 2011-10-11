@@ -1848,6 +1848,10 @@ sub screen_module_load {
     # Update window geometry
     $self->set_geometry();
 
+    # my $main_table = $self->scrcfg('rec')->main_table_name;
+    # print "Main table is $main_table\n";
+    # $self->_model->get_constraints_list($main_table);
+
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
 }
@@ -3429,7 +3433,7 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-    $self->_view->set_status( "Record reloaded", 'ms', 'blue' );
+#    $self->_view->set_status( "Record reloaded", 'ms', 'blue' );
 
     $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
@@ -3532,7 +3536,7 @@ sub record_delete {
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
-    $self->_model->store_record_delete( \@record );
+    $self->_model->prepare_record_delete( \@record );
 
     $self->set_app_mode('idle');
 
@@ -3707,13 +3711,15 @@ sub record_save {
 
         my $answer = $self->ask_to('save_insert');
 
-        return if $answer eq 'cancel';
+        return if $answer eq 'cancel' or $answer eq 'no';
 
-        $self->record_save_insert($record) if $answer eq 'yes';
-
-        $self->record_reload();
-
-        $self->list_update_add();    # insert the new record in the list
+        if ($answer eq 'yes') {
+            my $pk_val = $self->record_save_insert($record);
+            if ($pk_val) {
+                $self->record_reload();
+                $self->list_update_add(); # insert the new record in the list
+            }
+        }
     }
     elsif ( $self->_model->is_mode('edit') ) {
         if ( !$self->is_record ) {
@@ -3723,7 +3729,7 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('upd');
 
-        $self->_model->store_record_update($record);
+        $self->_model->prepare_record_update($record);
     }
     else {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
@@ -3768,6 +3774,11 @@ BUG: Dialog not always has focus in GNU/Linux.
 
 sub if_check_required_data {
     my ($self, $record) = @_;
+
+    unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
+        $self->_view->set_status( 'No data to save ...', 'ms', 'orange' );
+        return 0;
+    }
 
     my $ok_to_save = 1;
 
@@ -3815,14 +3826,7 @@ Insert record.
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
-    # Ask first
-    # my $answer = $self->_view->{dialog2}->Show();
-    # if ( $answer !~ /Ok/i ) {
-    #     $self->_view->set_status( 'Canceled', 'ms', 'blue' );
-    #     return;
-    # }
-
-    my $pk_val = $self->_model->store_record_insert($record);
+    my $pk_val = $self->_model->prepare_record_insert($record);
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
@@ -3831,12 +3835,12 @@ sub record_save_insert {
         $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
         $self->screen_set_pk_val($pk_val);    # save PK value
     }
-    else {
-        $self->_view->set_status( 'Failed', 'ms', 'darkred' );
-        return;
-    }
+#     else {
+# #        $self->_view->set_status( 'Failed', 'ms', 'darkred' );
+#         return;
+#     }
 
-    return;
+    return $pk_val;
 }
 
 =head2 list_update_add
