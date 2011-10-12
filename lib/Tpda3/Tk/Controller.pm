@@ -3106,7 +3106,9 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->trace("Screen 'rec' controls state is '$state'");
+    # $self->_log->trace("Screen 'rec' controls state is '$state'");
+
+    my $bg = $self->_view->cget('-background');
 
     my $page = $self->_view->get_nb_current_page();
 
@@ -3142,15 +3144,15 @@ sub controls_state_set {
             }
         }
 
+        # Allow 'bg' as bgcolor config attribute value for controls
+        $bg_color = $bg if $bg_color =~ m{bg|bground|background};
+
         # Configure controls
         eval {
             $ctrl_ref->{$field}[1]->configure( -state      => $ctrl_state, );
             $ctrl_ref->{$field}[1]->configure( -background => $bg_color, );
         };
-        if ($@) {
-
-            # print "Problems with '$field'\n";
-        }
+        print "WW: '$field': $@\n" if $@;
     }
 
     return;
