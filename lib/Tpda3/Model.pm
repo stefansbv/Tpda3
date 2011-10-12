@@ -12,9 +12,9 @@ use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 
 use Tpda3::Config;
+use Tpda3::Codings;
 use Tpda3::Observable;
 use Tpda3::Db;
-use Tpda3::Codings;
 use Tpda3::Utils;
 
 =head1 NAME
@@ -52,6 +52,7 @@ sub new {
         _appmode     => Tpda3::Observable->new(),
         _scrdata_rec => Tpda3::Observable->new(),
         _cfg         => Tpda3::Config->instance(),
+        _msg_dict    => {},
     };
 
     bless $self, $class;
@@ -105,14 +106,10 @@ sub _connect {
     # Is realy connected ?
     if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
         $self->get_connection_observable->set(1);    # yes
-        $self->_print('info#Connected');
-
-        # print "Connected\n";
     }
     else {
         $self->get_connection_observable->set(0);    # no ;)
-        $self->_print('error#Connection error');
-        print "Connection error!\n";
+        $self->_print('error#Connection failed');
     }
 
     return;
@@ -313,6 +310,20 @@ sub is_loaded {
     my $self = shift;
 
     return defined $self->get_scrdata_rec_observable->get;
+}
+
+=head2 message_dictionary
+
+Hash structure used to compose user friendly messages.
+
+=cut
+
+sub message_dictionary {
+    my ($self, $dict) = @_;
+
+    $self->{_msg_dict} = $dict;
+
+    return;
 }
 
 =head2 query_records_count
@@ -603,6 +614,77 @@ SWITCH: for ($driver) {
     return $cmp;
 }
 
+=head2 tbl_dict_query
+
+Query a table for codes.  Return S<< key -> value >>, pairs used to
+fill the I<choices> attributes of widgets like L<Tk::JComboBox>.
+
+There is a default table for codes named 'codificari' (named so, in
+the first version of TPDA).
+
+The I<codificari> table has the following structure:
+
+   id_ord    INTEGER NOT NULL
+   variabila VARCHAR(15)
+   filtru    VARCHAR(5)
+   cod       VARCHAR(5)
+   denumire  VARCHAR(25) NOT NULL
+
+The I<variabila> columns contains the name of the field, because this
+is a table used for many different codings.  When this table is used,
+a where clause is constructed to filter only the values coresponding
+to I<variabila>.
+
+There is another column named I<filtru> than can be used to restrict
+the values listed when they depend on the value of another widget in
+the current screen (not yet used!).
+
+If the configuration has an I<orderby> field use it else order by
+description (name).
+
+TODO: Change the field names
+
+=cut
+
+sub tbl_dict_query {
+    my ( $self, $para ) = @_;
+
+    my $where;
+    if ( $para->{table} eq 'codificari' ) {
+        $where->{variabila} = $para->{field};
+    }
+
+    my $table  = $para->{table};
+    my $fields = [ $para->{code}, $para->{name} ];
+    my $order  = $para->{orderby} || $para->{name};
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+
+    my @dictrows;
+    try {
+        my $sth = $self->{_dbh}->prepare($stmt);
+        if (@bind) {
+            $sth->execute(@bind);
+        }
+        else {
+            $sth->execute();
+        }
+
+        while ( my $row_rf = $sth->fetchrow_arrayref() ) {
+
+            # JComboBox specific data structure
+            push @dictrows, { -name => $row_rf->[1], -value => $row_rf->[0] };
+        }
+    }
+    catch {
+        $self->error_show($_);
+    };
+
+    return \@dictrows;
+}
+
 =head2 get_codes
 
 Return the data structure used to fill the list of choices.
@@ -612,7 +694,7 @@ Return the data structure used to fill the list of choices.
 sub get_codes {
     my ( $self, $field, $para ) = @_;
 
-    my $codings = Tpda3::Codings->new();
+    my $codings = Tpda3::Codings->new($self);
     my $codes = $codings->get_coding_init( $field, $para );
 
     return $codes;
@@ -630,7 +712,7 @@ Using the RETURNING ...
 =cut
 
 sub table_record_insert {
-    my ( $self, $table, $pkcol, $record, $msgs ) = @_;
+    my ( $self, $table, $pkcol, $record ) = @_;
 
     my $sql = SQL::Abstract->new();
 
@@ -644,7 +726,7 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->error_show($_, $msgs);
+        $self->error_show($_);
     };
 
     return $pk_id;
@@ -772,7 +854,7 @@ construct the SQL commands.
 =cut
 
 sub prepare_record_insert {
-    my ( $self, $record, $msgs ) = @_;
+    my ( $self, $record ) = @_;
 
     my $mainrec = $record->[0];    # main record first
 
@@ -784,7 +866,7 @@ sub prepare_record_insert {
 
     #- Main record
 
-    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata, $msgs );
+    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata );
 
     return unless $pk_id;
 
@@ -1145,26 +1227,24 @@ the L<status_message> method in the View class.
 
 TODO: Test and extend for Firebird.
 
-Quick hack for making the messages more user friendly using a hash
-data structure implemented in the screen module.  Eventually will be
-replaced by a properly implemented localisation API.
+Extract the quoted string as I<key> from the error message and use it
+to construct an user friendly message to show in the status bar using
+a hash data structure implemented in the screen module.
 
 =cut
 
 sub error_show {
-    my ($self, $error, $msgs) = @_;
+    my ($self, $error) = @_;
 
     my $log = get_logger();
     $log->error($error);
 
-    my $msg = q{};
-    ($msg) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
-    $msg =~ s{['"]}{}gmi;
+    (my $key) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
+    $key =~ s{['"]}{}gmi;
 
-    $msgs ||= {};                                 # avoid error on
-    $msg = $msgs->{$msg} if exists $msgs->{$msg}; # user friendly message
+    $key = $self->{_msg_dict}->{$key} if exists $self->{_msg_dict}->{$key};
 
-    $self->_print("error#$msg");
+    $self->_print("error#$key");
 
     return;
 }

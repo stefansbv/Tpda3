@@ -495,8 +495,8 @@ sub status_message {
     my ($self, $text) = @_;
 
     (my $type, $text) = split /#/, $text, 2;
-    my $color;
 
+    my $color;
   SWITCH: {
         $type eq 'error' && do { $color = 'darkred';   last SWITCH; };
         $type eq 'info'  && do { $color = 'darkgreen'; last SWITCH; };

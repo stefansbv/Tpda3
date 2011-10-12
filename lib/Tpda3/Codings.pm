@@ -2,13 +2,13 @@ package Tpda3::Codings;
 
 use strict;
 use warnings;
-use Carp;
+# use Carp;
 
-use File::Spec::Functions;
-use Try::Tiny;
-use SQL::Abstract;
+# use File::Spec::Functions;
+# use Try::Tiny;
+# use SQL::Abstract;
 
-use Tpda3::Db;
+# use Tpda3::Db;
 
 =head1 NAME
 
@@ -37,13 +37,12 @@ Constructor method.
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $model) = @_;
 
-    my $self = {};
-
-    $self->{_code} = {};
-
-    $self->{_dbh} = Tpda3::Db->instance->dbh;
+    my $self = {
+        _code  => {},
+        _model => $model,
+    };
 
     bless( $self, $class );
 
@@ -69,7 +68,7 @@ sub get_coding_init {
     if ( !exists $self->{_code}{$field} ) {
 
         # Query database table
-        $self->{_code}{$field} = $self->tbl_dict_query($para);
+        $self->{_code}{$field} = $self->{_model}->tbl_dict_query($para);
     }
 
     if (   $para->{default} =~ m{null}i
@@ -97,83 +96,6 @@ sub get_coding {
     my ( $self, $field, $val ) = @_;
 
     return $self->{_code}{$field}{$val};
-}
-
-=head2 tbl_dict_query
-
-Query a table for codes.  Return S<< key -> value >>, pairs used to
-fill the I<choices> attributes of widgets like L<Tk::JComboBox>.
-
-There is a default table for codes named 'codificari' (named so, in
-the first version of TPDA).
-
-The I<codificari> table has the following structure:
-
-   id_ord    INTEGER NOT NULL
-   variabila VARCHAR(15)
-   filtru    VARCHAR(5)
-   cod       VARCHAR(5)
-   denumire  VARCHAR(25) NOT NULL
-
-The I<variabila> columns contains the name of the field, because this
-is a table used for many different codings.  When this table is used,
-a where clause is constructed to filter only the values coresponding
-to I<variabila>.
-
-There is another column named I<filtru> than can be used to restrict
-the values listed when they depend on the value of another widget in
-the current screen (not yet used!).
-
-If the configuration has an I<orderby> field use it else order by
-description (name).
-
-TODO: Change the field names
-
-=cut
-
-sub tbl_dict_query {
-    my ( $self, $para ) = @_;
-
-    my $where;
-    if ( $para->{table} eq 'codificari' ) {
-        $where->{variabila} = $para->{field};
-    }
-
-    my $table  = $para->{table};
-    my $fields = [ $para->{code}, $para->{name} ];
-    my $order  = $para->{orderby} || $para->{name};
-
-    my $sql = SQL::Abstract->new();
-
-    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
-
-    # print "SQL : $stmt\n";
-    # print "bind: @bind\n";
-
-    my @dictrows;    #    my $rez;
-    try {
-
-        # Batch fetching
-        my $sth = $self->{_dbh}->prepare($stmt);
-        if (@bind) {
-            $sth->execute(@bind);
-        }
-        else {
-            $sth->execute();
-        }
-
-        while ( my $row_rf = $sth->fetchrow_arrayref() ) {
-
-            # JComboBox specific data structure
-            push @dictrows, { -name => $row_rf->[1], -value => $row_rf->[0] };
-        }
-    }
-    catch {
-        print("Database error!");
-        croak("Transaction aborted: $_");
-    };
-
-    return \@dictrows;
 }
 
 1;

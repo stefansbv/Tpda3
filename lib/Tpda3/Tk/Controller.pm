@@ -1832,9 +1832,6 @@ sub screen_module_load {
         $self->set_event_handler_screen($tm_ds);
     }
 
-    # Load lists into JBrowseEntry or JComboBox widgets
-    $self->screen_init();
-
     $self->_set_menus_enable('normal');
 
     $self->_view->set_status( '', 'ms' );
@@ -1847,6 +1844,13 @@ sub screen_module_load {
 
     # Update window geometry
     $self->set_geometry();
+
+    # Export message dictionary to Model
+    my $dict = $self->scrobj()->get_msg_strings();
+    $self->_model->message_dictionary($dict);
+
+    # Load lists into JBrowseEntry or JComboBox widgets
+    $self->screen_init();
 
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
@@ -3822,9 +3826,7 @@ Insert record.
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
-    my $messages = $self->scrobj()->get_msg_strings();
-
-    my $pk_val = $self->_model->prepare_record_insert($record, $messages);
+    my $pk_val = $self->_model->prepare_record_insert($record);
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
