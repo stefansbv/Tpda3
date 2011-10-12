@@ -2446,12 +2446,11 @@ sub screen_report_print {
 
     my $param;
     if ($pk_val) {
-        # Default paramneter ID
-        $param = "$pk_col=$pk_val";
+        $param = "$pk_col=$pk_val";          # default parameter ID
     } else {
         # Atentie
         my $textstr = "Load a record first";
-        print " $textstr\n";
+        $self->_view->status_message("error#$textstr");
         return;
     }
 
@@ -2460,14 +2459,13 @@ sub screen_report_print {
 
     my $options = qq{-preview -param$param};
 
-    $self->_log->info("Report previwer: $report_exe");
+    $self->_log->info("Report tool: $report_exe");
     $self->_log->info("Report file: $report_file");
 
     # Metaviewxp
     my $cmd;
     if ( defined $param ) {
-        print "1 parameter!\n";
-        $cmd = qq{$report_exe $options $report_file};
+        $cmd = qq{"$report_exe" $options "$report_file"};
     }
     else {
         print "0 parameters?\n";
