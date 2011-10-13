@@ -647,7 +647,7 @@ TODO: Change the field names
 =cut
 
 sub tbl_dict_query {
-    my ( $self, $para ) = @_;
+    my ( $self, $para, $label_label, $value_label ) = @_;
 
     my $where;
     if ( $para->{table} eq 'codificari' ) {
@@ -673,9 +673,10 @@ sub tbl_dict_query {
         }
 
         while ( my $row_rf = $sth->fetchrow_arrayref() ) {
-
-            # JComboBox specific data structure
-            push @dictrows, { -name => $row_rf->[1], -value => $row_rf->[0] };
+            push @dictrows, {
+                $label_label => $row_rf->[1],
+                $value_label => $row_rf->[0],
+            };
         }
     }
     catch {
@@ -692,10 +693,10 @@ Return the data structure used to fill the list of choices.
 =cut
 
 sub get_codes {
-    my ( $self, $field, $para ) = @_;
+    my ( $self, $field, $para, $widget ) = @_;
 
     my $codings = Tpda3::Codings->new($self);
-    my $codes = $codings->get_coding_init( $field, $para );
+    my $codes = $codings->get_coding_init( $field, $para, $widget );
 
     return $codes;
 }

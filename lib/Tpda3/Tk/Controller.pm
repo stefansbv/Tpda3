@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -1849,7 +1851,7 @@ sub screen_module_load {
     my $dict = $self->scrobj()->get_msg_strings();
     $self->_model->message_dictionary($dict);
 
-    # Load lists into JBrowseEntry or JComboBox widgets
+    # Load lists into JComboBox widgets (JBrowseEntry not supported)
     $self->screen_init();
 
     return 1;    # to make ok from Test::More happy
@@ -1956,7 +1958,7 @@ sub screen_module_detail_load {
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
 
-    # Load lists into JBrowseEntry or JComboBox widgets
+    # Load lists into JComboBox widgets (JBrowseEntry not supported)
     $self->screen_init();
 
     $self->_view->set_status( '', 'ms' );
@@ -2044,8 +2046,8 @@ sub set_geometry {
 
 Load options in Listbox like widgets - JCombobox support only.
 
-All JBrowseEntry or JComboBox widgets must have a <lists_ds> record in
-config to define where the data for the list come from:
+All JComboBox widgets must have a <lists_ds> record in config to
+define where the data for the list come from:
 
 Data source for list widgets (JCombobox)
 
@@ -2081,7 +2083,7 @@ sub screen_init {
         next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_a_ref = $self->{_model}->get_codes( $field, $para );
+        my $cod_a_ref = $self->{_model}->get_codes( $field, $para, $ctrltype );
 
         if ( $ctrltype eq 'm' ) {
 
@@ -2093,17 +2095,12 @@ sub screen_init {
         }
         elsif ( $ctrltype eq 'l' ) {
 
-            # my @lvpairs;
-            # while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-            #     push( @lvpairs,{ value => $code, label => $label });
-            # }
-
-            # # MatchingBE
-            # if ( $ctrl_ref->{$field}[1] ) {
-            #     $ctrl_ref->{$field}[1]->configure(
-            #         -labels_and_values => \@lvpairs,
-            #     );
-            # }
+            # MatchingBE
+            if ( $ctrl_ref->{$field}[1] ) {
+                $ctrl_ref->{$field}[1]->configure(
+                    -labels_and_values => $cod_a_ref,
+                );
+            }
         }
     }
 
@@ -3269,7 +3266,8 @@ sub control_write_d {
 
 =head2 control_write_m
 
-Write to a Tk::JComboBox widget.  If I<$value> not true, than only delete.
+Write to a Tk::JComboBox widget.  If I<$value> not true, than only
+delete.
 
 =cut
 

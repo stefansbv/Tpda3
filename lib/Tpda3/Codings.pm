@@ -2,13 +2,6 @@ package Tpda3::Codings;
 
 use strict;
 use warnings;
-# use Carp;
-
-# use File::Spec::Functions;
-# use Try::Tiny;
-# use SQL::Abstract;
-
-# use Tpda3::Db;
 
 =head1 NAME
 
@@ -16,11 +9,11 @@ Tpda3::Codings - The Codings
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -60,15 +53,35 @@ database.
 
 Add the default value defined in configuration, if not exists in table.
 
+Different labels for different widgets:
+
+ -name and -value for JCombobox
+ label and  value for MatchingBE
+
 =cut
 
 sub get_coding_init {
-    my ( $self, $field, $para ) = @_;
+    my ( $self, $field, $para, $widget ) = @_;
+
+    my $label_label
+        # widget type       key name
+        = $widget eq 'l' ? 'label'
+        : $widget eq 'm' ? '-name'
+        :                  '-name'
+        ;
+
+    my $value_label
+        # widget type       key name
+        = $widget eq 'l' ? 'value'
+        : $widget eq 'm' ? '-value'
+        :                  '-value'
+        ;
 
     if ( !exists $self->{_code}{$field} ) {
 
         # Query database table
-        $self->{_code}{$field} = $self->{_model}->tbl_dict_query($para);
+        $self->{_code}{$field} = $self->{_model}
+            ->tbl_dict_query( $para, $label_label, $value_label );
     }
 
     if (   $para->{default} =~ m{null}i
@@ -78,8 +91,8 @@ sub get_coding_init {
         # Add and empty option
         unshift @{ $self->{_code}{$field} },
             {
-            -name  => ' ',
-            -value => ' ',
+            $label_label => ' ',
+            $value_label => ' ',
             };
     }
 
