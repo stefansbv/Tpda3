@@ -55,7 +55,7 @@ sub search_dialog {
 
     my $dlg = $view->DialogBox(
         -title   => 'Search dialog',
-        -buttons => [ 'Load', 'Cancel' ]
+        -buttons => [ 'Load', 'Clear', 'Cancel' ],
     );
 
     #--- Main frame
@@ -283,7 +283,7 @@ sub search_dialog {
     my $result = $dlg->Show;
     my $ind_cod;
 
-    if ( $result =~ /Load/ ) {
+    if ( $result =~ /Load/i ) {
 
         # Sunt inreg. in lista?
         eval { $ind_cod = $self->{box}->curselection(); };
@@ -302,6 +302,16 @@ sub search_dialog {
         my $row_data = {};
         for ( my $i = 0; $i < @columns; $i++ ) {
             $row_data->{ $columns[$i] } = $values[$i];
+        }
+
+        return $row_data;
+    }
+    elsif ( $result =~ /Clear/i ) {
+
+        # Prepare empty values
+        my $row_data = {};
+        for ( my $i = 0; $i < @columns; $i++ ) {
+            $row_data->{ $columns[$i] } = undef;
         }
 
         return $row_data;
