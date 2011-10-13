@@ -58,7 +58,12 @@ sub search_dialog {
         -buttons => [ 'Load', 'Clear', 'Cancel' ],
     );
 
-    #--- Main frame
+    #-- Key bindings
+
+    $dlg->bind( '<Escape>', sub { $dlg->Subwidget('B_Cancel')->invoke } );
+    $dlg->bind( '<Alt-r>' , sub { $dlg->Subwidget('B_Clear' )->invoke } );
+
+    #-- Main frame
 
     my $mf = $dlg->Frame()->pack(
         -side   => 'top',
@@ -66,7 +71,7 @@ sub search_dialog {
         -fill   => 'both',
     );
 
-    #-- Frame 1
+    #--- Frame 1
 
     my $frm1 = $mf->Frame( -foreground => 'blue', )->pack(
         -expand => 1,
