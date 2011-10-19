@@ -1889,11 +1889,15 @@ sub set_event_handler_screen {
             '<ButtonRelease-1>' => sub {
                 return
                     unless $self->_model->is_mode('add')
-                        or $self->_model->is_mode('edit');
+                        or $self->_model->is_mode('edit')
+                        or $self->scrcfg()->screen_style() eq 'report';
 
                 $scrobj->$method( $tm_ds, $self );
-                $self->_model->set_scrdata_rec(1);    # modified
-                $self->toggle_detail_tab;
+                # TODO: what styles can be used?
+                if ($self->scrcfg()->screen_style() ne 'report') {
+                    $self->_model->set_scrdata_rec(1);    # modified
+                    $self->toggle_detail_tab;
+                }
             }
         );
     }
@@ -4113,6 +4117,31 @@ sub dep_table_metadata {
     return $metadata;
 }
 
+=head2 report_table_metadata
+
+Retrieve table meta-data for report screen style configurations from
+the screen configuration.
+
+=cut
+
+sub report_table_metadata {
+    my ( $self, $tm_ds, $ds ) = @_;
+
+    my $metadata = {};
+
+    $metadata->{table} = $ds;
+    # $metadata->{where}{$pk_col} = $pk_val;    # pk
+
+    my $columns = $self->scrcfg->dep_table_columns_by_ds($tm_ds, $ds);
+
+    # $metadata->{pkcol}    = $pk_col;
+    # $metadata->{fkcol}    = $self->scrcfg->dep_table_fkcol($tm_ds);
+    # $metadata->{order}    = $self->scrcfg->dep_table_orderby($tm_ds);
+    $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
+
+    return $metadata;
+}
+
 =head2 save_screendata
 
 Save screen data to temp file with Storable.
@@ -4323,6 +4352,54 @@ sub list_column_names {
     push @{$columns}, @{$header_cols};
 
     return $columns;
+}
+
+=head2 fill_table
+
+Fill Table Matrix widget for I<report> style screens.
+
+=cut
+
+sub fill_table {
+    my $self = shift;
+
+    print "fill table ...\n";
+
+    my $tm_ds = 'tm1';
+
+    my $tables = $self->scrcfg->dep_table_hierarchy($tm_ds);
+    # print Dumper( $tables );
+
+    print "processing ... $tables->{maintable}\n";
+    my $tm_params
+        = $self->report_table_metadata( $tm_ds, $tables->{maintable} );
+
+    my $records = $self->_model->table_batch_query($tm_params);
+
+    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+    $tmx->clear_all();
+    $tmx->fill($records);
+
+    my $rex1 = [
+        {fact_data => '01.08.2011', fact_scad => '31.08.2011'},
+        {fact_data => '01.09.2011', fact_scad => '31.09.2011'},
+    ];
+
+    $tmx->fill_details($rex1, 1);
+
+    my $rex2 = [
+        {fact_data => '01.10.2011', fact_scad => '31.10.2011'},
+        {fact_data => '01.11.2011', fact_scad => '31.11.2011'},
+    ];
+
+    $tmx->fill_details($rex2, 4);
+
+    foreach my $table ( @{ $tables->{table} } ) {
+        print "processing ... $table\n";
+    }
+    print " done\n";
+
+    return;
 }
 
 =head2 DESTROY
