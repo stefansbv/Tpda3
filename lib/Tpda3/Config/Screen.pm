@@ -8,6 +8,7 @@ use File::Spec::Functions;
 
 use Tpda3::Config;
 use Tpda3::Config::Utils;
+use Tpda3::Utils;
 
 use base qw(Class::Accessor);
 
@@ -229,6 +230,18 @@ sub screen_name {
     my $self = shift;
 
     return $self->screen->{name};
+}
+
+=head2 screen_style
+
+Return screen style attribute.
+
+=cut
+
+sub screen_style {
+    my $self = shift;
+
+    return $self->screen->{style};
 }
 
 =head2 screen_description
@@ -476,6 +489,18 @@ sub dep_table_colstretch {
     return $self->dep_table($tm_ds)->{colstretch};
 }
 
+=head2 dep_table_hierarchy
+
+Return the dependent table I<hierarchy> attribute.
+
+=cut
+
+sub dep_table_hierarchy {
+    my ( $self, $tm_ds ) = @_;
+
+    return $self->dep_table($tm_ds)->{hierarchy};
+}
+
 =head2 dep_table_pkcol
 
 Return the dependent table primary key column name.
@@ -511,6 +536,27 @@ sub dep_table_columns {
     my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{columns};
+}
+
+=head2 dep_table_columns_by_ds
+
+Return the dependent table columns configuration data structure bound
+to the related Tk::TableMatrix widget, filtered by the I<datasource>
+key.
+
+=cut
+
+sub dep_table_columns_by_ds {
+    my ( $self, $tm_ds, $ds_value ) = @_;
+
+    my $cols = $self->dep_table($tm_ds)->{columns};
+
+    my $scols
+    = Tpda3::Utils->filter_hash_by_keyvalue( $cols, 'datasource', $ds_value );
+
+    my %filtered =  map { $_ => $cols->{$_} } @{$scols};
+
+    return \%filtered;
 }
 
 =head2 dep_table_column
