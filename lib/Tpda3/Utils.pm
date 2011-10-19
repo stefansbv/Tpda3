@@ -160,6 +160,32 @@ sub sort_hash_by_id {
     return \@attribs;
 }
 
+=head2 filter_hash_by_keyvalue
+
+Use ST to sort hash by value (Id), returns an array ref of the sorted
+items, filtered by key => value.
+
+=cut
+
+sub filter_hash_by_keyvalue {
+    my ($self, $attribs, $key, $value) = @_;
+
+    #- Keep only key and id for sorting and filter by key -> value
+    my %temp = map {
+        $attribs->{$_}{$key} eq $value
+            ? ( $_ => $attribs->{$_}{id} )
+            : ()
+    } keys %{$attribs};
+
+    #- Sort with  ST by id
+    my @attribs = map { $_->[0] }
+        sort { $a->[1] <=> $b->[1] }
+        map { [ $_ => $temp{$_} ] }
+        keys %temp;
+
+    return \@attribs;
+}
+
 =head2 quote4like
 
 Surround text with '%', by default, for SQL LIKE.  An optional second

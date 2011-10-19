@@ -686,7 +686,8 @@ sub on_page_lst_activate {
 
 =head2 on_page_det_activate
 
-On page I<det> activate.
+On page I<det> activate, check if detail screen module is loaded and
+load it if not.
 
 =cut
 
@@ -694,8 +695,6 @@ sub on_page_det_activate {
     my $self = shift;
 
     my $dsm = $self->screen_detail_name();
-
-    # Check if detail screen module is loaded and load it if it's not
     if ($dsm) {
         $self->screen_detail_load($dsm);
     }
@@ -707,8 +706,7 @@ sub on_page_det_activate {
 
     $self->get_selected_and_set_fk_val;
 
-    # Load detail record
-    $self->record_load();
+    $self->record_load();                    # load detail record
 
     $self->_view->set_status( 'Record loaded (d)', 'ms', 'blue' );
     $self->set_app_mode('edit');
@@ -744,8 +742,9 @@ sub screen_detail_name {
 
 =head2 get_selected_and_set_fk_val
 
-Read the selected row from TableMatrix widget and get the foreign key
-value designated by the I<filter> configuration value of the screen.
+Read the selected row from I<tm1> TableMatrix widget from the
+I<Record> page and get the foreign key value designated by the
+I<filter> configuration value of the screen.
 
 Save the foreign key value.
 
@@ -785,11 +784,8 @@ sub screen_detail_load {
 
     my $dscrstr = $self->screen_string('det');
 
-    if ( $dscrstr && ( $dscrstr eq lc $dsm ) ) {
-        print "Already loaded ($dsm)\n";
-    }
-    else {
-        print "Loading detail ($dsm)\n";
+    unless ( $dscrstr && ( $dscrstr eq lc $dsm ) ) {
+        print "Loading detail screen ($dsm)\n";
         $self->screen_module_detail_load($dsm);
     }
     return;
@@ -937,7 +933,7 @@ sub setup_lookup_bindings_entry {
 
     my $bindings = $self->scrcfg('rec')->bindings;
 
-    $self->_log->info("Setup binding for configured widgets ($page)");
+    $self->_log->trace("Setup binding for configured widgets ($page)");
 
     foreach my $bind_name ( keys %{$bindings} ) {
 
@@ -1491,8 +1487,8 @@ are defined for some fileds, then fill in that value.
 sub on_screen_mode_add {
     my ( $self, ) = @_;
 
-    # Empty the main controls and TM, if any
-    $self->record_clear;
+    $self->record_clear;           # empty the main controls and TM
+    $self->tmatrix_set_selected(); # initialize selector
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
         $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
@@ -1761,7 +1757,7 @@ sub screen_module_load {
         if ( $self->{_dscrcls} ) {
             Class::Unload->unload( $self->{_dscrcls} );
             if ( Class::Inspector->loaded( $self->{_dscrcls} ) ) {
-                $self->_log->info("Error unloading '$self->{_dscrcls}' dscreen");
+                $self->_log->error("Failed unloading '$self->{_dscrcls}' dscreen");
             }
             $self->{_dscrcls} = undef;
         }
@@ -1860,8 +1856,11 @@ sub screen_module_load {
 
 =head2 set_event_handler_screen
 
-Setup event handlers for the I<add> and I<delete> buttons attached to
-the TableMatrix widget.
+Setup event handlers for the toolbar buttons configured in the
+L<deptable> section of the current screen configuration.
+
+Default usage is for the I<add> and I<delete> buttons attached to the
+TableMatrix widget.
 
 =cut
 
@@ -1873,7 +1872,7 @@ sub set_event_handler_screen {
 
     foreach my $tb_btn ( keys %{$attribs} ) {
         my $method = $attribs->{$tb_btn}{method};
-        $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
+        $self->_log->trace("Handler for $tb_btn: $method ($tm_ds)");
 
         # Check current screen for method for binding
         my $scrobj;
@@ -1919,7 +1918,7 @@ sub screen_module_detail_load {
     if ( $self->{_dscrcls} ) {
         Class::Unload->unload( $self->{_dscrcls} );
         if ( Class::Inspector->loaded( $self->{_dscrcls} ) ) {
-            $self->_log->info("Error unloading '$self->{_dscrcls}' dscreen");
+            $self->_log->error("Failed unloading '$self->{_dscrcls}' dscreen");
         }
     }
 
@@ -3103,11 +3102,10 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    # $self->_log->trace("Screen 'rec' controls state is '$state'");
-
-    my $bg = $self->_view->cget('-background');
+    $self->_log->trace("Screen 'rec' controls state is '$state'");
 
     my $page = $self->_view->get_nb_current_page();
+    my $bg   = $self->scrobj($page)->get_bgcolor();
 
     my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};
@@ -3130,7 +3128,7 @@ sub controls_state_set {
         my $bg_color = $bkground;
         $bg_color = $fld_cfg->{bgcolor}
             if $bkground eq 'from_config';
-        $bg_color = $self->scrobj($page)->get_bgcolor
+        $bg_color = $bg
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
@@ -3457,6 +3455,10 @@ sub record_load {
 
     my $record = $self->_model->query_record($params);
 
+    my $textstr = 'Empty record';
+    $self->_view->status_message("error#$textstr")
+        if scalar keys %{$record} <= 0;
+
     $self->screen_write($record);
 
     #- Dependent table(s), (if any)
@@ -3501,6 +3503,8 @@ sub event_record_delete {
     $self->list_update_remove();    # first remove from list
 
     $self->record_delete();
+
+    $self->_view->set_status( 'Sters', 'ms', 'darkgreen' ); # removed
 
     return;
 }
@@ -3716,6 +3720,7 @@ sub record_save {
             if ($pk_val) {
                 $self->record_reload();
                 $self->list_update_add(); # insert the new record in the list
+                $self->_view->set_status( "$pk_val salvat", 'ms', 'darkgreen' );
             }
         }
     }
@@ -3728,6 +3733,7 @@ sub record_save {
         my $record = $self->get_screen_data_record('upd');
 
         $self->_model->prepare_record_update($record);
+        $self->_view->set_status( "Salvat", 'ms', 'darkgreen' );
     }
     else {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
@@ -3830,7 +3836,6 @@ sub record_save_insert {
         my $pk_col = $record->[0]{metadata}{pkcol};
         $self->screen_write( { $pk_col => $pk_val } );
         $self->set_app_mode('edit');
-        $self->_view->set_status( 'New record', 'ms', 'darkgreen' );
         $self->screen_set_pk_val($pk_val);    # save PK value
     }
 
@@ -4119,7 +4124,7 @@ sub save_screendata {
 
     my $record = $self->get_screen_data_record('upd');
 
-    $self->_log->info("Saving screen data in '$data_file'");
+    $self->_log->trace("Saving screen data in '$data_file'");
 
     return store( $record, $data_file );
 }

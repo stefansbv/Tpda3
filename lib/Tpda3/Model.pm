@@ -10,6 +10,7 @@ use List::Compare;
 use Data::Compare;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
+use Data::Dumper;
 
 use Tpda3::Config;
 use Tpda3::Codings;
@@ -53,6 +54,7 @@ sub new {
         _scrdata_rec => Tpda3::Observable->new(),
         _cfg         => Tpda3::Config->instance(),
         _msg_dict    => {},
+        _log         => get_logger(),
     };
 
     bless $self, $class;
@@ -70,6 +72,18 @@ sub _cfg {
     my $self = shift;
 
     return $self->{_cfg};
+}
+
+=head2 _log
+
+Return log instance variable.
+
+=cut
+
+sub _log {
+    my $self = shift;
+
+    return $self->{_log};
 }
 
 =head2 toggle_db_connect
@@ -754,7 +768,7 @@ sub table_record_update {
         $self->error_show($_);
     };
 
-    return 1;
+    return;
 }
 
 =head2 table_record_select
@@ -830,6 +844,9 @@ sub table_record_delete {
 
     croak "Empty SQL WHERE in DELETE command!"
         unless ( %{$where} );    # safety net, is enough ???
+
+    $self->_log->debug("Deleting from $table: ");
+    $self->_log->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
@@ -966,7 +983,7 @@ sub prepare_record_update {
         }
     }
 
-    return 1;
+    return;
 }
 
 =head2 prepare_record_delete
@@ -998,10 +1015,10 @@ sub prepare_record_delete {
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
 
-    # Delete all articles
+    # Delete record
     $self->table_record_delete( $table, $where );
 
-    return 1;
+    return;
 }
 
 =head2 table_batch_update
@@ -1237,8 +1254,7 @@ a hash data structure implemented in the screen module.
 sub error_show {
     my ($self, $error) = @_;
 
-    my $log = get_logger();
-    $log->error($error);
+    $self->_log->error($error);
 
     (my $key) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
     $key =~ s{['"]}{}gmi;

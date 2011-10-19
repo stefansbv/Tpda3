@@ -45,8 +45,8 @@ recommends 'Tk::RadiobuttonGroup' => '0.2.2';
 
 #- For generatig PDF from TeX
 
-requires 'IPC::Run3'             => '0';
-requires 'Template'              => '0';
+requires 'IPC::Run3' => '0';
+requires 'Template'  => '0';
 
 #- and/or Wx
 
@@ -55,8 +55,8 @@ recommends 'Wx::Perl::ListCtrl' => '0.03';
 
 #- Database
 
-recommends 'DBD::InterBase' => '0.44';
-recommends 'DBD::Pg'        => '1.32';
+recommends 'DBD::Firebird' => '0.80';
+recommends 'DBD::Pg'       => '1.32';
 
 test_requires 'Test::More'          => '0.47';
 test_requires 'DBD::SQLite'         => '1.29';
