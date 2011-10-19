@@ -10,7 +10,7 @@ use DBI;
 
 =head1 NAME
 
-Tpda3::Db::Connection::Firebird - Connect to a PostgreSQL database.
+Tpda3::Db::Connection::Firebird - Connect to a Firebird database.
 
 =head1 VERSION
 
@@ -66,7 +66,7 @@ sub db_connect {
 
     try {
         $self->{_dbh} = DBI->connect(
-            "dbi:InterBase:"
+            "dbi:Firebird:"
                 . "dbname="
                 . $conf->{dbname}
                 . ";host="
@@ -96,61 +96,168 @@ sub db_connect {
     $self->{_dbh}->{ib_timestampformat} = '%y-%m-%d %H:%M';
     $self->{_dbh}->{ib_dateformat}      = '%Y-%m-%d';
     $self->{_dbh}->{ib_timeformat}      = '%H:%M';
-    ## Format: German
-    # $self->{_dbh}->{ib_timestampformat} = '%d.%m.%Y %H:%M';
-    # $self->{_dbh}->{ib_dateformat}      = '%d.%m.%Y';
-    # $self->{_dbh}->{ib_timeformat}      = '%H:%M';
 
     $log->info("Connected to database $conf->{dbname}");
 
     return $self->{_dbh};
 }
 
-=head2 table_info_short
+=head2 table_list
 
-Table info 'short'.  The 'table_info' method from the Pg driver
-doesn't seem to be reliable.
-
-TODO: Implement using SQL::Abstract !
+Return list of tables from the database.
 
 =cut
 
-# sub table_info_short {
-#     my ($self, $table) = @_;
+sub table_list {
+    my $self = shift;
 
-#     my $log = get_logger();
-#     $log->info("Geting table info for $table");
+    my $log = get_logger();
 
-#     my $sql = qq( SELECT ordinal_position  AS pos
-#                     , column_name       AS name
-#                     , data_type         AS type
-#                     , column_default    AS defa
-#                     , is_nullable
-#                     , character_maximum_length AS length
-#                     , numeric_precision AS prec
-#                     , numeric_scale     AS scale
-#                FROM information_schema.columns
-#                WHERE table_name = '$table'
-#                ORDER BY ordinal_position;
-#     );
+    $log->info('Geting list of tables');
 
-#     $self->{_dbh}{ChopBlanks} = 1;          # trim CHAR fields
+    my $sql = q{SELECT RDB$RELATION_NAME
+                   FROM RDB$RELATIONS
+                    WHERE RDB$SYSTEM_FLAG=0
+                      AND RDB$VIEW_BLR IS NULL
+    };
 
-#     my $flds_ref;
-#     try {
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
 
-#         # List of lists
-#         my $sth = $self->{_dbh}->prepare($sql);
-#         $sth->execute;
-#         $flds_ref = $sth->fetchall_hashref('pos');
-#     }
-#     catch {
-#         $log->fatal("Transaction aborted because $_")
-#             or print STDERR "$_\n";
-#     };
+    my $table_list;
+    try {
+        $table_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
 
-#     return $flds_ref;
-# }
+    return $table_list;
+}
+
+=head2 table_info_short
+
+Table info 'short'.  The 'table_info' method from the Firebird driver
+doesn't seem to be reliable.
+
+=cut
+
+sub table_info_short {
+    my ( $self, $table ) = @_;
+
+    my $log = get_logger();
+    $log->info("Geting table info for $table");
+
+    $table = uc $table;
+
+    my $sql = qq( SELECT RDB\$FIELD_POSITION AS pos
+                    , r.RDB\$FIELD_NAME AS name
+                    , r.RDB\$DESCRIPTION AS field_description
+                    , r.RDB\$DEFAULT_VALUE AS defa
+                    , r.RDB\$NULL_FLAG AS is_nullable
+                    , f.RDB\$FIELD_LENGTH AS length
+                    , f.RDB\$FIELD_PRECISION AS prec
+                    , f.RDB\$FIELD_SCALE AS scale
+                    FROM RDB\$RELATION_FIELDS r
+                       LEFT JOIN RDB\$FIELDS f
+                            ON r.RDB\$FIELD_SOURCE = f.RDB\$FIELD_NAME
+                    WHERE r.RDB\$RELATION_NAME = '$table'
+                    ORDER BY r.RDB\$FIELD_POSITION;
+    );
+
+    $self->{_dbh}{ChopBlanks} = 1;    # trim CHAR fields
+
+    my $flds_ref;
+    try {
+        my $sth = $self->{_dbh}->prepare($sql);
+        $sth->execute;
+        $flds_ref = $sth->fetchall_hashref('pos');
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $flds_ref;
+}
+
+
+=head2 table_keys
+
+Get the primary key field name of the table.
+
+=cut
+
+sub table_keys {
+    my ( $self, $table, $foreign ) = @_;
+
+    my $log = get_logger();
+
+    my $type = 'PRIMARY KEY';
+    $type = 'FOREIGN KEY' if $foreign;
+
+    $log->info("Geting '$table' table primary key(s) names");
+
+    $table = uc $table;
+
+    my $sql = qq( SELECT s.RDB\$FIELD_NAME AS column_name
+                     FROM RDB\$INDEX_SEGMENTS s
+                        LEFT JOIN RDB\$INDICES i
+                          ON i.RDB\$INDEX_NAME = s.RDB\$INDEX_NAME
+                        LEFT JOIN RDB\$RELATION_CONSTRAINTS rc
+                          ON rc.RDB\$INDEX_NAME = s.RDB\$INDEX_NAME
+                        LEFT JOIN RDB\$REF_CONSTRAINTS refc
+                          ON rc.RDB\$CONSTRAINT_NAME = refc.RDB\$CONSTRAINT_NAME
+                        LEFT JOIN RDB\$RELATION_CONSTRAINTS rc2
+                          ON rc2.RDB\$CONSTRAINT_NAME = refc.RDB\$CONST_NAME_UQ
+                        LEFT JOIN RDB\$INDICES i2
+                          ON i2.RDB\$INDEX_NAME = rc2.RDB\$INDEX_NAME
+                        LEFT JOIN RDB\$INDEX_SEGMENTS s2
+                          ON i2.RDB\$INDEX_NAME = s2.RDB\$INDEX_NAME
+                      WHERE i.RDB\$RELATION_NAME = '$table'
+                        AND rc.RDB\$CONSTRAINT_TYPE = '$type'
+    );
+
+    $log->trace("SQL= $sql");
+
+    $self->{_dbh}{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}{RaiseError} = 0;
+
+    my $pkf;
+    try {
+        $pkf = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $pkf;
+}
+
+# SELECT rc.RDB$CONSTRAINT_NAME,
+#           s.RDB$FIELD_NAME AS field_name,
+#           rc.RDB$CONSTRAINT_TYPE AS constraint_type,
+#           i.RDB$DESCRIPTION AS description,
+#           rc.RDB$DEFERRABLE AS is_deferrable,
+#           rc.RDB$INITIALLY_DEFERRED AS is_deferred,
+#           refc.RDB$UPDATE_RULE AS on_update,
+#           refc.RDB$DELETE_RULE AS on_delete,
+#           refc.RDB$MATCH_OPTION AS match_type,
+#           i2.RDB$RELATION_NAME AS references_table,
+#           s2.RDB$FIELD_NAME AS references_field,
+#           (s.RDB$FIELD_POSITION + 1) AS field_position
+#      FROM RDB$INDEX_SEGMENTS s
+# LEFT JOIN RDB$INDICES i ON i.RDB$INDEX_NAME = s.RDB$INDEX_NAME
+# LEFT JOIN RDB$RELATION_CONSTRAINTS rc ON rc.RDB$INDEX_NAME = s.RDB$INDEX_NAME
+# LEFT JOIN RDB$REF_CONSTRAINTS refc ON rc.RDB$CONSTRAINT_NAME = refc.RDB$CONSTRAINT_NAME
+# LEFT JOIN RDB$RELATION_CONSTRAINTS rc2 ON rc2.RDB$CONSTRAINT_NAME = refc.RDB$CONST_NAME_UQ
+# LEFT JOIN RDB$INDICES i2 ON i2.RDB$INDEX_NAME = rc2.RDB$INDEX_NAME
+# LEFT JOIN RDB$INDEX_SEGMENTS s2 ON i2.RDB$INDEX_NAME = s2.RDB$INDEX_NAME
+#     WHERE i.RDB$RELATION_NAME='FIRME'       -- table nam
+#       AND rc.RDB$CONSTRAINT_TYPE IS NOT NULL
+#  ORDER BY s.RDB$FIELD_POSITION
 
 =head2 table_exists
 
@@ -256,6 +363,10 @@ Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 None known.
 
 Please report any bugs or feature requests to the author.
+=head1 ACKNOWLEDGEMENTS
+
+Information schema queries by Lorenzo Alberton from
+http://www.alberton.info/firebird_sql_meta_info.html
 
 =head1 LICENSE AND COPYRIGHT
 
