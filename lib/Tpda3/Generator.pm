@@ -106,6 +106,7 @@ sub tex_from_template {
         OUTPUT_PATH  => $output_path,
         ABSOLUTE     => 1,
         RELATIVE     => 1,
+        PLUGIN_BASE  => 'Tpda3::Template::Plugin',
     });
 
     my $rec = $record->[0]{data};    # only the data
