@@ -1257,6 +1257,7 @@ sub error_show {
     $self->_log->error($error);
 
     (my $key) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
+    $key ||= q{'unknown error'};
     $key =~ s{['"]}{}gmi;
 
     $key = $self->{_msg_dict}->{$key} if exists $self->{_msg_dict}->{$key};

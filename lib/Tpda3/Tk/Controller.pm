@@ -2492,9 +2492,19 @@ sub screen_document_generate {
 
     return unless ref $self->scrobj('rec');
 
-    my $record = $self->get_screen_data_record('qry', 'all');
+    my $record;
 
-    my $model_file  = $self->scrcfg('rec')->get_defaultdocument_file;
+    my $datasource = $self->scrcfg()->get_defaultdocument_datasource();
+    if ($datasource) {
+        $record = $self->get_alternate_data_record($datasource);
+    }
+    else {
+        $record = $self->get_screen_data_record('qry', 'all');
+    }
+
+    print Dumper( $record );
+
+    my $model_file = $self->scrcfg()->get_defaultdocument_file();
     unless (-f $model_file) {
         $self->_view->set_status( 'Template not found', 'ms' );
         return;
@@ -2527,6 +2537,28 @@ sub screen_document_generate {
     $self->_view->set_status( "PDF: $pdf_file", 'ms' );
 
     return;
+}
+
+sub get_alternate_data_record {
+    my ( $self, $datasource ) = @_;
+
+    #-- Metadata
+
+    my $record = {};
+    $record->{metadata} = $self->main_table_metadata('qry');
+    $record->{data}     = {};
+
+    $record->{metadata}{table} = $datasource;      # change datasource
+
+    #-- Data
+
+    $record->{data} = $self->_model->query_record( $record->{metadata} );
+
+    my @rec;
+
+    push @rec, $record;    # rec data at index 0
+
+    return \@rec;
 }
 
 =head2 screen_read
@@ -3336,6 +3368,13 @@ sub control_write_c {
         $control->deselect;
     }
 
+    # Execute method bound to radiobutton if defined in screen.
+    # Name must be: 'toggle_' + 'field_name'.
+    my $sub_name = "toggle_$field";
+    if ( $self->scrobj()->can($sub_name) ) {
+        $self->scrobj()->$sub_name($value);
+    }
+
     $control->configure( -state => $state );
 
     return;
@@ -3359,6 +3398,13 @@ sub control_write_r {
     }
     else {
         ${ $control->[0] } = undef;
+    }
+
+    # Execute method bound to radiobutton if defined in screen.
+    # Name must be: 'toggle_' + 'field_name'.
+    my $sub_name = "toggle_$field";
+    if ( $self->scrobj()->can($sub_name) ) {
+        $self->scrobj()->$sub_name($value);
     }
 
     $control->[1]->configure( -state => $state );

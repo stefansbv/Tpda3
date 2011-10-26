@@ -123,7 +123,7 @@ sub tex_from_template {
     }
 
     eval {
-        $tt->process( $model_file, {rec => $rec},
+        $tt->process( $model_file, { r => $rec },
             $file_out, binmode => ':utf8' );
     };
     if ($@) {

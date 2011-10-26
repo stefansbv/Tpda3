@@ -1022,7 +1022,7 @@ sub list_init {
 
 =head2 list_populate
 
-Polulate list with data from query result.
+Populate list with data from query result.
 
 =cut
 

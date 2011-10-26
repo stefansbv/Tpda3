@@ -220,6 +220,19 @@ sub get_defaultdocument_name {
     return $self->defaultdocument->{name};
 }
 
+=head2 get_defaultdocument_datasource
+
+Return default document description, used by the edit tool button, for
+the baloon label.
+
+=cut
+
+sub get_defaultdocument_datasource {
+    my $self = shift;
+
+    return $self->defaultdocument->{datasource};
+}
+
 =head2 screen_name
 
 Screen name.
