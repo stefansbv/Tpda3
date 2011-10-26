@@ -2,9 +2,8 @@ package Tpda3::Tk::TMSHR;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
+
 use Hash::Merge qw(merge);
 
 use Tpda3::Utils;

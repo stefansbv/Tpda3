@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tk;
@@ -2502,8 +2500,6 @@ sub screen_document_generate {
         $record = $self->get_screen_data_record('qry', 'all');
     }
 
-    print Dumper( $record );
-
     my $model_file = $self->scrcfg()->get_defaultdocument_file();
     unless (-f $model_file) {
         $self->_view->set_status( 'Template not found', 'ms' );
@@ -4414,7 +4410,6 @@ sub fill_table {
     my $tm_ds = 'tm1';
 
     my $tables = $self->scrcfg->dep_table_hierarchy($tm_ds);
-    # print Dumper( $tables );
 
     print "processing ... $tables->{maintable}\n";
     my $tm_params
