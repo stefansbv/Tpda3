@@ -2,11 +2,11 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+use utf8;
 use Carp;
 
 use Tk;
 use Tk::Font;
-use Tk::DialogBox;
 
 use Scalar::Util qw(blessed);
 use Class::Unload;
@@ -3631,48 +3631,13 @@ sub ask_to_save {
     if (   $self->_model->is_mode('edit')
         or $self->_model->is_mode('add') )
     {
-
         if ( $self->record_changed ) {
+            my $answer = $self->ask_to('save');
 
-            # Using a dialog defined on site because the one defined
-            # in View.pm, shows up behind the main window in KDE
-            my $db = $self->_view->DialogBox(
-                -title   => 'Dialog',
-                -buttons => [qw{Da Renunt Nu}],
-            );
-            $db->geometry('300x150');
-            $db->bind( '<Escape>',
-                sub { $db->Subwidget('B_Renunt')->invoke } );
-
-            #
-            my $dialog_text = "Inregistarea a fost modificata.\n\n";
-            $dialog_text .= "Doriti sa salvati inregistrarea?";
-            my $scrolled = $db->Label( -text => $dialog_text, )->pack(
-                -side => 'bottom',
-                -padx => 20,
-                -pady => 20,
-            );
-
-            # Position buttons to the right
-            # Source: PM by lamprecht on Apr 22, 2011 at 22:09 UTC
-            my $bframe = $db->Subwidget('bottom');
-            for ($bframe->children) {
-                $_->packForget;
-                $_->pack(-side => 'right',
-                         -padx => 3,
-                         -pady => 3,
-                     );
-            }
-
-            # Does'n work as expected :(
-            # Rise and Show dialog by qumsieh on Oct 08, 2004
-            # $self->_view->after(50, sub {$self->_view->{asksave}->raise});
-            # my $answer = $self->_view->{asksave}->Show();
-            my $answer = $db->Show();
-            if ( $answer eq q{Da} ) {
+            if ( $answer =~ m{yes}i ) {
                 $self->record_save();
             }
-            elsif ( $answer eq q{Nu} ) {
+            elsif ( $answer =~ m{No}i ) {
                 $self->_view->set_status( 'Not saved!', 'ms', 'blue' );
             }
             else {
@@ -3695,49 +3660,28 @@ action.
 sub ask_to {
     my ( $self, $for_action ) = @_;
 
-    # Using a dialog defined on site because the one defined
-    # in View.pm, shows up behind the main window in KDE
-    my $db = $self->_view->DialogBox(
-        -title   => 'Dialog',
-        -buttons => [qw{Da Renunt Nu}],
-    );
-    $db->geometry('300x150');
-    $db->bind( '<Escape>', sub { $db->Subwidget('B_Renunt')->invoke } );
-
     #- Dialog texts
 
-    my $dialog_text = '';
+    my ($message, $detail);
     if ( $for_action eq 'save' ) {
-        $dialog_text = "Inregistarea a fost modificata.\n\n";
-        $dialog_text .= "Doriti sa salvati inregistrarea?";
+        $message = 'Înregistrarea a fost modificată';
+        $detail  = 'Doriți să păstrați modificările?';
     }
     elsif ( $for_action eq 'save_insert' ) {
-        $dialog_text = "Inregistare noua.\n\n";
-        $dialog_text .= "Doriti sa salvati inregistrarea?";
+        $message = 'Înregistrare nouă';
+        $detail  = 'Doriți să păstrați înregistrarea?';
     }
     elsif ( $for_action eq 'delete' ) {
-        $dialog_text = "Stergere inregistare.\n\n";
-        $dialog_text .= "Doriti sa stergeti inregistrarea?";
+        $message = 'Ștergere înregistare';
+        $detail  = 'Confirmați ștergerea înregistrării?';
     }
 
-    my $scrolled = $db->Label( -text => $dialog_text, )->pack(
-        -side => 'bottom',
-        -padx => 20,
-        -pady => 20,
+    $self->_view->{dialog_q}->configure(
+        -message => $message,
+        -detail  => $detail,
     );
 
-    # $self->_view->after(50, sub {$self->_view->{asksave}->raise});
-    # my $answer = $self->_view->{asksave}->Show();
-    my $answer = $db->Show();
-    if ( $answer eq q{Da} ) {
-        return 'yes';
-    }
-    elsif ( $answer eq q{Nu} ) {
-        return 'no';
-    }
-    else {
-        return 'cancel';
-    }
+    return $self->_view->{dialog_q}->Show();
 }
 
 =head2 record_save
@@ -3778,6 +3722,8 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('upd');
 
+        return if !$self->if_check_required_data($record);
+
         $self->_model->prepare_record_update($record);
         $self->_view->set_status( "Salvat", 'ms', 'darkgreen' );
     }
@@ -3811,10 +3757,14 @@ appear only in the second list, and build a message string with it.
 Example I<Screen> data structure for the required field:
 
   $self->{rq_controls} = {
-       productcode        => [ 0, '  Product code' ],
-       productname        => [ 1, '  Product name' ],
+       productcode => [ 0, '  Product code' ],
+       productname => [ 1, '  Product name' ],
        ...
+       field1 => [ 10, '  Field descr. 1', [ 'tip1', 'Value 1' ] ],
+       field2 => [ 11, '  Field descr. 2', [ 'tip2', 'Value 2' ] ],
   };
+
+Fields depending on other fields. Check field1 only if tip1 has some value.
 
 Returns I<true> if all required fields have values.
 
@@ -3826,7 +3776,7 @@ sub if_check_required_data {
     my ($self, $record) = @_;
 
     unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
-        $self->_view->set_status( 'No data to save ...', 'ms', 'orange' );
+        $self->_view->set_status( 'No data to save ...', 'ms', 'darkred' );
         return 0;
     }
 
@@ -3841,15 +3791,44 @@ sub if_check_required_data {
         return $ok_to_save;
     }
 
-    my @scr_fields = keys %{ $record->[0]{data} };
+    my @scr_fields;
+    foreach my $field ( keys %{ $record->[0]{data} } ) {
+        push @scr_fields, $field if $record->[0]{data}{$field};
+    }
 
-    my @req_fields = keys %{$ctrl_req};
+    my (@req_fields, @req_cond);
+    foreach my $field ( keys %{$ctrl_req} ) {
+        my $cond = $ctrl_req->{$field}[2];
+        if (ref($ctrl_req->{$field}[2]) eq 'ARRAY') {
+            push @req_cond, $field;
+        }
+        else {
+            push @req_fields, $field;
+        }
+    }
 
     my $lc = List::Compare->new('--unsorted', \@scr_fields, \@req_fields);
 
-    my @required = $lc->get_complement;
+    my @required = $lc->get_complement;  # required except fields with data
 
-    # Build a sorted, by index 0, message data structure
+    # Process the fields with conditional requirement
+    foreach my $check_field (@req_cond) {
+        my $cond_field = $ctrl_req->{$check_field}[2][0];
+        my $cond_value = $ctrl_req->{$check_field}[2][1];
+        if ( exists $record->[0]{data}{$cond_field} ) {
+            my $check_value = $record->[0]{data}{$cond_field};
+            if ( $cond_value eq $check_value ) {
+                push @required, $check_field
+                    unless $record->[0]{data}{$check_field};
+            }
+        }
+        else {
+            # No data for condition field?
+            $self->_view->set_status( "$cond_field field?", 'ms', 'darkred' );
+        }
+    }
+
+    # Build a sorted, by index 0, message array data structure
     my $messages = [];
     foreach my $field (@required) {
         $messages->[ $ctrl_req->{$field}[0] ] = $ctrl_req->{$field}[1];
@@ -3859,9 +3838,12 @@ sub if_check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $textstr = "Required data:\n\n" . join( "\n", @message );
-        $self->_view->{dialog1}->configure( -text => $textstr );
-        $self->_view->{dialog1}->Show();
+        my $detail = join( "\n", @message );
+        $self->_view->{dialog_i}->configure(
+            -message => 'Rog completați datele pentru:',
+            -detail  => $detail,
+        );
+        $self->_view->{dialog_i}->Show();
     }
 
     return $ok_to_save;

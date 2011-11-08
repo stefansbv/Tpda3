@@ -340,7 +340,7 @@ sub _create_toolbar {
 
     my ( $toolbars, $attribs ) = $self->toolbar_names();
 
-    my $ico_path = $self->{_cfg}->cfico;
+    my $ico_path = $self->_cfg->cfico;
 
     $tb->make_toolbar_buttons( $toolbars, $attribs, $ico_path );
 

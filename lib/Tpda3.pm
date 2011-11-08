@@ -7,17 +7,19 @@ use 5.010001;
 
 use Log::Log4perl qw(get_logger);
 
+use Tpda3::Config;
+
 =head1 NAME
 
 Tpda3 - Tpda3 (Tiny Perl Database Application 3.
 
 =head1 VERSION
 
-Version 0.38
+Version 0.39
 
 =cut
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 
 =head1 SYNOPSIS
 

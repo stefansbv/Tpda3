@@ -279,4 +279,4 @@ the Free Software Foundation.
 
 =cut
 
-1;    # End of Tpda3::Wx::App
+1;    # End of Tpda3::Wx::ToolBar
