@@ -3,6 +3,8 @@ package Tpda3::Nums2Words;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Exporter;
 use utf8;
 
@@ -54,91 +56,78 @@ sub num2word {
 
     my $comified1 = Tpda3::Utils->commify($number);
 
-    print "\nN=$number\tC=$comified1\n";
-
-    my $numberincuvinte = '';
-
+    my @cuvinte;
     my @grupe = reverse split /,/, $comified1;
+
     for (my $grp = 0; $grp <= $#grupe; $grp++) {
-
-        my $group = $grupe[$grp];
-        my $ordin = $names->{ordin}[$grp];
-
-        print "GrpNo=$grp : Grup=$group - Ordin=$ordin\n";
-        my $cuv = process_group($group, $names->{ordin}[$grp]);
-        $numberincuvinte = $cuv .' '. $numberincuvinte;
+        my $cuvinte = process_group($grupe[$grp], $names->{ordin}[$grp]);
+        unshift @cuvinte, join ' ', @{$cuvinte};
     }
 
-    print "-- $numberincuvinte\n";
+    # Corectii
 
-    return $numberincuvinte;
+    my $cuvant = join ' ', @cuvinte;
+
+    $cuvant =~ s{\A\s*și}{};
+    $cuvant =~ s{unu sute}{una sută}gm;
+    # $cuvant =~ s{unu mii}{una mie}gm;
+    $cuvant =~ s{unu milioane}{un milion}gm;
+    $cuvant =~ s{unu (?=milioane|miliarde)}{una }g;
+    $cuvant =~ s{doi (?=zeci|sute|mii|milioane|miliarde)}{două }g;
+    $cuvant =~ s{\s+}{ }g;      # just one space between words
+
+    return $cuvant;
 }
 
 sub process_group {
-    my ($group, $superg ) = @_;
+    my ($group, $ordin ) = @_;
 
     my @cifre = reverse split //, $group;
-
-    my ( $cuvant, $number ) = ( q{}, q{} );
+    my @cuvinte;
 
     for ( my $subgrup = 0; $subgrup <= $#cifre; $subgrup++ ) {
 
         my $subordin = $names->{subordin}[$subgrup];
 
         my $cifra = $cifre[$subgrup];
+        my $cuvant = '';
 
         next if $cifra eq '0';
 
-        my ($grup_cifre, $cuv);
+        my $grup_cifre = reverse @cifre[0,$subgrup];
+
         if ($subordin eq 'zeci') {
-            $grup_cifre = reverse @cifre[0,$subgrup];
-            $cuv = group_name($grup_cifre);
+            $cuvant = group_name($grup_cifre);
         }
 
-        if ($cuv) {
-            $cuvant .= $cuv;
+        if ($cuvant) {
+            shift @cuvinte;     # suprascrie rezultatul de la unitati
+            push  @cuvinte, $cuvant;
         }
         else {
-            $cuvant .= process_subgrup($cifra, $subgrup, $subordin);
+            $cuvant = process_subgrup($cifra, $subordin);
+            unshift @cuvinte, $cuvant;
         }
-
     }
 
-    return $cuvant;
+    if ($ordin ne 'sute') {
+        push @cuvinte, $ordin if scalar @cuvinte; # mii, milionane ...
+    }
+
+    return \@cuvinte;
 }
 
 sub process_subgrup {
-    my ($cifra, $subgrup, $subordin) = @_;
+    my ($cifra, $subordin) = @_;
 
-    print "\tSubGrpNo=$subgrup : Cifra=$cifra - Ordin=$subordin";
     my $cuvant = $names->{cifre}{$cifra};
 
-
     if ($subordin eq 'unitati') {
-        $cuvant = $cuvant;
-    }
-    elsif ($subordin eq 'sute') {
-        if ($cifra == 1) {
-            $cuvant = " una suta";
-        }
-        else {
-            $cuvant .= ' ' . $subordin;
-        }
+        $cuvant = ' și ' . $cuvant;
     }
     else {
-        $cuvant .= ' ' . $subordin;
+        $cuvant =  $cuvant . ' ' . $subordin;
     }
-
-    # Corectii
-
-    # $cuvant =~ s{unu sute}{una sută}gm;
-    # $cuvant =~ s{unu mii}{una mie}gm;
-    # $cuvant =~ s{unu milioane}{un milion}gm;
-
-    # $cuvant =~ s{unu (?=milioane|miliarde)}{una }g;
-    # $cuvant =~ s{doi (?=zeci|sute|mii|milioane|miliarde)}{două }g;
-
-    print "\t$cuvant\n";
 
     return $cuvant;
 }
@@ -149,40 +138,40 @@ sub group_name {
     return $names->{exceptii}{$grup}
         if exists $names->{exceptii}{$grup};
 
-    return;
+    return q{};                 # empty
 }
 
 sub _init_vars {
 
     $names->{cifre} = {
-        0   => "",
-        1   => "unu",
-        2   => "doi",
-        3   => "trei",
-        4   => "patru",
-        5   => "cinci",
-        6   => "șase",
-        7   => "șapte",
-        8   => "opt",
-        9   => "nouă",
+        0   => '',
+        1   => 'unu',
+        2   => 'doi',
+        3   => 'trei',
+        4   => 'patru',
+        5   => 'cinci',
+        6   => 'șase',
+        7   => 'șapte',
+        8   => 'opt',
+        9   => 'nouă',
     };
 
     $names->{exceptii} = {
-        10  => "zece",
-        11  => "unsprezece",
-        12  => "doisprezece",
-        13  => "treisprezece",
-        14  => "paisprezece",
-        15  => "cincisprezece",
-        16  => "șaisprezece",
-        17  => "șaptesprezece",
-        18  => "optsprezece",
-        19  => "nouăsprezece",
+        10  => 'zece',
+        11  => 'unsprezece',
+        12  => 'doisprezece',
+        13  => 'treisprezece',
+        14  => 'paisprezece',
+        15  => 'cincisprezece',
+        16  => 'șaisprezece',
+        17  => 'șaptesprezece',
+        18  => 'optsprezece',
+        19  => 'nouăsprezece',
     };
 
-    $names->{ordin} = [ "sute", "mii", "milioane", "miliarde" ];
+    $names->{ordin} = [ 'sute', 'mii', 'milioane', 'miliarde' ];
 
-    $names->{subordin} = [ "unitati", "zeci", "sute" ];
+    $names->{subordin} = [ 'unitati', 'zeci', 'sute' ];
 
     return;
 }
