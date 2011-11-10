@@ -55,6 +55,7 @@ sub new {
 
     my $self = __PACKAGE__->SUPER::new(@_);
 
+    $self->{_tset}  = 0;                     # temporizer
     $self->{_model} = $model;
 
     $self->{_cfg} = Tpda3::Config->instance();
@@ -527,8 +528,6 @@ sub set_status {
         $sb->configure( -image => $text ) if defined $text;
     }
     elsif ( $sb_id eq 'ss' ) {
-
-        #         _scrdata_rec       status text
         my $str
             = !defined $text ? ''
             : $text          ? 'M'
@@ -538,7 +537,32 @@ sub set_status {
     else {
         $sb->configure( -textvariable => \$text ) if defined $text;
         $sb->configure( -foreground   => $color ) if defined $color;
+        $self->temporized_clear($text) if $text and $sb_id eq 'ms';
     }
+
+    return;
+}
+
+=head2 temporized_clear
+
+Temporized clear for messages.
+
+=cut
+
+sub temporized_clear {
+    my $self = shift;
+
+    return if $self->{_tset} == 1;
+
+    $self->after(
+        10000,    # miliseconds
+        sub {
+            $self->set_status( '', 'ms' );
+            $self->{_tset} = 0;
+        }
+    );
+
+    $self->{_tset} = 1;
 
     return;
 }
@@ -1029,7 +1053,6 @@ sub list_populate {
         $self->get_recordlist->insert( 'end', $record );
         $self->get_recordlist->see('end');
         $row_count++;
-#        $self->set_status( "$row_count records fetched", 'ms' );
         $self->get_recordlist->update;
 
         # Progress bar
@@ -1037,7 +1060,7 @@ sub list_populate {
         if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-#    $self->set_status( "$row_count records listed", 'ms' );
+    $self->set_status( "$row_count records", 'ms' );
 
     # Activate and select last
     $self->get_recordlist->selectionClear( 0, 'end' );

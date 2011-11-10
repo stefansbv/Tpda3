@@ -566,7 +566,7 @@ sub _set_event_handler_nb {
                 print "EE: \$page is not in (lst rec det)\n";
             }
 
-            $self->_view->set_status( '', 'ms' );    # clear status message
+            # $self->_view->set_status( '', 'ms' );    # clear status message
         },
     );
 
@@ -3485,7 +3485,7 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-#    $self->_view->set_status( "Record reloaded", 'ms', 'blue' );
+    $self->_view->set_status( "Reloaded", 'ms', 'blue' );
 
     $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
