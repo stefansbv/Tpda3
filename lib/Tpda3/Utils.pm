@@ -384,20 +384,6 @@ sub deaccent {
     return $text;
 }
 
-sub commify {
-    my ($self, $number) = @_;
-
-    my ( $sign, $int, $frac ) = ( $number =~ /^([+-]?)(\d*)(.*)/ );
-
-    my $commified = (
-        scalar reverse join ',',
-        unpack '(A3)*',
-        scalar reverse $int
-    );
-
-    return $sign . $commified . $frac;
-}
-
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>
@@ -413,10 +399,6 @@ Please report any bugs or feature requests to the author.
 You can find documentation for this module with the perldoc command.
 
     perldoc Tpda3::Utils
-
-=head1 ACKNOWLEDGEMENTS
-
-Commify function from PerlMonks, node [id://435711] by Aristotle.
 
 =head1 LICENSE AND COPYRIGHT
 
