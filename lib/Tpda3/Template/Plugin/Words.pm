@@ -6,7 +6,7 @@ use warnings;
 use Template::Plugin;
 use base qw( Template::Plugin );
 
-use Tpda3::Nums2Words;
+use Tpda3::Num2Words;
 
 use vars qw($FILTER_NAME);
 $FILTER_NAME = 'words';
@@ -21,7 +21,7 @@ sub new {
 }
 
 sub words {
-    return num2word($_[0]);
+    return num2words($_[0]);
 }
 
 =head1 NAME
