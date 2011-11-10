@@ -2500,15 +2500,23 @@ sub screen_document_generate {
         $record = $self->get_screen_data_record('qry', 'all');
     }
 
+    my $fields_no = scalar keys %{ $record->[0]{data} };
+    if ( $fields_no <= 0 ) {
+        $self->_view->set_status( 'No data', 'ms', 'red' );
+        $self->_log->error('Generator: No data');
+    }
+
     my $model_file = $self->scrcfg()->get_defaultdocument_file();
     unless (-f $model_file) {
-        $self->_view->set_status( 'Template not found', 'ms' );
+        $self->_view->set_status( 'Template not found', 'ms', 'red' );
+        $self->_log->error('Generator: Template not found');
         return;
     }
 
     my $output_path = $self->_cfg->config_tex_output_path();
     unless (-d $output_path) {
-        $self->_view->set_status( 'Output path not found', 'ms' );
+        $self->_view->set_status( 'Output path not found', 'ms', 'red' );
+        $self->_log->error('Generator: Output path not found');
         return;
     }
 
@@ -2517,20 +2525,22 @@ sub screen_document_generate {
     #-- Generate LaTeX document from template
 
     my $tex_file = $gen->tex_from_template($record, $model_file, $output_path);
-    unless (-f $tex_file) {
-        $self->_view->set_status( 'Failed: template -> LaTeX', 'ms' );
+    unless ( $tex_file and ( -f $tex_file ) ) {
+        $self->_view->set_status( 'Failed: template -> LaTeX', 'ms', 'red' );
+        $self->_log->error('Template to LaTeX failed');
         return;
     }
 
     #-- Generate PDF from LaTeX
 
     my $pdf_file = $gen->pdf_from_latex($tex_file);
-    unless (-f $pdf_file) {
-        $self->_view->set_status( 'Failed: LaTeX -> PDF', 'ms' );
+    unless ( $pdf_file and ( -f $pdf_file ) ) {
+        $self->_view->set_status( 'Failed: LaTeX -> PDF', 'ms', 'red' );
+        $self->_log->error('LaTeX to PDF failed');
         return;
     }
 
-    $self->_view->set_status( "PDF: $pdf_file", 'ms' );
+    $self->_view->set_status( "PDF: $pdf_file", 'ms', 'blue' );
 
     return;
 }

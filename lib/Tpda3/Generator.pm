@@ -9,6 +9,7 @@ use File::Basename;
 use Template;
 
 use Log::Log4perl qw(get_logger :levels);
+use Try::Tiny;
 
 use Tpda3::Config;
 
@@ -97,7 +98,7 @@ sub tex_from_template {
 
     my $cnt = unlink $file_out;
     if ($cnt == 1) {
-        $self->_log->trace("Removed temp file: $file_out");
+        $self->_log->info("Removed temporary file: $file_out");
     }
 
     my $tt = Template->new({
@@ -123,21 +124,26 @@ sub tex_from_template {
         }
     }
 
-    eval {
-        $tt->process( $model_file, { r => $rec },
-            $file_out, binmode => ':utf8' );
-    };
-    if ($@) {
-        $self->_log->info("Generating '$file_out' from '$model.tt' failed");
-        return;
+    try {
+        $tt->process(
+            $model_file, { r => $rec },
+            $file_out, binmode => ':utf8'
+        )
+            || die $tt->error(), "\n";
     }
+    catch {
+        $self->_log->error('TT Error: ' . $tt->error )
+            or print STDERR 'TT Error: ', $tt->error, "\n";
+        return;
+    };
 
-    return catfile($output_path, $file_out);
+    return catfile($output_path, "$model.tex");
 }
 
 =head2 pdf_from_latex
 
-Generate PDF from LaTeX source.
+Generate PDF from LaTeX source using L<pdflatex>. On success
+L<pdflatex> returns 0.
 
 =cut
 
@@ -150,21 +156,35 @@ sub pdf_from_latex {
     my $pdflatex_opt = $self->_cfg->cfextapps->{pdflatex}{options};
     my $docspath     = $self->_cfg->cfrun->{docspath};
 
-    $pdflatex_opt .= ' -output-directory=' . qq{"$docspath"};
+    my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
+    my $output_pdf = catfile($docspath, "$name.pdf");
+    my $cnt = unlink $output_pdf;
+    if ($cnt == 1) {
+        $self->_log->info("Removed temporary file: $output_pdf");
+    }
+
+    $pdflatex_opt .= q{ -output-directory=} . qq{"$docspath"};
 
     my $cmd = qq{"$pdflatex_exe" $pdflatex_opt "$tex_file"};
-    # print "cmd: $cmd\n";
 
-    run3 $cmd, undef, \my @out, \my @err;
+    run3 $cmd, undef, \undef;
 
-    # print "STDOUT: $_" for @out;
-    # print "STDERR: $_" for @err;
-    # $self->_log->debug("II: @out");
-    $self->_log->debug("EE: @err");
+    my $error_str;
+    if ($? == -1) {
+        $error_str = "failed to execute: $!";
+    }
+    elsif ($? & 127) {
+        $error_str = sprintf "child died with signal %d, %s coredump\n",
+            ($? & 127),  ($? & 128) ? 'with' : 'without';
+    }
 
-    my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
+    if ($error_str) {
+        $self->_log->debug("CMD: $cmd");
+        $self->_log->debug("EE: $error_str");
+        return;
+    }
 
-    return catfile($docspath, "$name.pdf");
+    return $output_pdf;
 }
 
 =head1 AUTHOR
