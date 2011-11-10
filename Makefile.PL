@@ -34,19 +34,20 @@ requires 'DBI'                   => '1.53';
 
 #- Tk
 
-recommends 'Tk'                   => '804.028';
-recommends 'Tk::ToolBar'          => '0.09';
-recommends 'Tk::StatusBar'        => '0.04';
-recommends 'Tk::MListbox'         => '1.11';
-recommends 'Tk::JComboBox'        => '1.14';
-recommends 'Tk::DateEntry'        => '1.39';
-recommends 'Tk::TableMatrix'      => '1.23';
-recommends 'Tk::RadiobuttonGroup' => '0.2.2';
+requires 'Tk'                   => '804.028';
+requires 'Tk::ToolBar'          => '0.09';
+requires 'Tk::StatusBar'        => '0.04';
+requires 'Tk::MListbox'         => '1.11';
+requires 'Tk::JComboBox'        => '1.14';
+requires 'Tk::DateEntry'        => '1.39';
+requires 'Tk::TableMatrix'      => '1.23';
+requires 'Tk::RadiobuttonGroup' => '0.2.2';
 
 #- For generatig PDF from TeX
 
 requires 'IPC::Run3' => '0';
 requires 'Template'  => '0';
+requires 'Log::Dispatch::FileRotate' => '0';
 
 #- and/or Wx
 
@@ -55,8 +56,8 @@ recommends 'Wx::Perl::ListCtrl' => '0.03';
 
 #- Database
 
-recommends 'DBD::Firebird' => '0.80';
-recommends 'DBD::Pg'       => '1.32';
+requires 'DBD::Pg'       => '1.32';
+requires 'DBD::Firebird' => '0.80';
 
 test_requires 'Test::More'          => '0.47';
 test_requires 'DBD::SQLite'         => '1.29';
