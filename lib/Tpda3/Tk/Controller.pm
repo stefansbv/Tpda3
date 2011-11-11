@@ -3159,9 +3159,6 @@ sub controls_state_set {
     foreach my $field ( keys %{ $self->scrcfg($page)->main_table_columns } ) {
         my $fld_cfg = $self->scrcfg($page)->main_table_column($field);
 
-        # Skip for some control types
-        # next if $fld_cfg->{ctrltype} = '';
-
         my $ctrl_state = $control_states->{state};
         $ctrl_state = $fld_cfg->{state}
             if $ctrl_state eq 'from_config';
