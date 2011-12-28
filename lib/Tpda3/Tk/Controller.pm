@@ -1822,7 +1822,12 @@ sub screen_module_load {
     my $header_look = $self->scrcfg('rec')->list_header->{lookup};
     my $header_cols = $self->scrcfg('rec')->list_header->{column};
     my $fields      = $self->scrcfg('rec')->main_table_columns;
-    $self->_view->make_list_header( $header_look, $header_cols, $fields );
+    if ($header_look and $header_cols) {
+        $self->_view->make_list_header( $header_look, $header_cols, $fields );
+    }
+    else {
+        $self->_view->nb_set_page_state( 'lst', 'disabled' );
+    }
 
     #- Event handlers
 
@@ -4390,16 +4395,17 @@ sub list_column_names {
 
 Fill Table Matrix widget for I<report> style screens.
 
+The field with the attribute 'datasource == !count!' is used to number
+the rows and also as an index to the 'expnd' data.
+
 =cut
 
 sub fill_table {
     my $self = shift;
 
     my $tm_ds = 'tm1';                       # hardwired configuration
-
+    my $rc_field = $self->scrcfg->dep_table_rowcount($tm_ds);
     my $tables = $self->scrcfg->dep_table_hierarchy($tm_ds);
-
-    print "processing ... '$tables->{maintable}'\n";
 
     my $mainmeta
         = $self->report_table_metadata( $tm_ds, $tables->{maintable} );
@@ -4411,23 +4417,24 @@ sub fill_table {
     # Fill main
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
-    $tmx->clear_all();
-    $tmx->fill($records);
+
+    $tmx->clear_all;
+    $tmx->fill_main($records);
 
     # Fill details
 
+    my $maindata = $tmx->data_read;
+
+    # Should be only ONE table! ;)
     foreach my $table ( @{ $tables->{table} } ) {
-        print "processing ... '$table'\n";
-        my $nrcrt = 0;
-        foreach my $rec (@$records) {
-            $nrcrt++;
+        foreach my $rec ( @{$maindata} ) {
+            my $rowcnt = $rec->{$rc_field};
             my $metadata = $self->report_table_metadata( $tm_ds, $table );
             $metadata->{where}{$pk_col} = $rec->{$pk_col};
             my $record = $self->_model->table_batch_query($metadata);
-            $tmx->fill_details($record, $nrcrt);
+            $tmx->fill_details( $record, $rowcnt );
         }
     }
-    print " done\n";
 
     return;
 }

@@ -2,6 +2,7 @@ package Tpda3::Tk::TMSHR;
 
 use strict;
 use warnings;
+use utf8;
 
 use Data::Dumper;
 use Carp;
@@ -114,9 +115,7 @@ sub set_tags {
     my $self = shift;
 
     my $cols = scalar keys %{ $self->{columns} };
-
-    # TM is SpreadsheetHideRows type increase cols number with 1
-    $cols += 1 if $self =~ m/SpreadsheetHideRows/;
+    $cols++;                    # increase cols number with 1
 
     # Tags for the detail data:
     $self->tagConfigure(
@@ -244,11 +243,11 @@ sub clear_all {
 
 =head2 fill
 
-Fill TableMatrix widget with data.
+Fill TableMatrix widget with data from the main table.
 
 =cut
 
-sub fill {
+sub fill_main {
     my ( $self, $record_ref ) = @_;
 
     my $xtvar = $self->cget( -variable );
@@ -263,10 +262,20 @@ sub fill {
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
-            my ( $col, $validtype, $width, $places, $show )
-                = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'show' };
+            my ( $col, $validtype, $width, $places, $show, $datasource )
+                = @$fld_cfg{
+                'id',   'validation', 'width', 'places',
+                'show', 'datasource'
+                };
 
-            my $value = $record->{$field};
+            my $value;
+            if ($datasource eq '!count!') {
+                $value = $row;  # number the rows
+            }
+            else {
+                $value = $record->{$field};
+            }
+
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
 
@@ -295,11 +304,16 @@ sub fill {
         $row++;
     }
 
-    # Refreshing the table...
-    $self->configure( -rows => $row );
+    $self->configure( -rows => $row );    # refreshing the table...
 
     return;
 }
+
+=head2 fill_details
+
+Fill TableMatrix widget expand data from the dependent table(s).
+
+=cut
 
 sub fill_details {
     my ( $self, $record_ref, $row ) = @_;
@@ -404,6 +418,50 @@ sub write_row {
     }
 
     return $nr_col;
+}
+
+=head2 data_read
+
+Read data from widget.
+
+=cut
+
+sub data_read {
+    my $self = shift;
+
+    my $xtvar = $self->cget( -variable );
+
+    my $rows_no  = $self->cget( -rows );
+    my $cols_no  = $self->cget( -cols );
+    my $rows_idx = $rows_no - 1;
+    my $cols_idx = $cols_no - 1;
+
+    my $fields_cfg = $self->{columns};
+
+    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+
+    # Read table data and create an AoH
+    my @tabledata;
+
+    # The first row is the header
+    for my $row ( 1 .. $rows_idx ) {
+
+        my $rowdata = {};
+        # The first col is the selector
+        for my $col ( 1 .. $cols_idx ) {
+
+            my $ci = $col - 1;
+            my $cell_value = $self->get("$row,$col");
+            my $col_name = $cols_ref->[$ci];
+            my $fld_cfg = $fields_cfg->{$col_name};
+
+            $rowdata->{$col_name} = $cell_value;
+        }
+
+        push @tabledata, $rowdata;
+    }
+
+    return \@tabledata;
 }
 
 =head1 AUTHOR

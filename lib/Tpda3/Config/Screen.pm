@@ -502,6 +502,18 @@ sub dep_table_colstretch {
     return $self->dep_table($tm_ds)->{colstretch};
 }
 
+=head2 dep_table_rowcount
+
+Return the dependent table I<rowcount> attribute.
+
+=cut
+
+sub dep_table_rowcount {
+    my ( $self, $tm_ds ) = @_;
+
+    return $self->dep_table($tm_ds)->{rowcount};
+}
+
 =head2 dep_table_hierarchy
 
 Return the dependent table I<hierarchy> attribute.
