@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use utf8;
 use Carp;
 
@@ -4160,14 +4162,13 @@ sub report_table_metadata {
 
     my $metadata = {};
 
+    my $pk_col = $self->screen_get_pk_col;   # get PK field name
+
     $metadata->{table} = $ds;
-    # $metadata->{where}{$pk_col} = $pk_val;    # pk
+    $metadata->{pkcol} = $pk_col;
 
     my $columns = $self->scrcfg->dep_table_columns_by_ds($tm_ds, $ds);
 
-    # $metadata->{pkcol}    = $pk_col;
-    # $metadata->{fkcol}    = $self->scrcfg->dep_table_fkcol($tm_ds);
-    # $metadata->{order}    = $self->scrcfg->dep_table_orderby($tm_ds);
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
 
     return $metadata;
@@ -4394,38 +4395,37 @@ Fill Table Matrix widget for I<report> style screens.
 sub fill_table {
     my $self = shift;
 
-    print "fill table ...\n";
-
-    my $tm_ds = 'tm1';
+    my $tm_ds = 'tm1';                       # hardwired configuration
 
     my $tables = $self->scrcfg->dep_table_hierarchy($tm_ds);
 
-    print "processing ... $tables->{maintable}\n";
-    my $tm_params
+    print "processing ... '$tables->{maintable}'\n";
+
+    my $mainmeta
         = $self->report_table_metadata( $tm_ds, $tables->{maintable} );
 
-    my $records = $self->_model->table_batch_query($tm_params);
+    my $pk_col = $mainmeta->{pkcol};
+
+    my $records = $self->_model->table_batch_query($mainmeta);
+
+    # Fill main
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
     $tmx->clear_all();
     $tmx->fill($records);
 
-    my $rex1 = [
-        {fact_data => '01.08.2011', fact_scad => '31.08.2011'},
-        {fact_data => '01.09.2011', fact_scad => '31.09.2011'},
-    ];
-
-    $tmx->fill_details($rex1, 1);
-
-    my $rex2 = [
-        {fact_data => '01.10.2011', fact_scad => '31.10.2011'},
-        {fact_data => '01.11.2011', fact_scad => '31.11.2011'},
-    ];
-
-    $tmx->fill_details($rex2, 4);
+    # Fill details
 
     foreach my $table ( @{ $tables->{table} } ) {
-        print "processing ... $table\n";
+        print "processing ... '$table'\n";
+        my $nrcrt = 0;
+        foreach my $rec (@$records) {
+            $nrcrt++;
+            my $metadata = $self->report_table_metadata( $tm_ds, $table );
+            $metadata->{where}{$pk_col} = $rec->{$pk_col};
+            my $record = $self->_model->table_batch_query($metadata);
+            $tmx->fill_details($record, $nrcrt);
+        }
     }
     print " done\n";
 

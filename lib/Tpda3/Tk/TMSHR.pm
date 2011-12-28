@@ -2,6 +2,8 @@ package Tpda3::Tk::TMSHR;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Hash::Merge qw(merge);
@@ -184,20 +186,27 @@ sub set_tags {
     $self->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
     $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
-    # TableMatrix header, Set Name, Align, Width
+    # TableMatrix header, Set Name, Align, Width, and skip
     foreach my $field ( keys %{ $self->{columns} } ) {
-        my $col = $self->{columns}->{$field}{id};
-        $self->tagCol( $self->{columns}->{$field}{tag}, $col );
-        $self->set( "0,$col", $self->{columns}->{$field}{label} );
+        my $col = $self->{columns}{$field}{id};
+        $self->tagCol( $self->{columns}{$field}{tag}, $col );
+        $self->set( "0,$col", $self->{columns}{$field}{label} );
 
         # If colstretch = 'n' in screen config file, don't set width,
         # because of the -colstretchmode => 'unset' setting, col 'n'
         # will be of variable width
         next if $self->{colstretch} and $col == $self->{colstretch};
 
-        my $width = $self->{columns}->{$field}{width};
+        my $width = $self->{columns}{$field}{width};
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
+        }
+
+        # Hide cols with attribute: show  == 0, using span
+        my $show = $self->{columns}{$field}{show};
+        unless ($show) {
+            my $c = $col - 1;
+            $self->spans( "0,$c" => '0,1' ) unless $self->spans("0,$c");
         }
     }
 
@@ -254,13 +263,12 @@ sub fill {
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
+            my ( $col, $validtype, $width, $places, $show )
+                = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'show' };
+
             my $value = $record->{$field};
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
-
-            my ( $col, $validtype, $width, $places )
-                = @$fld_cfg{ 'id', 'validation', 'width',
-                'places' };                        # hash slice
 
             if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
@@ -275,6 +283,13 @@ sub fill {
             }
 
             $xtvar->{"$row,$col"} = $value;
+
+            # Hide cols with attribute: show  == 0, using span
+            unless ($show) {
+                my $c = $col - 1;
+                $self->spans( "$row,$c" => "0,1" )
+                    unless $self->spans("$row,$c");
+            }
         }
 
         $row++;
@@ -300,13 +315,13 @@ sub fill_details {
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
+            my ( $c, $validtype, $width, $places, $show )
+                = @$fld_cfg{ 'id', 'validation', 'width',
+                'places', 'show' };                        # hash slice
+
             my $value = $record->{$field};
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
-
-            my ( $c, $validtype, $width, $places )
-                = @$fld_cfg{ 'id', 'validation', 'width',
-                'places' };                        # hash slice
 
             if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
@@ -321,6 +336,13 @@ sub fill_details {
             }
 
             $xpdata->[$r][$c] = $value;
+
+            # Hide cols with attribute: show  == 0, using span
+            unless ($show) {
+                my $col = $c - 1;
+                $self->spans( "$r,$col" => "0,1" )
+                    unless $self->spans("$r,$col");
+            }
         }
 
         $r++;
@@ -363,7 +385,7 @@ sub write_row {
         my $value   = $record_ref->{$field};
 
         my ( $col, $validtype, $width, $places )
-            = @$fld_cfg{ 'id', 'validation', 'width', 'places' }; # hash slice
+            = @$fld_cfg{ 'id', 'validation', 'width', 'places' };
 
         if ( $validtype =~ /digit/ ) {
             $value = 0 unless $value;
