@@ -85,6 +85,7 @@ sub load_conf {
     my ( $self, $config_file ) = @_;
 
     my $conf = Config::General->new(
+        -UTF8       => 1,
         -ForceArray => 1,
         -ConfigFile => $config_file,
     );
