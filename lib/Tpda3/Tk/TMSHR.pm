@@ -8,6 +8,7 @@ use Data::Dumper;
 use Carp;
 
 use Hash::Merge qw(merge);
+use Math::Symbolic qw(parse_from_string);
 
 use Tpda3::Utils;
 
@@ -269,14 +270,17 @@ sub fill_main {
                 };
 
             my $value;
-            if ($datasource eq '!count!') {
-                $value = $row;  # number the rows
+            if ( $datasource =~ m{!count!} ) {
+                $value = $row;    # number the rows
+            }
+            elsif ( $datasource =~ m{!compute=(.*)!} ) {
+                # Compute!
             }
             else {
                 $value = $record->{$field};
             }
 
-            $value = q{} unless defined $value;    # empty
+            $value = q{} unless defined $value;    # empty value
             $value =~ s/[\n\t]//g;                 # delete control chars
 
             if ( $validtype eq 'numeric' ) {
@@ -329,13 +333,27 @@ sub fill_details {
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
-            my ( $c, $validtype, $width, $places, $show )
-                = @$fld_cfg{ 'id', 'validation', 'width',
-                'places', 'show' };                        # hash slice
+            my ( $c, $validtype, $width, $places, $show, $datasource )
+                = @$fld_cfg{
+                'id',   'validation', 'width', 'places',
+                'show', 'datasource'
+                };
 
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # empty
-            $value =~ s/[\n\t]//g;                 # delete control chars
+            my $value;
+            if ( $datasource =~ m{!count!} ) {
+                $value = $row;    # number the rows
+            }
+            elsif ( $datasource =~ m{!compute=(.*)!} ) {
+                my $ret = $self->make_function($field);
+                my ( $func, $vars ) = @{$ret};
+                my @args = map { $record->{$_} } @{$vars};
+                $value = $func->(@args);
+            }
+            else {
+                $value = $record->{$field};
+                $value = q{} unless defined $value;    # empty
+                $value =~ s/[\n\t]//g;                 # delete control chars
+            }
 
             if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
@@ -462,6 +480,35 @@ sub data_read {
     }
 
     return \@tabledata;
+}
+
+sub make_function {
+    my ($self, $field) = @_;
+
+    return $self->{$field} if exists $self->{$field}; # don't recreate
+
+    my $fld_cfg = $self->{columns}{$field};
+
+    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+
+    my $datasource = $fld_cfg->{datasource};
+    my ($funcstr) = $datasource =~ m{!compute=(.*)!}xmg;
+
+    croak "$field field's compute is EMPTY\n" unless $funcstr;
+
+    print "make function: $field = ($funcstr)\n";
+
+    ( my $varsstr = $funcstr ) =~ s{[-+/*]}{ }g; # replace operator with space
+
+    my $tree = parse_from_string($funcstr);
+
+    my @vars = split /\s+/, $varsstr;
+
+    my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
+
+    $self->{$field} = [$sub, \@vars];
+
+    return $self->{$field};
 }
 
 =head1 AUTHOR
