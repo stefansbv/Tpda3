@@ -341,12 +341,15 @@ sub fill_details {
 
             my $value;
             if ( $datasource =~ m{!count!} ) {
-                $value = $row;    # number the rows
+                $value = $r + 1;             # number the rows
             }
             elsif ( $datasource =~ m{!compute=(.*)!} ) {
                 my $ret = $self->make_function($field);
                 my ( $func, $vars ) = @{$ret};
-                my @args = map { $record->{$_} } @{$vars};
+                # Function args are numbers, avoid undef
+                my @args = map {
+                    defined( $record->{$_} ) ? $record->{$_} : 0
+                } @{$vars};
                 $value = $func->(@args);
             }
             else {
