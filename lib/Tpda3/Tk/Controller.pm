@@ -1774,7 +1774,7 @@ sub screen_module_load {
     if ($@) {
 
         # TODO: Decide what is optimal to do here?
-        print "WW: Can't load '$module_file'\n";
+        print "EE: Can't load '$module_file'\n";
         return;
     }
 

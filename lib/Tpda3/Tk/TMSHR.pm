@@ -3,12 +3,10 @@ package Tpda3::Tk::TMSHR;
 use strict;
 use warnings;
 use utf8;
-
-use Data::Dumper;
 use Carp;
 
 use Hash::Merge qw(merge);
-use Math::Symbolic qw(parse_from_string);
+use Math::Symbolic;
 
 use Tpda3::Utils;
 
@@ -42,7 +40,6 @@ our $VERSION = '0.01';
         -height         => -1,
         -ipadx          => 3,
         -titlerows      => 1,
-        -validate       => 1,
         -variable       => $xtvar,
         -selectmode     => 'single',
         -colstretchmode => 'unset',
@@ -53,7 +50,7 @@ our $VERSION = '0.01';
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 
-    $xtable->init($frame, $header);
+    $xtable->init($header);
 
 =head1 METHODS
 
@@ -91,15 +88,11 @@ Write header on row 0 of TableMatrix
 
 =cut
 
-sub init {
-    my ( $self, $frame, $args ) = @_;
+sub make_header {
+    my ( $self, $args ) = @_;
 
-    $self->{columns}     = $args->{columns};
-    $self->{selectorcol} = $args->{selectorcol};
-    $self->{colstretch}  = $args->{colstretch};
-
-    $self->{frame}  = $frame;
-    $self->{tm_sel} = undef;    # selected row
+    $self->{columns}    = $args->{columns};
+    $self->{colstretch} = $args->{colstretch};
 
     $self->set_tags();
 
@@ -242,7 +235,7 @@ sub clear_all {
     return;
 }
 
-=head2 fill
+=head2 fill_main
 
 Fill TableMatrix widget with data from the main table.
 
@@ -270,11 +263,24 @@ sub fill_main {
                 };
 
             my $value;
-            if ( $datasource =~ m{!count!} ) {
+            if ( $datasource =~ m{=count} ) {
+                # Count
                 $value = $row;    # number the rows
             }
-            elsif ( $datasource =~ m{!compute=(.*)!} ) {
-                # Compute!
+            elsif ( $datasource =~ m{=(.*)} ) {
+                my $funcdef = $1;
+                if ($funcdef) {
+
+                    # Formula
+                    my $ret = $self->get_function($field, $funcdef);
+                    my ( $func, $vars ) = @{$ret};
+
+                    # Function args are numbers, avoid undef
+                    my @args
+                        = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
+                        @{$vars};
+                    $value = $func->(@args);
+                }
             }
             else {
                 $value = $record->{$field};
@@ -340,17 +346,23 @@ sub fill_details {
                 };
 
             my $value;
-            if ( $datasource =~ m{!count!} ) {
+            if ( $datasource =~ m{=count} ) {
                 $value = $r + 1;             # number the rows
             }
-            elsif ( $datasource =~ m{!compute=(.*)!} ) {
-                my $ret = $self->make_function($field);
-                my ( $func, $vars ) = @{$ret};
-                # Function args are numbers, avoid undef
-                my @args = map {
-                    defined( $record->{$_} ) ? $record->{$_} : 0
-                } @{$vars};
-                $value = $func->(@args);
+            elsif ( $datasource =~ m{=(.*)} ) {
+                my $funcdef = $1;
+                if ($funcdef) {
+
+                    # Formula
+                    my $ret = $self->get_function($field, $funcdef);
+                    my ( $func, $vars ) = @{$ret};
+
+                    # Function args are numbers, avoid undef
+                    my @args
+                        = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
+                        @{$vars};
+                    $value = $func->(@args);
+                }
             }
             else {
                 $value = $record->{$field};
@@ -485,31 +497,39 @@ sub data_read {
     return \@tabledata;
 }
 
-sub make_function {
-    my ($self, $field) = @_;
+=head2 get_function
 
-    return $self->{$field} if exists $self->{$field}; # don't recreate
+Make a reusable anonimous function to compute a field's value, using
+the definition from the screen configuration and the Math::Symbolic
+module.
 
-    my $fld_cfg = $self->{columns}{$field};
+It's intended use is for simple functions, like in this example:
 
-    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+  datasource => '=quantityordered*priceeach'
 
-    my $datasource = $fld_cfg->{datasource};
-    my ($funcstr) = $datasource =~ m{!compute=(.*)!}xmg;
+Suported operations: arithmetic (-+/*).
 
-    croak "$field field's compute is EMPTY\n" unless $funcstr;
+=cut
 
-    print "make function: $field = ($funcstr)\n";
+sub get_function {
+    my ($self, $field, $funcdef) = @_;
 
-    ( my $varsstr = $funcstr ) =~ s{[-+/*]}{ }g; # replace operator with space
+    return $self->{$field} if exists $self->{$field}; # don't recreate it
 
-    my $tree = parse_from_string($funcstr);
+    unless ($field and $funcdef) {
+        croak "$field field's compute is EMPTY\n" unless $funcdef;
+        return;
+    }
 
+    # warn "new function for: $field = ($funcdef)\n";
+
+    ( my $varsstr = $funcdef ) =~ s{[-+/*]}{ }g; # replace operator with space
+
+    my $tree = Math::Symbolic->parse_from_string($funcdef);
     my @vars = split /\s+/, $varsstr;
-
     my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
 
-    $self->{$field} = [$sub, \@vars];
+    $self->{$field} = [$sub, \@vars];        # save for later use
 
     return $self->{$field};
 }

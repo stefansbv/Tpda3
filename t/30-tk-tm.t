@@ -6,14 +6,9 @@ use strict;
 use warnings;
 
 use Test::More;
-
-use lib qw( lib ../lib );
-
 use Tk;
 
-# use Tpda3;
-# use Tpda3::Config;
-use Tpda3::Tk::TM;
+use lib qw( lib ../lib );
 
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
@@ -26,12 +21,13 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 7;
+    plan tests => 8;
 }
 
 use_ok('Tpda3::Tk::TM');
 
 # Header for TM, slightly modified data, all cols are 'rw'
+
 my $header = {
     'colstretch' => '2',
     'columns'    => {
@@ -100,6 +96,7 @@ my $header = {
 };
 
 # Data for tests
+
 my $record = [
     {   'priceeach'       => '37.97',
         'productcode'     => 'S50_1341',
@@ -146,12 +143,11 @@ eval {
         -scrollbars    => 'osw',
     );
 };
+ok(!$@, 'create TM');
 
 is( $tm->init( $mw, $header ), undef, 'make header' );
 
-$tm->pack;
-
-# ok( $tm->isa('Tpda3::Tk::TM'), 'created Tpda3::Tk::TM instance' );
+$tm->pack( -expand => 1, -fill => 'both');
 
 my $delay = 1;
 

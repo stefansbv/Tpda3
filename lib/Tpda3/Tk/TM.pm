@@ -130,9 +130,6 @@ sub set_tags {
 
     my $cols = scalar keys %{ $self->{columns} };
 
-    # TM is SpreadsheetHideRows type increase cols number with 1
-    # $cols += 1 if $self =~ m/SpreadsheetHideRows/;
-
     # Tags for the detail data:
     $self->tagConfigure(
         'detail',
