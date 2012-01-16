@@ -331,7 +331,7 @@ sub constraints_list {
                         ON rc.unique_constraint_catalog = ccu.constraint_catalog
                         AND rc.unique_constraint_schema = ccu.constraint_schema
                         AND rc.unique_constraint_name = ccu.constraint_name
-                    WHERE tc.table_name = '$table'};
+                  WHERE tc.table_name = '$table' AND constraint_type != 'CHECK'};
 
     $self->{_dbh}{ChopBlanks} = 1;    # trim CHAR fields
 
