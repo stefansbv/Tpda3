@@ -445,6 +445,8 @@ sub query_record {
 
 Query records.
 
+Option to add row count field to the returned data structure.
+
 =cut
 
 sub table_batch_query {
@@ -1265,6 +1267,38 @@ sub error_show {
     $self->_print("error#$key");
 
     return;
+}
+
+sub report_data {
+    my ( $self, $mainmeta ) = @_;
+
+    my $records = $self->table_batch_query($mainmeta);
+    my $pk_col  = $mainmeta->{pkcol};
+    my $cnt_col = $mainmeta->{rowcount};
+
+    # Seperate ...
+    my (@records, @uplevel);
+
+    my $rc = 1;    # row count
+    foreach my $r ( @{$records} ) {
+        my ( $rec, $upl ) = ( {}, {} );
+        foreach my $fld ( keys %{$r} ) {
+            if ( $fld eq $pk_col ) {
+                $upl->{$fld} = $r->{$fld};
+            }
+            else {
+                $rec->{$fld} = $r->{$fld};
+            }
+        }
+        $rec->{$cnt_col} = $rc;                  # add row count
+
+        push @records, $rec;
+        push @uplevel, { $rc => $upl };
+
+        $rc++;
+    }
+
+    return (\@records, \@uplevel);
 }
 
 =head1 AUTHOR

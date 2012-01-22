@@ -3,6 +3,8 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
@@ -502,6 +504,12 @@ sub dep_table_colstretch {
     return $self->dep_table($tm_ds)->{colstretch};
 }
 
+sub dep_table_datasources {
+    my ( $self, $tm_ds ) = @_;
+
+    return $self->dep_table($tm_ds)->{datasources};
+}
+
 =head2 dep_table_rowcount
 
 Return the dependent table I<rowcount> attribute.
@@ -512,18 +520,6 @@ sub dep_table_rowcount {
     my ( $self, $tm_ds ) = @_;
 
     return $self->dep_table($tm_ds)->{rowcount};
-}
-
-=head2 dep_table_hierarchy
-
-Return the dependent table I<hierarchy> attribute.
-
-=cut
-
-sub dep_table_hierarchy {
-    my ( $self, $tm_ds ) = @_;
-
-    return $self->dep_table($tm_ds)->{hierarchy};
 }
 
 =head2 dep_table_pkcol
@@ -566,22 +562,30 @@ sub dep_table_columns {
 =head2 dep_table_columns_by_ds
 
 Return the dependent table columns configuration data structure bound
-to the related Tk::TableMatrix widget, filtered by the I<datasource>
-key.
+to the related Tk::TableMatrix widget, filtered by the I<level>.
+
+Columns with no level ...
 
 =cut
 
-sub dep_table_columns_by_ds {
-    my ( $self, $tm_ds, $ds_value ) = @_;
+sub dep_table_columns_by_level {
+    my ( $self, $tm_ds, $level ) = @_;
 
     my $cols = $self->dep_table($tm_ds)->{columns};
 
-    my $scols
-    = Tpda3::Utils->filter_hash_by_keyvalue( $cols, 'datasource', $ds_value );
+    $level = 'level' . $level;
+    my $dss;
 
-    my %filtered =  map { $_ => $cols->{$_} } @{$scols};
+    foreach my $col ( keys %{$cols} ) {
+        my $ds = ref $cols->{$col}{datasource}
+               ? $cols->{$col}{datasource}{$level}
+               : $cols->{$col}{datasource};
+        next unless $ds;
+        $dss->{$ds} = [] unless exists $dss->{$ds};
+        push @{ $dss->{$ds} }, $col;
+    }
 
-    return \%filtered;
+    return $dss;
 }
 
 =head2 dep_table_column

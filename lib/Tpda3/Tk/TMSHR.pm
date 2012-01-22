@@ -2,6 +2,10 @@ package Tpda3::Tk::TMSHR;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
+use Data::Printer;
+
 use utf8;
 use Carp;
 
@@ -194,13 +198,6 @@ sub set_tags {
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }
-
-        # Hide cols with attribute: show  == 0, using span
-        my $show = $self->{columns}{$field}{show};
-        unless ($show) {
-            my $c = $col - 1;
-            $self->spans( "0,$c" => '0,1' ) unless $self->spans("0,$c");
-        }
     }
 
     $self->tagRow( 'title', 0 );
@@ -246,45 +243,42 @@ sub fill_main {
 
     my $xtvar = $self->cget( -variable );
 
-    my $row = 1;
+    my $rows = 0;
 
-    #- Scan and write to table
-
+    #- Scan DS and write to table
     foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->{columns} } ) {
+        #while ( my ( $row, $record ) = each( %{$rec} ) ) {
+        # foreach my $field ( keys %{ $self->{columns} } ) {
+        my $row = $record->{nr_crt};
+        foreach my $field ( keys %{ $record } ) {
+            # my ($value, $col) = $self->get_value($field, $row, $record);
+            # begin func
+            #my ($self, $field, $row, $record) = @_;
             my $fld_cfg = $self->{columns}{$field};
 
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
-            my ( $col, $validtype, $width, $places, $show, $datasource )
-                = @$fld_cfg{
-                'id',   'validation', 'width', 'places',
-                'show', 'datasource'
-                };
+            my ( $col, $validtype, $width, $places, $datasource )
+                = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
 
             my $value;
-            if ( $datasource =~ m{=count} ) {
-                # Count
-                $value = $row;    # number the rows
-            }
-            elsif ( $datasource =~ m{=(.*)} ) {
-                my $funcdef = $1;
-                if ($funcdef) {
+            # if ( $datasource =~ m{=(.*)} ) {
+            #     my $funcdef = $1;
+            #     if ($funcdef) {
 
-                    # Formula
-                    my $ret = $self->get_function($field, $funcdef);
-                    my ( $func, $vars ) = @{$ret};
+            #         # Formula
+            #         my $ret = $self->get_function( $field, $funcdef );
+            #         my ( $func, $vars ) = @{$ret};
 
-                    # Function args are numbers, avoid undef
-                    my @args
-                        = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
-                        @{$vars};
-                    $value = $func->(@args);
-                }
-            }
-            else {
+            #         # Function args are numbers, avoid undef
+            #         my @args = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
+            #             @{$vars};
+            #         $value = $func->(@args);
+            #     }
+            # }
+            # else {
                 $value = $record->{$field};
-            }
+            # }
 
             $value = q{} unless defined $value;    # empty value
             $value =~ s/[\n\t]//g;                 # delete control chars
@@ -292,8 +286,6 @@ sub fill_main {
             if ( $validtype eq 'numeric' ) {
                 $value = 0 unless $value;
                 if ( defined $places ) {
-
-                    # Daca SCALE >= 0, Formatez numarul
                     $value = sprintf( "%.${places}f", $value );
                 }
                 else {
@@ -301,20 +293,16 @@ sub fill_main {
                 }
             }
 
-            $xtvar->{"$row,$col"} = $value;
+            #return ($value, $col);
+            # end func
 
-            # Hide cols with attribute: show  == 0, using span
-            unless ($show) {
-                my $c = $col - 1;
-                $self->spans( "$row,$c" => "0,1" )
-                    unless $self->spans("$row,$c");
-            }
+            $xtvar->{"$row,$col"} = $value;
         }
 
-        $row++;
+        $rows = $row;
     }
 
-    $self->configure( -rows => $row );    # refreshing the table...
+    $self->configure( -rows => $rows + 1 );      # refreshing the table...
 
     return;
 }
@@ -326,88 +314,133 @@ Fill TableMatrix widget expand data from the dependent table(s).
 =cut
 
 sub fill_details {
-    my ( $self, $record_ref, $row ) = @_;
+    my ( $self, $record_ref ) = @_;
 
-    my $xpdata = [];    # init
-    my $r      = 0;
+    # my $expvar = {}; #$self->cget( -expandData );
 
-    #- Scan and write to table
+    # my @recs;
+    # while ( my ( $row, $rec ) = each( %{$record_ref} ) ) {
+    #     foreach my $record ( @{$rec} ) {
+    #         my $xpdata = [];    # init
+    #         foreach my $field ( keys %{ $record } ) {
+    #             my $fld_cfg = $self->{columns}{$field};
 
-    foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->{columns} } ) {
-            my $fld_cfg = $self->{columns}{$field};
+    #             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
 
-            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+    #             my ( $c, $validtype, $width, $places, $datasource )
+    #                 = @$fld_cfg{ 'id', 'validation', 'width', 'places',
+    #                 'datasource' };
 
-            my ( $c, $validtype, $width, $places, $show, $datasource )
-                = @$fld_cfg{
-                'id',   'validation', 'width', 'places',
-                'show', 'datasource'
-                };
+    #             my $value;
+    #             if ( $datasource =~ m{=count} ) {
 
-            my $value;
-            if ( $datasource =~ m{=count} ) {
-                $value = $r + 1;             # number the rows
-            }
-            elsif ( $datasource =~ m{=(.*)} ) {
-                my $funcdef = $1;
-                if ($funcdef) {
+    #                 # Count
+    #                 # $value = $row;    # number the rows
+    #                 $value = $record->{$field};
+    #             }
+    #             elsif ( $datasource =~ m{=(.*)} ) {
+    #                 my $funcdef = $1;
+    #                 if ($funcdef) {
 
-                    # Formula
-                    my $ret = $self->get_function($field, $funcdef);
-                    my ( $func, $vars ) = @{$ret};
+    #                     # Formula
+    #                     my $ret = $self->get_function( $field, $funcdef );
+    #                     my ( $func, $vars ) = @{$ret};
 
-                    # Function args are numbers, avoid undef
-                    my @args
-                        = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
-                        @{$vars};
-                    $value = $func->(@args);
-                }
-            }
-            else {
-                $value = $record->{$field};
-                $value = q{} unless defined $value;    # empty
-                $value =~ s/[\n\t]//g;                 # delete control chars
-            }
+    #                     # Function args are numbers, avoid undef
+    #                     my @args = map {
+    #                         defined( $record->{$_} ) ? $record->{$_} : 0
+    #                     } @{$vars};
+    #                     $value = $func->(@args);
+    #                 }
+    #             }
+    #             else {
+    #                 $value = $record->{$field};
+    #             }
 
-            if ( $validtype eq 'numeric' ) {
-                $value = 0 unless $value;
-                if ( defined $places ) {
+    #             $value = q{} unless defined $value;    # empty value
+    #             $value =~ s/[\n\t]//g;                 # delete control chars
 
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
+    #             if ( $validtype eq 'numeric' ) {
+    #                 $value = 0 unless $value;
+    #                 if ( defined $places ) {
+    #                     $value = sprintf( "%.${places}f", $value );
+    #                 }
+    #                 else {
+    #                     $value = sprintf( "%.0f", $value );
+    #                 }
+    #             }
+    #             $xpdata->[$c] = $value;
+    #         }
+    #         push @recs, $xpdata;
+    #     }
+    #     #print "L: $level, R: $row\n";
+    #     #p @recs;
 
-            $xpdata->[$r][$c] = $value;
+    #     if ( $level == 1 ) {
+    #         $expvar->{$row}{data} = \@recs;
+    #         $expvar->{$row}{tag}  = 'detail';
+    #     }
+    #     elsif ( $level == 2 ) {
+    #         #print "L2: $gprow : $row\n";
+    #         #p $expvar;
+    #         # $expvar->{$gprow}{expandData}{$row}{data} = \@recs;
+    #         # $expvar->{$gprow}{expandData}{$row}{tag} = 'detail2';
+    #     }
+    # }
 
-            # Hide cols with attribute: show  == 0, using span
-            unless ($show) {
-                my $col = $c - 1;
-                $self->spans( "$r,$col" => "0,1" )
-                    unless $self->spans("$r,$col");
-            }
-        }
-
-        $r++;
-    }
-
-    my $data_new = {
-        $row => {
-            data => $xpdata,
-            tag  => 'detail',
-        },
-    };
-
-    my $xpdvar_old = $self->cget( -expandData );
-    my $xpdvar_new = merge($xpdvar_old, $data_new);
-
-    $self->configure( -expandData => $xpdvar_new );
+    $self->configure( -expandData => $record_ref );
 
     return;
+}
+
+sub get_value {
+    my ($self, $field, $row, $record) = @_;
+
+    my $fld_cfg = $self->{columns}{$field};
+
+    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+
+    my ( $col, $validtype, $width, $places, $datasource )
+        = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
+
+    my $value;
+    if ( $datasource =~ m{=count} ) {
+
+        # Count
+        $value = $row;    # number the rows
+    }
+    elsif ( $datasource =~ m{=(.*)} ) {
+        my $funcdef = $1;
+        if ($funcdef) {
+
+            # Formula
+            my $ret = $self->get_function( $field, $funcdef );
+            my ( $func, $vars ) = @{$ret};
+
+            # Function args are numbers, avoid undef
+            my @args = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
+                @{$vars};
+            $value = $func->(@args);
+        }
+    }
+    else {
+        $value = $record->{$field};
+    }
+
+    $value = q{} unless defined $value;    # empty value
+    $value =~ s/[\n\t]//g;                 # delete control chars
+
+    if ( $validtype eq 'numeric' ) {
+        $value = 0 unless $value;
+        if ( defined $places ) {
+            $value = sprintf( "%.${places}f", $value );
+        }
+        else {
+            $value = sprintf( "%.0f", $value );
+        }
+    }
+
+    return ($value, $col);
 }
 
 =head2 write_row
@@ -526,12 +559,42 @@ sub get_function {
     ( my $varsstr = $funcdef ) =~ s{[-+/*]}{ }g; # replace operator with space
 
     my $tree = Math::Symbolic->parse_from_string($funcdef);
-    my @vars = split /\s+/, $varsstr;
+    my @vars = split /\s+/, $varsstr; # extract the names of the variables
+    unless ($self->check_varnames(\@vars) ) {
+        croak "Config error: computed variable names doesn't match field names!";
+    }
+
     my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
 
     $self->{$field} = [$sub, \@vars];        # save for later use
 
     return $self->{$field};
+}
+
+=head2 check_varnames
+
+Check if arguments variable names match field names.
+
+=cut
+
+sub check_varnames {
+    my ( $self, $vars ) = @_;
+
+    my $check = 1;
+    foreach my $field ( @{$vars} ) {
+        unless ( exists $self->{columns}{$field} ) {
+            $check = 0;
+            last;
+        }
+    }
+
+    return $check;
+}
+
+sub get_expdata {
+    my $self = shift;
+
+    return $self->cget( -expandData );
 }
 
 =head1 AUTHOR

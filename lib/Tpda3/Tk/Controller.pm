@@ -11,6 +11,7 @@ use Tk;
 use Tk::Font;
 
 use Scalar::Util qw(blessed);
+use List::MoreUtils qw{uniq};
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
@@ -4163,18 +4164,33 @@ the screen configuration.
 =cut
 
 sub report_table_metadata {
-    my ( $self, $tm_ds, $ds ) = @_;
+    my ( $self, $tm_ds, $level ) = @_;
 
     my $metadata = {};
 
-    my $pk_col = $self->screen_get_pk_col;   # get PK field name
+    # DataSourceS meta-data
+    my $dss    = $self->scrcfg->dep_table_datasources($tm_ds);
+    my $cntcol = $self->scrcfg->dep_table_rowcount($tm_ds);
+    my $table  = $dss->{level}[$level]{table};
+    my $pkcol  = $dss->{level}[$level]{pkcol};
 
-    $metadata->{table} = $ds;
-    $metadata->{pkcol} = $pk_col;
+    # DataSource meta-data by column
+    my $ds = $self->scrcfg->dep_table_columns_by_level($tm_ds, $level);
 
-    my $columns = $self->scrcfg->dep_table_columns_by_ds($tm_ds, $ds);
+    my @datasource = grep { m/^[^=]/ } keys %{$ds};
+    my @tables = uniq @datasource;
+    if (scalar @tables == 1) {
+        $metadata->{table} = $tables[0];
+    }
+    else {
+        # Wrong datasources config for level $level?
+        return;
+    }
 
-    $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
+    $metadata->{pkcol}     = $pkcol;
+    $metadata->{colslist}  = $ds->{$tables[0]};
+    $metadata->{rowcount} = $cntcol;
+    push @{ $metadata->{colslist} }, $pkcol;  # add PK to cols list
 
     return $metadata;
 }
@@ -4403,38 +4419,114 @@ the rows and also as an index to the 'expnd' data.
 sub fill_table {
     my $self = shift;
 
-    my $tm_ds = 'tm1';                       # hardwired configuration
-    my $rc_field = $self->scrcfg->dep_table_rowcount($tm_ds);
-    my $tables = $self->scrcfg->dep_table_hierarchy($tm_ds);
+    #- Make a tree
 
-    my $mainmeta
-        = $self->report_table_metadata( $tm_ds, $tables->{maintable} );
+    my $tm_ds  = 'tm1';                      # hardwired configuration
+    my $header = $self->scrcfg('rec')->dep_table_header_info($tm_ds);
 
-    my $pk_col = $mainmeta->{pkcol};
+    require Tpda3::Tree;
+    my $tree = Tpda3::Tree->new({});
+    $tree->name('root');
 
-    my $records = $self->_model->table_batch_query($mainmeta);
+    my $columns  = $self->scrcfg->dep_table_columns($tm_ds);
+    my $colnames = Tpda3::Utils->sort_hash_by_id($columns);
+    $tree->set_header($colnames);
 
-    # Fill main
+    #- Get data
+
+    my $level = 0;                           # maintable level
+
+    my $levels     = $self->scrcfg->dep_table_datasources($tm_ds)->{level};
+    my $last_level = $#{$levels};
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
+    my $mainmeta = $self->report_table_metadata( $tm_ds, $level );
+    my ($records, $uplevel) = $self->_model->report_data($mainmeta);
+    # print Dumper($mainmeta, $records, $uplevel);
+
+    # Fill main
 
     $tmx->clear_all;
     $tmx->fill_main($records);
 
-    # Fill details
+    #- Add main records to the tree
+    my $nodename = $mainmeta->{pkcol};
+    my $rowcount = $mainmeta->{rowcount};
 
-    my $maindata = $tmx->data_read;
+    foreach my $rec ( @{$records} ) {
+        my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
+        $tree->by_name('root')->new_daughter( {%hr} )
+            ->name( $nodename . ':' . $rec->{$rowcount} );
+    }
 
-    # Should be only ONE table! ;)
-    foreach my $table ( @{ $tables->{table} } ) {
-        foreach my $rec ( @{$maindata} ) {
-            my $rowcnt = $rec->{$rc_field};
-            my $metadata = $self->report_table_metadata( $tm_ds, $table );
-            $metadata->{where}{$pk_col} = $rec->{$pk_col};
-            my $record = $self->_model->table_batch_query($metadata);
-            $tmx->fill_details( $record, $rowcnt );
+    #-- Fill details
+
+    $level++;                                # level 1
+    my $lvlrows = [];
+
+    my $metadata = $self->report_table_metadata( $tm_ds, $level );
+    my $nodename2 = $metadata->{pkcol};
+    my $uplevel2;
+    foreach my $uprec ( @{$uplevel} ) {
+        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+            $lvlrows->[$level] = $row;
+            $metadata->{where} = $mdrec;
+            (my $records, $uplevel2) = $self->_model->report_data($metadata);
+            foreach my $rec ( @{$records} ) {
+                my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
+                my @name = %{$mdrec};
+                my $nodename = join ':',@name;
+                $tree->by_name($nodename)->new_daughter( {%hr} )
+                    ->name( $nodename2 . ':' . $rec->{$rowcount} );
+            }
         }
     }
+
+    $level++;                                # level 2
+
+    my $metadata2 = $self->report_table_metadata( $tm_ds, $level );
+    my $nodename3 = $metadata2->{pkcol};
+    my $uplevel3;
+    foreach my $uprec ( @{$uplevel2} ) {
+        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+            $lvlrows->[$level] = $row;
+            $metadata2->{where} = $mdrec;
+            (my $records, $uplevel3) = $self->_model->report_data($metadata2);
+            foreach my $rec ( @{$records} ) {
+                my @name = %{$mdrec};
+                my $nodename = join ':',@name;
+                $tree->by_name($nodename)->new_daughter( $rec )
+                    ->name( $nodename3 . ':' . $rec->{$rowcount} );
+            }
+        }
+    }
+
+    $level++;                                # level 3
+
+    my $metadata3 = $self->report_table_metadata( $tm_ds, $level );
+    my $nodename4 = $metadata3->{pkcol};
+    my $uplevel4;
+    foreach my $uprec ( @{$uplevel3} ) {
+        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+            $lvlrows->[$level] = $row;
+            $metadata3->{where} = $mdrec;
+            (my $records, $uplevel4) = $self->_model->report_data($metadata3);
+            foreach my $rec ( @{$records} ) {
+                print Dumper( $rec);
+                my @name = %{$mdrec};
+                my $nodename = join ':',@name;
+                $tree->by_name($nodename)->new_daughter( $rec )
+                    ->name( $nodename4 . ':' . $rec->{$rowcount} );
+            }
+        }
+    }
+
+    print map "$_\n", @{ $tree->draw_ascii_tree };
+
+    my $expvar = $tree->fill_tm();
+#    print Dumper( $expvar );
+    $tmx->fill_details($expvar);
 
     return;
 }
