@@ -421,7 +421,6 @@ sub config_init {
         print "Creating new configs '$new_cfname' .. ";
     }
 
-    $self->configdir_make($new_cfname);
     $self->configdir_populate( $cfname, $new_cfname );
 
     print "done.\n";
