@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use utf8;
 
-use Data::Dumper;
-
 use Tree::DAG_Node;
 use base qw(Tree::DAG_Node);
 
@@ -18,6 +16,8 @@ sub new {
     my $self = bless $class->SUPER::new();
 
     $self->attributes($options);
+
+    $expvar = {};
 
     return $self;
 }
@@ -44,25 +44,32 @@ sub get_attributes {
     return $self->attributes->{$field};
 }
 
+=head2 by_name
+
+Search node by name.
+
+=cut
+
 sub by_name {
     my ( $self, $name ) = @_;
 
     my @found = ();
     my $retvalue = wantarray ? 1 : 0;
-    $self->walk_down(
-        {   callback => sub {
-                if ( $_[0]->name eq $name ) {
-                    push @found, $_[0];
-                    return $retvalue;
-                }
-                1;
-                }
+    $self->walk_down({
+        callback => sub {
+            my $node = shift;
+            if ( $node->name eq $name ) {
+                push @found, $node;
+                return $retvalue;
+            }
+            1;
         }
-    );
+    });
+
     return wantarray ? @found : @found ? $found[0] : undef;
 }
 
-sub fill_tm {
+sub get_expand_data {
     my ( $self, $name ) = @_;
 
     $self->walk_down( { callback => \&process_node, _depth => 0 } );
@@ -80,18 +87,22 @@ sub process_node {
     print ' ' x ($depth * 3);
     print $nodeidx ? $nodeidx : '', ' ', $self->name, "\n";
 
-    if ($depth == 0) {
-        # skip
-    }
-    elsif ($depth == 1) {
-        # skip
-    }
-    else {
+    if ($depth >= 2) {
         $self->add_detail_data();
     }
 
     return 1;
 }
+
+=head2 add_detail_data
+
+Builds expandData variable for the TMSHR widget.
+
+Limited to 3 levels deep.
+
+TODO: Replace the switch with some kind of a loop.
+
+=cut
 
 sub add_detail_data {
     my ($self) = @_;
@@ -132,45 +143,51 @@ sub add_detail_data {
         print "\$depth_factor is not equal with 1 or 2 or 3\n";
     }
 
-    # print Dumper( \@vdata);
     return;
 }
 
 sub clear_totals {
-    $_[0]->walk_down(
-        {   callback => sub {
-                my $self = shift;
-                if ( $self->daughters ) {
-                    $self->set_attributes('fact_val', 0);
+    my ( $self, $fields ) = @_;
+
+    $self->walk_down({
+        callback => sub {
+            my $node = shift;
+            if ( $node->daughters ) {
+                foreach my $field ( @{$fields} ) {
+                    $node->set_attributes( 'fact_val', 0 );
                 }
             }
         }
-    );
+    });
 }
 
 sub sum_up {
-    $_[0]->walk_down(
-        {   callbackback => sub {
-                my $node = shift;
-                return 1 unless $node->mother;
-                $node->mother->attributes->{fact_val}
-                    += $node->attributes->{fact_val};
-                }
+    my ( $self, $fields ) = @_;
+
+    $self->walk_down({
+        callbackback => sub {
+            my $node = shift;
+            return 1 unless $node->mother;
+            foreach my $field ( @{$fields} ) {
+                $node->mother->attributes->{$field}
+                    += $node->attributes->{$field};
+            }
         }
-    );
+    });
 }
 
 sub print_wealth {
-    $_[0]->walk_down(
-        {   callback => sub {
-                my $node = shift;
-                printf "%s%.15s\t facturat: %.2f\n",
-                    "  " x $_[0]->{_depth},
-                    $node->name, $node->get_attributes('fact_val');;
-            },
-            _depth => 0,
-        }
-    );
+    my ( $self, $field ) = @_;
+
+    $self->walk_down({
+        callback => sub {
+            my $node = shift;
+            printf "%s%.15s\t facturat: %.2f\n",
+                "  " x $_[0]->{_depth},
+                    $node->name, $node->get_attributes($field);;
+        },
+        _depth => 0,
+    });
 }
 
 =head1 AUTHOR
@@ -183,9 +200,16 @@ None known.
 
 Please report any bugs or feature requests to the author.
 
+=head1 ACKNOWLEDGEMENTS
+
+Heavily inspired from the I<Introduction to Tree::DAG_Node> article by
+gmax, from: http://www.perlmonks.org/?node_id=153259
+
+Thank You!
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2011 Stefan Suciu.
+Copyright 2010-2012 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

@@ -168,15 +168,15 @@ my $delay = 1;
 $mw->after( $delay * 1000,
     sub { is( $tm->fill_main($record), undef, 'fill TMSHR' ); } );
 
-$delay++;
+# $delay++;
 
-$mw->after( $delay * 1000,
-    sub { is( $tm->fill_details($expdata_1, 1), undef, 'fill TMSHR det 1' ); } );
+# $mw->after( $delay * 1000,
+#     sub { is( $tm->fill_details($expdata_1, 1), undef, 'fill TMSHR det 1' ); } );
 
-$delay++;
+# $delay++;
 
-$mw->after( $delay * 1000,
-    sub { is( $tm->fill_details($expdata_4, 2), undef, 'fill TMSHR det 2' ); } );
+# $mw->after( $delay * 1000,
+#     sub { is( $tm->fill_details($expdata_4, 2), undef, 'fill TMSHR det 2' ); } );
 
 $delay++;
 

@@ -20,11 +20,7 @@ use Tpda3::Utils;
 use Tpda3::Config;
 use Tpda3::Model;
 use Tpda3::Tk::View;
-use Tpda3::Tk::Dialog::Login;
-use Tpda3::Tk::Dialog::Help;
-use Tpda3::Tk::Dialog::Repman;
 use Tpda3::Lookup;
-use Tpda3::Generator;
 
 use File::Basename;
 use File::Spec::Functions qw(catfile);
@@ -127,6 +123,7 @@ sub start {
     $self->_log->trace('starting ...');
 
     if ( !$self->_cfg->user or !$self->_cfg->pass ) {
+        require Tpda3::Tk::Dialog::Login;
         my $pd = Tpda3::Tk::Dialog::Login->new;
         $pd->login( $self->_view );
     }
@@ -157,6 +154,7 @@ sub guide {
 
     my $gui = $self->_view;
 
+    require Tpda3::Tk::Dialog::Help;
     my $gd = Tpda3::Tk::Dialog::Help->new;
 
     $gd->help_dialog($gui);
@@ -169,6 +167,7 @@ sub repman {
 
     my $gui = $self->_view;
 
+    require Tpda3::Tk::Dialog::Repman;
     my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
 
     $gd->run_screen($gui);
@@ -2528,6 +2527,7 @@ sub screen_document_generate {
         return;
     }
 
+    require Tpda3::Generator;
     my $gen = Tpda3::Generator->new();
 
     #-- Generate LaTeX document from template
@@ -4006,8 +4006,7 @@ Used for the witness files.
 sub storable_file_name {
     my ( $self, $orig ) = @_;
 
-    my $suffix = q{};
-    $suffix = '-orig' if $orig;
+    my $suffix = $orig ? q{-orig} : q{};
 
     # Store record data to file
     my $data_file
@@ -4412,7 +4411,10 @@ sub list_column_names {
 Fill Table Matrix widget for I<report> style screens.
 
 The field with the attribute 'datasource == !count!' is used to number
-the rows and also as an index to the 'expnd' data.
+the rows and also as an index to the I<expand data>.
+
+Builds a tree with the L<Tpda::Tree> module, a subclass of
+L<Tree::DAG_Node>.
 
 =cut
 
@@ -4442,93 +4444,76 @@ sub fill_table {
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
 
     my $mainmeta = $self->report_table_metadata( $tm_ds, $level );
-    my ($records, $uplevel) = $self->_model->report_data($mainmeta);
-    # print Dumper($mainmeta, $records, $uplevel);
+    my ($records, $uplvldata) = $self->_model->report_data($mainmeta);
 
-    # Fill main
+    #- Fill main
 
     $tmx->clear_all;
     $tmx->fill_main($records);
 
     #- Add main records to the tree
     my $nodename = $mainmeta->{pkcol};
-    my $rowcount = $mainmeta->{rowcount};
+    my $countcol = $mainmeta->{rowcount};
 
     foreach my $rec ( @{$records} ) {
+        $rec->{total_val} = 0.00;
+        $rec->{total_plata} = 0.00;
         my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
+        print Dumper( $rec, \%hr);
         $tree->by_name('root')->new_daughter( {%hr} )
-            ->name( $nodename . ':' . $rec->{$rowcount} );
+            ->name( $nodename . ':' . $rec->{$countcol} );
     }
 
     #-- Fill details
 
-    $level++;                                # level 1
-    my $lvlrows = [];
+    $level++;                                # next level
 
-    my $metadata = $self->report_table_metadata( $tm_ds, $level );
-    my $nodename2 = $metadata->{pkcol};
-    my $uplevel2;
-    foreach my $uprec ( @{$uplevel} ) {
-        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
-            $lvlrows->[$level] = $row;
-            $metadata->{where} = $mdrec;
-            (my $records, $uplevel2) = $self->_model->report_data($metadata);
-            foreach my $rec ( @{$records} ) {
-                my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
-                my @name = %{$mdrec};
-                my $nodename = join ':',@name;
-                $tree->by_name($nodename)->new_daughter( {%hr} )
-                    ->name( $nodename2 . ':' . $rec->{$rowcount} );
-            }
-        }
+    while ( $level <= $last_level ) {
+        my $metadata = $self->report_table_metadata( $tm_ds, $level );
+        $uplvldata
+            = $self->process_level( $uplvldata, $metadata, $countcol,
+            $header, $tree );
+        $level++;
     }
 
-    $level++;                                # level 2
+    # print map "$_\n", @{ $tree->draw_ascii_tree };
+    $tree->clear_totals([qw{total_val total_plata}]);
+    $tree->sum_up([qw{total_val total_plata}]);
+    $tree->print_wealth('total_val');
 
-    my $metadata2 = $self->report_table_metadata( $tm_ds, $level );
-    my $nodename3 = $metadata2->{pkcol};
-    my $uplevel3;
-    foreach my $uprec ( @{$uplevel2} ) {
-        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
-            $lvlrows->[$level] = $row;
-            $metadata2->{where} = $mdrec;
-            (my $records, $uplevel3) = $self->_model->report_data($metadata2);
-            foreach my $rec ( @{$records} ) {
-                my @name = %{$mdrec};
-                my $nodename = join ':',@name;
-                $tree->by_name($nodename)->new_daughter( $rec )
-                    ->name( $nodename3 . ':' . $rec->{$rowcount} );
-            }
-        }
-    }
-
-    $level++;                                # level 3
-
-    my $metadata3 = $self->report_table_metadata( $tm_ds, $level );
-    my $nodename4 = $metadata3->{pkcol};
-    my $uplevel4;
-    foreach my $uprec ( @{$uplevel3} ) {
-        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
-            $lvlrows->[$level] = $row;
-            $metadata3->{where} = $mdrec;
-            (my $records, $uplevel4) = $self->_model->report_data($metadata3);
-            foreach my $rec ( @{$records} ) {
-                print Dumper( $rec);
-                my @name = %{$mdrec};
-                my $nodename = join ':',@name;
-                $tree->by_name($nodename)->new_daughter( $rec )
-                    ->name( $nodename4 . ':' . $rec->{$rowcount} );
-            }
-        }
-    }
-
-    print map "$_\n", @{ $tree->draw_ascii_tree };
-
-    my $expvar = $tree->fill_tm();
-#    print Dumper( $expvar );
+    my $expvar = $tree->get_expand_data();
     $tmx->fill_details($expvar);
 
     return;
+}
+
+=head2 process_level
+
+For each record of the upper level data, make new daughters nodes in
+the tree. The node names are created from the tables primary column
+name and the I<rowcount> column value.
+
+=cut
+
+sub process_level {
+    my ($self, $uplvldata, $metadata, $countcol, $header, $tree) = @_;
+
+    my $nodename = $metadata->{pkcol};
+    foreach my $uprec ( @{$uplvldata} ) {
+        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+            $metadata->{where} = $mdrec;
+            (my $records, $uplvldata) = $self->_model->report_data($metadata);
+            foreach my $rec ( @{$records} ) {
+                my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
+                my @name = %{$mdrec};
+                my $nodename0 = join ':', @name;
+                $tree->by_name($nodename0)->new_daughter( {%hr} )
+                    ->name( $nodename . ':' . $rec->{$countcol} );
+            }
+        }
+    }
+
+    return $uplvldata;
 }
 
 =head2 DESTROY
@@ -4569,7 +4554,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2011 Stefan Suciu.
+Copyright 2010-2012 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
