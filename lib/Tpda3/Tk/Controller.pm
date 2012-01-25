@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 use Carp;
 
@@ -4194,6 +4192,14 @@ sub report_table_metadata {
     return $metadata;
 }
 
+sub report_table_sumup_cols {
+    my ( $self, $tm_ds, $level ) = @_;
+
+    my $metadata = $self->scrcfg->dep_table_columns_by_level($tm_ds, $level);
+
+    return $metadata->{'=sumup'};
+}
+
 =head2 save_screendata
 
 Save screen data to temp file with Storable.
@@ -4444,29 +4450,28 @@ sub fill_table {
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
 
     my $mainmeta = $self->report_table_metadata( $tm_ds, $level );
-    my ($records, $uplvldata) = $self->_model->report_data($mainmeta);
-
-    #- Fill main
-
-    $tmx->clear_all;
-    $tmx->fill_main($records);
-
-    #- Add main records to the tree
     my $nodename = $mainmeta->{pkcol};
     my $countcol = $mainmeta->{rowcount};
 
+    my ($records, $uplvldata) = $self->_model->report_data($mainmeta);
+    my @recs;
+
+    my $sum_up_cols = $self->report_table_sumup_cols( $tm_ds, $level );
+
+    #- Add main records to the tree
+
     foreach my $rec ( @{$records} ) {
-        $rec->{total_val} = 0.00;
-        $rec->{total_plata} = 0.00;
-        my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
-        print Dumper( $rec, \%hr);
-        $tree->by_name('root')->new_daughter( {%hr} )
+        my $hr_ref = $self->record_merge_columns($rec, $header);
+        $tree->by_name('root')->new_daughter($hr_ref)
             ->name( $nodename . ':' . $rec->{$countcol} );
+        push @recs, $hr_ref;
     }
 
-    #-- Fill details
+    $tmx->clear_all;
 
     $level++;                                # next level
+
+    #- Add detail records to the tree
 
     while ( $level <= $last_level ) {
         my $metadata = $self->report_table_metadata( $tm_ds, $level );
@@ -4476,15 +4481,43 @@ sub fill_table {
         $level++;
     }
 
-    # print map "$_\n", @{ $tree->draw_ascii_tree };
-    $tree->clear_totals([qw{total_val total_plata}]);
-    $tree->sum_up([qw{total_val total_plata}]);
-    $tree->print_wealth('total_val');
+    #- Fill TMSHR widget
 
-    my $expvar = $tree->get_expand_data();
-    $tmx->fill_details($expvar);
+    #print map "$_\n", @{ $tree->draw_ascii_tree }; # debug
+    $tree->clear_totals($sum_up_cols, 2); # hardwired decimal places
+    $tree->sum_up($sum_up_cols, 2);
+    #$tree->print_wealth($sum_up_cols->[0]); # debug
+
+    my ($maindata, $expdata) = $tree->get_tree_data();
+    $tmx->fill_main($maindata);
+    $tmx->fill_details($expdata);
 
     return;
+}
+
+=head2 record_merge_columns
+
+Merge level columns with header columns and set default values.
+
+=cut
+
+sub record_merge_columns {
+    my ($self, $rec, $header) = @_;
+
+    my %hr;
+    foreach my $field ( keys %{ $header->{columns} } ) {
+        my $field_type = $header->{columns}{$field}{validation};
+        my $default_value
+        # column type          default
+        = $field_type eq 'numeric' ? 0
+        : $field_type eq 'integer' ? 0
+        :                            undef # default
+        ;
+
+        $hr{$field} = $rec->{$field} ? $rec->{$field} : $default_value;
+    }
+
+    return \%hr;
 }
 
 =head2 process_level
@@ -4504,10 +4537,10 @@ sub process_level {
             $metadata->{where} = $mdrec;
             (my $records, $uplvldata) = $self->_model->report_data($metadata);
             foreach my $rec ( @{$records} ) {
-                my %hr = map { $_ => $rec->{$_} } keys %{ $header->{columns} };
+                my $hr_ref = $self->record_merge_columns($rec, $header);
                 my @name = %{$mdrec};
                 my $nodename0 = join ':', @name;
-                $tree->by_name($nodename0)->new_daughter( {%hr} )
+                $tree->by_name($nodename0)->new_daughter( $hr_ref )
                     ->name( $nodename . ':' . $rec->{$countcol} );
             }
         }

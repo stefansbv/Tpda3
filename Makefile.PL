@@ -32,6 +32,7 @@ requires 'File::Find::Rule'      => '0.30';
 requires 'File::HomeDir'         => '0.89';
 requires 'File::Spec::Functions' => '0';
 requires 'DBI'                   => '1.53';
+requires 'Math::Symbolic'        => '0';
 
 #- Tk
 

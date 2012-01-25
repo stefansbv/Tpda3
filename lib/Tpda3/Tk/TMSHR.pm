@@ -2,14 +2,9 @@ package Tpda3::Tk::TMSHR;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
-use Data::Printer;
-
 use utf8;
 use Carp;
 
-use Hash::Merge qw(merge);
 use Math::Symbolic;
 
 use Tpda3::Utils;
@@ -246,57 +241,13 @@ sub fill_main {
     my $rows = 0;
 
     #- Scan DS and write to table
+
     foreach my $record ( @{$record_ref} ) {
-        #while ( my ( $row, $record ) = each( %{$rec} ) ) {
-        # foreach my $field ( keys %{ $self->{columns} } ) {
         my $row = $record->{nr_crt};
         foreach my $field ( keys %{ $record } ) {
-            # my ($value, $col) = $self->get_value($field, $row, $record);
-            # begin func
-            #my ($self, $field, $row, $record) = @_;
-            my $fld_cfg = $self->{columns}{$field};
-
-            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
-            my ( $col, $validtype, $width, $places, $datasource )
-                = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
-
-            my $value;
-            # if ( $datasource =~ m{=(.*)} ) {
-            #     my $funcdef = $1;
-            #     if ($funcdef) {
-
-            #         # Formula
-            #         my $ret = $self->get_function( $field, $funcdef );
-            #         my ( $func, $vars ) = @{$ret};
-
-            #         # Function args are numbers, avoid undef
-            #         my @args = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
-            #             @{$vars};
-            #         $value = $func->(@args);
-            #     }
-            # }
-            # else {
-                $value = $record->{$field};
-            # }
-
-            $value = q{} unless defined $value;    # empty value
-            $value =~ s/[\n\t]//g;                 # delete control chars
-
-            if ( $validtype eq 'numeric' ) {
-                $value = 0 unless $value;
-                if ( defined $places ) {
-                    $value = sprintf( "%.${places}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
-
-            #return ($value, $col);
-            # end func
-
-            $xtvar->{"$row,$col"} = $value;
+            my ( $cell_value, $col )
+                = $self->compute_format_value( $field, $row, $record );
+            $xtvar->{"$row,$col"} = $cell_value;
         }
 
         $rows = $row;
@@ -316,84 +267,18 @@ Fill TableMatrix widget expand data from the dependent table(s).
 sub fill_details {
     my ( $self, $record_ref ) = @_;
 
-    # my $expvar = {}; #$self->cget( -expandData );
-
-    # my @recs;
-    # while ( my ( $row, $rec ) = each( %{$record_ref} ) ) {
-    #     foreach my $record ( @{$rec} ) {
-    #         my $xpdata = [];    # init
-    #         foreach my $field ( keys %{ $record } ) {
-    #             my $fld_cfg = $self->{columns}{$field};
-
-    #             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
-    #             my ( $c, $validtype, $width, $places, $datasource )
-    #                 = @$fld_cfg{ 'id', 'validation', 'width', 'places',
-    #                 'datasource' };
-
-    #             my $value;
-    #             if ( $datasource =~ m{=count} ) {
-
-    #                 # Count
-    #                 # $value = $row;    # number the rows
-    #                 $value = $record->{$field};
-    #             }
-    #             elsif ( $datasource =~ m{=(.*)} ) {
-    #                 my $funcdef = $1;
-    #                 if ($funcdef) {
-
-    #                     # Formula
-    #                     my $ret = $self->get_function( $field, $funcdef );
-    #                     my ( $func, $vars ) = @{$ret};
-
-    #                     # Function args are numbers, avoid undef
-    #                     my @args = map {
-    #                         defined( $record->{$_} ) ? $record->{$_} : 0
-    #                     } @{$vars};
-    #                     $value = $func->(@args);
-    #                 }
-    #             }
-    #             else {
-    #                 $value = $record->{$field};
-    #             }
-
-    #             $value = q{} unless defined $value;    # empty value
-    #             $value =~ s/[\n\t]//g;                 # delete control chars
-
-    #             if ( $validtype eq 'numeric' ) {
-    #                 $value = 0 unless $value;
-    #                 if ( defined $places ) {
-    #                     $value = sprintf( "%.${places}f", $value );
-    #                 }
-    #                 else {
-    #                     $value = sprintf( "%.0f", $value );
-    #                 }
-    #             }
-    #             $xpdata->[$c] = $value;
-    #         }
-    #         push @recs, $xpdata;
-    #     }
-    #     #print "L: $level, R: $row\n";
-    #     #p @recs;
-
-    #     if ( $level == 1 ) {
-    #         $expvar->{$row}{data} = \@recs;
-    #         $expvar->{$row}{tag}  = 'detail';
-    #     }
-    #     elsif ( $level == 2 ) {
-    #         #print "L2: $gprow : $row\n";
-    #         #p $expvar;
-    #         # $expvar->{$gprow}{expandData}{$row}{data} = \@recs;
-    #         # $expvar->{$gprow}{expandData}{$row}{tag} = 'detail2';
-    #     }
-    # }
-
     $self->configure( -expandData => $record_ref );
 
     return;
 }
 
-sub get_value {
+=head2 compute_format_value
+
+Compute and/or format value.
+
+=cut
+
+sub compute_format_value {
     my ($self, $field, $row, $record) = @_;
 
     my $fld_cfg = $self->{columns}{$field};
@@ -441,93 +326,6 @@ sub get_value {
     }
 
     return ($value, $col);
-}
-
-=head2 write_row
-
-Write a row to a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-=cut
-
-sub write_row {
-    my ( $self, $row, $col, $record_ref ) = @_;
-
-    return unless ref $record_ref;    # No results
-
-    my $xtvar = $self->cget( -variable );
-
-    my $nr_col = 0;
-    foreach my $field ( keys %{$record_ref} ) {
-
-        my $fld_cfg = $self->{columns}{$field};
-        my $value   = $record_ref->{$field};
-
-        my ( $col, $validtype, $width, $places )
-            = @$fld_cfg{ 'id', 'validation', 'width', 'places' };
-
-        if ( $validtype =~ /digit/ ) {
-            $value = 0 unless $value;
-            if ( defined $places ) {
-
-                # Daca SCALE >= 0, Formatez numarul
-                $value = sprintf( "%.${places}f", $value );
-            }
-            else {
-                $value = sprintf( "%.0f", $value );
-            }
-        }
-
-        $xtvar->{"$row,$col"} = $value;
-        $nr_col++;
-    }
-
-    return $nr_col;
-}
-
-=head2 data_read
-
-Read data from widget.
-
-=cut
-
-sub data_read {
-    my $self = shift;
-
-    my $xtvar = $self->cget( -variable );
-
-    my $rows_no  = $self->cget( -rows );
-    my $cols_no  = $self->cget( -cols );
-    my $rows_idx = $rows_no - 1;
-    my $cols_idx = $cols_no - 1;
-
-    my $fields_cfg = $self->{columns};
-
-    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
-
-    # Read table data and create an AoH
-    my @tabledata;
-
-    # The first row is the header
-    for my $row ( 1 .. $rows_idx ) {
-
-        my $rowdata = {};
-        # The first col is the selector
-        for my $col ( 1 .. $cols_idx ) {
-
-            my $ci = $col - 1;
-            my $cell_value = $self->get("$row,$col");
-            my $col_name = $cols_ref->[$ci];
-            my $fld_cfg = $fields_cfg->{$col_name};
-
-            $rowdata->{$col_name} = $cell_value;
-        }
-
-        push @tabledata, $rowdata;
-    }
-
-    return \@tabledata;
 }
 
 =head2 get_function
@@ -609,7 +407,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Stefan Suciu.
+Copyright 2011-2012 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
