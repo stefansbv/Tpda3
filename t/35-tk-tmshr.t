@@ -26,7 +26,7 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 6;
+    plan tests => 7;
 }
 
 use_ok('Tpda3::Tk::TMSHR');
@@ -35,77 +35,85 @@ use_ok('Tpda3::Tk::TMSHR');
 
 my $header = {
     colstretch  => undef,
+    rowcount    => 'nr_crt',
     columns     => {
-        orderlinenumber => {
-            id         => '1',
-            places     => '0',
-            width      => '3',
+        nr_crt => {
+            id         => 1,
+            places     => 0,
+            width      => 3,
             validation => 'integer',
             order      => 'N',
             label      => '#',
             tag        => 'ro_center',
             rw         => 'ro',
-            show       => '1',
             datasource => '=count',
         },
         productline => {
-            id         => '2',
-            places     => '0',
-            width      => '15',
+            id         => 2,
+            places     => 0,
+            width      => 15,
             validation => 'alphanumplus',
             order      => 'A',
             label      => 'Line',
             tag        => 'ro_left',
             rw         => 'ro',
-            show       => '1',
-            datasource => 'products',
+            datasource => {
+                level0 => 'tablename',
+                level1 => undef,
+            },
         },
         productname => {
-            id         => '3',
-            places     => '0',
-            width      => '30',
+            id         => 3,
+            places     => 0,
+            width      => 30,
             validation => 'alphanumplus',
             order      => 'A',
             label      => 'Product',
             tag        => 'ro_left',
             rw         => 'ro',
-            show       => '1',
             datasource => 'firme',
+            datasource => {
+                level0 => undef,
+                level1 => 'tablename'
+            },
         },
         quantityordered => {
-            id         => '4',
-            places     => '0',
-            width      => '8',
+            id         => 4,
+            places     => 0,
+            width      => 8,
             validation => 'numeric',
             order      => 'N',
             label      => 'Quantity',
             tag        => 'enter_right',
             rw         => 'ro',
-            show       => '1',
-            datasource => 'firme',
+            datasource => {
+                level0 => undef,
+                level1 => 'tablename'
+            },
         },
         priceeach => {
-            id         => '5',
-            places     => '2',
-            width      => '8',
+            id         => 5,
+            places     => 2,
+            width      => 8,
             validation => 'numeric',
             order      => 'N',
             label      => 'Price',
             tag        => 'enter_right',
             rw         => 'ro',
-            show       => '1',
-            datasource => 'firme',
+            datasource => {
+                level0 => undef,
+                level1 => 'tablename'
+            },
         },
         ordervalue => {
-            id         => '6',
-            places     => '2',
-            width      => '8',
+            id         => 6,
+            places     => 2,
+            width      => 8,
             validation => 'numeric',
             order      => 'A',
             label      => 'Value',
             tag        => 'ro_right',
             rw         => 'ro',
-            show       => '1',
             datasource => '=quantityordered*priceeach',
         },
     },
@@ -113,26 +121,37 @@ my $header = {
 
 # Data for tests - main data
 
-my $record
-    = [ { productline => 'Vintage Cars', }, { productline => 'Planes', }, ];
-
-my $expdata_1 = [
-    {   priceeach       => '37.97',
-        quantityordered => '29',
-        productname     => '1930 Buick Marquette Phaeton',
+my $record = [
+    {   nr_crt          => 1,
+        productline     => 'Vintage Cars',
+        productname     => '',
+        quantityordered => '0',
+        priceeach       => '0.00',
+        ordervalue      => '0.00',
+    },
+    {   nr_crt          => 2,
+        productline     => 'Planes',
+        productname     => '',
+        quantityordered => '0',
+        priceeach       => '0.00',
+        ordervalue      => '0.00',
     },
 ];
 
-my $expdata_4 = [
-    {   priceeach       => '81.29',
-        quantityordered => '48',
-        productname     => 'American Airlines: B767-300',
-    },
-    {   priceeach       => '70.40',
-        quantityordered => '38',
-        productname     => 'F/A 18 Hornet 1/72',
-    },
-];
+my $expdata = {
+    '1' => {
+        'data' => [
+            [   '', '', '', '1930 Buick Marquette Phaeton',
+                '29', '37.97',
+            ],
+            [   '', '', '', 'American Airlines: B767-300',
+                '48', '81.29',
+            ],
+            [ '', '', '', 'F/A 18 Hornet 1/72', '38', '70.40', ]
+        ],
+        'tag' => 'detail',
+    }
+};
 
 my $mw = tkinit;
 $mw->geometry('+20+20');
@@ -166,17 +185,26 @@ $tm->pack( -expand => 1, -fill => 'both');
 my $delay = 1;
 
 $mw->after( $delay * 1000,
-    sub { is( $tm->fill_main($record), undef, 'fill TMSHR' ); } );
+    sub { is( $tm->fill_main($record, 'nr_crt'), undef, 'fill TMSHR' ); } );
 
-# $delay++;
+$delay++;
 
-# $mw->after( $delay * 1000,
-#     sub { is( $tm->fill_details($expdata_1, 1), undef, 'fill TMSHR det 1' ); } );
+$mw->after(
+    $delay * 1000,
+    sub {
+        is( $tm->fill_details($expdata), undef, 'fill TMSHR det 1' );
+    }
+);
 
-# $delay++;
+$delay++;
 
-# $mw->after( $delay * 1000,
-#     sub { is( $tm->fill_details($expdata_4, 2), undef, 'fill TMSHR det 2' ); } );
+$mw->after(
+    $delay * 1000,
+    sub {
+        is_deeply($tm->get_main_data(), $record, 'compare main data');
+        is_deeply($tm->get_expdata(), $expdata, 'compare expand data');
+    }
+);
 
 $delay++;
 

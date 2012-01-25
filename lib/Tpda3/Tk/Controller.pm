@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use utf8;
 use Carp;
 
@@ -4488,7 +4490,7 @@ sub fill_table {
     $tree->print_wealth($sum_up_cols->[0]); # debug
 
     my ($maindata, $expdata) = $tree->get_tree_data();
-    $tmx->fill_main($maindata);
+    $tmx->fill_main($maindata, $countcol);
     $tmx->fill_details($expdata);
 
     return;

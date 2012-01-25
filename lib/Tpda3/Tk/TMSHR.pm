@@ -28,7 +28,7 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::TM;
+    use Tpda3::Tk::TMSHR;
 
     my ($xtvar, $expand_data) = ( {}, {} );
     my $xtable = $frame->Scrolled(
@@ -49,7 +49,9 @@ our $VERSION = '0.01';
     );
     $xtable->pack( -expand => 1, -fill => 'both' );
 
-    $xtable->init($header);
+    $xtable->make_header($header);
+    $xtable->fill_main($record_aoh, 'rowcountcolname');
+    $xtable->fill_details($expanddata);
 
 =head1 METHODS
 
@@ -234,7 +236,7 @@ Fill TableMatrix widget with data from the main table.
 =cut
 
 sub fill_main {
-    my ( $self, $record_ref ) = @_;
+    my ( $self, $record_ref, $countcol ) = @_;
 
     my $xtvar = $self->cget( -variable );
 
@@ -243,7 +245,7 @@ sub fill_main {
     #- Scan DS and write to table
 
     foreach my $record ( @{$record_ref} ) {
-        my $row = $record->{nr_crt};
+        my $row = $record->{$countcol};
         foreach my $field ( keys %{ $record } ) {
             my ( $cell_value, $col )
                 = $self->compute_format_value( $field, $row, $record );
@@ -395,6 +397,47 @@ sub get_expdata {
     return $self->cget( -expandData );
 }
 
+=head2 get_main_data
+
+Read main data from the widget.
+
+=cut
+
+sub get_main_data {
+    my $self = shift;
+
+    my $xtvar = $self->cget( -variable );
+
+    my $rows_no  = $self->cget( -rows );
+    my $cols_no  = $self->cget( -cols );
+    my $rows_idx = $rows_no - 1;
+    my $cols_idx = $cols_no - 1;
+
+    my $fields_cfg = $self->{columns};
+    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+
+    # # Read table data and create an AoH
+    my @tabledata;
+
+    # The first row is the header
+    for my $row ( 1 .. $rows_idx ) {
+
+        my $rowdata = {};
+        for my $col ( 0 .. $cols_idx ) {
+            my $cell_value = $self->get("$row,$col");
+            my $col_name   = $cols_ref->[$col-1];
+
+            next unless $col_name;
+
+            $rowdata->{$col_name} = $cell_value;
+        }
+
+        push @tabledata, $rowdata;
+    }
+
+    return (\@tabledata);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
@@ -415,4 +458,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # end of Tpda3::Tk::TM
+1;    # end of Tpda3::Tk::TMSHR
