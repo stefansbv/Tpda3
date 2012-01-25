@@ -54,7 +54,7 @@ Set node attributes.
 sub set_attributes {
     my ( $self, $field, $val ) = @_;
 
-    $self->attributes->{$field} = $val;
+    $self->attributes->{$field} = qq{$val};
 
     return;
 }
@@ -230,12 +230,42 @@ sub clear_totals {
             my ($node, $options) = @_;
             if ( $node->daughters ) {
                 foreach my $field ( @{$fields} ) {
-                    $node->set_attributes( $field, sprintf("%.${places}f", 0) );
+                    $node->set_attributes( $field, 0 );
                 }
             }
             1;
         }
     });
+
+    return;
+}
+
+=head2 format_numbers
+
+Traverse once again the tree and format the columns configured with
+I<=sumup> value in the I<datasource> section.
+
+Have to do the formatting after sum, because the format is not
+preserved when summing up.
+
+=cut
+
+sub format_numbers {
+    my ( $self, $fields, $places ) = @_;
+
+    $self->walk_down({
+        callback => sub {
+            my ($node, $options) = @_;
+                foreach my $field ( @{$fields} ) {
+                    my $cell_value = $node->get_attributes($field);
+                    $node->set_attributes( $field,
+                        sprintf( "%.${places}f", $cell_value ) );
+                }
+            1;
+        }
+    });
+
+    return;
 }
 
 =head2 sum_up
@@ -259,6 +289,8 @@ sub sum_up {
             1;
         }
     });
+
+    return;
 }
 
 =head2 print_wealth
@@ -279,6 +311,8 @@ sub print_wealth {
         },
         _depth => 0,
     });
+
+    return;
 }
 
 =head1 AUTHOR

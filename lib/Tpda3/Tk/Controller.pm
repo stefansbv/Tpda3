@@ -4454,7 +4454,6 @@ sub fill_table {
     my $countcol = $mainmeta->{rowcount};
 
     my ($records, $uplvldata) = $self->_model->report_data($mainmeta);
-    my @recs;
 
     my $sum_up_cols = $self->report_table_sumup_cols( $tm_ds, $level );
 
@@ -4464,7 +4463,6 @@ sub fill_table {
         my $hr_ref = $self->record_merge_columns($rec, $header);
         $tree->by_name('root')->new_daughter($hr_ref)
             ->name( $nodename . ':' . $rec->{$countcol} );
-        push @recs, $hr_ref;
     }
 
     $tmx->clear_all;
@@ -4486,7 +4484,8 @@ sub fill_table {
     #print map "$_\n", @{ $tree->draw_ascii_tree }; # debug
     $tree->clear_totals($sum_up_cols, 2); # hardwired decimal places
     $tree->sum_up($sum_up_cols, 2);
-    #$tree->print_wealth($sum_up_cols->[0]); # debug
+    $tree->format_numbers($sum_up_cols, 2);
+    $tree->print_wealth($sum_up_cols->[0]); # debug
 
     my ($maindata, $expdata) = $tree->get_tree_data();
     $tmx->fill_main($maindata);
