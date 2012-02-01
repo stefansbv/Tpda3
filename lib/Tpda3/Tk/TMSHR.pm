@@ -5,8 +5,6 @@ use warnings;
 use utf8;
 use Carp;
 
-use Math::Symbolic;
-
 use Tpda3::Utils;
 
 use Tk;
@@ -247,9 +245,8 @@ sub fill_main {
     foreach my $record ( @{$record_ref} ) {
         my $row = $record->{$countcol};
         foreach my $field ( keys %{ $record } ) {
-            my ( $cell_value, $col )
-                = $self->compute_format_value( $field, $row, $record );
-            $xtvar->{"$row,$col"} = $cell_value;
+            my $col = $self->{columns}{$field}{id};
+            $xtvar->{"$row,$col"} = $record->{$field};
         }
 
         $rows = $row;
@@ -272,129 +269,6 @@ sub fill_details {
     $self->configure( -expandData => $record_ref );
 
     return;
-}
-
-=head2 compute_format_value
-
-Compute and/or format value.
-
-=cut
-
-sub compute_format_value {
-    my ($self, $field, $row, $record) = @_;
-
-    my $fld_cfg = $self->{columns}{$field};
-
-    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
-    my ( $col, $validtype, $width, $places, $datasource )
-        = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
-
-    my $value;
-    if ( $datasource =~ m{=count} ) {
-
-        # Count
-        $value = $row;    # number the rows
-    }
-    elsif ( $datasource =~ m{=(.*)} ) {
-        my $funcdef = $1;
-        if ($funcdef) {
-
-            # Formula
-            my $ret = $self->get_function( $field, $funcdef );
-            my ( $func, $vars ) = @{$ret};
-
-            # Function args are numbers, avoid undef
-            my @args = map { defined( $record->{$_} ) ? $record->{$_} : 0 }
-                @{$vars};
-            $value = $func->(@args);
-        }
-    }
-    else {
-        $value = $record->{$field};
-    }
-
-    $value = q{} unless defined $value;    # empty value
-    $value =~ s/[\n\t]//g;                 # delete control chars
-
-    if ( $validtype eq 'numeric' ) {
-        $value = 0 unless $value;
-        if ( defined $places ) {
-            $value = sprintf( "%.${places}f", $value );
-        }
-        else {
-            $value = sprintf( "%.0f", $value );
-        }
-    }
-
-    return ($value, $col);
-}
-
-=head2 get_function
-
-Make a reusable anonimous function to compute a field's value, using
-the definition from the screen configuration and the Math::Symbolic
-module.
-
-It's intended use is for simple functions, like in this example:
-
-  datasource => '=quantityordered*priceeach'
-
-Suported operations: arithmetic (-+/*).
-
-=cut
-
-sub get_function {
-    my ($self, $field, $funcdef) = @_;
-
-    return $self->{$field} if exists $self->{$field}; # don't recreate it
-
-    unless ($field and $funcdef) {
-        croak "$field field's compute is EMPTY\n" unless $funcdef;
-        return;
-    }
-
-    # warn "new function for: $field = ($funcdef)\n";
-
-    ( my $varsstr = $funcdef ) =~ s{[-+/*]}{ }g; # replace operator with space
-
-    my $tree = Math::Symbolic->parse_from_string($funcdef);
-    my @vars = split /\s+/, $varsstr; # extract the names of the variables
-    unless ($self->check_varnames(\@vars) ) {
-        croak "Config error: computed variable names doesn't match field names!";
-    }
-
-    my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
-
-    $self->{$field} = [$sub, \@vars];        # save for later use
-
-    return $self->{$field};
-}
-
-=head2 check_varnames
-
-Check if arguments variable names match field names.
-
-=cut
-
-sub check_varnames {
-    my ( $self, $vars ) = @_;
-
-    my $check = 1;
-    foreach my $field ( @{$vars} ) {
-        unless ( exists $self->{columns}{$field} ) {
-            $check = 0;
-            last;
-        }
-    }
-
-    return $check;
-}
-
-sub get_expdata {
-    my $self = shift;
-
-    return $self->cget( -expandData );
 }
 
 =head2 get_main_data
@@ -436,6 +310,18 @@ sub get_main_data {
     }
 
     return (\@tabledata);
+}
+
+=head2 get_expdata
+
+Get I<expandData> variable value;
+
+=cut
+
+sub get_expdata {
+    my $self = shift;
+
+    return $self->cget( -expandData );
 }
 
 =head1 AUTHOR
