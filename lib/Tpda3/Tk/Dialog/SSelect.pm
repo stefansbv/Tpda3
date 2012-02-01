@@ -7,7 +7,7 @@ use utf8;
 use Tk;
 
 use Tpda3::Config;
-use Tpda3::Tk::TB;
+#use Tpda3::Tk::TB;
 use Tpda3::Tk::TM;
 use Tpda3::Utils;
 
@@ -37,116 +37,59 @@ our $VERSION = '0.01';
 
 =head2 new
 
-Constructor method.
+Constructor method
 
 =cut
 
 sub new {
     my $class = shift;
 
-    my $self = $class->SUPER::new(@_);
-
-    $self->{tb4} = {};       # ToolBar
-    $self->{tlw} = {};       # TopLevel
-    $self->{_tm} = undef;    # TableMatrix
-    $self->{_rl} = undef;    # report titles list
-    $self->{_rd} = undef;    # report details
-
-    return $self;
+    return bless( {}, $class );
 }
 
-=head2 search_dialog
+=head2 select_dialog
 
-Define and show search dialog.
+Define and show select dialog.
 
 =cut
 
-sub run_screen {
-    my ( $self, $view ) = @_;
+sub select_dialog {
+    my ( $self, $view, $para, $filter ) = @_;
 
-    $self->{tlw} = $view->Toplevel();
-    $self->{tlw}->title('Select');
-#    $self->{tlw}->geometry('480x520');
+    #--- Dialog Box
+
+    my $dlg = $view->DialogBox(
+        -title   => 'Select dialog',
+        -buttons => [ 'Load', 'Cancel' ],
+    );
+
+    #-- Key bindings
+
+    $dlg->bind( '<Escape>', sub { $dlg->Subwidget('B_Cancel')->invoke } );
+    $dlg->bind( '<Alt-r>' , sub { $dlg->Subwidget('B_Clear' )->invoke } );
+
+    #-- Main frame
 
     my $f1d = 110;              # distance from left
 
     #- Toolbar frame
 
-    my $tbf0 = $self->{tlw}->Frame();
+    my $tbf0 = $dlg->Frame();
     $tbf0->pack(
         -side   => 'top',
         -anchor => 'nw',
         -fill   => 'x',
     );
 
-    my $bg = $self->{tlw}->cget('-background');
+    my $bg = $dlg->cget('-background');
 
     # Frame for main toolbar
     my $tbf1 = $tbf0->Frame();
     $tbf1->pack( -side => 'left', -anchor => 'w' );
 
-    #-- ToolBar
-
-    $self->{tb4} = $tbf1->TB();
-
-    my $attribs = {
-        'tb4pr' => {
-            'tooltip' => 'Preview and print report',
-            'icon'    => 'fileprint16',
-            'sep'     => 'none',
-            'help'    => 'Preview and print report',
-            'method'  => sub { $self->preview_report(); },
-            'type'    => '_item_normal',
-            'id'      => '20101',
-        },
-        'tb4qt' => {
-            'tooltip' => 'Close',
-            'icon'    => 'actexit16',
-            'sep'     => 'after',
-            'help'    => 'Quit',
-            'method'  => sub { $self->dlg_exit; },
-            'type'    => '_item_normal',
-            'id'      => '20102',
-        }
-    };
-
-    my $toolbars = [ 'tb4pr', 'tb4qt', ];
-
-    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
-
-    #-- end ToolBar
-
-    #-- StatusBar
-
-    my $sb = $self->{tlw}->StatusBar();
-
-    my ($label_l, $label_d, $label_r);
-
-    $sb->addLabel(
-        -relief       => 'flat',
-        -textvariable => \$label_l,
-    );
-
-    $sb->addLabel(
-        -width        => '10',
-        -anchor       => 'center',
-        -textvariable => \$label_d,
-        -side         => 'right'
-    );
-
-    $sb->addLabel(
-        -width        => '10',
-        -anchor       => 'center',
-        -textvariable => \$label_r,
-        -side         => 'right',
-        -foreground   => 'blue'
-    );
-
-    #-- end StatusBar
-
     #- Main frame
 
-    my $mf = $self->{tlw}->Frame();
+    my $mf = $dlg->Frame();
     $mf->pack(
         -side   => 'top',
         -expand => 1,
@@ -231,31 +174,47 @@ sub run_screen {
 
     #-- TM header
 
-    my $header = $self->{scrcfg}->dep_table_header_info('tm2');
+    # my $header = $self->{scrcfg}->dep_table_header_info('tm2');
 
-    $self->{_tm}->init( $frm_top, $header );
+    # $self->{_tm}->init( $frm_top, $header );
 
     # $self->load_report_list($view, $header->{selectorcol} );
 
-    $self->{_tm}->configure(-state => 'disabled');
+    # $self->{_tm}->configure(-state => 'disabled');
 
     # $self->load_report_details($view);
 
-    return;
-}
+    #---
 
-=head2 dlg_exit
+    my $result = $dlg->Show;
+    my $ind_cod;
 
-Quit Dialog.
+    if ( $result =~ /Load/i ) {
 
-=cut
+        # Sunt inreg. in lista?
+        # eval { $ind_cod = $self->{box}->curselection(); };
+        # if ($@) {
+        #     warn "Error: $@";
 
-sub dlg_exit {
-    my $self = shift;
+        #     return;
+        # }
+        # else {
+        #     unless ($ind_cod) { $ind_cod = 0; }
+        # }
+        # my @values = $self->{box}->getRow($ind_cod);
 
-    $self->{tlw}->destroy;
+        # #- Prepare data and return as hash reference
 
-    return;
+        # my $row_data = {};
+        # for ( my $i = 0; $i < @columns; $i++ ) {
+        #     $row_data->{ $columns[$i] } = $values[$i];
+        # }
+
+        # return $row_data;
+    }
+    else {
+        return;
+    }
 }
 
 1;
