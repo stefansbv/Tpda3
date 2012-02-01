@@ -4462,7 +4462,7 @@ sub tmshr_fill_table {
     #- Add main records to the tree
 
     foreach my $rec ( @{$records} ) {
-        my $record = $self->tmshr_format_record( $rec, $header );
+        my $record = $self->tmshr_format_record( $level, $rec, $header );
         $tree->by_name('root')->new_daughter($record)
             ->name( $nodename . ':' . $rec->{$countcol} );
     }
@@ -4491,7 +4491,6 @@ sub tmshr_fill_table {
     #$tree->print_wealth($sum_up_cols->[0]); # for debug
 
     my ($maindata, $expdata) = $tree->get_tree_data();
-#    print Dumper( $maindata, $expdata);
     $tmx->clear_all;
     $tmx->fill_main($maindata, $countcol);
     $tmx->fill_details($expdata);
@@ -4501,32 +4500,28 @@ sub tmshr_fill_table {
 
 =head2 process_level
 
-For each record of the upper level data, make new daughters nodes in
-the tree. The node names are created from the tables primary column
-name and the I<rowcount> column value.
+For each record of the upper level (meta) data, make new daughter
+nodes in the tree. The node names are created from the tables primary
+column name and the I<rowcount> column value.
 
 =cut
 
 sub tmshr_process_level {
     my ($self, $level, $levelmeta, $metadata, $countcol, $header, $tree) = @_;
 
-    my $level_prec   = $level - 1;
     my $nodebasename = $metadata->{pkcol};
-    my $leveldata;
 
-    while ( my ( $mrow, $mdrec ) = each( %{$levelmeta} ) ) {
-        print "Mrow: $mrow\n";
-        foreach my $uprec ( @{$mdrec} ) {
-            while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
-                $metadata->{where} = $mdrec;
-                ( my $records, $leveldata )
-                    = $self->_model->report_data($metadata, $row);
-                foreach my $rec ( @{$records} ) {
-                    my $nodename0 = (keys %{$mdrec})[0] . ':' . $row;
-                    my $record = $self->tmshr_format_record( $rec, $header );
-                    $tree->by_name($nodename0)->new_daughter($record)
-                        ->name( $nodebasename . ':' . $rec->{$countcol} );
-                }
+    my $leveldata;
+    foreach my $uprec ( @{$levelmeta} ) {
+        while ( my ( $parent_row, $mdrec ) = each( %{$uprec} ) ) {
+            $metadata->{where} = $mdrec;
+            ( my $records, $leveldata ) = $self->_model->report_data($metadata);
+            foreach my $rec ( @{$records} ) {
+                my $nodename0 = (keys %{$mdrec})[0] . ':' . $parent_row;
+                my $record
+                    = $self->tmshr_format_record($level, $rec, $header);
+                $tree->by_name($nodename0)->new_daughter($record)
+                    ->name( $nodebasename . ':' . $rec->{$countcol} );
             }
         }
     }
@@ -4535,31 +4530,47 @@ sub tmshr_process_level {
 }
 
 sub tmshr_format_record {
-    my ($self, $rec, $header) = @_;
+    my ($self, $level, $rec, $header) = @_;
 
-    my $hr_ref = $self->record_merge_columns($rec, $header);
-    foreach my $field ( keys %{$hr_ref} ) {
-        $rec->{$field} = $self->tmshr_compute_value( $field, $hr_ref, $header );
+    my $record = $self->record_merge_columns( $rec, $header );
+    foreach my $field ( keys %{$record} ) {
+        my $attribs = $self->flatten_cfg($level, $header->{columns}{$field});
+        $rec->{$field}
+            = $self->tmshr_compute_value( $field, $record, $attribs );
     }
-#    print Dumper( $rec );
+
     return $rec;
 }
 
+sub flatten_cfg {
+    my ( $self, $level, $attribs ) = @_;
+
+    my %flatten;
+    while ( my ( $key, $value ) = each( %{$attribs} ) ) {
+        if ( ref $value eq 'HASH' ) {
+            $flatten{$key} = $value->{"level$level"};
+        }
+        else {
+            $flatten{$key} = $value;
+        }
+    }
+
+    return \%flatten;
+}
+
 sub tmshr_compute_value {
-    my ($self, $field, $rec, $header) = @_;
-    my $fld_cfg = $header->{columns}{$field};
-#    print Dumper( $fld_cfg);
-    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+    my ($self, $field, $record, $attribs) = @_;
+
+    croak "$field field's config is EMPTY\n" unless %{$attribs};
 
     my ( $col, $validtype, $width, $places, $datasource )
-        = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
+        = @$attribs{ 'id', 'validation', 'width', 'places', 'datasource' };
 
     my $value;
-    if ( $datasource =~ m{=count} ) {
+    if ( $datasource =~ m{=count|=sumup} ) {
 
-        # Count
-        # $value = $row;    # number the rows
-        $value = $rec->{$field};
+        # Count or Sum Up
+        $value = $record->{$field};
     }
     elsif ( $datasource =~ m{=(.*)} ) {
         my $funcdef = $1;
@@ -4571,14 +4582,14 @@ sub tmshr_compute_value {
 
             # Function args are numbers, avoid undef
             my @args = map {
-                defined( $rec->{$_} ) ? $rec->{$_} : 0
+                defined( $record->{$_} ) ? $record->{$_} : 0
             } @{$vars};
 
             $value = $func->(@args); # computed value
         }
     }
     else {
-        $value = $rec->{$field};
+        $value = $record->{$field};
     }
 
     $value = q{} unless defined $value;    # empty value
@@ -4668,7 +4679,7 @@ Merge level columns with header columns and set default values.
 =cut
 
 sub record_merge_columns {
-    my ($self, $rec, $header) = @_;
+    my ($self, $record, $header) = @_;
 
     my %hr;
     foreach my $field ( keys %{ $header->{columns} } ) {
@@ -4680,7 +4691,7 @@ sub record_merge_columns {
         :                            undef # default
         ;
 
-        $hr{$field} = $rec->{$field} ? $rec->{$field} : $default_value;
+        $hr{$field} = $record->{$field} ? $record->{$field} : $default_value;
     }
 
     return \%hr;

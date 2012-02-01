@@ -2,12 +2,14 @@ package Tpda3::Tree;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use utf8;
 
 use Tree::DAG_Node;
 use base qw(Tree::DAG_Node);
 
-my $maindata = [];                          # TODO: find better way...
+my @maindata;                  # TODO: find better way to collect data
 my $expdata  = {};
 my $colslist = [];
 
@@ -107,7 +109,7 @@ sub get_tree_data {
 
     $self->walk_down( { callback => \&process_node, _depth => 0 } );
 
-    return ($maindata, $expdata);
+    return (\@maindata, $expdata);
 }
 
 =head2 process_node
@@ -117,20 +119,20 @@ Gather attributes data from each node.
 =cut
 
 sub process_node {
-    my ($self, $options) = @_;
+    my ($node, $options) = @_;
 
-    return 1 if ! defined $self->name();
+    return 1 if ! defined $node->name;
 
     my $depth = $options->{_depth};
-    my $nodeidx = $self->get_attributes('idx');
-    # print ' ' x ($depth * 3);
-    # print $nodeidx ? $nodeidx : '', ' ', $self->name, "\n";
+    my $nodeidx = $node->get_attributes('idx');
+    print ' ' x ($depth * 3);
+    print $nodeidx ? $nodeidx : '', ' ', $node->name, "\n";
 
     if ($depth == 1) {
-        $self->add_main_data();
+        $node->collect_main_data();
     }
     elsif ($depth >= 2) {
-        $self->add_detail_data();
+        $node->collect_detail_data();
     }
     else {
         # Ignore
@@ -139,28 +141,25 @@ sub process_node {
     return 1;
 }
 
-=head2 add_main_data
+=head2 collect_main_data
 
 Return data from depth level 1 from the tree attributes.
 
 =cut
 
-sub add_main_data {
-    my ($self) = @_;
+sub collect_main_data {
+    my $node = shift;
 
     my $rec = {};
     foreach my $field ( @{$colslist} ) {
-        $rec->{$field} = $self->get_attributes($field);
+        $rec->{$field} = $node->get_attributes($field);
     }
-
-    my $mrow = $self->get_attributes('nr_crt');
-
-    push @{$maindata}, $rec;
+    push @maindata, $rec;
 
     return;
 }
 
-=head2 add_detail_data
+=head2 collect_detail_data
 
 Return data from depth level > 1 from the tree attributes.
 
@@ -173,17 +172,17 @@ level.
 
 =cut
 
-sub add_detail_data {
-    my ($self) = @_;
+sub collect_detail_data {
+    my ($node) = @_;
 
     my @vdata = (undef);                     # start with 1 element
     foreach my $field ( @{$colslist} ) {
-        push @vdata, $self->get_attributes($field);
+        push @vdata, $node->get_attributes($field);
     }
 
     # Reversed list of ancestors indexes
     my @idxs = grep { defined $_ }
-        map { $_->get_attributes('nr_crt') } $self->ancestors;
+        map { $_->get_attributes('nr_crt') } $node->ancestors;
 
     my $depth_factor = scalar @idxs;
     my $mrow         = pop @idxs;
@@ -209,7 +208,7 @@ sub add_detail_data {
                     {data} }, \@vdata;
             last SWITCH;
         };
-        print "\$depth_factor is not equal with 1 or 2 or 3\n";
+        print "depth: $depth_factor is not equal with 1 or 2 or 3\n";
     }
 
     return;
@@ -281,6 +280,11 @@ sub sum_up {
     $self->walk_down({
         callbackback => sub {
             my ($node, $options) = @_;
+            if ($node->mother) {
+                # print "processing ", $node->name, "\tof ",
+                #     $node->mother->name, ' [', $options->{_depth},"]\n";
+                #print Dumper( $node->mother->attributes );
+            }
             return 1 unless $node->mother;
             foreach my $field ( @{$fields} ) {
                 $node->mother->attributes->{$field}
