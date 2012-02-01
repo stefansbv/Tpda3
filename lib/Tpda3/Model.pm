@@ -1269,8 +1269,35 @@ sub error_show {
     return;
 }
 
+=head2 report_data
+
+Return data in custom data structures for the report style screens.
+
+The first data structure it's a AoH to be displayed in the Tpda3::TMSHR
+widget.
+
+  [
+    { 'nr_crt' => 1, 'firma' => 'Name 1' },
+    { 'nr_crt' => 2, 'firma' => 'Name 2' },
+    { 'nr_crt' => 3, 'firma' => 'Name 3' },
+  ];
+
+The second data structure is also an AoH used to retrieve the detail
+data for each row. Maps the widget row number with the PK col value of
+the database table.
+
+  [
+    { '1' => { 'id_firma' => 1 } },          # -> Name 1
+    { '2' => { 'id_firma' => 3 } },          # -> Name 3
+    { '3' => { 'id_firma' => 2 } },          # -> Name 2
+  ];
+
+=cut
+
 sub report_data {
-    my ( $self, $mainmeta ) = @_;
+    my ( $self, $mainmeta, $parentrow ) = @_;
+
+    $parentrow = defined $parentrow ? $parentrow : 0;
 
     my $records = $self->table_batch_query($mainmeta);
     my $pk_col  = $mainmeta->{pkcol};
@@ -1298,7 +1325,10 @@ sub report_data {
         $rc++;
     }
 
-    return (\@records, \@uplevel);
+    my %levelmeta;
+    $levelmeta{$parentrow} = [@uplevel];
+
+    return (\@records, \%levelmeta);
 }
 
 =head1 AUTHOR

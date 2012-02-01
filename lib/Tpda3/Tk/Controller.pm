@@ -2,6 +2,8 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use utf8;
 use Carp;
 
@@ -13,6 +15,7 @@ use List::MoreUtils qw{uniq};
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
+use Math::Symbolic;
 
 use Tpda3::Utils;
 use Tpda3::Config;
@@ -4192,7 +4195,7 @@ sub report_table_metadata {
     return $metadata;
 }
 
-sub report_table_sumup_cols {
+sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
 
     my $metadata = $self->scrcfg->dep_table_columns_by_level($tm_ds, $level);
@@ -4412,7 +4415,7 @@ sub list_column_names {
     return $columns;
 }
 
-=head2 fill_table
+=head2 tmshr_fill_table
 
 Fill Table Matrix widget for I<report> style screens.
 
@@ -4424,13 +4427,13 @@ L<Tree::DAG_Node>.
 
 =cut
 
-sub fill_table {
+sub tmshr_fill_table {
     my $self = shift;
-
-    #- Make a tree
 
     my $tm_ds  = 'tm1';                      # hardwired configuration
     my $header = $self->scrcfg('rec')->dep_table_header_info($tm_ds);
+
+    #- Make a tree
 
     require Tpda3::Tree;
     my $tree = Tpda3::Tree->new({});
@@ -4440,7 +4443,7 @@ sub fill_table {
     my $colnames = Tpda3::Utils->sort_hash_by_id($columns);
     $tree->set_header($colnames);
 
-    #- Get data
+    #-- Get data
 
     my $level = 0;                           # maintable level
 
@@ -4452,46 +4455,210 @@ sub fill_table {
     my $mainmeta = $self->report_table_metadata( $tm_ds, $level );
     my $nodename = $mainmeta->{pkcol};
     my $countcol = $mainmeta->{rowcount};
+    my $sum_up_cols = $self->get_table_sumup_cols( $tm_ds, $level );
 
-    my ($records, $uplvldata) = $self->_model->report_data($mainmeta);
-
-    my $sum_up_cols = $self->report_table_sumup_cols( $tm_ds, $level );
+    my ($records, $levelmeta) = $self->_model->report_data($mainmeta);
 
     #- Add main records to the tree
 
     foreach my $rec ( @{$records} ) {
-        my $hr_ref = $self->record_merge_columns($rec, $header);
-        $tree->by_name('root')->new_daughter($hr_ref)
+        my $record = $self->tmshr_format_record( $rec, $header );
+        $tree->by_name('root')->new_daughter($record)
             ->name( $nodename . ':' . $rec->{$countcol} );
     }
 
-    $tmx->clear_all;
-
     $level++;                                # next level
 
-    #- Add detail records to the tree
+    #-- Add detail records to the tree
 
+    my $uplevelmeta = $levelmeta;
     while ( $level <= $last_level ) {
         my $metadata = $self->report_table_metadata( $tm_ds, $level );
-        $uplvldata
-            = $self->process_level( $uplvldata, $metadata, $countcol,
+        $levelmeta
+            = $self->tmshr_process_level( $level, $uplevelmeta, $metadata, $countcol,
             $header, $tree );
+
         $level++;
+        $uplevelmeta = $levelmeta;
     }
 
     #- Fill TMSHR widget
 
-    #print map "$_\n", @{ $tree->draw_ascii_tree }; # debug
+    #print map "$_\n", @{ $tree->draw_ascii_tree }; # for debug
     $tree->clear_totals($sum_up_cols, 2); # hardwired decimal places
     $tree->sum_up($sum_up_cols, 2);
     $tree->format_numbers($sum_up_cols, 2);
-    # $tree->print_wealth($sum_up_cols->[0]); # debug
+    #$tree->print_wealth($sum_up_cols->[0]); # for debug
 
     my ($maindata, $expdata) = $tree->get_tree_data();
+#    print Dumper( $maindata, $expdata);
+    $tmx->clear_all;
     $tmx->fill_main($maindata, $countcol);
     $tmx->fill_details($expdata);
 
     return;
+}
+
+=head2 process_level
+
+For each record of the upper level data, make new daughters nodes in
+the tree. The node names are created from the tables primary column
+name and the I<rowcount> column value.
+
+=cut
+
+sub tmshr_process_level {
+    my ($self, $level, $levelmeta, $metadata, $countcol, $header, $tree) = @_;
+
+    my $level_prec   = $level - 1;
+    my $nodebasename = $metadata->{pkcol};
+    my $leveldata;
+
+    while ( my ( $mrow, $mdrec ) = each( %{$levelmeta} ) ) {
+        print "Mrow: $mrow\n";
+        foreach my $uprec ( @{$mdrec} ) {
+            while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+                $metadata->{where} = $mdrec;
+                ( my $records, $leveldata )
+                    = $self->_model->report_data($metadata, $row);
+                foreach my $rec ( @{$records} ) {
+                    my $nodename0 = (keys %{$mdrec})[0] . ':' . $row;
+                    my $record = $self->tmshr_format_record( $rec, $header );
+                    $tree->by_name($nodename0)->new_daughter($record)
+                        ->name( $nodebasename . ':' . $rec->{$countcol} );
+                }
+            }
+        }
+    }
+
+    return $leveldata;
+}
+
+sub tmshr_format_record {
+    my ($self, $rec, $header) = @_;
+
+    my $hr_ref = $self->record_merge_columns($rec, $header);
+    foreach my $field ( keys %{$hr_ref} ) {
+        $rec->{$field} = $self->tmshr_compute_value( $field, $hr_ref, $header );
+    }
+#    print Dumper( $rec );
+    return $rec;
+}
+
+sub tmshr_compute_value {
+    my ($self, $field, $rec, $header) = @_;
+    my $fld_cfg = $header->{columns}{$field};
+#    print Dumper( $fld_cfg);
+    croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+
+    my ( $col, $validtype, $width, $places, $datasource )
+        = @$fld_cfg{ 'id', 'validation', 'width', 'places', 'datasource' };
+
+    my $value;
+    if ( $datasource =~ m{=count} ) {
+
+        # Count
+        # $value = $row;    # number the rows
+        $value = $rec->{$field};
+    }
+    elsif ( $datasource =~ m{=(.*)} ) {
+        my $funcdef = $1;
+        if ($funcdef) {
+
+            # Formula
+            my $ret = $self->tmshr_get_function( $field, $funcdef );
+            my ( $func, $vars ) = @{$ret};
+
+            # Function args are numbers, avoid undef
+            my @args = map {
+                defined( $rec->{$_} ) ? $rec->{$_} : 0
+            } @{$vars};
+
+            $value = $func->(@args); # computed value
+        }
+    }
+    else {
+        $value = $rec->{$field};
+    }
+
+    $value = q{} unless defined $value;    # empty value
+    $value =~ s/[\n\t]//g;                 # delete control chars
+
+    if ( $validtype eq 'numeric' ) {
+        $value = 0 unless $value;
+        if ( defined $places ) {
+            $value = sprintf( "%.${places}f", $value );
+        }
+        else {
+            $value = sprintf( "%.0f", $value );
+        }
+    }
+
+    return $value;
+}
+
+=head2 tmshr_get_function
+
+Make a reusable anonimous function to compute a field's value, using
+the definition from the screen configuration and the Math::Symbolic
+module.
+
+It's intended use is for simple functions, like in this example:
+
+  datasource => '=quantityordered*priceeach'
+
+Suported operations: arithmetic (-+/*).
+
+=cut
+
+sub tmshr_get_function {
+    my ($self, $field, $funcdef) = @_;
+
+    return $self->{$field} if exists $self->{$field}; # don't recreate it
+
+    unless ($field and $funcdef) {
+        croak "$field field's compute is EMPTY\n" unless $funcdef;
+        return;
+    }
+
+    # warn "new function for: $field = ($funcdef)\n";
+
+    ( my $varsstr = $funcdef ) =~ s{[-+/*]}{ }g; # replace operator with space
+
+    my $tree = Math::Symbolic->parse_from_string($funcdef);
+    my @vars = split /\s+/, $varsstr; # extract the names of the variables
+    unless ($self->tmshr_check_varnames(\@vars) ) {
+        croak "Config error: computed variable names doesn't match field names!";
+    }
+
+    my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
+
+    $self->{$field} = [$sub, \@vars];        # save for later use
+
+    return $self->{$field};
+}
+
+=head2 tmshr_check_varnames
+
+Check if arguments variable names match field names.
+
+=cut
+
+sub tmshr_check_varnames {
+    my ( $self, $vars ) = @_;
+
+    my $tm_ds = 'tm1';
+    my $header = $self->scrcfg('rec')->dep_table_header_info($tm_ds);
+
+    my $check = 1;
+    foreach my $field ( @{$vars} ) {
+        unless ( exists $header->{columns}{$field} ) {
+            $check = 0;
+            last;
+        }
+    }
+
+    return $check;
 }
 
 =head2 record_merge_columns
@@ -4517,35 +4684,6 @@ sub record_merge_columns {
     }
 
     return \%hr;
-}
-
-=head2 process_level
-
-For each record of the upper level data, make new daughters nodes in
-the tree. The node names are created from the tables primary column
-name and the I<rowcount> column value.
-
-=cut
-
-sub process_level {
-    my ($self, $uplvldata, $metadata, $countcol, $header, $tree) = @_;
-
-    my $nodename = $metadata->{pkcol};
-    foreach my $uprec ( @{$uplvldata} ) {
-        while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
-            $metadata->{where} = $mdrec;
-            (my $records, $uplvldata) = $self->_model->report_data($metadata);
-            foreach my $rec ( @{$records} ) {
-                my $hr_ref = $self->record_merge_columns($rec, $header);
-                my @name = %{$mdrec};
-                my $nodename0 = join ':', @name;
-                $tree->by_name($nodename0)->new_daughter( $hr_ref )
-                    ->name( $nodename . ':' . $rec->{$countcol} );
-            }
-        }
-    }
-
-    return $uplvldata;
 }
 
 =head2 DESTROY
