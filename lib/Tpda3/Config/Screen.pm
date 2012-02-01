@@ -569,7 +569,7 @@ Columns with no level ...
 sub dep_table_columns_by_level {
     my ( $self, $tm_ds, $level ) = @_;
 
-    my $cols = $self->dep_table($tm_ds)->{columns};
+    my $cols = $self->dep_table_columns($tm_ds);
 
     $level = 'level' . $level;
     my $dss;
