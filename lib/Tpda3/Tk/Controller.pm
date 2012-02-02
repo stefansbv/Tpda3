@@ -2,8 +2,6 @@ package Tpda3::Tk::Controller;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 use Carp;
 
@@ -16,6 +14,7 @@ use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
 use Math::Symbolic;
+use Hash::Merge qw(merge);
 
 use Tpda3::Utils;
 use Tpda3::Config;
@@ -4474,12 +4473,11 @@ sub tmshr_fill_table {
     my $uplevelmeta = $levelmeta;
     while ( $level <= $last_level ) {
         my $metadata = $self->report_table_metadata( $tm_ds, $level );
-        $levelmeta
-            = $self->tmshr_process_level( $level, $uplevelmeta, $metadata, $countcol,
-            $header, $tree );
-
-        $level++;
+        my $levelmeta
+            = $self->tmshr_process_level( $level, $uplevelmeta, $metadata,
+            $countcol, $header, $tree );
         $uplevelmeta = $levelmeta;
+        $level++;
     }
 
     #- Fill TMSHR widget
@@ -4507,26 +4505,30 @@ column name and the I<rowcount> column value.
 =cut
 
 sub tmshr_process_level {
-    my ($self, $level, $levelmeta, $metadata, $countcol, $header, $tree) = @_;
+    my ($self, $level, $uplevelds, $metadata, $countcol, $header, $tree) = @_;
 
     my $nodebasename = $metadata->{pkcol};
 
-    my $leveldata;
-    foreach my $uprec ( @{$levelmeta} ) {
-        while ( my ( $parent_row, $mdrec ) = each( %{$uprec} ) ) {
-            $metadata->{where} = $mdrec;
-            ( my $records, $leveldata ) = $self->_model->report_data($metadata);
-            foreach my $rec ( @{$records} ) {
-                my $nodename0 = (keys %{$mdrec})[0] . ':' . $parent_row;
-                my $record
-                    = $self->tmshr_format_record($level, $rec, $header);
-                $tree->by_name($nodename0)->new_daughter($record)
-                    ->name( $nodebasename . ':' . $rec->{$countcol} );
+    my $newleveldata = {};
+    while ( my ( $parent_row, $uplevelrecord ) = each( %{$uplevelds} ) ) {
+        foreach my $uprec ( @{$uplevelrecord} ) {
+            while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+                $metadata->{where} = $mdrec;
+                my ( $records, $leveldata )
+                    = $self->_model->report_data( $metadata, $row );
+                foreach my $rec ( @{$records} ) {
+                    my $nodename0 = ( keys %{$mdrec} )[0] . ':' . $row;
+                    my $record
+                        = $self->tmshr_format_record( $level, $rec, $header );
+                    $tree->by_name($nodename0)->new_daughter($record)
+                        ->name( $nodebasename . ':' . $rec->{$countcol} );
+                }
+                $newleveldata = merge( $newleveldata, $leveldata );
             }
         }
     }
 
-    return $leveldata;
+    return $newleveldata;
 }
 
 sub tmshr_format_record {

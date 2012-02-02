@@ -1295,7 +1295,9 @@ the database table.
 =cut
 
 sub report_data {
-    my ( $self, $mainmeta ) = @_;
+    my ( $self, $mainmeta, $parentrow ) = @_;
+
+    $parentrow = defined $parentrow ? $parentrow : 0;
 
     my $records = $self->table_batch_query($mainmeta);
     my $pk_col  = $mainmeta->{pkcol};
@@ -1304,6 +1306,7 @@ sub report_data {
     # Seperate ...
     my (@records, @uplevel);
 
+    my %levelmeta;
     my $rc = 1;    # row count
     foreach my $r ( @{$records} ) {
         my ( $rec, $upl ) = ( {}, {} );
@@ -1323,7 +1326,9 @@ sub report_data {
         $rc++;
     }
 
-    return (\@records, \@uplevel);
+    $levelmeta{$parentrow} = [@uplevel];
+
+    return (\@records, \%levelmeta);
 }
 
 =head1 AUTHOR
