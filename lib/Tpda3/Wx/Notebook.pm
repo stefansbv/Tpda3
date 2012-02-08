@@ -63,7 +63,22 @@ sub create_notebook_page {
 
     $self->AddPage( $self->{$name}, $label );
 
+    my $idx = $self->GetPageCount - 1;
+
+    $self->{pages}{$idx} = $name;            # store page idx => name
+
     return;
+}
+
+sub page_widget {
+    my ( $self, $page ) = @_;
+
+    if ($page) {
+        return $self->{$page};
+    }
+    else {
+        return $self;
+    }
 }
 
 =head1 AUTHOR

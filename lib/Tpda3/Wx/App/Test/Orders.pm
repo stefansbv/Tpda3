@@ -35,64 +35,65 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $nb ) = @_;
 
-    my $gui    = $inreg_p->GetGrandParent;
-    my $main_p = $inreg_p->GetParent;
-    $self->{bg} = $inreg_p->GetBackgroundColour();
+    my $rec_page = $nb->page_widget('rec');
+    my $det_page = $nb->page_widget('det');
+    $self->{view} = $nb->GetGrandParent;
+    $self->{bg}   = $nb->GetBackgroundColour();
 
     # TODO: use Wx::Perl::TextValidator
 
     #- Controls
 
     #-- customername + customernumber
-    my $lcustomername = Wx::StaticText->new( $inreg_p, -1, 'Name' );
+    my $lcustomername = Wx::StaticText->new( $rec_page, -1, 'Name' );
     my $ecustomername
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
     my $ecustomernumber
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- ordernumber
-    my $lordernumber = Wx::StaticText->new( $inreg_p, -1, 'Last name' );
+    my $lordernumber = Wx::StaticText->new( $rec_page, -1, 'Last name' );
     my $eordernumber
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- orderdate
-    my $lorderdate = Wx::StaticText->new( $inreg_p, -1, 'First name' );
+    my $lorderdate = Wx::StaticText->new( $rec_page, -1, 'First name' );
     my $eorderdate
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #-- requireddate
-    my $lrequireddate = Wx::StaticText->new( $inreg_p, -1, 'requireddate' );
+    my $lrequireddate = Wx::StaticText->new( $rec_page, -1, 'requireddate' );
     my $erequireddate
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- shippeddate
-    my $lshippeddate = Wx::StaticText->new( $inreg_p, -1, 'shippeddate' );
+    my $lshippeddate = Wx::StaticText->new( $rec_page, -1, 'shippeddate' );
     my $eshippeddate
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- statuscode
-    my $lstatuscode = Wx::StaticText->new( $inreg_p, -1, 'statuscode' );
+    my $lstatuscode = Wx::StaticText->new( $rec_page, -1, 'statuscode' );
     my $estatuscode
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- comments
-    my $lcomments = Wx::StaticText->new( $inreg_p, -1, 'comments' );
+    my $lcomments = Wx::StaticText->new( $rec_page, -1, 'comments' );
     my $ecomments
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #-- ordertotal
-    my $lordertotal = Wx::StaticText->new( $inreg_p, -1, 'ordertotal' );
+    my $lordertotal = Wx::StaticText->new( $rec_page, -1, 'ordertotal' );
     my $eordertotal
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     #--- Layout
 
     my $top_sz = Wx::BoxSizer->new(wxVERTICAL);
 
     my $sbox_sz = Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $inreg_p, -1, ' Customer ', ), wxVERTICAL );
+        Wx::StaticBox->new( $rec_page, -1, ' Customer ', ), wxVERTICAL );
 
     my $grid = Wx::GridBagSizer->new( 5, 0 );
 
@@ -150,7 +151,7 @@ sub run_screen {
     $sbox_sz->Add( $grid, 0, wxALL | wxGROW, 0 );
     $top_sz->Add( $sbox_sz, 0, wxALL | wxGROW, 5 );
 
-    $inreg_p->SetSizer($top_sz);
+    $rec_page->SetSizer($top_sz);
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'orders.conf'

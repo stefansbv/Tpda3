@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use Carp;
 
+use Tpda3::Utils;
+#use Tpda3::Tk::TB;
+use Tpda3::Config::Screen;
+
 =head1 NAME
 
 Tpda3::Wx::Screen - Tpda Screen base class.
@@ -27,9 +31,15 @@ Constructor method
 =cut
 
 sub new {
-    my $class = shift;
+    my ( $class, $args ) = @_;
 
-    return bless {}, $class;
+    my $self = {};
+
+    bless $self, $class;
+
+    $self->{scrcfg} = Tpda3::Config::Screen->new($args);
+
+    return $self;
 }
 
 =head2 run_screen
@@ -39,7 +49,7 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $nb ) = @_;
 
     print 'run_screen not implemented in ', __PACKAGE__, "\n";
 
@@ -53,13 +63,18 @@ Get a data structure containing references to the widgets.
 =cut
 
 sub get_controls {
-    my $self = shift;
+    my ($self, $field) = @_;
 
     # croak "'get_controls' not implemented.\n"
     #     unless exists $self->{controls}
     #         and scalar %{ $self->{controls} };
 
-    return $self->{controls};
+    if ($field) {
+        return $self->{controls}{$field};
+    }
+    else {
+        return $self->{controls};
+    }
 }
 
 =head2 get_tm_controls
@@ -71,9 +86,9 @@ Get a data structure containing references to table matrix widgets.
 sub get_tm_controls {
     my ( $self, $tm ) = @_;
 
-    if ( exists $self->{tm_controls} ) {
-        return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
-    }
+    # if ( exists $self->{tm_controls} ) {
+    #     return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
+    # }
 }
 
 =head2 get_toolbar_btn
@@ -120,6 +135,27 @@ sub get_bgcolor {
     my $self = shift;
 
     return $self->{bg};
+}
+
+=head2 toolbar_names
+
+Configuration for toolbar buttons.
+
+Get Toolbar names as array reference from screen config.
+
+=cut
+
+sub toolbar_names {
+    my $self = shift;
+
+    # Get ToolBar button atributes
+    my $attribs = $self->{scrcfg}->toolbar;
+
+    # TODO: Change the config file so we don't need this sorting anymore
+    # or better keep them sorted and ready to use in config
+    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    return ( $toolbars, $attribs );
 }
 
 =head1 AUTHOR

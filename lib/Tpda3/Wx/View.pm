@@ -33,9 +33,14 @@ our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Wx::Notebook;
+    use Tpda3::Wx::View;
 
-    $self->{_nb} = Tpda3::Wx::Notebook->new( $gui );
+    $self->{_view} = TpdaQrt::Wx::View->new(
+        $model, undef, -1, 'TpdaQrt::wxPerl',
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxDEFAULT_FRAME_STYLE,
+    );
 
 =head1 METHODS
 
@@ -518,9 +523,21 @@ sub create_notebook {
     return;
 }
 
+sub get_nb_current_page {
+    my $self = shift;
+
+    my $nb = $self->get_notebook();
+
+    my $page_idx = $nb->GetSelection();
+
+    my $current_page = $nb->{pages}{$page_idx};
+
+    return $current_page;
+}
+
 =head2 get_notebook
 
-Return the notebook handler
+Return the notebook handler. Duplicate method.
 
 =cut
 
@@ -573,13 +590,13 @@ sub get_toolbar {
     return $self->{_tb};
 }
 
-=head2 get_listcontrol
+=head2 get_recordlist
 
 Return list control handler.
 
 =cut
 
-sub get_listcontrol {
+sub get_recordlist {
     my $self = shift;
 
     return $self->{_rc};
@@ -699,6 +716,7 @@ sub control_set_value {
     $ctrl->AppendText("\n");
     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 
+    return;
 }
 
 =head2 control_append_value
@@ -746,32 +764,85 @@ Make header for list
 =cut
 
 sub make_list_header {
-    my ( $self, $header_cols, $header_attr ) = @_;
+    my ( $self, $header_look, $header_cols, $fields ) = @_;
 
-    # Delete all items and all columns
-    $self->get_listcontrol->ClearAll();
+    #- Delete existing columns
+    $self->get_recordlist->ClearAll();
 
-    # Header
+    #- Make header
+    $self->{lookup} = [];
     my $colcnt = 0;
-    foreach my $col ( @{$header_cols} ) {
-        my $attr = $header_attr->{$col};
 
-        $self->get_listcontrol->InsertColumn( $colcnt, $attr->{label},
-            wxLIST_FORMAT_LEFT, $attr->{width}, );
+    #-- For lookup columns
 
-        if ( defined $attr->{order} ) {
+    foreach my $col ( @{$header_look} ) {
+        my $col_attribs = $self->header_width($fields->{$col});
+        $self->list_header( $col_attribs, $colcnt );
 
-           # TODO: Figure out how to sort
-           # if ($attr->{order} eq 'N') {
-           #     $self->{_rc}->columnGet($colcnt)
-           #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
-           # }
-        }
-        else {
-            warn " Warning: no sort option for '$col'\n";
-        }
+        # Save index of columns to return
+        push @{ $self->{lookup} }, $colcnt;
 
         $colcnt++;
+    }
+
+    #-- For the rest of the columns
+
+    foreach my $col ( @{$header_cols} ) {
+        my $col_attribs = $self->header_width($fields->{$col});
+        $self->list_header( $col_attribs, $colcnt );
+        $colcnt++;
+    }
+
+    return;
+}
+
+=head2 header_width
+
+Width config is in chars. Use CherWidth to compute the with in pixels.
+
+  pixels_with = chars_number x char_width
+
+=cut
+
+sub header_width {
+    my ( $self, $field ) = @_;
+
+    my $label_len = length $field->{label};
+    my $width     = $field->{width};
+    $width = $label_len >= $width ? $label_len + 2 : $width;
+    my $char_width = $self->GetCharWidth();
+    my $field_attr = {
+        label => $field->{label},
+        width => $width * $char_width,
+        order => $field->{order},
+    };
+
+    return $field_attr;
+}
+
+=head2 list_header
+
+Make header for the list in the List tab.
+
+=cut
+
+sub list_header {
+    my ( $self, $col_attribs, $colcnt ) = @_;
+
+    # Label
+    $self->get_recordlist->InsertColumn( $colcnt, $col_attribs->{label},
+        wxLIST_FORMAT_LEFT, $col_attribs->{width}, );
+
+    if ( defined $col_attribs->{order} ) {
+
+        # TODO: Figure out how to sort
+        # if ($attr->{order} eq 'N') {
+        #     $self->{_rc}->columnGet($colcnt)
+        #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
+        # }
+    }
+    else {
+        warn " Warning: no sort option for '$col_attribs->{label}'\n";
     }
 
     return;
@@ -786,7 +857,7 @@ Return text item from list control row and col
 sub get_list_text_col {
     my ( $self, $row, $col ) = @_;
 
-    return $self->get_listcontrol->GetItemText( $row, $col );
+    return $self->get_recordlist->GetItemText( $row, $col );
 }
 
 =head2 get_list_text_row
@@ -798,7 +869,7 @@ Get entire row text from a list control as array ref.
 sub get_list_text_row {
     my ( $self, $row ) = @_;
 
-    my $col_cnt = $self->get_listcontrol->GetColumnCount() - 1;
+    my $col_cnt = $self->get_recordlist->GetColumnCount() - 1;
 
     my @row_text;
     foreach my $col ( 0 .. $col_cnt ) {
@@ -816,7 +887,7 @@ Set text item from list control row and col
 
 sub set_list_text {
     my ( $self, $row, $col, $text ) = @_;
-    $self->get_listcontrol->SetItemText( $row, $col, $text );
+    $self->get_recordlist->SetItemText( $row, $col, $text );
 }
 
 =head2 set_list_data
@@ -827,7 +898,7 @@ Set item data from list control
 
 sub set_list_data {
     my ( $self, $item, $data_href ) = @_;
-    $self->get_listcontrol->SetItemData( $item, $data_href );
+    $self->get_recordlist->SetItemData( $item, $data_href );
 }
 
 =head2 get_list_data
@@ -838,7 +909,7 @@ Return item data from list control
 
 sub get_list_data {
     my ( $self, $item ) = @_;
-    return $self->get_listcontrol->GetItemData($item);
+    return $self->get_recordlist->GetItemData($item);
 }
 
 =head2 list_item_select_first
@@ -853,7 +924,7 @@ sub list_item_select_first {
     my $items_no = $self->get_list_max_index();
 
     if ( $items_no > 0 ) {
-        $self->get_listcontrol->Select( 0, 1 );
+        $self->get_recordlist->Select( 0, 1 );
     }
 }
 
@@ -866,7 +937,7 @@ Select the last item in list
 sub list_item_select_last {
     my $self = shift;
 
-    my $lst = $self->get_listcontrol;
+    my $lst = $self->get_recordlist;
     my $idx = $self->get_list_max_index() - 1;
 
     #$lst->Select( $idx, 1 );
@@ -886,7 +957,7 @@ Return the max index from the list control
 sub get_list_max_index {
     my $self = shift;
 
-    return $self->get_listcontrol->GetItemCount();
+    return $self->get_recordlist->GetItemCount();
 }
 
 =head2 get_list_selected_index
@@ -898,7 +969,7 @@ Return the selected index from the list control
 sub get_list_selected_index {
     my $self = shift;
 
-    return $self->get_listcontrol->GetSelection();
+    return $self->get_recordlist->GetSelection();
 }
 
 # =head2 list_item_insert
@@ -926,7 +997,7 @@ Insert string item in list control
 
 sub list_string_item_insert {
     my ( $self, $indice ) = @_;
-    $self->get_listcontrol->InsertStringItem( $indice, 'dummy' );
+    $self->get_recordlist->InsertStringItem( $indice, 'dummy' );
 }
 
 =head2 list_item_clear
@@ -937,7 +1008,7 @@ Delete list control item
 
 sub list_item_clear {
     my ( $self, $item ) = @_;
-    $self->get_listcontrol->DeleteItem($item);
+    $self->get_recordlist->DeleteItem($item);
 }
 
 =head2 list_item_clear_all
@@ -949,7 +1020,7 @@ Delete all list control items
 sub list_item_clear_all {
     my $self = shift;
 
-    $self->get_listcontrol->DeleteAllItems;
+    $self->get_recordlist->DeleteAllItems;
 }
 
 =head2 list_remove_item
@@ -982,7 +1053,7 @@ Delete the rows of the list.
 sub list_init {
     my $self = shift;
 
-    $self->get_listcontrol->DeleteAllItems();
+    $self->get_recordlist->DeleteAllItems();
 
     return;
 }
@@ -994,46 +1065,46 @@ Polulate list with data from query result.
 =cut
 
 sub list_populate {
-    my ( $self, $paramdata ) = @_;
+    my ( $self, $ary_ref ) = @_;
 
-    my $row_cnt;
+    my $row_count;
 
-    if ( ref $self->get_listcontrol ) {
-        $row_cnt = $self->get_listcontrol->GetItemCount();
+    if ( ref $self->get_recordlist ) {
+        $row_count = $self->get_recordlist->GetItemCount();
     }
     else {
         warn "No MList!\n";
         return;
     }
 
-    my $ary_ref    = $self->_model->query_records_find($paramdata);
-    my $record_cnt = scalar @{$ary_ref};
+    my $record_count = scalar @{$ary_ref};
+    my $column_count = scalar @{$ary_ref->[0]};
 
-    my $list = $self->get_listcontrol();
+    my $list = $self->get_recordlist();
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-        my $col_max = scalar @{ $paramdata->{columns} };
 
-        $list->InsertStringItem( $row_cnt, 'dummy' );
-        for ( my $col = 0; $col < $col_max; $col++ ) {
-            $list->SetItemText( $row_cnt, $col, $record->[$col] );
+
+        $list->InsertStringItem( $row_count, 'dummy' );
+        for ( my $col = 0; $col < $column_count; $col++ ) {
+            $list->SetItemText( $row_count, $col, $record->[$col] );
         }
 
-        $row_cnt++;
+        $row_count++;
 
-        $self->set_status( "$row_cnt records fetched", 'ms' );
+        $self->set_status( "$row_count records fetched", 'ms' );
 
         # Progress bar
-        # my $p = floor( $row_cnt * 10 / $record_cnt ) * 10;
+        # my $p = floor( $row_count * 10 / $record_cnt ) * 10;
         # if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status( "$row_cnt records listed", 'ms' );
+    $self->set_status( "$row_count records", 'ms' );
 
     # $self->{progres} = 0;
 
-    return $record_cnt;
+    return $record_count;
 }
 
 =head2 has_list_records
@@ -1045,21 +1116,21 @@ Return number of records from list.
 sub has_list_records {
     my $self = shift;
 
-    my $row_cnt;
+    my $row_count;
 
-    if ( ref $self->get_listcontrol ) {
-        eval { $row_cnt = $self->get_listcontrol->GetItemCount(); };
+    if ( ref $self->get_recordlist ) {
+        eval { $row_count = $self->get_recordlist->GetItemCount(); };
         if ($@) {
             warn "Error: $@";
-            $row_cnt = 0;
+            $row_count = 0;
         }
     }
     else {
         warn "Error, List doesn't exists?\n";
-        $row_cnt = 0;
+        $row_count = 0;
     }
 
-    return $row_cnt;
+    return $row_count;
 }
 
 =head2 list_read_selected
@@ -1076,7 +1147,7 @@ sub list_read_selected {
         return;
     }
 
-    my $sel_no = $self->get_listcontrol->GetSelectedItemCount();
+    my $sel_no = $self->get_recordlist->GetSelectedItemCount();
     if ( $sel_no <= 0 ) {
         print "No record selected\n";
         return;
@@ -1097,6 +1168,21 @@ sub list_read_selected {
     }
 
     return $selected_value;
+}
+
+=head2 list_raise
+
+Raise I<List> tab and set focus to list.
+
+=cut
+
+sub list_raise {
+    my $self = shift;
+
+    $self->get_notebook->SetSelection(1);           # 1 is 'lst' ?
+    $self->list_item_select_last();
+
+    return;
 }
 
 =head2 w_geometry
@@ -1125,6 +1211,22 @@ sub w_geometry {
     print "Geometry = $geom\n";
 
     return $geom;
+}
+
+=head2 set_geometry
+
+Set window geometry
+
+=cut
+
+sub set_geometry {
+    my ( $self, $geom ) = @_;
+
+    my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
+    $self->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
+    # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
+
+    return;
 }
 
 =head2 on_quit

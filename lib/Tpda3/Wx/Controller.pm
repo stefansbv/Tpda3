@@ -2,22 +2,31 @@ package Tpda3::Wx::Controller;
 
 use strict;
 use warnings;
+use utf8;
+use Carp;
 
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
     EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
     EVT_LIST_ITEM_ACTIVATED);
 
+use Scalar::Util qw(blessed);
+use List::MoreUtils qw{uniq};
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
+use Storable qw (store retrieve);
+use Math::Symbolic;
+use Hash::Merge qw(merge);
 
 use Tpda3::Utils;
 use Tpda3::Config;
-use Tpda3::Config::Screen;
 use Tpda3::Model;
 use Tpda3::Wx::App;
 use Tpda3::Wx::View;
 use Tpda3::Lookup;
+
+use File::Basename;
+use File::Spec::Functions qw(catfile);
 
 =head1 NAME
 
@@ -56,15 +65,17 @@ sub new {
     my $app = Tpda3::Wx::App->create($model);
 
     my $self = {
-        _model  => $model,
-        _app    => $app,
-        _view   => $app->{_view},
-        _scrcls => undef,
-        _scrobj => undef,
-        _scrcfg => undef,
-        _scrstr => undef,
-        _cfg    => Tpda3::Config->instance(),
-        _log    => get_logger(),
+        _model   => $model,
+        _app     => $app,
+        _view    => $app->{_view},
+        _rscrcls => undef,
+        _rscrobj => undef,
+        _dscrcls => undef,
+        _dscrobj => undef,
+        _tblkeys => undef,
+        _scrdata => undef,
+        _cfg     => Tpda3::Config->instance(),
+        _log     => get_logger(),
     };
 
     bless $self, $class;
@@ -419,6 +430,8 @@ sub _check_app_menus {
         eval { require $module_file };
         if ($@) {
             $menu->Enable( $menu_id, 0 );
+            $self->_log->trace("WW: Can't load '$module_file'");
+            print "WW: Can't load '$module_file'\n";
         }
     }
 
@@ -445,76 +458,74 @@ user to lookup the I<customernumber> in the I<customer> table.
 =cut
 
 sub setup_lookup_bindings {
-    my $self = shift;
+    my ( $self, $page ) = @_;
 
     my $dict     = Tpda3::Lookup->new;
-    my $ctrl_ref = $self->_screen->get_controls();
-    my $bindings = $self->_scrcfg->bindings;
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
+    my $bindings = $self->scrcfg('rec')->bindings;
 
     $self->_log->trace('Setup binding for configured widgets');
 
-    foreach my $lookup ( keys %{$bindings} ) {
-        unless ( $ctrl_ref->{$lookup}[1] ) {
+    foreach my $bind_name ( keys %{$bindings} ) {
 
-            # Skip nonexistent
-            $self->_log->trace("Wrong binding config for '$lookup'");
-            next;
-        }
+        # Skip if just an empty tag
+        next unless $bind_name;
 
-        $self->_log->trace("Setup binding for '$lookup'");
+        # If 'search' is a hashref, get the first key, else the value
+        my $search
+            = ref $bindings->{$bind_name}{search}
+            ? ( keys %{ $bindings->{$bind_name}{search} } )[0]
+            : $bindings->{$bind_name}{search};
 
-        my $para = {    # parameter for Search dialog
-            table  => $bindings->{$lookup}{table},
-            lookup => $lookup,
+        # If 'search' is a hashref, get the first keys name attribute
+        my $column
+            = ref $bindings->{$bind_name}{search}
+            ? $bindings->{$bind_name}{search}{$search}{name}
+            : $search;
+
+        $self->_log->trace("Setup binding for '$bind_name'");
+
+        # Compose the parameter for the 'Search' dialog
+        my $para = {
+            table  => $bindings->{$bind_name}{table},
+            search => $search,
         };
 
-        # Add lookup field to columns
-        my $field_cfg = $self->_scrcfg->maintable->{columns}{$lookup};
+        # Add the search field to the columns list
+        my $field_cfg = $self->scrcfg('rec')->main_table_column($column);
         my @cols;
         my $rec = {};
-        $rec->{$lookup} = {
+        $rec->{$search} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
             order => $field_cfg->{order},
         };
+        $rec->{$search}{name} = $column if $column;    # add name attribute
+
         push @cols, $rec;
 
-        if ( ref $bindings->{$lookup}{field} ) {
-
-            # Multiple fields returned as array
-            foreach my $fld ( @{ $bindings->{$lookup}{field} } ) {
-                my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-                my $rec       = {};
-                $rec->{$fld} = {
-                    width => $field_cfg->{width},
-                    label => $field_cfg->{label},
-                    order => $field_cfg->{order},
-                };
-                push @cols, $rec;
-            }
-        }
-        else {
-
-            # One field, no array
-            my $fld       = $bindings->{$lookup}{field};
-            my $field_cfg = $self->_scrcfg->maintable->{columns}{$fld};
-            my $rec       = {};
-            $rec->{$fld} = {
-                width => $field_cfg->{width},
-                label => $field_cfg->{label},
-                order => $field_cfg->{order},
+        # Detect the configuration style and add the 'fields' to the
+        # columns list
+        my $flds;
+    SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
+            /array/i && do {
+                $flds = $self->fields_cfg_array( $bindings->{$bind_name} );
+                last SWITCH;
             };
-            push @cols, $rec;
+            /hash/i && do {
+                $flds = $self->fields_cfg_hash( $bindings->{$bind_name} );
+                last SWITCH;
+            };
+            print "WW: Wrong bindings configuration!\n";
+            return;
         }
+        push @cols, @{$flds};
 
-        $para->{columns} = [@cols];
+        $para->{columns} = [@cols];    # add columns info to parameters
 
-        EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$lookup}[1], sub {
+        EVT_TEXT_ENTER $self->_view, $ctrl_ref->{$column}[1], sub {
             my $record = $dict->lookup( $self->_view, $para );
-
-            # A lookup field can not be cleared in Tpda
-            # TODO: In Tpda3.
-            $self->screen_write( $record, 'fields' );
+            $self->screen_write($record);
         };
     }
 
@@ -532,26 +543,21 @@ sub set_app_mode {
 
     $self->_model->set_mode($mode);
 
-    my %method_for = (
-        add  => 'on_screen_mode_add',
-        find => 'on_screen_mode_find',
-        idle => 'on_screen_mode_idle',
-        edit => 'on_screen_mode_edit',
-        sele => 'on_screen_mode_sele',
-    );
-
     $self->toggle_interface_controls;
 
-    return unless ref $self->_screen;
+    return unless ref $self->scrobj('rec');
 
-    # TODO: Should this be called on all screens?
-    # $self->toggle_screen_interface_controls;
+    $self->toggle_screen_interface_controls;
 
-    if ( my $method_name = $method_for{$mode} ) {
+    if ( my $method_name = $self->{method_for}{$mode} ) {
         $self->$method_name();
     }
+    else {
+        print "WW: '$mode' not implemented!\n";
+    }
 
-    return 1;
+    return 1;    # to make ok from Test::More happy
+                 # probably missing something :) TODO!
 }
 
 =head2 is_record
@@ -576,7 +582,7 @@ content in the I<Screen> than set status of controls to I<disabled>.
 sub on_screen_mode_idle {
     my $self = shift;
 
-    $self->screen_write( undef, 'clear' );    # Empty the main controls
+    $self->screen_write( undef, 'clear' );   # empty the main controls
 
     #    $self->control_tmatrix_write();
     $self->controls_state_set('off');
@@ -677,8 +683,6 @@ Data structure with setting for the different modes of the controls.
 sub _control_states_init {
     my $self = shift;
 
-    $self->_log->trace('Control states data structure init');
-
     $self->{control_states} = {
         off => {
             state      => 'disabled',
@@ -696,6 +700,14 @@ sub _control_states_init {
             state      => 'from_config',
             background => 'from_config',
         },
+    };
+
+    $self->{method_for} = {
+        add  => 'on_screen_mode_add',
+        find => 'on_screen_mode_find',
+        idle => 'on_screen_mode_idle',
+        edit => 'on_screen_mode_edit',
+        sele => 'on_screen_mode_sele',
     };
 
     return;
@@ -749,30 +761,6 @@ sub _log {
     return $self->{_log};
 }
 
-=head2 _screen
-
-Return current screen instance variable.
-
-=cut
-
-sub _screen {
-    my $self = shift;
-
-    return $self->{_scrobj};
-}
-
-=head2 _scrcfg
-
-Return current screen config instance variable.
-
-=cut
-
-sub _scrcfg {
-    my $self = shift;
-
-    return $self->{_scrcfg};
-}
-
 =head2 screen_module_class
 
 Return screen module class and file name.
@@ -798,46 +786,46 @@ Load screen chosen from the menu.
 =cut
 
 sub screen_module_load {
-    my ( $self, $module ) = @_;
+    my ( $self, $module, $from_tools ) = @_;
 
-    $self->{_scrstr} = lc $module;
-
-    # Load the new screen configuration
-    $self->{_scrcfg} = Tpda3::Config::Screen->new();
-    $self->_scrcfg->config_screen_load( $self->{_scrstr} );
+    my $rscrstr = lc $module;
 
     # Destroy existing NoteBook widget
     $self->_view->destroy_notebook();
 
     # Unload current screen
-    if ( $self->{_scrcls} ) {
-        Class::Unload->unload( $self->{_scrcls} );
-
-        # Class::Unload->unload( 'Tpda3::Config::Screen' );
-
-        if ( !Class::Inspector->loaded( $self->{_scrcls} ) ) {
-            $self->_log->trace("Unloaded '$self->{_scrcls}' screen");
+    if ( $self->{_rscrcls} ) {
+        Class::Unload->unload( $self->{_rscrcls} );
+        if ( Class::Inspector->loaded( $self->{_rscrcls} ) ) {
+            $self->_log->trace("Error unloading '$self->{_rscrcls}' screen");
         }
-        else {
-            $self->_log->trace("Error unloading '$self->{_scrcls}' screen");
+
+        # Unload current details screen
+        if ( $self->{_dscrcls} ) {
+            Class::Unload->unload( $self->{_dscrcls} );
+            if ( Class::Inspector->loaded( $self->{_dscrcls} ) ) {
+                $self->_log->error("Failed unloading '$self->{_dscrcls}' dscreen");
+            }
+            $self->{_dscrcls} = undef;
         }
     }
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
-    $self->_set_event_handler_nb();
+    # $self->_set_event_handler_nb();
 
-    my ( $class, $module_file ) = $self->screen_module_class($module);
+    my ( $class, $module_file )
+        = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };
     if ($@) {
 
         # TODO: Decide what is optimal to do here?
-        print "Can't load '$module_file'\n";
+        print "EE: Can't load '$module_file'\n";
         return;
     }
 
     unless ( $class->can('run_screen') ) {
-        my $msg = "Error! Screen '$class' can not 'run_screen'";
+        my $msg = "EE: Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
 
@@ -845,149 +833,167 @@ sub screen_module_load {
     }
 
     # New screen instance
-    $self->{_scrobj} = $class->new();
-
-    # Set log level to trace
-    # $self->_log->level($TRACE);
-
+    $self->{_rscrobj} = $class->new($rscrstr);
     $self->_log->trace("New screen instance: $module");
 
+    # # Details page
+    # my $has_det = $self->scrcfg('rec')->has_screen_detail;
+    # if ($has_det) {
+    #     $self->_view->create_notebook_panel( 'det', 'Details' );
+    #     $self->_set_event_handler_nb('det');
+    # }
+
     # Show screen
-    my $nb = $self->_view->get_notebook('rec');
-    $self->{_scrobj}->run_screen($nb);
-    $self->_log->trace("Show screen $module");
-
-    my $screen_type = $self->_scrcfg->{screen}{type};
-
-    # Load instance config
-    $self->_cfg->config_load_instance();
-
-    # Update window geometry from instance config if exists or from
-    # defaults
-    my $geom;
-    if ( $self->_cfg->can('geometry') ) {
-        $geom = $self->_cfg->geometry->{ $self->{_scrstr} };
-        unless ($geom) {
-            $geom = $self->_scrcfg->{screen}{geometry};
-        }
-    }
-    else {
-        $geom = $self->_scrcfg->{screen}{geometry};
-    }
-
-    my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
-    $self->_view->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
-           # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
-
-    # Event handlers
-    $self->_set_event_handler_screen();    # if $screen_type eq 'tablematrix';
-                                           #-- Lookup bindings
-    $self->setup_lookup_bindings();
+    my $nb = $self->_view->get_notebook();
+    $self->{_rscrobj}->run_screen($nb);
 
     # Store currently loaded screen class
-    $self->{_scrcls} = $class;
+    $self->{_rscrcls} = $class;
+
+    # Load instance config
+    # $self->_cfg->config_load_instance();
+
+    # #-- Lookup bindings for Tk::Entry widgets
+    # $self->setup_lookup_bindings_entry('rec');
+
+    # #-- Lookup bindings for tables (TableMatrix)
+    # $self->setup_bindings_table();
+
+    # Set PK column name
+    # $self->screen_set_pk_col();
 
     $self->set_app_mode('idle');
 
     # List header
-    my @header_cols = @{ $self->_scrcfg->found_cols->{col} };
-    my $fields      = $self->_scrcfg->maintable->{columns};
-    my $header_attr = {};
-    foreach my $col (@header_cols) {
-
-        # Width config is in chars.  Using chars_number x char_width
-        # to compute the with in pixels
-        my $label_len = length $fields->{$col}{label};
-        my $width     = $fields->{$col}{width};
-        $width = $label_len >= $width ? $label_len + 2 : $width;
-        my $char_width = $self->_view->GetCharWidth();
-        $header_attr->{$col} = {
-            label => $fields->{$col}{label},
-            width => $width * $char_width,
-            order => $fields->{$col}{order},
-        };
+    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
+    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+    my $fields      = $self->scrcfg('rec')->main_table_columns;
+    if ($header_look and $header_cols) {
+        $self->_view->make_list_header( $header_look, $header_cols, $fields );
     }
-    $self->_view->make_list_header( \@header_cols, $header_attr );
+    else {
+        $self->_view->nb_set_page_state( 'lst', 'disabled' );
+    }
 
-    # if ($screen_type eq 'tablematrix') {
-    #     # TableMatrix header
-    #     my $tm_fields = $self->_scrcfg->table->{columns};
-    #     my $tm_object = $self->{_scrobj}->get_tm_controls('tm1');
-    #     $self->_view->make_tablematrix_header( $tm_object, $tm_fields );
+    #- Event handlers
+
+    # foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
+    #     $self->set_event_handler_screen($tm_ds);
     # }
 
-    # Load lists into JBrowseEntry or JComboBox widgets
-    # $self->screen_init();
-
     $self->_set_menus_enable(1);
+
+    $self->_view->set_status( '', 'ms' );
+
+    $self->_model->unset_scrdata_rec();
+
+    # Change application title
+    # my $descr = $self->scrcfg('rec')->screen_description;
+    # $self->_view->title(' Tpda3 - ' . $descr) if $descr;
+
+    # Update window geometry
+    $self->set_geometry();
+
+    # Export message dictionary to Model
+    # my $dict = $self->scrobj()->get_msg_strings();
+    # $self->_model->message_dictionary($dict);
+
+    # Load lists into JComboBox widgets (JBrowseEntry not supported)
+    # $self->screen_init();
 
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
 }
 
-=head2 screen_lists_populate
+=head2 set_geometry
 
-Load options in Listbox like widgets.
+Set window geometry from instance config if exists or from defaults.
 
-All JBrowseEntry or JComboBox widgets must have a <lists> record in
-config to define where the data for the list come from:
+=cut
 
- <lists>
+sub set_geometry {
+    my $self = shift;
+
+
+    my $scr_name
+        = $self->scrcfg()
+        ? $self->scrcfg()->screen_name
+        : return;
+
+    my $geom;
+    if ( $self->_cfg->can('geometry') ) {
+        my $go = $self->_cfg->geometry();
+        if (exists $go->{$scr_name}) {
+            $geom = $go->{$scr_name};
+        }
+    }
+    unless ($geom) {
+        $geom = $self->scrcfg('rec')->screen->{geometry};
+    }
+
+    $self->_view->set_geometry($geom);
+
+    return;
+}
+
+=head2 screen_init
+
+Load options in Listbox like widgets - JCombobox support only.
+
+All JComboBox widgets must have a <lists_ds> record in config to
+define where the data for the list come from:
+
+Data source for list widgets (JCombobox)
+
+ <lists_ds>
      <statuscode>
          table   = status
          code    = code
          name    = description
          default = none
      </statuscode>
- </lists>
+ </lists_ds>
 
 =cut
 
-sub screen_lists_populate {
+sub screen_init {
     my $self = shift;
 
     # Entry objects hash
-    my $ctrl_ref = $self->_screen->get_controls();
+    my $ctrl_ref = $self->scrobj()->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
-    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
+    foreach my $field ( keys %{ $self->scrcfg()->main_table_columns } ) {
 
         # Control config attributes
-        my $fld_cfg  = $self->_scrcfg->maintable->{columns}{$field};
+        my $fld_cfg  = $self->scrcfg()->main_table_column($field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
         next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
 
-        my $para = $self->_scrcfg->{lists}{$field};
+        my $para = $self->scrcfg()->{lists_ds}{$field};
 
-        next unless ref $para eq 'HASH';       # Undefined, skip
+        next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_h_ref = $self->{_model}->get_codes( $field, $para );
+        my $cod_a_ref = $self->{_model}->get_codes( $field, $para, $ctrltype );
 
         if ( $ctrltype eq 'm' ) {
 
             # JComboBox
             if ( $ctrl_ref->{$field}[1] ) {
                 $ctrl_ref->{$field}[1]->removeAllItems();
-                while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-                    $ctrl_ref->{$field}[1]
-                        ->insertItemAt( 'end', $label, -value => $code );
-                }
+                $ctrl_ref->{$field}[1]->configure( -choices => $cod_a_ref );
             }
         }
         elsif ( $ctrltype eq 'l' ) {
 
-            my @lvpairs;
-            while ( my ( $code, $label ) = each( %{$cod_h_ref} ) ) {
-                push( @lvpairs, { value => $code, label => $label } );
-            }
-
             # MatchingBE
             if ( $ctrl_ref->{$field}[1] ) {
-                $ctrl_ref->{$field}[1]
-                    ->configure( -labels_and_values => \@lvpairs, );
+                $ctrl_ref->{$field}[1]->configure(
+                    -labels_and_values => $cod_a_ref,
+                );
             }
         }
     }
@@ -1030,15 +1036,32 @@ widget in some screens.
 sub toggle_screen_interface_controls {
     my $self = shift;
 
-    # Get ToolBar button atributes
-    my $attribs  = $self->_cfg->toolbar2;
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+    # # Get ToolBar button atributes
+    # my $attribs  = $self->_cfg->toolbar2;
+    # my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
+    # my $mode = $self->_model->get_appmode;
+
+    # foreach my $name ( @{$toolbars} ) {
+    #     my $state = $attribs->{$name}{state}{$mode};
+    #     $self->_screen->enable_tool( $name, $state );
+    # }
+
+    my $page = $self->_view->get_nb_current_page();
     my $mode = $self->_model->get_appmode;
 
+    return if $page eq 'lst';
+
+    #- Toolbar
+
+    my ( $toolbars, $attribs ) = $self->scrobj()->toolbar_names();
+
     foreach my $name ( @{$toolbars} ) {
-        my $state = $attribs->{$name}{state}{$mode};
-        $self->_screen->enable_tool( $name, $state );
+        my $status = $attribs->{$name}{state}{$page}{$mode};
+
+        #- Set status for toolbar buttons
+
+        $self->_view->enable_tool( $name, $status );
     }
 
     return;
@@ -1082,21 +1105,27 @@ can't delete it's content.
 sub record_reload {
     my $self = shift;
 
-    # Table metadata
-    my $table_hr = $self->_scrcfg->maintable;
-    my $pk_col   = $table_hr->{pkcol}{name};
+    my $page = $self->_view->get_nb_current_page();
 
-    my $ctrl_ref = $self->_screen->get_controls();
-    $self->control_read_e( $ctrl_ref, $pk_col );
+    # Save PK-value
+    my $pk_val = $self->screen_get_pk_val;    # get old pk-val
 
-    my $pk_id = $self->{scrdata}{$pk_col};
-    if ( !defined $pk_id ) {
-        $self->_view->set_status( 'Reload failed!', 'ms' );
-        return;
-    }
+    $self->record_clear;
 
-    $self->screen_write( undef, 'clear' );    # clear the controls
-    $self->record_load($pk_id);
+    # Restore PK-value
+    $self->screen_set_pk_val($pk_val);
+
+    # Set parameters for record load (pk, fk)
+    $self->get_selected_and_set_fk_val if $page eq 'det';
+
+    $self->record_load();
+
+    $self->toggle_detail_tab;
+
+    $self->_view->set_status( "Reloaded", 'ms', 'blue' );
+
+    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                          # undef = unloaded
 
     return;
 }
@@ -1111,7 +1140,7 @@ sub record_load {
     my ( $self, $pk_id ) = @_;
 
     # Table metadata
-    my $table_hr  = $self->_scrcfg->maintable;
+    my $table_hr  = $self->scrcfg('rec')->maintable;
     my $fields_hr = $table_hr->{columns};
     my $pk_col    = $table_hr->{pkcol}{name};
 
@@ -1125,11 +1154,11 @@ sub record_load {
 
     $self->screen_write($record);
 
-    # my $screen_type = $self->_scrcfg->{screen}{type};
+    # my $screen_type = $self->scrcfg('rec')->{screen}{type};
     # if ($screen_type eq 'tablematrix') {
 
     #     # Table metadata
-    #     my $table_hr  = $self->_scrcfg->table;
+    #     my $table_hr  = $self->scrcfg('rec')->table;
     #     my $fields_hr = $table_hr->{columns};
 
     #     # Construct where, add findtype info
@@ -1184,30 +1213,43 @@ sub record_find_execute {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $self->_scrcfg->maintable->{columns};
+    my $main_table = $self->scrcfg('rec')->main_table;
+    my $columns    = $self->scrcfg('rec')->main_table_columns;
 
     my $params = {};
 
-    # Columns data (for found list)
-    $params->{columns} = $self->_scrcfg->found_cols->{col};
+    # Columns data (from list header)
+    $params->{columns} = $self->list_column_names();
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
-        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
+        chomp $value;
+        my $findtype = $columns->{$field}{findtype};
+
+        # Create a where clause like this:
+        #  field1 IS NOT NULL and field2 IS NULL
+        # for entry values equal to '%' or '!'
+        $findtype = q{notnull} if $value eq q{%};
+        $findtype = q{isnull}  if $value eq q{!};
+
+        $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};          # use view instead of table
-    $params->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $main_table->{view};        # use view instead of table
+    $params->{pkcol} = $main_table->{pkcol}{name};
+
+    my $ary_ref = $self->_model->query_records_find($params);
 
     $self->_view->list_init();
-    my $record_count = $self->_view->list_populate($params);
+    my $record_count = $self->_view->list_populate($ary_ref);
+    if ( $record_count > 0 ) {
+        $self->_view->list_raise();
+    }
 
+    # Set mode to sele if found
     if ( $record_count > 0 ) {
         $self->set_app_mode('sele');
-        $self->_view->list_item_select_last();
-        $self->_view->get_notebook->SetSelection(1);    # 'lst'
     }
 
     return;
@@ -1215,7 +1257,9 @@ sub record_find_execute {
 
 =head2 record_find_count
 
-Execute find: count
+Execute count.
+
+Same as for I<record_find_execute>.
 
 =cut
 
@@ -1225,24 +1269,98 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $table_hr  = $self->_scrcfg->maintable;
-    my $fields_hr = $self->_scrcfg->maintable->{columns};
+    my $columns = $self->scrcfg('rec')->main_table_columns;
 
     my $params = {};
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
-        $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
+        chomp $value;
+        my $findtype = $columns->{$field}{findtype};
+
+        # Create a where clause like this:
+        #  field1 IS NOT NULL and field2 IS NULL
+        # for entry values equal to '%' or '!'
+        $findtype = q{notnull} if $value eq q{%};
+        $findtype = q{isnull}  if $value eq q{!};
+
+        $params->{where}{$field} = [ $value, $findtype ];
     }
 
     # Table data
-    $params->{table} = $table_hr->{view};          # use view instead of table
-    $params->{pkcol} = $table_hr->{pkcol}{name};
+    $params->{table} = $self->scrcfg('rec')->main_table_view;
+    $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
 
     $self->_model->query_records_count($params);
 
     return;
 }
+
+# sub record_find_execute {
+#     my $self = shift;
+
+#     $self->screen_read();
+
+#     # Table configs
+#     my $table_hr  = $self->scrcfg('rec')->maintable;
+#     my $fields_hr = $self->scrcfg('rec')->maintable->{columns};
+
+#     my $params = {};
+
+#     # Columns data (for found list)
+#     $params->{columns} = $self->scrcfg('rec')->found_cols->{col};
+
+#     # Add findtype info to screen data
+#     while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
+#         $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+#     }
+
+#     # Table data
+#     $params->{table} = $table_hr->{view};          # use view instead of table
+#     $params->{pkcol} = $table_hr->{pkcol}{name};
+
+#     $self->_view->list_init();
+#     my $record_count = $self->_view->list_populate($params);
+
+#     if ( $record_count > 0 ) {
+#         $self->set_app_mode('sele');
+#         $self->_view->list_item_select_last();
+#         $self->_view->get_notebook->SetSelection(1);    # 'lst'
+#     }
+
+#     return;
+# }
+
+# =head2 record_find_count
+
+# Execute find: count
+
+# =cut
+
+# sub record_find_count {
+#     my $self = shift;
+
+#     $self->screen_read();
+
+#     # Table configs
+#     my $table_hr  = $self->scrcfg('rec')->maintable;
+#     my $fields_hr = $self->scrcfg('rec')->maintable->{columns};
+
+#     my $params = {};
+
+#     # Add findtype info to screen data
+#     while ( my ( $field, $value ) = each( %{ $self->{scrdata} } ) ) {
+#         $params->{where}{$field} = [ $value, $fields_hr->{$field}{findtype} ];
+#     }
+
+#     # Table data
+#     $params->{table} = $table_hr->{view};          # use view instead of table
+#     $params->{pkcol} = $table_hr->{pkcol}{name};
+
+#     $self->_model->query_records_count($params);
+
+#     return;
+# }
 
 =head2 screen_read
 
@@ -1251,41 +1369,43 @@ Read screen controls (widgets) and save in a Perl data stucture.
 =cut
 
 sub screen_read {
-    my ( $self, $all ) = @_;
+    my ($self, $all) = @_;
 
     # Initialize
-    $self->{scrdata} = {};
+    $self->{_scrdata} = {};
 
-    my $ctrl_ref = $self->_screen->get_controls();
+    my $scrobj = $self->scrobj;    # current screen object
+    my $scrcfg = $self->scrcfg;    # current screen config
+
+    my $ctrl_ref = $scrobj->get_controls();
+
     return unless scalar keys %{$ctrl_ref};
 
-    # Scan and write to controls
-    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
-
-        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
+    # Scan read from controls
+    foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
+        my $fld_cfg = $scrcfg->main_table_column($field);
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        # print " Field: $field \[$ctrltype\]\n";
-
-        # Skip READ ONLY fields if not FIND status
-        # Read ALL if $all == true (don't skip)
-        if ( !( $all or $self->_model->is_mode('find') ) ) {
-            if ( $ctrlrw eq 'r' ) {
-                print " skiping RO field '$field'\n";
-                next;
+        if ( !$all ) {
+            unless ( $self->_model->is_mode('find') ) {
+                next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
             }
         }
 
-        # Run appropriate sub according to control (entry widget) type
+        # Call the appropriate method according to control (widget) type
         my $sub_name = "control_read_$ctrltype";
         if ( $self->can($sub_name) ) {
-            $self->$sub_name( $ctrl_ref, $field );
+            unless ( $ctrl_ref->{$field}[1] ) {
+                print "EE: Undefined field '$field', check configuration!\n";
+                next;
+            }
+            $self->$sub_name($field);
         }
         else {
-            print "WARN: No '$ctrltype' ctrl type for reading '$field'!\n";
+            print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
         }
     }
 
@@ -1294,19 +1414,16 @@ sub screen_read {
 
 =head2 control_read_e
 
-Read contents of a Tk::Entry control.
+Read contents of a Wx::TextCtrl control.
 
 =cut
 
 sub control_read_e {
-    my ( $self, $ctrl_ref, $field ) = @_;
+    my ( $self, $field ) = @_;
 
-    unless ( $ctrl_ref->{$field}[1] ) {
-        warn "Undefined: [e] $field\n";
-        return;
-    }
+    my $control = $self->scrobj()->get_controls($field)->[1];
 
-    my $value = $ctrl_ref->{$field}[1]->GetValue();
+    my $value = $control->GetValue();
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
@@ -1520,148 +1637,146 @@ present to, at least as 'undef'.
 =cut
 
 sub screen_write {
-    my ( $self, $record_ref, $option ) = @_;
+    my ( $self, $record ) = @_;
 
-    $option ||= 'record';    # default option record
+    #- Use current page
+    my $page = $self->_view->get_nb_current_page();
 
-    # $self->_log->trace("Write '$option' screen controls");
+    return if $page eq 'lst';
 
-    my $ctrl_ref = $self->_screen->get_controls();
-
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};    # no controls?
 
-FIELD:
-    foreach my $field ( keys %{ $self->_scrcfg->maintable->{columns} } ) {
+    my $cfg_ref = $self->scrcfg($page);
 
-        my $fld_cfg = $self->_scrcfg->maintable->{columns}{$field};
+    # my $cfgdeps = $self->scrcfg($page)->dependencies;
 
-        # Save control state
-        my $ctrl_state = $ctrl_ref->{$field}[1]->IsEditable();
-        $ctrl_ref->{$field}[1]->SetEditable(1);
+    foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
 
-        # Control config attributes
-        my $ctrltype = $fld_cfg->{ctrltype};
+        # Skip field if not in record or not dependent
+        next
+            unless ( exists $record->{$field}
+                         # or $self->is_dependent( $field, $cfgdeps )
+                 );
 
-        my $value;
-        if ( $option eq 'record' ) {
-            $value = $record_ref->{ lc $field };
-        }
-        elsif ( $option eq 'fields' ) {
-            $value = $record_ref->{ lc $field };
-            next FIELD if !$value;
-        }
-        elsif ( $option eq 'clear' ) {
+        my $fldcfg = $cfg_ref->main_table_column($field);
 
-            # nothing here
-        }
-        else {
-            warn "Should never get here!\n";
-        }
+        my $value = $record->{$field}
+            || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
+
+        # # Process dependencies
+        my $state;
+        # if (exists $cfgdeps->{$field} ) {
+        #     $state = $self->dependencies($field, $cfgdeps, $record);
+        # }
 
         if ($value) {
 
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
 
-            # Should make $value = 0, than format as number ?
-            my $decimals = $fld_cfg->{decimals};
-            if ($decimals) {
-                if ( $decimals > 0 ) {
-
-                    # if decimals > 0, format as number
-                    $value = sprintf( "%.${decimals}f", $value );
-                }
+            # Number
+            if ( $fldcfg->{validation} eq 'numeric' ) {
+                $self->format_as_number( $value, $fldcfg->{places} );
             }
         }
 
-        # Run appropriate sub according to control (entry widget) type
-        my $sub_name = qq{control_write_$ctrltype};
-        if ( $self->can($sub_name) ) {
-            $self->$sub_name( $ctrl_ref, $field, $value );
-        }
-        else {
-            print "WARN: No '$ctrltype' ctrl type for writing '$field'!\n";
-        }
-
-        # Restore state
-        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
+        $self->ctrl_write_to($field, $value, $state);
     }
 
-    # $self->_log->trace("Write finished (restored controls states)");
+#     my ( $self, $record_ref, $option ) = @_;
+
+#     $option ||= 'record';    # default option record
+
+#     # $self->_log->trace("Write '$option' screen controls");
+
+#     my $ctrl_ref = $self->scrobj($page)->get_controls();
+
+#     return unless scalar keys %{$ctrl_ref};    # no controls?
+
+# FIELD:
+#     foreach my $field ( keys %{ $self->scrcfg('rec')->maintable->{columns} } ) {
+
+#         my $fld_cfg = $self->scrcfg('rec')->maintable->{columns}{$field};
+
+#         # Save control state
+#         my $ctrl_state = $ctrl_ref->{$field}[1]->IsEditable();
+#         $ctrl_ref->{$field}[1]->SetEditable(1);
+
+#         # Control config attributes
+#         my $ctrltype = $fld_cfg->{ctrltype};
+
+#         my $value;
+#         if ( $option eq 'record' ) {
+#             $value = $record_ref->{ lc $field };
+#         }
+#         elsif ( $option eq 'fields' ) {
+#             $value = $record_ref->{ lc $field };
+#             next FIELD if !$value;
+#         }
+#         elsif ( $option eq 'clear' ) {
+
+#             # nothing here
+#         }
+#         else {
+#             warn "Should never get here!\n";
+#         }
+
+#         if ($value) {
+
+#             # Trim spaces and '\n' from the end
+#             $value = Tpda3::Utils->trim($value);
+
+#             # Should make $value = 0, than format as number ?
+#             my $decimals = $fld_cfg->{decimals};
+#             if ($decimals) {
+#                 if ( $decimals > 0 ) {
+
+#                     # if decimals > 0, format as number
+#                     $value = sprintf( "%.${decimals}f", $value );
+#                 }
+#             }
+#         }
+
+#         # Run appropriate sub according to control (entry widget) type
+#         my $sub_name = qq{control_write_$ctrltype};
+#         if ( $self->can($sub_name) ) {
+#             $self->$sub_name( $ctrl_ref, $field, $value );
+#         }
+#         else {
+#             print "WARN: No '$ctrltype' ctrl type for writing '$field'!\n";
+#         }
+
+#         # Restore state
+#         $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
+#     }
+
+#     # $self->_log->trace("Write finished (restored controls states)");
 
     return;
 }
 
-=head2 control_tmatrix_write
+=head2 ctrl_write_to
 
-Write data to TableMatrix widget
+Run the appropriate sub according to control (entry widget) type.
 
 =cut
 
-# sub control_tmatrix_write {
-#     my ( $self, $records ) = @_;
+sub ctrl_write_to {
+    my ($self, $field, $value, $state) = @_;
 
-#     my $tm_object = $self->_screen->get_tm_controls('tm1');
-#     my $xtvar;
-#     if ($tm_object) {
-#         $xtvar = $tm_object->cget( -variable );
-#     }
-#     else {
+    my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
 
-#         # Just ignore :)
-#         return;
-#     }
+    my $sub_name = qq{control_write_$ctrltype};
+    if ( $self->can($sub_name) ) {
+        $self->$sub_name($field, $value, $state);
+    }
+    else {
+        print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
+    }
 
-#     my $row = 1;
-
-#     #- Scan and write to table
-
-#     foreach my $record ( @{$records} ) {
-#         foreach my $field ( keys %{ $self->_scrcfg->table->{columns} } ) {
-#             my $fld_cfg = $self->_scrcfg->table->{columns}{$field};
-
-#             my $value = $record->{$field};
-#             $value = q{} unless defined $value;    # Empty
-#             $value =~ s/[\n\t]//g;                 # Delete control chars
-
-#             my ( $col, $type, $width, $places ) =
-#               @$fld_cfg{'id','type','width','decimals'}; # hash slice
-
-#             if ( $type =~ /digit/ ) {
-#                 $value = 0 unless $value;
-#                 if ( defined $places ) {
-
-#                     # Daca SCALE >= 0, Formatez numarul
-#                     $value = sprintf( "%.${places}f", $value );
-#                 }
-#                 else {
-#                     $value = sprintf( "%.0f", $value );
-#                 }
-#             }
-
-#             $xtvar->{"$row,$col"} = $value;
-
-#         }
-
-#         $row++;
-#     }
-
-#     # Refreshing the table...
-#     $tm_object->configure( -rows => $row );
-
-#     # TODO: make a more general sub
-#     # Execute sub defined in screen Workaround for a DBD::InterBase
-#     # problem related to big decimals?  The view doesn't compute
-#     # corectly the value and the VAT when accesed from perl but only
-#     # from flamerobin ...  Check if sub exists first
-#     # Fixed with patch from:
-#     # http://github.com/pilcrow/perl-dbd-interbase.git
-#     # if ( $self->{screen}->can('recalculare_factura') ) {
-#     #     $self->{screen}->recalculare_factura();
-#     # }
-
-#     return;
-# }
+    return;
+}
 
 =head2 toggle_mode_find
 
@@ -1688,9 +1803,19 @@ Toggle add mode
 sub toggle_mode_add {
     my $self = shift;
 
+    if ( $self->_model->is_mode('edit') ) {
+        my $answer = $self->ask_to_save;    # if $self->_model->is_modified;
+        if ( !defined $answer ) {
+            $self->_view->get_toolbar_btn('tb_ad')->deselect;
+            return;
+        }
+    }
+
     $self->_model->is_mode('add')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('add');
+
+    $self->_view->set_status( '', 'ms' );    # clear messages
 
     return;
 }
@@ -1704,18 +1829,20 @@ Toggle all controls state from I<Screen>.
 sub controls_state_set {
     my ( $self, $state ) = @_;
 
-    $self->_log->trace("Screen controls state is '$state'");
+    $self->_log->trace("Screen 'rec' controls state is '$state'");
 
-    my $ctrl_ref = $self->_screen->get_controls();
+    my $page = $self->_view->get_nb_current_page();
+    my $bg   = $self->scrobj($page)->get_bgcolor();
+
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
     my $control_states = $self->control_states($state);
 
-    return unless defined $self->_scrcfg;
+    return unless defined $self->scrcfg($page);
 
-    foreach my $field ( keys %{ $self->{_scrcfg}->maintable->{columns} } ) {
-
-        my $fld_cfg = $self->{_scrcfg}->maintable->{columns}{$field};
+    foreach my $field ( keys %{ $self->scrcfg($page)->main_table_columns } ) {
+        my $fld_cfg = $self->scrcfg($page)->main_table_column($field);
 
         my $ctrl_state = $control_states->{state};
         $ctrl_state = $fld_cfg->{state}
@@ -1725,27 +1852,85 @@ sub controls_state_set {
         my $bg_color = $bkground;
         $bg_color = $fld_cfg->{bgcolor}
             if $bkground eq 'from_config';
-        $bg_color = $self->_screen->get_bgcolor()
+        $bg_color = $bg
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
         if ( $state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
-                $ctrl_state = 0;                               # 'disabled'
-                $bg_color   = $self->_screen->get_bgcolor();
+                $ctrl_state = 'disabled';
+                $bg_color   = $self->scrobj($page)->get_bgcolor();
             }
         }
 
+        # Allow 'bg' as bgcolor config attribute value for controls
+        $bg_color = $bg if $bg_color =~ m{bg|bground|background};
+
         # Configure controls
-        $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
-        $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
-        $ctrl_ref->{$field}[1]
-            ->SetBackgroundColour( Wx::Colour->new($bg_color) )
-            if $bg_color;
+        eval {
+            my $state = $ctrl_state eq 'normal' ? 1 : 0;
+            $ctrl_ref->{$field}[1]->SetEditable($state);
+            $ctrl_ref->{$field}[1]
+                ->SetBackgroundColour( Wx::Colour->new($bg_color) )
+                    if $bg_color;
+        };
+        print "WW: '$field': $@\n" if $@;
     }
 
     return;
 }
+
+# =head2 controls_state_set
+
+# Toggle all controls state from I<Screen>.
+
+# =cut
+
+# sub controls_state_set {
+#     my ( $self, $state ) = @_;
+
+#     $self->_log->trace("Screen controls state is '$state'");
+
+#     my $ctrl_ref = $self->scrobj($page)->get_controls();
+#     return unless scalar keys %{$ctrl_ref};
+
+#     my $control_states = $self->control_states($state);
+
+#     return unless defined $self->scrcfg('rec');
+
+#     foreach my $field ( keys %{ $self->scrcfg('rec')->maintable->{columns} } ) {
+
+#         my $fld_cfg = $self->scrcfg('rec')->maintable->{columns}{$field};
+
+#         my $ctrl_state = $control_states->{state};
+#         $ctrl_state = $fld_cfg->{state}
+#             if $ctrl_state eq 'from_config';
+
+#         my $bkground = $control_states->{background};
+#         my $bg_color = $bkground;
+#         $bg_color = $fld_cfg->{bgcolor}
+#             if $bkground eq 'from_config';
+#         $bg_color = $self->scrobj($page)->get_bgcolor()
+#             if $bkground eq 'disabled_bgcolor';
+
+#         # Special case for find mode and fields with 'findtype' set to none
+#         if ( $state eq 'find' ) {
+#             if ( $fld_cfg->{findtype} eq 'none' ) {
+#                 $ctrl_state = 0;                               # 'disabled'
+#                 $bg_color   = $self->scrobj($page)->get_bgcolor();
+#             }
+#         }
+
+#         # Configure controls
+#         $ctrl_state = $ctrl_state eq 'normal' ? 1 : 0;
+#         $ctrl_ref->{$field}[1]->SetEditable($ctrl_state);
+#         $ctrl_ref->{$field}[1]
+#             ->SetBackgroundColour( Wx::Colour->new($bg_color) )
+#             if $bg_color;
+#     }
+
+#     return;
+# }
 
 =head2 control_write_e
 
@@ -1870,7 +2055,7 @@ Table matrix methods.  Add TableMatrix row.
 # sub add_tmatrix_row {
 #     my ($self, $valori_ref) = @_;
 
-#     my $xt = $self->_screen->get_tm_controls('tm1');
+#     my $xt = $self->scrobj($page)->get_tm_controls('tm1');
 
 #     unless ( $self->_model->is_mode('add')
 #                  || $self->_model->is_mode('edit') ) {
@@ -1912,7 +2097,7 @@ Delete TableMatrix row
 # sub remove_tmatrix_row {
 #     my $self = shift;
 
-#     my $xt = $self->_screen->get_tm_controls('tm1');
+#     my $xt = $self->scrobj($page)->get_tm_controls('tm1');
 
 #     unless ( $self->_model->is_mode('add')
 #                  || $self->_model->is_mode('edit') ) {
@@ -1971,6 +2156,205 @@ Renumber TableMatrix rows
 
 #     return;
 # }
+
+
+=head2 screen_get_pk_col
+
+Return primary key column name for the current screen.
+
+=cut
+
+sub screen_get_pk_col {
+    my $self = shift;
+
+    return $self->scrcfg('rec')->main_table_pkcol();
+}
+
+=head2 screen_set_pk_col
+
+Store primary key column name for the current screen.
+
+=cut
+
+sub screen_set_pk_col {
+    my $self = shift;
+
+    my $pk_col = $self->screen_get_pk_col;
+
+    if ($pk_col) {
+        $self->{_tblkeys}{$pk_col} = undef;
+    }
+    else {
+        croak "ERR: Unknown PK column name!\n";
+    }
+
+    return;
+}
+
+=head2 screen_set_pk_val
+
+Store primary key column value for the current screen.
+
+=cut
+
+sub screen_set_pk_val {
+    my ( $self, $pk_val ) = @_;
+
+    my $pk_col = $self->screen_get_pk_col;
+
+    if ($pk_col) {
+        $self->{_tblkeys}{$pk_col} = $pk_val;
+    }
+    else {
+        croak "ERR: Unknown PK column name!\n";
+    }
+
+    return;
+}
+
+=head2 screen_get_pk_val
+
+Return primary key column value for the current screen.
+
+=cut
+
+sub screen_get_pk_val {
+    my $self = shift;
+
+    my $pk_col = $self->screen_get_pk_col;
+
+    return $self->{_tblkeys}{$pk_col};
+}
+
+=head2 screen_get_fk_col
+
+Return foreign key column name for the current screen.
+
+=cut
+
+sub screen_get_fk_col {
+    my ( $self, $page ) = @_;
+
+    $page ||= $self->_view->get_nb_current_page();
+
+    return $self->scrcfg($page)->main_table_fkcol();
+}
+
+=head2 screen_set_fk_col
+
+Store foreign key column name for the current screen.
+
+=cut
+
+sub screen_set_fk_col {
+    my $self = shift;
+
+    my $fk_col = $self->screen_get_fk_col;
+
+    if ($fk_col) {
+        $self->{_tblkeys}{$fk_col} = undef;
+    }
+
+    return;
+}
+
+=head2 screen_set_fk_val
+
+Store foreign key column value for the current screen.
+
+=cut
+
+sub screen_set_fk_val {
+    my ( $self, $fk_val ) = @_;
+
+    my $fk_col = $self->screen_get_fk_col;
+
+    if ($fk_col) {
+        $self->{_tblkeys}{$fk_col} = $fk_val;
+    }
+
+    return;
+}
+
+=head2 screen_get_fk_val
+
+Return foreign key column value for the current screen.
+
+=cut
+
+sub screen_get_fk_val {
+    my $self = shift;
+
+    my $fk_col = $self->screen_get_fk_col;
+
+    return unless $fk_col;
+
+    return $self->{_tblkeys}{$fk_col};
+}
+
+
+=head2 list_column_names
+
+Return the list column names.
+
+=cut
+
+sub list_column_names {
+    my $self = shift;
+
+    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
+    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+
+    my $columns = [];
+    push @{$columns}, @{$header_look};
+    push @{$columns}, @{$header_cols};
+
+    return $columns;
+}
+
+=head2 scrcfg
+
+Return screen configuration object for I<page>, or for the current
+page.
+
+=cut
+
+sub scrcfg {
+    my ( $self, $page ) = @_;
+
+    $page ||= $self->_view->get_nb_current_page();
+
+    return unless $page;
+
+    if ( $page eq 'lst' ) {
+        warn "Wrong page (scrcfg): $page!\n";
+
+        return;
+    }
+
+    return $self->scrobj($page)->{scrcfg};
+}
+
+=head2 scrobj
+
+Return current screen object reference, or the object reference from
+the required page.
+
+=cut
+
+sub scrobj {
+    my ( $self, $page ) = @_;
+
+    $page ||= $self->_view->get_nb_current_page();
+
+    return $self->{_rscrobj} if $page eq 'rec';
+
+    return $self->{_dscrobj} if $page eq 'det';
+
+    warn "Wrong page (scrobj): $page!\n";
+
+    return;
+}
 
 =head1 AUTHOR
 

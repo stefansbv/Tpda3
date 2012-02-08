@@ -35,85 +35,86 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $inreg_p ) = @_;
+    my ( $self, $nb ) = @_;
 
-    my $gui    = $inreg_p->GetGrandParent;
-    my $main_p = $inreg_p->GetParent;
-    $self->{bg} = $inreg_p->GetBackgroundColour();
+    my $rec_page = $nb->page_widget('rec');
+    my $det_page = $nb->page_widget('det');
+    $self->{view} = $nb->GetGrandParent;
+    $self->{bg}   = $nb->GetBackgroundColour();
 
     # TODO: use Wx::Perl::TextValidator
 
     #--- Controls
 
-    my $lcustomername = Wx::StaticText->new( $inreg_p, -1, 'Name' );
+    my $lcustomername = Wx::StaticText->new( $rec_page, -1, 'Name' );
     my $ecustomername
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
     my $ecustomernumber
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lcontactlastname = Wx::StaticText->new( $inreg_p, -1, 'Last name' );
+    my $lcontactlastname = Wx::StaticText->new( $rec_page, -1, 'Last name' );
     my $econtactlastname
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lcontactfirstname = Wx::StaticText->new( $inreg_p, -1, 'First name' );
+    my $lcontactfirstname = Wx::StaticText->new( $rec_page, -1, 'First name' );
     my $econtactfirstname
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lphone = Wx::StaticText->new( $inreg_p, -1, 'Phone' );
+    my $lphone = Wx::StaticText->new( $rec_page, -1, 'Phone' );
     my $ephone
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $laddressline1 = Wx::StaticText->new( $inreg_p, -1, 'Address line1' );
+    my $laddressline1 = Wx::StaticText->new( $rec_page, -1, 'Address line1' );
     my $eaddressline1
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $laddressline2 = Wx::StaticText->new( $inreg_p, -1, 'Address line2' );
+    my $laddressline2 = Wx::StaticText->new( $rec_page, -1, 'Address line2' );
     my $eaddressline2
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lcity = Wx::StaticText->new( $inreg_p, -1, 'City' );
+    my $lcity = Wx::StaticText->new( $rec_page, -1, 'City' );
     my $ecity
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lstate = Wx::StaticText->new( $inreg_p, -1, 'State' );
+    my $lstate = Wx::StaticText->new( $rec_page, -1, 'State' );
     my $estate
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lcountryname = Wx::StaticText->new( $inreg_p, -1, 'Country' );
+    my $lcountryname = Wx::StaticText->new( $rec_page, -1, 'Country' );
     my $ecountryname = Wx::TextCtrl->new(
-        $inreg_p, -1, q{},
+        $rec_page, -1, q{},
         [ -1, -1 ],
         [ -1, -1 ],
         wxTE_PROCESS_ENTER,
     );
     my $ecountrycode
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
     my $lsalesrepemployee
-        = Wx::StaticText->new( $inreg_p, -1, 'Sales repres.' );
+        = Wx::StaticText->new( $rec_page, -1, 'Sales repres.' );
     my $esalesrepemployee = Wx::TextCtrl->new(
-        $inreg_p, -1, q{},
+        $rec_page, -1, q{},
         [ -1, -1 ],
         [ -1, -1 ],
         wxTE_PROCESS_ENTER,
     );
     my $eemployeenumber
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
 
-    my $lcreditlimit = Wx::StaticText->new( $inreg_p, -1, 'Credit limit' );
+    my $lcreditlimit = Wx::StaticText->new( $rec_page, -1, 'Credit limit' );
     my $ecreditlimit
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
-    my $lpostalcode = Wx::StaticText->new( $inreg_p, -1, 'Postal code' );
+    my $lpostalcode = Wx::StaticText->new( $rec_page, -1, 'Postal code' );
     my $epostalcode
-        = Wx::TextCtrl->new( $inreg_p, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     #--- Layout
 
     my $top_sz = Wx::BoxSizer->new(wxVERTICAL);
 
     my $sbox_sz = Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $inreg_p, -1, ' Customer ', ), wxVERTICAL );
+        Wx::StaticBox->new( $rec_page, -1, ' Customer ', ), wxVERTICAL );
 
     my $grid = Wx::GridBagSizer->new( 5, 0 );
 
@@ -285,7 +286,7 @@ sub run_screen {
     $sbox_sz->Add( $grid, 0, wxALL | wxGROW, 0 );
     $top_sz->Add( $sbox_sz, 0, wxALL | wxGROW, 5 );
 
-    $inreg_p->SetSizer($top_sz);
+    $rec_page->SetSizer($top_sz);
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'customers.conf'
