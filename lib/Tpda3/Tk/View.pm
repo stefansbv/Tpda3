@@ -1048,12 +1048,14 @@ sub list_populate {
 
     my $record_count = scalar @{$ary_ref};
 
+    my $list = $self->get_recordlist();
+
     # Data
     foreach my $record ( @{$ary_ref} ) {
-        $self->get_recordlist->insert( 'end', $record );
-        $self->get_recordlist->see('end');
+        $list->insert( 'end', $record );
+        $list->see('end');
         $row_count++;
-        $self->get_recordlist->update;
+        $list->update;
 
         # Progress bar
         my $p = floor( $row_count * 10 / $record_count ) * 10;
@@ -1063,10 +1065,10 @@ sub list_populate {
     $self->set_status( "$row_count records", 'ms' );
 
     # Activate and select last
-    $self->get_recordlist->selectionClear( 0, 'end' );
-    $self->get_recordlist->activate('end');
-    $self->get_recordlist->selectionSet('end');
-    $self->get_recordlist->see('active');
+    $list->selectionClear( 0, 'end' );
+    $list->activate('end');
+    $list->selectionSet('end');
+    $list->see('active');
     $self->{progres} = 0;
 
     return $record_count;
