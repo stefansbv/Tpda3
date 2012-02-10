@@ -58,8 +58,8 @@ recommends 'Wx::Perl::ListCtrl' => '0.03';
 
 #- Database
 
-requires 'DBD::Pg'       => '1.32';
-requires 'DBD::Firebird' => '0.80';
+recommends 'DBD::Pg'       => '1.32';
+recommends 'DBD::Firebird' => '0.80';
 
 test_requires 'Test::More'          => '0.47';
 test_requires 'DBD::SQLite'         => '1.29';

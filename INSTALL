@@ -1,0 +1,74 @@
+
+Tpda3 (Tiny Perl Database Application 3)
+Copyright (C) 2010-2012  Stefan Suciu
+GNU General Public License v3
+
+Tpda3 is a classic desktop database application framework, written in
+Perl.  Has PerlTk and (experimental) wxPerl support for the GUI part
+and Firebird and PostgreSQL support for the RDBMS.
+
+Open source, alpha status software, be careful it might harm your
+computer ;) Be sure to read the Disclaimer of Warranty. from the GNU
+GENERAL PUBLIC LICENSE
+
+'Makefile.PL' lists the required modules, from that list 'DBD::SQLite'
+is required for the tests. The other DBD modules are optional but one.
+They are listed as 'recommends' in Makefile.PL, but that's because I
+didn't know how to make an optional requirement.
+
+WxPerl interface is experimental and far from being complete.
+
+INSTALLATION
+
+% tar -xvzf Tpda3-0.42.tar.gz
+
+or
+
+% unzip  Tpda3-0.42.zip
+
+cd Tpda3-0.42
+
+% perl Makefile.PL
+% make
+% make test
+% make install
+
+For testing the application without installation, after 'make' one can use:
+
+% perl -Mblib bin/tpda3 [options] ...
+
+Only make install should be run as root.
+
+
+USAGE
+
+After installing the application, at first start, the configuration
+directory is initialized automatically.  The following command will
+list all the defined application configurations.
+
+% tpda3 -l
+
+On a fresh installation this command should return:
+
+test-tk
+test-wx
+
+Create and/or load SQL schema into the classicmodels SQLite database.
+
+% ./script/load_classicmodels.sh si
+
+Run the demo application with:
+
+% tpda3 test-tk [-u username -p password]
+
+Type something (anything) in the user and password entries.
+
+The SQLite support is partial, you only can make queries, inserting
+data needs SQL INSERT ... RETURNING capability in the RDMBS.
+
+I would like some feedback about this application, especially what you
+like or what you don't like and why, about it.
+
+Thanks for your interest.
+
+Have fun!

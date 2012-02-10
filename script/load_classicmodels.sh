@@ -1,9 +1,9 @@
 #!/bin/bash
 #
 # Load Classic Models data into tables for Firebird, PostgreSQL,
-# SQLite or MySQL
+# or SQLite
 #
-# Author Stefan Suciu, 2009-2011
+# Author Stefan Suciu, 2009-2012
 #
 
 # With help from:
@@ -24,13 +24,12 @@ echo ' For Firebird and PostgreSQL:'
 echo '  the database classicmodels has to be online and the structure'
 echo '  must be created with tpda/sql/??/create_classicmodels.sql'
 echo '        where ?? is fb|pg|my depending on the RDBMS used.'
-echo ' Note: MySQL is not (yet) supported. '
-echo '       For SQLite: creates the test database if it does not exists.'
+echo ' Note: For SQLite: creates the test database if it does not exists.'
 echo
 #--
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 <fb|pg|my|si> [user]"
+    echo "Usage: $0 <fb|pg|si> [user]"
     echo
     exit 1
 fi
@@ -45,12 +44,12 @@ SEARCH_STR=FBPGMYSI
 SEARCH_FOR=$1
 
 if ! echo "$SEARCH_STR" | grep -i -q "$SEARCH_FOR"; then
-    echo "Usage: $0 <fb|pg|my|si>"
+    echo "Usage: $0 <fb|pg|si>"
     exit 1
 fi
 
 # Variables
-IMPORT_SCRIPT=import-csv.pl
+IMPORT_SCRIPT=csv-import.pl
 DATA_DIR=data
 DBNAME=classicmodels
 DBD=$1

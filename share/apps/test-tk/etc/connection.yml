@@ -2,7 +2,7 @@
 # Database connection configuration
 ---
 connection:
-  driver: postgresql
+  driver: sqlite
   host:   localhost
   dbname: classicmodels
-  port:   5432
+  port:

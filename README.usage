@@ -1,45 +1,14 @@
 
 Tpda3 (Tiny Perl Database Application 3)
-Copyright (C) 2010-2011  Stefan Suciu
+Copyright (C) 2010-2012  Stefan Suciu
 GNU General Public License v3
 
 Tpda3 is a classic desktop database application framework, written in
-Perl, that aims to follow the Model View Controller (MVC) architecture
-pattern.
-
-Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
-PostgreSQL and (limited) SQLite support for the database.
+Perl.  Has PerlTk and (experimental) wxPerl support for the GUI part
+and Firebird and PostgreSQL support for the RDBMS.
 
 
 QUICK USAGE
-
-Note: PerlTk implementation is on the main branch, wxPerl is on the
-wxPerl branch.
-
-Create and populate a SQLite database named classicmodels using the
-tools from the scripts dir.
-
-From the project's main dir:
-
-% script/load_classicmodels.sh si  # only for GNU/Linux and Cygwin?
-
-Assuming all the required Perl modules are installed, build the
-application:
-
-% perl Makefile && make
-
-Start the application, 'user' and 'pass' can be anything for SQLite,
-but both required, for now:
-
-% perl -Mblib bin/tpda3 test -u user - p pass
-
-For the Perl Tk implementation, if 'classicmodels' (the name of the
-database) appears in GREEN color in the status bar then the connection
-is OK, if is RED the connection failed, check the RDBMS server and/or
-the user and password.
-
-For the wxPerl implementation, if the name of the database appears in
-the status bar then the connection is OK, if not, no connection!
 
 Select a screen[1] from the menu, e.g Test -> Customers.
 
@@ -60,14 +29,14 @@ Select a screen[1] from the menu, e.g Test -> Customers.
   - Now click the Record tab and the selected record will be loaded in
     the fields of the screen.
 
-- Add new records using the (+) button on the toolbar:         NOT IMPLEMENTED
-- Save record by clicking on the <save> button on the toolbar: NOT IMPLEMENTED
-- Delete current record using the (-) button on the toolbar:   NOT IMPLEMENTED
+- Add new records using the (+) button on the toolbar.
+- Save record by clicking on the <save> button on the toolbar.
+- Delete current record using the (-) button on the toolbar.
 
 
 LICENSE AND COPYRIGHT
 
-Copyright (C) 2010-2011 Stefan Suciu
+Copyright (C) 2010-2012 Stefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -85,5 +54,5 @@ if not, write to the Free Software Foundation, Inc.,
 
 Footnotes:
 [1] Screen: in this application, means a window (form) with Perl Tk
-     widgets or wxPerl controls used for updating columns from a table
-     in the database.
+    widgets or wxPerl controls used for updating columns from a table
+    in the database.
