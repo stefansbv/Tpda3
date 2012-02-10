@@ -5,7 +5,6 @@ use warnings;
 use Carp;
 
 use Tpda3::Utils;
-#use Tpda3::Tk::TB;
 use Tpda3::Config::Screen;
 
 =head1 NAME

@@ -431,7 +431,7 @@ sub _check_app_menus {
         if ($@) {
             $menu->Enable( $menu_id, 0 );
             $self->_log->trace("WW: Can't load '$module_file'");
-            print "WW: Can't load '$module_file'\n";
+            #print "WW: Can't load '$module_file'\n";
         }
     }
 

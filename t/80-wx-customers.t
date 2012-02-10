@@ -12,6 +12,9 @@ use lib qw( lib ../lib );
 use Tpda3;
 use Tpda3::Config;
 
+use Wx q{:everything};
+use Wx::Event qw(EVT_TIMER);
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -37,9 +40,6 @@ my $args = {
 ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
 
 #- Test the test screens :)
-
-use Wx q{:everything};
-use Wx::Event qw(EVT_TIMER);
 
 my $timer = Wx::Timer->new( $a->{gui}{_view}, 1 );
 $timer->Start( 1000, 1 );    # one shot

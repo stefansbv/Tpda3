@@ -5,4 +5,4 @@ connection:
   driver: sqlite
   host:   localhost
   dbname: classicmodels
-  port:   ~
+  port:

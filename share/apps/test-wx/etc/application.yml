@@ -5,3 +5,7 @@
 application:
   widgetset: Wx
   module:    Test
+  limits:
+    search: 100
+    lookup: 50
+  dateformat: usa
