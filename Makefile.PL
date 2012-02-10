@@ -1,7 +1,7 @@
 #
 # Makefile.PL for Tpda3
 #
-# Copyright (C) 2010-2011  Stefan Suciu
+# Copyright (C) 2010-2012  Stefan Suciu
 # GNU General Public License v3
 #
 
@@ -45,18 +45,20 @@ requires 'Tk::DateEntry'        => '1.39';
 requires 'Tk::TableMatrix'      => '1.23';
 requires 'Tk::RadiobuttonGroup' => '0.2.2';
 
-#- For generatig PDF from TeX
+#- For generating PDF from TeX
 
 requires 'IPC::Run3' => '0';
 requires 'Template'  => '0';
 requires 'Log::Dispatch::FileRotate' => '0';
 
-#- and/or Wx
+#- and/or Wx - Experimental
 
 recommends 'Wx'                 => '0.970101';
 recommends 'Wx::Perl::ListCtrl' => '0.03';
 
 #- Database
+
+#-- One of this is required for full functionality ...
 
 recommends 'DBD::Pg'       => '1.32';
 recommends 'DBD::Firebird' => '0.80';
@@ -70,3 +72,5 @@ install_share 'share';
 install_script 'bin/tpda3';
 
 WriteAll;
+
+#- end

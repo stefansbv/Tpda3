@@ -49,7 +49,7 @@ if ! echo "$SEARCH_STR" | grep -i -q "$SEARCH_FOR"; then
 fi
 
 # Variables
-IMPORT_SCRIPT=csv-import.pl
+IMPORT_SCRIPT=script/csv-import.pl
 DATA_DIR=data
 DBNAME=classicmodels
 DBD=$1
@@ -72,15 +72,15 @@ fi
 
 # Load data ... [ I know it needs a loop ;) ]
 
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/country.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/offices.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/employees.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/customers.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/productlines.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/products.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orders.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orderdetails.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/payments.dat;
-$IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/status.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/country.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/offices.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/employees.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/customers.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/productlines.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/products.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orders.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/orderdetails.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/payments.dat;
+perl $IMPORT_SCRIPT -b  -db "$DBNAME" -mo "$DBD" -user "$USER" -f $DATA_DIR/status.dat;
 
 echo Finished.

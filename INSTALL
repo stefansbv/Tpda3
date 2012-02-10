@@ -18,7 +18,11 @@ didn't know how to make an optional requirement.
 
 WxPerl interface is experimental and far from being complete.
 
-INSTALLATION
+INSTALLATION (for GNU/Linux and other *nix like OS)
+
+(Sorry, but because of the almost nonexistent feedback in the past I
+will focus only on GNU/Linux support in the docs and helper tools, but
+the application works well in Windows and should work in other OSs too).
 
 % tar -xvzf Tpda3-0.42.tar.gz
 

@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More skip_all => 'Not yet';
 use Test::PerlTidy;
 
 unless ( $ENV{RELEASE_TESTING} ) {
