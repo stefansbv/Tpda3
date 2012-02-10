@@ -15,11 +15,11 @@ Tpda3 - Tpda3 (Tiny Perl Database Application 3.
 
 =head1 VERSION
 
-Version 0.41
+Version 0.43
 
 =cut
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 =head1 SYNOPSIS
 

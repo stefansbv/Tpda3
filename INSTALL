@@ -24,13 +24,13 @@ INSTALLATION (for GNU/Linux and other *nix like OS)
 will focus only on GNU/Linux support in the docs and helper tools, but
 the application works well in Windows and should work in other OSs too).
 
-% tar -xvzf Tpda3-0.42.tar.gz
+% tar -xvzf Tpda3-0.NN.tar.gz
 
 or
 
-% unzip  Tpda3-0.42.zip
+% unzip  Tpda3-0.NN.zip
 
-cd Tpda3-0.42
+cd Tpda3-0.NN
 
 % perl Makefile.PL
 % make
