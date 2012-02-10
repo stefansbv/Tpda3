@@ -245,7 +245,7 @@ sub about {
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
     $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2010-2011\n", 'normal' );
+    $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', "stefansbv at users . sourceforge . net",
         'italic' );

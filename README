@@ -1,19 +1,28 @@
 
 Tpda3 (Tiny Perl Database Application 3)
-Copyright (C) 2010-2011  Stefan Suciu
+Copyright (C) 2010-2012  Stefan Suciu
 GNU General Public License v3
 
 Tpda3 is a classic desktop database application framework, written in
-Perl, that aims to follow the Model View Controller (MVC) architecture
+Perl.  Has PerlTk and (experimental) wxPerl support for the GUI part
+and Firebird and PostgreSQL support for the RDBMS.
+
+Also has some very limited SQLite support currently used only for testing.
+
+Tpda3 aims to follow the Model View Controller (MVC) architecture
 pattern.
 
-Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
-PostgreSQL and (limited) SQLite support for the database.
+Tpda3 is the successor of TPDA and, hopefully, has a much better API
+implementation.  The look and the user interface functionality of
+Tpda3 is almost the same as of TPDA, with some minor improvements.
+
+The configuration files formats are new and are in YAML (YAML::Tiny)
+and Apache format (Config::General).
 
 
 LICENSE AND COPYRIGHT
 
-Copyright (C) 2010-2011 Stefan Suciu
+Copyright (C) 2010-2012 Stefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

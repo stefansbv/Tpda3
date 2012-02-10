@@ -143,7 +143,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2011 Stefan Suciu.
+Copyright 2010-2012 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
