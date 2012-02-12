@@ -9,25 +9,28 @@ use Test::More;
 
 use lib qw( lib ../lib );
 
-use Tpda3;
-use Tpda3::Config;
-
-use Wx q{:everything};
-use Wx::Event qw(EVT_TIMER);
-
+my $ok_test;
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
 
-    eval { use Wx; };
+    eval { require Wx; };
     if ($@) {
         plan( skip_all => 'wxPerl is required for this test' );
     }
-
-    plan tests => 9;
+    else {
+        plan tests => 9;
+        $ok_test = 1;
+    }
 }
+
+use if $ok_test, "Wx", q{:everything};
+use if $ok_test, "Wx::Event", q{EVT_TIMER};
+
+require Tpda3;
+require Tpda3::Config;
 
 use_ok('Tpda3::Wx::App::Test::Customers');
 
