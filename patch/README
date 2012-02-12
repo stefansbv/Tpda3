@@ -1,0 +1,4 @@
+Here are some patched module packages for some Tk modules.
+
+Thanks to RobSeegel on the ActiveState forum for the MListbox patch
+and to lamprecht on PerlMonks for the Tk::JComboBox patch.

@@ -1,0 +1,68 @@
+--- MListbox.pm.orig	2010-03-29 13:06:37.894577967 +0300
++++ MListbox.pm	2010-03-29 13:10:18.974916570 +0300
+@@ -40,27 +40,27 @@
+
+     sub selectionSet {
+         my ($w) = @_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::selectionSet'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::selectionSet'),@_);
+     }
+     sub selectionClear {
+         my ($w)=@_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::selectionClear'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::selectionClear'),@_);
+     }
+     sub selectionAnchor {
+         my ($w)=@_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::selectionAnchor'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::selectionAnchor'),@_);
+     }
+     sub activate {
+         my ($w)=@_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::activate'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::activate'),@_);
+     }
+     sub see {
+         my ($w)=@_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::see'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::see'),@_);
+     }
+     sub yview {
+         my ($w)=@_;
+-        $w->Callback(-updatecommand=>$w->can('SUPER::yview'),@_);
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::yview'),@_);
+     }
+     sub scan {
+         my ($w,$type,$x,$y) = @_;
+@@ -68,7 +68,7 @@
+         if ($type eq 'mark') {
+ 	    $w->{'_scanmark_x'} = $x;
+         }
+-        $w->Callback(-updatecommand=>$w->can('SUPER::scan'),
++        $w->Callback(-updatecommand=>$w->can('Tk::Listbox::scan'),
+ 	    $w, $type, $w->{'_scanmark_x'}, $y
+         );
+         $w->Callback(-xscancommand=>$type,$x);
+@@ -1117,21 +1117,5 @@
+ sub yview { shift->_firstVisible->yview(@_)}
+
+ 1;
+-__END__
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+
++__END__

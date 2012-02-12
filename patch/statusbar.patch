@@ -1,0 +1,10 @@
+--- lib/Tk/StatusBar.pm	2004-02-05 05:21:14.000000000 +0200
++++ lib/Tk/StatusBar.pm.new	2010-03-29 12:58:51.164978272 +0300
+@@ -147,7 +147,6 @@
+     my $n = $self->ProgressBar(
+         -borderwidth    => $borderwidth,
+         -width          => 17,
+-        -troughcolor    => 'systembuttonface',
+         %args,
+     );
+ 

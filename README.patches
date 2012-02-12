@@ -1,0 +1,30 @@
+TROUBLESHOOTING
+
+Problem:
+Tk::Error: unknown color name "systembuttonface"
+
+Fix:
+remove the option '-systembuttonface' from Tk::StatusBar module
+
+Problem:
+In Perl 5.10.0 on Slackware 12.2 the module MListbox throws an error
+like: XS_Tk__Callback_Call error:Not a CODE reference at \
+ /usr/lib/perl5/site_perl/5.10.0/Tk/MListbox.pm line 703.
+Similar error on ActivePerl5.10.0 build 1004.
+
+Fix: Fortunately there is a fix on the ActiveState forum (thanks to
+RobSeegel):
+
+Go into the MListbox code, and replace all references of
+ $w->can('SUPER::
+with
+ $w->can('Tk::Listbox::
+
+Problem:
+Tk::Error: Can't set -state to `normal' for
+Tk::JComboBox=HASH(0x930c6a8): Cannot use undef value for object of
+type 'color' at /usr/lib/perl5/site_perl/5.10.0/Tk/JComboBox.pm line
+1061.
+
+Fix: There is a patch on PerlMonks (Thank you lamprecht!)
+http://www.perlmonks.com/?node_id=799099
