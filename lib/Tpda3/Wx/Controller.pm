@@ -164,10 +164,43 @@ The About dialog
 sub about {
     my $self = shift;
 
+    # Framework version
+    my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
+    my $PROGRAM_VER  = $Tpda3::VERSION;
+
+    # Get application version
+    my $app_class = $self->application_class;
+    ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
+    my ( $APP_VER, $APP_NAME ) = ( '', '' );
+    eval {
+        require $app_file;
+        $app_class->import();
+    };
+    if ($@) {
+        print "WW: Can't load '$app_file'\n";
+        return;
+    }
+    else {
+        $APP_VER  = $app_class->VERSION;
+        $APP_NAME = $app_class->application_name();
+    }
+
+    # Add the about text.
+    my $about_text = qq{\n};
+    $about_text .= $PROGRAM_NAME . "\n";
+    $about_text .= "Version " . $PROGRAM_VER . "\n";
+    $about_text .= "Author: Stefan Suciu\n";
+    $about_text .= "Copyright 2010-2012\n";
+    $about_text .= "GNU General Public License (GPL)\n";
+    $about_text .= "stefansbv at users . sourceforge . net";
+    $about_text .= "\n\n";
+    $about_text .= "$APP_NAME\n";
+    $about_text .=  "Version " . $APP_VER . "\n";
+    $about_text .= " - WxPerl $Wx::VERSION\n";
+    $about_text .= " - " . Wx::wxVERSION_STRING;
+
     Wx::MessageBox(
-        "Tpda3 - v0.03\n(C) 2010-2012 Stefan Suciu\n\n"
-            . " - WxPerl $Wx::VERSION\n" . " - "
-            . Wx::wxVERSION_STRING,
+        $about_text,
         'About Tpda3',
         wxOK | wxICON_INFORMATION | wxCENTRE,
         $self->_view,
@@ -759,6 +792,20 @@ sub _log {
     my $self = shift;
 
     return $self->{_log};
+}
+
+=head2 application_class
+
+Main application class name.
+
+=cut
+
+sub application_class {
+    my $self = shift;
+
+    my $app_name = $self->_cfg->application->{module};
+
+    return "Tpda3::Wx::App::${app_name}";
 }
 
 =head2 screen_module_class

@@ -517,21 +517,21 @@ sub config_rep_path {
     return catdir( $self->configdir, 'rep' );
 }
 
+=head2 config_rep_file
+
+Return default screen report file name and path.
+
+=cut
+
 sub config_rep_file {
     my ($self, $rep_file) = @_;
 
     return catfile( $self->config_rep_path, $rep_file );
 }
 
-sub documents_path {
-    my $self = shift;
+=head2 documents_path
 
-    return catdir( $self->configdir, 'tex' );
-}
-
-=head2 config_tex_path
-
-Return TeX documents base path.
+Return Tex template documents base path.
 
 =cut
 
