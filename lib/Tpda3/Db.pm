@@ -44,11 +44,27 @@ method. (From I<Class::Singleton> docs).
 =cut
 
 sub _new_instance {
-    my $class = shift;
+    my ($class, $model) = @_;
 
-    my $conn = Tpda3::Db::Connection->new;
+    my $conn = Tpda3::Db::Connection->new($model);
 
     return bless { conn => $conn }, $class;
+}
+
+=head2 db_connect
+
+Connect when there already is an instance.
+
+=cut
+
+sub db_connect {
+    my ($self, $model) = @_;
+
+    my $conn = Tpda3::Db::Connection->new($model);
+
+    $self->{conn} = $conn;
+
+    return $self;
 }
 
 =head2 dbh
