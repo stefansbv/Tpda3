@@ -6,6 +6,8 @@ use Carp;
 
 use Log::Log4perl qw(get_logger);
 
+use DBI;
+
 use Tpda3::Config;
 
 =head1 NAME
@@ -39,11 +41,11 @@ method. (From I<Class::Singleton> docs).
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $model) = @_;
 
     my $self = bless {}, $class;
 
-    $self->_connect();
+    $self->_connect($model);
 
     return $self;
 }
@@ -55,7 +57,7 @@ Connect method, uses I<Tpda3::Config> module for configuration.
 =cut
 
 sub _connect {
-    my $self = shift;
+    my ($self, $model) = @_;
 
     my $log = get_logger();
 
@@ -73,22 +75,17 @@ SWITCH: for ($driver) {
         /^$/x && do warn "No driver name?\n";
         /firebird/xi && do {
             require Tpda3::Db::Connection::Firebird;
-            $db = Tpda3::Db::Connection::Firebird->new();
+            $db = Tpda3::Db::Connection::Firebird->new($model);
             last SWITCH;
         };
         /postgresql/xi && do {
             require Tpda3::Db::Connection::Postgresql;
-            $db = Tpda3::Db::Connection::Postgresql->new();
-            last SWITCH;
-        };
-        /mysql/xi && do {
-            require Tpda3::Db::Connection::Mysql;
-            $db = Tpda3::Db::Connection::MySql->new();
+            $db = Tpda3::Db::Connection::Postgresql->new($model);
             last SWITCH;
         };
         /sqlite/xi && do {
             require Tpda3::Db::Connection::Sqlite;
-            $db = Tpda3::Db::Connection::Sqlite->new();
+            $db = Tpda3::Db::Connection::Sqlite->new($model);
             last SWITCH;
         };
 

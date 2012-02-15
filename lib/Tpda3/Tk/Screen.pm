@@ -121,20 +121,6 @@ sub get_rq_controls {
     return $self->{rq_controls};
 }
 
-=head2 get_msg_strings
-
-TODO: Implement translation of messages, instead of this.
-
-=cut
-
-sub get_msg_strings {
-    my $self = shift;
-
-    return {} if !exists $self->{msg_strings};
-
-    return $self->{msg_strings};
-}
-
 =head2 get_toolbar_btn
 
 Return a toolbar button when we know its name.

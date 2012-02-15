@@ -521,7 +521,7 @@ the method in the message string separated by a # char.
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
-
+print " set status to $text\n";
     my $sb = $self->get_statusbar($sb_id);
 
     if ( $sb_id eq 'cn' ) {
@@ -555,7 +555,7 @@ sub temporized_clear {
     return if $self->{_tset} == 1;
 
     $self->after(
-        10000,    # miliseconds
+        50000,    # miliseconds
         sub {
             $self->set_status( '', 'ms' );
             $self->{_tset} = 0;
@@ -828,7 +828,15 @@ sub define_dialogs {
         -type    => 'ok',
         -icon    => 'info',
         -message => '',
-        detail   => '',
+        -detail  => '',
+    );
+
+    $self->{dialog_e} = $self->MsgBox(
+        -title   => 'Info',
+        -type    => 'ok',
+        -icon    => 'error',
+        -message => '',
+        -detail  => '',
     );
 
     return;
@@ -1031,6 +1039,8 @@ Populate list with data from query result.
 
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
+
+    return unless ref $ary_ref eq 'ARRAY';
 
     my $row_count;
 

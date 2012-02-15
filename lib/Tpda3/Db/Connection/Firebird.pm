@@ -3,9 +3,10 @@ package Tpda3::Db::Connection::Firebird;
 use strict;
 use warnings;
 
-use Try::Tiny;
+use Regexp::Common;
 use Log::Log4perl qw(get_logger);
 
+use Try::Tiny;
 use DBI;
 
 =head1 NAME
@@ -38,9 +39,11 @@ Constructor
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $model) = @_;
 
     my $self = {};
+
+    $self->{model} = $model;
 
     bless $self, $class;
 
@@ -58,11 +61,11 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->info("Connecting to the $conf->{driver} server");
-    $log->info("Parameters:");
-    $log->info("  => Database = $conf->{dbname}\n");
-    $log->info("  => Host     = $conf->{host}\n");
-    $log->info("  => User     = $conf->{user}\n");
+    $log->trace("Database driver is: $conf->{driver}");
+    $log->trace("Parameters:");
+    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
+    $log->trace(" > Host     = ",$conf->{host} ? $conf->{hosst} : '?', "\n");
+    $log->trace(" > User     = ",$conf->{user} ? $conf->{user} : '?', "\n");
 
     try {
         $self->{_dbh} = DBI->connect(
@@ -85,10 +88,9 @@ sub db_connect {
         );
     }
     catch {
-        $log->fatal("Transaction aborted: $_")
-            or print STDERR "$_\n";
-
-        # exit 1;
+        my $user_message = $self->parse_db_error($_);
+        $self->{model}->exception_log($user_message);
+        return;
     };
 
     ## Date format
@@ -97,9 +99,55 @@ sub db_connect {
     $self->{_dbh}->{ib_dateformat}      = '%Y-%m-%d';
     $self->{_dbh}->{ib_timeformat}      = '%H:%M';
 
-    $log->info("Connected to database $conf->{dbname}");
+    $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
+}
+
+=head2 parse_db_error
+
+Parse a database error message, and translate it for the user.
+
+RDBMS specific (and maybe version specific?).
+
+=cut
+
+sub parse_db_error {
+    my ($self, $fb) = @_;
+
+    print "\nFB: $fb\n\n";
+
+    my $message_type =
+         $fb eq q{}                                          ? "nomessage"
+       : $fb =~ m/operation for file ($RE{quoted})/smi       ? "dbnotfound:$1"
+       : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi             ? "relnotfound:$1"
+       : $fb =~ m/user name and password/smi                 ? "userpass"
+       : $fb =~ m/no route to host/smi                       ? "network"
+       :                                                       "unknown";
+
+    # Analize and translate
+
+    my ( $type, $name ) = split /:/, $message_type, 2;
+    $name = $name ? $name : '';
+
+    my $translations = {
+        nomessage   => "weird#Error without message!",
+        dbnotfound  => "fatal#Database $name not found!",
+        relnotfound => "fatal#Relation $name not found!",
+        userpass    => "info#Authentication failed, password?",
+        network     => "fatal#Network problem",
+        unknown     => "fatal#Uncategorized database error",
+    };
+
+    my $message;
+    if (exists $translations->{$type} ) {
+        $message = $translations->{$type}
+    }
+    else {
+        print "EE: Translation error!\n";
+    }
+
+    return $message;
 }
 
 =head2 table_list

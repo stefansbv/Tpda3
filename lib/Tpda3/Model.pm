@@ -11,6 +11,7 @@ use Data::Compare;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
+use Scalar::Util qw(blessed);
 
 use Tpda3::Config;
 use Tpda3::Codings;
@@ -48,6 +49,7 @@ sub new {
     my $class = shift;
 
     my $self = {
+        _exception   => Tpda3::Observable->new(),
         _connected   => Tpda3::Observable->new(),
         _stdout      => Tpda3::Observable->new(),
         _appmode     => Tpda3::Observable->new(),
@@ -86,47 +88,90 @@ sub _log {
     return $self->{_log};
 }
 
-=head2 toggle_db_connect
+=head2 db_connect
 
-Toggle database connection
+Connect to the database.
 
 =cut
 
-sub toggle_db_connect {
+sub db_connect {
     my $self = shift;
 
-    if ( $self->is_connected ) {
-        $self->_disconnect();
+    # Connect to database or retry to connect
+    if (Tpda3::Db->has_instance) {
+        $self->{_dbh} = Tpda3::Db->instance->db_connect($self)->dbh;
     }
     else {
-        $self->_connect();
+        $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
     }
 
-    return $self;
-}
-
-=head2 _connect
-
-Connect to the database
-
-=cut
-
-sub _connect {
-    my $self = shift;
-
-    # Connect to database
-    $self->{_dbh} = Tpda3::Db->instance->dbh;
-
     # Is realy connected ?
-    if ( ref( $self->{_dbh} ) =~ m{DBI} ) {
-        $self->get_connection_observable->set(1);    # yes
+    if (blessed $self->{_dbh}) {
+        $self->get_connection_observable->set(1);    # assuming yes
+        $self->_print('info#Connected');
     }
     else {
         $self->get_connection_observable->set(0);    # no ;)
         $self->_print('error#Connection failed');
     }
 
-    return;
+    return $self;
+}
+
+sub dbh {
+    my $self = shift;
+
+    my $db = Tpda3::Db->instance;
+
+    return $db->dbh;
+}
+
+sub dbc {
+    my $self = shift;
+
+    my $db = Tpda3::Db->instance;
+
+    return $db->dbc;
+}
+
+=head2 get_exception_observable
+
+Get EXCEPTION observable status
+
+=cut
+
+sub get_exception_observable {
+    my $self = shift;
+
+    return $self->{_exception};
+}
+
+=head2 exception_log
+
+Log an exception.
+
+=cut
+
+sub exception_log {
+    my ( $self, $message ) = @_;
+
+    $self->get_exception_observable->set($message);
+}
+
+=head2 get_exception
+
+Get exception message and then clear it.
+
+=cut
+
+sub get_exception {
+    my $self = shift;
+
+    my $exception = $self->get_exception_observable->get;
+
+    $self->get_exception_observable->set();  # clear
+
+    return $exception;
 }
 
 =head2 _disconnect
@@ -138,7 +183,7 @@ Disconnect from the database
 sub _disconnect {
     my $self = shift;
 
-    $self->{_dbh}->disconnect;
+    $self->dbh->disconnect;
     $self->get_connection_observable->set(0);
     $self->_print('info#Disconnected');
 
@@ -326,20 +371,6 @@ sub is_loaded {
     return defined $self->get_scrdata_rec_observable->get;
 }
 
-=head2 message_dictionary
-
-Hash structure used to compose user friendly messages.
-
-=cut
-
-sub message_dictionary {
-    my ($self, $dict) = @_;
-
-    $self->{_msg_dict} = $dict;
-
-    return;
-}
-
 =head2 query_records_count
 
 Count records in table. TODO.
@@ -361,17 +392,17 @@ sub query_records_count {
 
     my $record_count;
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
 
         $sth->execute(@bind);
 
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
-    $self->_print("info#$record_count records");
+    $self->_print("info#$record_count records") if $record_count;
 
     return;
 }
@@ -402,14 +433,16 @@ sub query_records_find {
     my $args = { MaxRows => $search_limit };    # limit search result
     my $ary_ref;
     try {
-        $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
+        $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
-    my $record_count = scalar @{$ary_ref};
-    $self->_print("info#$record_count records");
+    if (ref $ary_ref eq 'ARRAY') {
+        my $record_count = scalar @{$ary_ref};
+        $self->_print("info#$record_count records");
+    }
 
     return $ary_ref;
 }
@@ -432,10 +465,10 @@ sub query_record {
 
     my $hash_ref;
     try {
-        $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
+        $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return $hash_ref;
@@ -463,7 +496,7 @@ sub table_batch_query {
 
     my @records;
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
 
         while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
@@ -471,7 +504,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return \@records;
@@ -501,10 +534,10 @@ sub query_dictionary {
     my $args = { MaxRows => $lookup_limit };    # limit search result
     my $ary_ref;
     try {
-        $ary_ref = $self->{_dbh}->selectall_arrayref( $stmt, $args, @bind );
+        $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return $ary_ref;
@@ -680,7 +713,7 @@ sub tbl_dict_query {
 
     my @dictrows;
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
         if (@bind) {
             $sth->execute(@bind);
         }
@@ -696,7 +729,7 @@ sub tbl_dict_query {
         }
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return \@dictrows;
@@ -738,12 +771,12 @@ sub table_record_insert {
 
     my $pk_id;
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return $pk_id;
@@ -763,11 +796,11 @@ sub table_record_update {
     my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
 
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return;
@@ -788,10 +821,10 @@ sub table_record_select {
 
     my $hash_ref;
     try {
-        $hash_ref = $self->{_dbh}->selectrow_hashref( $stmt, undef, @bind );
+        $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return $hash_ref;
@@ -819,11 +852,11 @@ sub table_batch_insert {
         my ( $stmt, @bind ) = $sql->insert( $table, $record );
 
         try {
-            my $sth = $self->{_dbh}->prepare($stmt);
+            my $sth = $self->dbh->prepare($stmt);
             $sth->execute(@bind);
         }
         catch {
-            $self->error_show($_);
+            $self->user_message($_);
         };
     }
 
@@ -853,11 +886,11 @@ sub table_record_delete {
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
     try {
-        my $sth = $self->{_dbh}->prepare($stmt);
+        my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return;
@@ -1211,10 +1244,10 @@ sub table_selectcol_as_array {
 
     my $records;
     try {
-        $records = $self->{_dbh}->selectcol_arrayref( $stmt, undef, @bind );
+        $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->error_show($_);
+        $self->user_message($_);
     };
 
     return $records;
@@ -1240,31 +1273,23 @@ sub record_compare {
     return !$dc->Cmp;
 }
 
-=head2 error_show
+=head2 user_message
 
 Parse the error string from the database and pass the relevant text to
 the L<status_message> method in the View class.
 
-TODO: Test and extend for Firebird.
-
-Extract the quoted string as I<key> from the error message and use it
-to construct an user friendly message to show in the status bar using
-a hash data structure implemented in the screen module.
-
 =cut
 
-sub error_show {
+sub user_message {
     my ($self, $error) = @_;
 
     $self->_log->error($error);
 
-    (my $key) = $error =~ m/($RE{quoted})/smi; # only for PostgreSQL
-    $key ||= q{'unknown error'};
-    $key =~ s{['"]}{}gmi;
+    $error =~ s{[\n\r]}{ }gmix;
+    my $user_message = $self->dbc->parse_db_error($error);
 
-    $key = $self->{_msg_dict}->{$key} if exists $self->{_msg_dict}->{$key};
-
-    $self->_print("error#$key");
+    print "UM: $user_message\n";
+    $self->_print($user_message);
 
     return;
 }

@@ -126,6 +126,7 @@ sub login {
     }
 
     my $answer = $self->{dlg}->Show();
+    my $return_string = '';
 
     if ( $answer eq 'Accept' ) {
         my $user = $euser->get;
@@ -135,16 +136,16 @@ sub login {
             my $cfg = Tpda3::Config->instance();
             $cfg->user($user);
             $cfg->pass($pass);
-
-            # $self->{dlg}{selected_button} = 'Accept';
         }
         else {
-            return;
+            $return_string = 'else';
         }
     }
     else {
-        $mw->destroy;
+        $return_string = 'shutdown';
     }
+
+    return $return_string;
 }
 
 1;    # End of Tpda3::Tk::Dialog::Login

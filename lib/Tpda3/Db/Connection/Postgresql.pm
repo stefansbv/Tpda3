@@ -3,9 +3,10 @@ package Tpda3::Db::Connection::Postgresql;
 use strict;
 use warnings;
 
-use Try::Tiny;
+use Regexp::Common;
 use Log::Log4perl qw(get_logger);
 
+use Try::Tiny;
 use DBI;
 
 =head1 NAME
@@ -38,9 +39,11 @@ Constructor
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $model) = @_;
 
     my $self = {};
+
+    $self->{model} = $model;
 
     bless $self, $class;
 
@@ -60,9 +63,9 @@ sub db_connect {
 
     $log->trace("Database driver is: $conf->{driver}");
     $log->trace("Parameters:");
-    $log->trace("  => Database = $conf->{dbname}\n");
-    $log->trace("  => Host     = $conf->{host}\n");
-    $log->trace("  => User     = $conf->{user}\n");
+    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
+    $log->trace(" > Host     = ",$conf->{host} ? $conf->{hosst} : '?', "\n");
+    $log->trace(" > User     = ",$conf->{user} ? $conf->{user} : '?', "\n");
 
     try {
         $self->{_dbh} = DBI->connect(
@@ -84,8 +87,9 @@ sub db_connect {
         );
     }
     catch {
-        $log->error("Transaction aborted: $_")
-            or print STDERR "$_\n";
+        my $user_message = $self->parse_db_error($_);
+        $self->{model}->exception_log($user_message);
+        return;
     };
 
     ## Date format
@@ -96,6 +100,58 @@ sub db_connect {
     $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
+}
+
+=head2 parse_db_error
+
+Parse a database error message, and translate it for the user.
+
+TODO check if RDBMS specific and/or maybe version specific.
+
+=cut
+
+sub parse_db_error {
+    my ($self, $pg) = @_;
+
+    print "\nPG: $pg\n\n";
+
+    my $message_type =
+         $pg eq q{}                                          ? "nomessage"
+       : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
+       : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
+       : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
+       : $pg =~ m/no password supplied/smi                   ? "password"
+       : $pg =~ m/role ($RE{quoted}) does not exist/smi      ? "username:$1"
+       : $pg =~ m/no route to host/smi                       ? "network"
+       : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
+       :                                                       "unknown";
+
+    # Analize and translate
+
+    my ( $type, $name ) = split /:/, $message_type, 2;
+    $name = $name ? $name : '';
+
+    my $translations = {
+        nomessage   => "weird#Error without message!",
+        dbnotfound  => "fatal#Database $name not found!",
+        relnotfound => "fatal#Relation $name not found!",
+        password    => "info#Authentication failed for $name",
+        password    => "info#Authentication failed, password?",
+        username    => "info#User name $name not found!",
+        network     => "fatal#Network problem",
+        unknown     => "fatal#Uncategorized database error",
+        duplicate   => "error#Duplicate $name",
+    };
+
+    my $message;
+    if (exists $translations->{$type} ) {
+        $message = $translations->{$type}
+    }
+    else {
+        print "EE: Translation error!\n";
+    }
+
+    return $message;
 }
 
 =head2 table_info_short

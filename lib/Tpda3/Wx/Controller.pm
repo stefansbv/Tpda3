@@ -111,7 +111,7 @@ sub start {
         $self->{timer}->Start( 500, 1 );    # one shot
     }
     else {
-        $self->_model->toggle_db_connect();
+        $self->_model->db_connect();
     }
 
     return;
@@ -143,7 +143,7 @@ sub start_delayed {
     if ( $self->_cfg->user and $self->_cfg->pass ) {
 
         # Connect to database
-        $self->_model->toggle_db_connect();
+        $self->_model->db_connect();
     }
     else {
         $self->_view->on_quit;
@@ -940,10 +940,6 @@ sub screen_module_load {
 
     # Update window geometry
     $self->set_geometry();
-
-    # Export message dictionary to Model
-    # my $dict = $self->scrobj()->get_msg_strings();
-    # $self->_model->message_dictionary($dict);
 
     # Load lists into JComboBox widgets (JBrowseEntry not supported)
     # $self->screen_init();

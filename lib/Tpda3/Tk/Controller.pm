@@ -112,8 +112,9 @@ sub new {
 
 =head2 start
 
-Check if we have user and pass, if not, show dialog.  Connect to
-database.
+Try to connect first even if we have no user and pass. Retry and show
+login dialog, until connected unless fatal error message received from
+the RDBMS.
 
 =cut
 
@@ -122,23 +123,65 @@ sub start {
 
     $self->_log->trace('starting ...');
 
-    if ( !$self->_cfg->user or !$self->_cfg->pass ) {
-        require Tpda3::Tk::Dialog::Login;
-        my $pd = Tpda3::Tk::Dialog::Login->new;
-        $pd->login( $self->_view );
+    # Try until connected or canceled
+    my $return_string = '';
+    while ( !$self->_model->is_connected ) {
+        $self->_model->db_connect();
+        if ( my $message = $self->_model->get_exception ) {
+            my ($type, $mesg) = split /#/, $message, 2;
+            print "EE: $mesg\n";
+            $self->message_error_dialog($mesg);
+            if ($type =~ m{fatal}imx) {
+                $return_string = 'shutdown';
+                last;
+            }
+        }
+
+        # Try with the login dialog if still not connected
+        if ( !$self->_model->is_connected ) {
+            $return_string = $self->login_dialog();
+            last if $return_string eq 'shutdown';
+        }
     }
 
-    # Check again ...
-    if ( $self->_cfg->user and $self->_cfg->pass ) {
-
-        # Connect to database
-        $self->_model->toggle_db_connect();
-    }
-    else {
+    if ($return_string eq 'shutdown') {
         $self->_view->on_quit;
     }
 
     $self->_log->trace('... started');
+
+    return;
+}
+
+=head2 login_dialog
+
+Login dialog.
+
+=cut
+
+sub login_dialog {
+    my $self = shift;
+
+    require Tpda3::Tk::Dialog::Login;
+    my $pd = Tpda3::Tk::Dialog::Login->new;
+
+    return $pd->login( $self->_view );
+}
+
+=head2 message_error_dialog
+
+Error message dialog.
+
+=cut
+
+sub message_error_dialog {
+    my ($self, $mesg) = @_;
+
+    $self->_view->{dialog_e}->configure(
+        -message => 'Not connected to the database!',
+        -detail  => $mesg,
+    );
+    $self->_view->{dialog_e}->Show();
 
     return;
 }
@@ -161,6 +204,12 @@ sub guide {
 
     return;
 }
+
+=head2 repman
+
+Report Manager application dialog.
+
+=cut
 
 sub repman {
     my $self = shift;
@@ -1848,10 +1897,6 @@ sub screen_module_load {
     # Update window geometry
     $self->set_geometry();
 
-    # Export message dictionary to Model
-    my $dict = $self->scrobj()->get_msg_strings();
-    $self->_model->message_dictionary($dict);
-
     # Load lists into JComboBox widgets (JBrowseEntry not supported)
     $self->screen_init();
 
@@ -2379,6 +2424,8 @@ sub record_find_execute {
     $params->{pkcol} = $main_table->{pkcol}{name};
 
     my $ary_ref = $self->_model->query_records_find($params);
+
+    return unless ref $ary_ref eq 'ARRAY';
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($ary_ref);

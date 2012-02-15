@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use 5.010001;
-
 use Log::Log4perl qw(get_logger);
 
 use Tpda3::Config;
