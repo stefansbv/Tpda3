@@ -5,6 +5,7 @@ use warnings;
 use Carp;
 
 use Try::Tiny;
+use Ouch;
 use SQL::Abstract;
 use List::Compare;
 use Data::Compare;
@@ -393,13 +394,11 @@ sub query_records_count {
     my $record_count;
     try {
         my $sth = $self->dbh->prepare($stmt);
-
         $sth->execute(@bind);
-
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->user_message($_);
+        ouch( 'CountError', $self->user_message($_) );
     };
 
     $self->_print("info#$record_count records") if $record_count;
@@ -436,7 +435,7 @@ sub query_records_find {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->user_message($_);
+        ouch( 'FindError', $self->user_message($_) );
     };
 
     if (ref $ary_ref eq 'ARRAY') {
@@ -468,7 +467,7 @@ sub query_record {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->user_message($_);
+        ouch( 'QueryError', $self->user_message($_) );
     };
 
     return $hash_ref;
@@ -504,7 +503,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->user_message($_);
+        ouch( 'BatchQueryError', $self->user_message($_) );
     };
 
     return \@records;
@@ -537,7 +536,7 @@ sub query_dictionary {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->user_message($_);
+        ouch( 'QueryError', $self->user_message($_) );
     };
 
     return $ary_ref;
@@ -729,7 +728,7 @@ sub tbl_dict_query {
         }
     }
     catch {
-        $self->user_message($_);
+        ouch( 'DictQueryError', $self->user_message($_) );
     };
 
     return \@dictrows;
@@ -776,7 +775,7 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        $self->user_message($_);
+        ouch( 'InsertError', $self->user_message($_) );
     };
 
     return $pk_id;
@@ -800,7 +799,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        $self->user_message($_);
+        ouch( 'UpdateError', $self->user_message($_) );
     };
 
     return;
@@ -824,7 +823,7 @@ sub table_record_select {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->user_message($_);
+        ouch( 'SelectError', $self->user_message($_) );
     };
 
     return $hash_ref;
@@ -856,7 +855,7 @@ sub table_batch_insert {
             $sth->execute(@bind);
         }
         catch {
-            $self->user_message($_);
+            ouch( 'InsertError', $self->user_message($_) );
         };
     }
 
@@ -890,7 +889,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        $self->user_message($_);
+        ouch( 'DeleteError', $self->user_message($_) );
     };
 
     return;
@@ -1247,7 +1246,7 @@ sub table_selectcol_as_array {
         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->user_message($_);
+        ouch( 'SelectError', $self->user_message($_) );
     };
 
     return $records;
@@ -1287,11 +1286,11 @@ sub user_message {
 
     $error =~ s{[\n\r]}{ }gmix;
     my $user_message = $self->dbc->parse_db_error($error);
+    $user_message =~ s{"\."}{\.}gmix;
 
-    print "UM: $user_message\n";
     $self->_print($user_message);
 
-    return;
+    return $user_message;
 }
 
 =head2 report_data

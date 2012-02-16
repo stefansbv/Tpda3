@@ -521,7 +521,7 @@ the method in the message string separated by a # char.
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
-print " set status to $text\n";
+
     my $sb = $self->get_statusbar($sb_id);
 
     if ( $sb_id eq 'cn' ) {

@@ -3787,7 +3787,7 @@ sub record_save {
         return if !$self->if_check_required_data($record);
 
         $self->_model->prepare_record_update($record);
-        $self->_view->set_status( "Salvat", 'ms', 'darkgreen' );
+        $self->_view->set_status( "Saved", 'ms', 'darkgreen' );
     }
     else {
         $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
