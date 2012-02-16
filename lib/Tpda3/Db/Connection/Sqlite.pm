@@ -3,9 +3,10 @@ package Tpda3::Db::Connection::Sqlite;
 use strict;
 use warnings;
 
-use Try::Tiny;
+use Regexp::Common;
 use Log::Log4perl qw(get_logger);
 
+use Try::Tiny;
 use DBI;
 
 =head1 NAME
@@ -37,9 +38,11 @@ Constructor
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $model) = @_;
 
     my $self = {};
+
+    $self->{model} = $model;
 
     bless $self, $class;
 
@@ -57,17 +60,18 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->info("Database driver is: $conf->{driver}");
+    $log->trace("Database driver is: $conf->{driver}");
     $log->trace("Parameters:");
-    $log->trace("  => Database = $conf->{dbname}\n");
+    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
+    $log->trace(" > Host     = ",$conf->{host} ? $conf->{hosst} : '?', "\n");
 
     try {
         $self->{_dbh}
             = DBI->connect( "dbi:SQLite:" . $conf->{dbname}, q{}, q{}, );
     }
     catch {
-        $log->fatal("Transaction aborted: $_")
-            or print STDERR "$_\n";
+        my $user_message = $self->parse_db_error($_);
+        $self->{model}->exception_log($user_message);
     };
 
     ## Date format ISO
@@ -78,6 +82,44 @@ sub db_connect {
     $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
+}
+
+=head2 parse_db_error
+
+Parse a database error message, and translate it for the user.
+
+=cut
+
+sub parse_db_error {
+    my ($self, $si) = @_;
+
+    print "\nSI: $si\n\n";
+
+    my $message_type =
+         $si eq q{}                                       ? "nomessage"
+       : $si =~ m/prepare failed: near ($RE{quoted}):/smi  ? "notsuported:$1"
+       :                                                    "unknown";
+
+    # Analize and translate
+
+    my ( $type, $name ) = split /:/, $message_type, 2;
+    $name = $name ? $name : '';
+
+    my $translations = {
+        nomessage   => "weird#Error without message!",
+        notsuported => "fatal#Syntax not supported: $name!",
+        unknown     => "fatal#Uncategorized database error",
+    };
+
+    my $message;
+    if (exists $translations->{$type} ) {
+        $message = $translations->{$type}
+    }
+    else {
+        print "EE: Translation error!\n";
+    }
+
+    return $message;
 }
 
 =head1 AUTHOR

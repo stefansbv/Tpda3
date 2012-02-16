@@ -22,9 +22,11 @@ requires 'Class::Unload'         => '0';
 requires 'Class::Singleton'      => '1.4';
 requires 'Class::Accessor'       => '0';
 requires 'Data::Compare'         => '0';
+requires 'Ouch'                  => '0.0401';
 requires 'Try::Tiny'             => '0.07';
 requires 'SQL::Abstract'         => '1.68';
 requires 'Log::Log4perl'         => '0';
+#requires 'Log::Dispatch::FileRotate' => '0';
 requires 'Number::Compare'       => '0';
 requires 'List::Compare'         => '0';
 requires 'List::MoreUtils'       => '0';
@@ -50,7 +52,6 @@ requires 'Tk::RadiobuttonGroup' => '0.2.2';
 
 requires 'IPC::Run3' => '0';
 requires 'Template'  => '0';
-requires 'Log::Dispatch::FileRotate' => '0';
 
 #- and/or Wx - Experimental
 

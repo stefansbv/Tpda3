@@ -90,7 +90,6 @@ sub db_connect {
     catch {
         my $user_message = $self->parse_db_error($_);
         $self->{model}->exception_log($user_message);
-        return;
     };
 
     ## Date format

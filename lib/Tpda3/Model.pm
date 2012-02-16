@@ -653,6 +653,10 @@ SWITCH: for ($driver) {
             $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
             last SWITCH;
         };
+        /sqlite/i && do {
+            $cmp = $ignore_case ? '-LIKE' : '-LIKE';
+            last SWITCH;
+        };
 
         # Default
         warn "EE: Unknown database driver name: $driver!\n";
@@ -755,8 +759,15 @@ Insert new record in the DB.
 
 Using the RETURNING ...
 
- Postgres version 8.2 or greater: RETURNING
- Firebird version 2.1 or greater: RETURNING - NOT tested!
+ Postgres version 8.2 or greater
+ Firebird version 2.1 or greater
+
+BUG:
+
+For SQLite, instead of catching and reporting the first error it
+reports the last, but the relevant one is the first:
+
+DBD::SQLite::db prepare failed: near "RETURNING": syntax error ...
 
 =cut
 
