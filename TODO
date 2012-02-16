@@ -1,3 +1,10 @@
+To do:
+
+- Test and improve exception handling, erorr reporting and user
+  messages.
 
 - Enable/disable Logging from CLI and/or GUI.
-- Test Log::Dispatch::FileRotate
+
+- Test Log::Dispatch::FileRotate.
+
+- Implement language suport (translations).
