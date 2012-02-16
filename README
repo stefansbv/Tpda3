@@ -7,8 +7,25 @@ Tpda3 is a classic desktop database application framework, written in
 Perl.  Has PerlTk and (experimental) wxPerl support for the GUI part
 and Firebird and PostgreSQL support for the RDBMS.
 
-(Also has some very limited SQLite support currently used only for
-testing.)
+
+REQUIREMENTS
+
+- RDBMS
+
+Because it's based on the "INSERT ... RETURNING" SQL statement,
+requires:
+
+ Postgres version 8.2 or greater or
+ Firebird version 2.1 or greater
+
+Also it has limited SQLite support (used only for testing). Inserting
+records doesn't work.
+
+- Operating System
+
+Tpda3 should work on any OS where Perl and the required dependencies
+can be installed, but currently it's only tested on GNU/Linux and
+Windows XP.  Feedback for how it works or not on other OSs is welcome.
 
 Tpda3 is the successor of TPDA and, hopefully, has a much better API
 implementation, Tpda3 aims to follow the Model View Controller (MVC)
