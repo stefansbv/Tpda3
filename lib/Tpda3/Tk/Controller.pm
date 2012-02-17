@@ -129,7 +129,6 @@ sub start {
         $self->_model->db_connect();
         if ( my $message = $self->_model->get_exception ) {
             my ($type, $mesg) = split /#/, $message, 2;
-            print "EE: $mesg\n";
             $self->message_error_dialog($mesg);
             if ($type =~ m{fatal}imx) {
                 $return_string = 'shutdown';

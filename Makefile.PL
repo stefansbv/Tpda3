@@ -5,7 +5,7 @@
 # GNU General Public License v3
 #
 
-use 5.010;
+use 5.008009;
 use strict;
 use warnings;
 
@@ -30,6 +30,7 @@ requires 'Log::Log4perl'         => '0';
 requires 'Number::Compare'       => '0';
 requires 'List::Compare'         => '0';
 requires 'List::MoreUtils'       => '0';
+requires 'File::Path'            => '2.07';
 requires 'File::UserConfig'      => '0';
 requires 'File::Find::Rule'      => '0.30';
 requires 'File::HomeDir'         => '0.89';
@@ -50,8 +51,8 @@ requires 'Tk::RadiobuttonGroup' => '0.2.2';
 
 #- For generating PDF from TeX
 
-requires 'IPC::Run3' => '0';
-requires 'Template'  => '0';
+recommends 'IPC::Run3' => '0';
+recommends 'Template'  => '0';
 
 #- and/or Wx - Experimental
 

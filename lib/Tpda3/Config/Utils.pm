@@ -8,7 +8,7 @@ use Log::Log4perl qw(get_logger);
 use File::Basename;
 use File::Copy;
 use File::Find::Rule;
-use File::Path 2.07 qw( make_path );
+use File::Path qw( make_path );
 
 use YAML::Tiny;
 use Config::General;

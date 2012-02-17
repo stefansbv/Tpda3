@@ -3,8 +3,6 @@ package Tpda3::Wx::App::Test;
 use strict;
 use warnings;
 
-use 5.010001;
-
 =head1 NAME
 
 Tpda3::Wx::App::Test - Used only for the version information.

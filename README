@@ -10,7 +10,9 @@ and Firebird and PostgreSQL support for the RDBMS.
 
 REQUIREMENTS
 
-- RDBMS
+- Perl v5.8.9 or newer.
+
+- RDBMS:
 
 Because it's based on the "INSERT ... RETURNING" SQL statement,
 requires:
@@ -25,7 +27,7 @@ records doesn't work.
 
 Tpda3 should work on any OS where Perl and the required dependencies
 can be installed, but currently it's only tested on GNU/Linux and
-Windows XP.  Feedback for how it works or not on other OSs is welcome.
+Windows XP.  Feedback and patches for other OSs is welcome.
 
 Tpda3 is the successor of TPDA and, hopefully, has a much better API
 implementation, Tpda3 aims to follow the Model View Controller (MVC)
