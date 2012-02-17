@@ -27,11 +27,11 @@ Tpda3::Tk::App - Tk Perl application class
 
 =head1 VERSION
 
-Version 0.01
+Version 0.94
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.94';
 
 =head1 SYNOPSIS
 

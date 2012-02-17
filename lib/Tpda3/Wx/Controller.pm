@@ -34,11 +34,11 @@ Tpda3::Wx::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.01
+Version 0.52
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.52';
 
 =head1 SYNOPSIS
 

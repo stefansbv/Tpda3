@@ -11,11 +11,11 @@ Tpda3::Lookup - Lookup field values in dictionary like tables
 
 =head1 VERSION
 
-Version 0.01
+Version 0.13
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.13';
 
 =head1 SYNOPSIS
 

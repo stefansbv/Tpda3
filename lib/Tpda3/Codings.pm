@@ -9,11 +9,11 @@ Tpda3::Codings - The Codings
 
 =head1 VERSION
 
-Version 0.02
+Version 0.07
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.07';
 
 =head1 SYNOPSIS
 

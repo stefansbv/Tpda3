@@ -15,11 +15,11 @@ Tpda3::Db - Database operations module
 
 =head1 VERSION
 
-Version 0.02
+Version 0.11
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.11';
 
 =head1 SYNOPSIS
 

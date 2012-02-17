@@ -10,11 +10,11 @@ and Tablematrix cells.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.13
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.13';
 
 =head1 SYNOPSIS
 

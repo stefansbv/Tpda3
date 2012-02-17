@@ -11,11 +11,11 @@ Tpda3::App::Test::Customers screen
 
 =head1 VERSION
 
-Version 0.01
+Version 0.15
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.15';
 
 =head1 SYNOPSIS
 

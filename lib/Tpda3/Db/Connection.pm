@@ -16,11 +16,11 @@ Tpda3::Db::Connection - Connect to different databases.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.11
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.11';
 
 =head1 SYNOPSIS
 

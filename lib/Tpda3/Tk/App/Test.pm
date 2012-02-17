@@ -9,11 +9,11 @@ Tpda3::Tk::App::Test - Used only for the version information.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.05
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
