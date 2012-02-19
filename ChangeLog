@@ -1,5 +1,10 @@
+2012-02-19
+
+	* Release v0.44.
+	Minimum Perl version is officially v5.8.9.  Better error messages
+	for the user and new login dialog and DB connection policy (Tk).
+	Small fixes and improvements.
 
 2012-02-10
 
 	* First public release: v0.43
-
