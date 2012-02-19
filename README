@@ -42,6 +42,9 @@ TROUBLESHOOTING
 
 See README.patches. There is a new dir on SF with some patched modules.
 
+Development takes place, currently, on GitHub:
+git://github.com/stefansbv/Tpda3.git
+
 
 LICENSE AND COPYRIGHT
 
