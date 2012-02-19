@@ -40,10 +40,13 @@ and Apache format (Config::General).
 
 TROUBLESHOOTING
 
-See README.patches. There is a new dir on SF with some patched modules.
+See README.trouble. There is a new dir on SF with some patched modules.
+
+
+DEVELOPMENT
 
 Development takes place, currently, on GitHub:
-git://github.com/stefansbv/Tpda3.git
+https://github.com/stefansbv/Tpda3
 
 
 LICENSE AND COPYRIGHT
