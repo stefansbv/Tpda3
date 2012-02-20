@@ -99,13 +99,13 @@ tpda3 - Tpda (Tiny Perl Database Application the 3'rd)
 
 tpda3 -list
 
-tpda3 <connection> -init <new-connection>
+tpda3 <config-name> -init <new-config-name>
 
-tpda3 <connection> [-user <user> [-password <pass>]]
+tpda3 <config-name> [-user <user> [-password <pass>]]
 
 Options:
 
- -init <connection>   Create a copy of a configuration with a different name
+ -init <config-name>  Create a copy of a configuration with a different name
  -list                List available configuration names
  -user                User name
  -password            Password

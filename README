@@ -17,7 +17,7 @@ REQUIREMENTS
 Because it's based on the "INSERT ... RETURNING" SQL statement,
 requires:
 
- Postgres version 8.2 or greater or
+ PostgreSQL version 8.2 or greater or
  Firebird version 2.1 or greater
 
 Also it has limited SQLite support (used only for testing). Inserting
