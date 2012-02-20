@@ -11,7 +11,7 @@ use File::UserConfig;
 use File::Spec::Functions;
 use File::Copy::Recursive ();
 
-use Tpda3::Config::Utils;
+require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
 

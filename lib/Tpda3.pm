@@ -6,7 +6,7 @@ use 5.008009;
 
 use Log::Log4perl qw(get_logger);
 
-use Tpda3::Config;
+require Tpda3::Config;
 
 =head1 NAME
 

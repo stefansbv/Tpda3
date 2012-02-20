@@ -122,6 +122,7 @@ sub parse_db_error {
        : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi             ? "relnotfound:$1"
        : $fb =~ m/user name and password/smi                 ? "userpass"
        : $fb =~ m/no route to host/smi                       ? "network"
+       : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
        :                                                       "unknown";
 
     # Analize and translate
@@ -130,12 +131,13 @@ sub parse_db_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        nomessage   => "weird#Error without message!",
-        dbnotfound  => "fatal#Database $name not found!",
-        relnotfound => "fatal#Relation $name not found!",
+        nomessage   => "weird#Error without message",
+        dbnotfound  => "fatal#Database $name not found",
+        relnotfound => "fatal#Relation $name not found",
         userpass    => "info#Authentication failed, password?",
+        nethost     => "fatal#Network problem: host $name",
         network     => "fatal#Network problem",
-        unknown     => "fatal#Uncategorized database error",
+        unknown     => "fatal#Database error",
     };
 
     my $message;

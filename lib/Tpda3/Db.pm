@@ -5,7 +5,7 @@ use warnings;
 
 # use Log::Log4perl qw(get_logger);
 
-use Tpda3::Db::Connection;
+require Tpda3::Db::Connection;
 
 use base qw(Class::Singleton);
 

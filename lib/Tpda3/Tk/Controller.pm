@@ -16,11 +16,11 @@ use Storable qw (store retrieve);
 use Math::Symbolic;
 use Hash::Merge qw(merge);
 
-use Tpda3::Utils;
-use Tpda3::Config;
-use Tpda3::Model;
-use Tpda3::Tk::View;
-use Tpda3::Lookup;
+require Tpda3::Utils;
+require Tpda3::Config;
+require Tpda3::Model;
+require Tpda3::Tk::View;
+require Tpda3::Lookup;
 
 use File::Basename;
 use File::Spec::Functions qw(catfile);
@@ -129,8 +129,8 @@ sub start {
         $self->_model->db_connect();
         if ( my $message = $self->_model->get_exception ) {
             my ($type, $mesg) = split /#/, $message, 2;
-            $self->message_error_dialog($mesg);
             if ($type =~ m{fatal}imx) {
+                $self->message_error_dialog($mesg);
                 $return_string = 'shutdown';
                 last;
             }

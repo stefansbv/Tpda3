@@ -96,9 +96,10 @@ sub parse_db_error {
     print "\nSI: $si\n\n";
 
     my $message_type =
-         $si eq q{}                                       ? "nomessage"
+         $si eq q{}                                        ? "nomessage"
+       : $si =~ m/prepare failed: no such table: (\w+)/smi ? "relnotfound:$1"
        : $si =~ m/prepare failed: near ($RE{quoted}):/smi  ? "notsuported:$1"
-       :                                                    "unknown";
+       :                                                      "unknown";
 
     # Analize and translate
 
@@ -108,7 +109,8 @@ sub parse_db_error {
     my $translations = {
         nomessage   => "weird#Error without message!",
         notsuported => "fatal#Syntax not supported: $name!",
-        unknown     => "fatal#Uncategorized database error",
+        relnotfound => "fatal#Relation $name not found",
+        unknown     => "fatal#Database error",
     };
 
     my $message;

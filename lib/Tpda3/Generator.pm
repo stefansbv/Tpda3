@@ -11,7 +11,7 @@ use Template;
 use Log::Log4perl qw(get_logger :levels);
 use Try::Tiny;
 
-use Tpda3::Config;
+require Tpda3::Config;
 
 =head1 NAME
 

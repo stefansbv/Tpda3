@@ -17,9 +17,9 @@ use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
 
 use base 'Tk::MainWindow';
 
-use Tpda3::Config;
-use Tpda3::Utils;
-use Tpda3::Tk::TB;    # ToolBar
+require Tpda3::Config;
+require Tpda3::Utils;
+require Tpda3::Tk::TB;    # ToolBar
 
 =head1 NAME
 

@@ -3,7 +3,7 @@ package Tpda3::Lookup;
 use strict;
 use warnings;
 
-use Tpda3::Tk::Dialog::Search;
+require Tpda3::Tk::Dialog::Search;
 
 =head1 NAME
 

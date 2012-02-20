@@ -14,11 +14,11 @@ use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 
-use Tpda3::Config;
-use Tpda3::Codings;
-use Tpda3::Observable;
-use Tpda3::Db;
-use Tpda3::Utils;
+require Tpda3::Config;
+require Tpda3::Codings;
+require Tpda3::Observable;
+require Tpda3::Db;
+require Tpda3::Utils;
 
 =head1 NAME
 
@@ -714,9 +714,14 @@ sub tbl_dict_query {
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
 
+    my $sth;
+    try { $sth = $self->dbh->prepare($stmt); }
+    catch {
+        ouch( 'DictQueryError', $self->user_message($_) );
+    };
+
     my @dictrows;
     try {
-        my $sth = $self->dbh->prepare($stmt);
         if (@bind) {
             $sth->execute(@bind);
         }
@@ -1275,8 +1280,6 @@ sub record_compare {
 
     my $dc = Data::Compare->new( $witness, $record );
 
-    #print Dumper( $witness, $record );
-
     # print 'Structures of $witness and $record are ',
     #     $dc->Cmp ? "" : "not ", "identical.\n";
 
@@ -1297,7 +1300,7 @@ sub user_message {
 
     $error =~ s{[\n\r]}{ }gmix;
     my $user_message = $self->dbc->parse_db_error($error);
-    $user_message =~ s{"\."}{\.}gmix;
+    $user_message =~ s{"\."}{\.}gmix;        # "d"."t" ->  "d.t"
 
     $self->_print($user_message);
 

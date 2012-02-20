@@ -140,7 +140,7 @@ sub parse_db_error {
         password    => "info#Authentication failed, password?",
         username    => "info#User name $name not found!",
         network     => "fatal#Network problem",
-        unknown     => "fatal#Uncategorized database error",
+        unknown     => "fatal#Database error",
         duplicate   => "error#Duplicate $name",
         colnotfound => "error#Column not found $name",
         nullvalue   => "error#Null value for $name",
