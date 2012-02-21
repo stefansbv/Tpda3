@@ -20,12 +20,13 @@ Select a screen[1] from the menu, e.g Test -> Customers.
   screen).
 
 - Search for records
-  - click the <Search mode> button on the toolbar (or hit F7)
-  - fill in some search strings in the fields with a green background
-  - click the <Search> button on the toolbar (or hit F8), if some records
-    match the criteria than the <List> tab is activated and you can
-    select one record from the list (the last record is automatically
-    selected).
+  - click the first button (the <Search mode> button) on the toolbar
+    (or hit F7)
+  - fill in some search strings in the fields with green background
+  - click the second button (the <Search> button) on the toolbar (or
+    hit F8), if some records match the criteria than the <List> tab is
+    activated and you can select one record from the list (the last
+    record is automatically selected).
   - Now click the Record tab and the selected record will be loaded in
     the fields of the screen.
 
