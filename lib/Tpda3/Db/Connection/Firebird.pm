@@ -15,11 +15,11 @@ Tpda3::Db::Connection::Firebird - Connect to a Firebird database.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head1 SYNOPSIS
 
@@ -114,7 +114,7 @@ RDBMS specific (and maybe version specific?).
 sub parse_db_error {
     my ($self, $fb) = @_;
 
-    print "\nFB: $fb\n\n";
+    # print "\nFB: $fb\n\n";
 
     my $message_type =
          $fb eq q{}                                          ? "nomessage"

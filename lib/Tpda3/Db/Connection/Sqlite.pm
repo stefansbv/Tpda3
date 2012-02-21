@@ -15,11 +15,11 @@ Tpda3::Db::Connection::Sqlite - Connect to a SQLite database.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head1 SYNOPSIS
 
@@ -93,7 +93,7 @@ Parse a database error message, and translate it for the user.
 sub parse_db_error {
     my ($self, $si) = @_;
 
-    print "\nSI: $si\n\n";
+    # print "\nSI: $si\n\n";
 
     my $message_type =
          $si eq q{}                                        ? "nomessage"
