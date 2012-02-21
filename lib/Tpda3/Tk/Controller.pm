@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use Carp;
+use English;
 
 use Tk;
 use Tk::Font;
@@ -237,7 +238,7 @@ sub about {
     # Create a dialog.
     my $dbox = $gui->DialogBox(
         -title   => 'Despre ... ',
-        -buttons => ['Inchide'],
+        -buttons => ['Close'],
     );
 
     # Windows has the annoying habit of setting the background color
@@ -292,7 +293,7 @@ sub about {
     $text->insert( 'end', "\n" );
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
-    $text->insert( 'end', "Author: Stefan Suciu\n", 'normal' );
+    $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
     $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', "stefansbv at users . sourceforge . net",
@@ -300,6 +301,9 @@ sub about {
     $text->insert( 'end', "\n\n" );
     $text->insert( 'end', "$APP_NAME\n", 'normal' );
     $text->insert( 'end', "Version " . $APP_VER . "\n", 'normal' );
+    $text->insert( 'end', "\n\n" );
+    $text->insert( 'end', "Perl " . $PERL_VERSION . "\n", 'normal' );
+    $text->insert( 'end', "Tk v" . $Tk::VERSION . "\n", 'normal' );
 
     $text->configure( -state => 'disabled' );
     $text->pack(
