@@ -6,6 +6,7 @@ use utf8;
 use Carp;
 use English;
 
+use Data::Dumper;
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
@@ -24,21 +25,21 @@ use File::Spec::Functions qw(catfile);
 
 =head1 NAME
 
-Tpda3::Tk::Controller - The Controller
+Tpda3::Controller - The Controller
 
 =head1 VERSION
 
-Version 2.26
+Version 2.27
 
 =cut
 
-our $VERSION = '2.26';
+our $VERSION = '2.27';
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Controller;
+    use Tpda3::Controller;
 
-    my $controller = Tpda3::Tk::Controller->new();
+    my $controller = Tpda3::Controller->new();
 
     $controller->start();
 
@@ -1102,12 +1103,8 @@ sub setup_lookup_bindings_entry {
 
     my $bindings = $self->scrcfg($page)->bindings;
 
-    $self->_log->trace("Setup binding for configured widgets ($page)");
-
     foreach my $bind_name ( keys %{$bindings} ) {
-
-        # Skip if just an empty tag
-        next unless $bind_name;
+        next unless $bind_name;            # skip if just an empty tag
 
         # If 'search' is a hashref, get the first key, else the value
         my $search
@@ -1121,13 +1118,14 @@ sub setup_lookup_bindings_entry {
             ? $bindings->{$bind_name}{search}{$search}{name}
             : $search;
 
-        $self->_log->trace("Setup binding for '$bind_name'");
-
         # Compose the parameter for the 'Search' dialog
         my $para = {
             table  => $bindings->{$bind_name}{table},
             search => $search,
         };
+
+        $self->_log->info("Setup binding for '$bind_name' with:");
+        $self->_log->info( sub { Dumper($para) } );
 
         # Add the search field to the columns list
         my $field_cfg = $self->scrcfg('rec')->main_table_column($column);
@@ -1166,7 +1164,6 @@ sub setup_lookup_bindings_entry {
             $ctrl_ref->{$column}[1],
             '<Return>',
             sub {
-                print " binding\n";
                 my $record = $dict->lookup( $self->_view, $para, $filter );
                 $self->screen_write($record);
             }
@@ -4794,4 +4791,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of Tpda3::Tk::Controller
+1;    # End of Tpda3::Controller

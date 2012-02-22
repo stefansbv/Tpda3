@@ -227,10 +227,10 @@ sub search_command {
     # Construct where, add findtype info
     my $params = {};
     $params->{table} = $para->{table};
-    $params->{where}{ $para->{lookup} } = [ $srcstr, 'contains' ];
+    $params->{where}{ $para->{search} } = [ $srcstr, 'contains' ];
     $params->{options} = $options;
     $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
-    $params->{order} = $para->{lookup};    # order by lookup field
+    $params->{order} = $para->{search};    # order by search field
 
     my $records = $model->query_dictionary($params);
 
