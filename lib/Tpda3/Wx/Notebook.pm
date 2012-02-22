@@ -46,6 +46,16 @@ sub new {
         wxAUI_NB_TAB_FIXED_WIDTH,
     );
 
+
+    $self->{pages} = {
+        0 => 'rec',
+        1 => 'lst',
+        2 => 'det',
+    };
+
+    $self->{nb_prev} = q{};
+    $self->{nb_curr} = q{};
+
     return $self;
 }
 
@@ -58,14 +68,34 @@ Create a notebook_panel and page.
 sub create_notebook_page {
     my ( $self, $name, $label ) = @_;
 
-    $self->{$name}
-        = Wx::Panel->new( $self, -1, wxDefaultPosition, wxDefaultSize, );
+    $self->{$name} = Wx::Panel->new(
+        $self,
+        -1,
+        wxDefaultPosition,
+        wxDefaultSize,
+    );
 
     $self->AddPage( $self->{$name}, $label );
 
-    my $idx = $self->GetPageCount - 1;
+#    my $idx = $self->GetPageCount - 1;
+#    $self->{pages}{$idx} = $name;            # store page idx => name
 
-    $self->{pages}{$idx} = $name;            # store page idx => name
+    return;
+}
+
+sub get_current {
+    my $self = shift;
+
+    my $idx = $self->GetSelection();
+
+    return $self->{pages}{$idx};
+}
+
+sub set_nb_current {
+    my ( $self, $page ) = @_;
+
+    $self->{nb_prev} = $self->{nb_curr};    # previous tab name
+    $self->{nb_curr} = $page;               # current tab name
 
     return;
 }

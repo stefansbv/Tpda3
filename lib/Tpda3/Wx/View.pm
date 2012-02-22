@@ -2,22 +2,24 @@ package Tpda3::Wx::View;
 
 use strict;
 use warnings;
-
 use Carp;
+
 use POSIX qw (floor ceil);
-
 use Log::Log4perl qw(get_logger);
-
 use File::Spec::Functions qw(abs2rel);
+
 use Wx qw{:everything};
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
+    EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
+    EVT_LIST_ITEM_ACTIVATED);
 use Wx::Perl::ListCtrl;
 
 use base 'Wx::Frame';
 
-use Tpda3::Config;
-use Tpda3::Utils;
-use Tpda3::Wx::Notebook;
-use Tpda3::Wx::ToolBar;
+require Tpda3::Config;
+require Tpda3::Utils;
+require Tpda3::Wx::Notebook;
+require Tpda3::Wx::ToolBar;
 
 =head1 NAME
 
@@ -523,16 +525,39 @@ sub create_notebook {
     return;
 }
 
+# sub get_nb_current_page {
+#     my $self = shift;
+
+#     my $nb = $self->get_notebook();
+
+#     my $page_idx = $nb->GetSelection();
+
+#     my $current_page = $nb->{pages}{$page_idx};
+
+#     return $current_page;
+# }
 sub get_nb_current_page {
     my $self = shift;
 
-    my $nb = $self->get_notebook();
+    return $self->get_notebook->get_current;
+}
 
-    my $page_idx = $nb->GetSelection();
+sub set_nb_current {
+    my ( $self, $page ) = @_;
 
-    my $current_page = $nb->{pages}{$page_idx};
+    my $nb = $self->get_notebook;
+    $nb->{nb_prev} = $nb->{nb_curr};    # previous tab name
+    $nb->{nb_curr} = $page;             # current tab name
 
-    return $current_page;
+    return;
+}
+
+sub get_nb_previous_page {
+    my $self = shift;
+
+    my $nb = $self->get_notebook;
+
+    return $nb->{nb_prev};
 }
 
 =head2 get_notebook
@@ -1167,7 +1192,7 @@ sub list_read_selected {
         }
     }
 
-    return $selected_value;
+    return [$selected_value];              # return an array reference
 }
 
 =head2 list_raise
@@ -1181,6 +1206,44 @@ sub list_raise {
 
     $self->get_notebook->SetSelection(1);           # 1 is 'lst' ?
     $self->list_item_select_last();
+
+    return;
+}
+
+=head2 on_list_item_activated
+
+Enter on list item activates record page.
+
+=cut
+
+sub on_list_item_activated {
+    my ($self, $callback) = @_;
+
+    my $lc = $self->get_listcontrol;
+
+    EVT_LIST_ITEM_ACTIVATED $self, $lc, $callback;
+
+    return;
+}
+
+=head2 get_listcontrol
+
+Return list control handler.
+
+=cut
+
+sub get_listcontrol {
+    my $self = shift;
+
+    return $self->{_rc};
+}
+
+sub on_notebook_page_changed {
+    my ($self, $callback) = @_;
+
+    my $nb = $self->get_notebook();
+
+    EVT_AUINOTEBOOK_PAGE_CHANGED $self, $nb->GetId, $callback;
 
     return;
 }
@@ -1239,6 +1302,248 @@ sub on_quit {
     my $self = shift;
 
     $self->Close(1);
+
+    return;
+}
+
+#-- Event handlers
+
+sub event_handler_for_menu {
+    my ($self, $name, $calllback) = @_;
+
+    my $menu_id = $self->get_menu_popup_item($name)->GetId;
+
+    EVT_MENU $self, $menu_id, $calllback;
+
+    return;
+}
+
+sub event_handler_for_tb_button {
+    my ($self, $name, $calllback) = @_;
+
+    my $tb_id = $self->get_toolbar_btn($name)->GetId;
+
+    EVT_TOOL $self, $tb_id, $calllback;
+
+    return;
+}
+
+#-- Write to controls
+
+
+=head2 control_write_e
+
+Write to a Wx::Entry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_e {
+    my ( $self, $control, $value ) = @_;
+
+    $control->Clear;
+    $control->SetValue($value) if defined $value;;
+
+    return;
+}
+
+=head2 control_write_t
+
+Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_t {
+    my ( $self, $control, $value ) = @_;
+
+    $control->ClearAll;
+
+    return unless defined $value;
+
+    $control->AppendText($value);
+    $control->AppendText("\n");
+
+    return;
+}
+
+=head2 control_write_d
+
+Write to a Wx::DateEntry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_d {
+    my ( $self, $ctrl_ref, $value, $state, $date_format ) = @_;
+
+    return unless $value;
+
+    my $control = $ctrl_ref->[1];
+
+    my ( $y, $m, $d )
+    = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
+
+    my $dt = Wx::DateTime->newFromDMY($d, $m, $y);
+
+    $control->SetValue($dt) if $dt->isa('Wx::DateTime');
+
+    return;
+}
+
+=head2 control_write_m
+
+Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_m {
+    my ( $self, $control, $field, $value ) = @_;
+
+    if ($value) {
+        $control->setSelected( $value, -type => 'value' );
+    }
+    else {
+        ${ $control->{$field}[0] } = q{};    # Empty
+    }
+
+    return;
+}
+
+=head2 control_write_l
+
+Write to a Wx::MatchingBE widget.  Warning: cant write an empty value,
+must test with a key -> value pair like 'not set' => '?empty?'.
+
+=cut
+
+sub control_write_l {
+    my ( $self, $control, $field, $value ) = @_;
+
+    return unless defined $value;    # Empty
+
+    $control->set_selected_value($value);
+
+    return;
+}
+
+#-- Read from controls
+
+=head2 control_read_e
+
+Read contents of a Wx::TextCtrl control.
+
+=cut
+
+sub control_read_e {
+    my ( $self, $control ) = @_;
+
+    my $value = $control->GetValue;
+
+    return $value;
+}
+
+=head2 control_read_t
+
+Read contents of a Wx::Text control.
+
+=cut
+
+sub control_read_t {
+    my ( $self, $control ) = @_;
+
+    my $value = $control->GetValue;
+
+    return $value;
+}
+
+=head2 control_read_d
+
+Read contents of a Wx::DateEntry control.
+
+=cut
+
+sub control_read_d {
+    my ( $self, $ctrl_ref ) = @_;
+
+    my $control = $ctrl_ref->[1];
+
+    my $datetime = $control->GetValue();
+    my $invalid  = Wx::DateTime->new();
+
+    if($datetime->IsEqualTo($invalid)) {
+        return q{};                          # empty
+    } else {
+        my $value = $datetime->FormatISODate();
+        return $value;
+    }
+
+    # ( $Wx::VERSION > 0.98 )
+    #     ? sub {
+    #     $textctrl->SetValue( ( $_[1]->GetDate->IsValid )
+    #         ? $_[1]->GetDate->FormatDate
+    #         : 'INVALID DATE' );
+    #     }
+    #     : sub {
+    #     my $invalid = Wx::DateTime->new();
+    #     $textctrl->SetValue( ( $_[1]->GetDate->IsEqualTo($invalid) )
+    #         ? 'INVALID DATE'
+    #         : $_[1]->GetDate->FormatDate );
+    #     }
+}
+
+=head2 control_read_m
+
+Read contents of a Wx::ComboBox control.
+
+=cut
+
+sub control_read_m {
+    my ( $self, $control ) = @_;
+
+    return;
+}
+
+=head2 control_read_l
+
+Read contents of a Wx::MatchingBE control.
+
+=cut
+
+sub control_read_l {
+    my ( $self, $control ) = @_;
+
+    return;
+}
+
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=cut
+
+sub configure_controls {
+    my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
+
+    $state = $state eq 'normal' ? 1 : 0;
+    if ($fld_cfg->{ctrltype} eq 'd') {
+        $control->Enable($state);
+    }
+    else {
+        $control->SetEditable($state);
+    }
+    $control->SetBackgroundColour( Wx::Colour->new($bg_color) )
+        if $bg_color;
+
+    return;
+}
+
+=head2 nb_set_page_state
+
+TODO
+
+=cut
+
+sub nb_set_page_state {
+    my ($self, $page, $state) = @_;
 
     return;
 }

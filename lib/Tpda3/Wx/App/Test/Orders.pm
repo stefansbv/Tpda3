@@ -37,8 +37,10 @@ The screen layout
 sub run_screen {
     my ( $self, $nb ) = @_;
 
-    my $rec_page = $nb->page_widget('rec');
-    my $det_page = $nb->page_widget('det');
+    # my $rec_page = $nb->page_widget('rec');
+    # my $det_page = $nb->page_widget('det');
+    my $rec_page = $nb->GetPage(0);
+    my $det_page = $nb->GetPage(2);
     $self->{view} = $nb->GetGrandParent;
     $self->{bg}   = $nb->GetBackgroundColour();
 

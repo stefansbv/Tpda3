@@ -1277,6 +1277,326 @@ sub list_locate {
     return $idx;
 }
 
+#-- Event handlers
+
+sub event_handler_for_menu {
+    my ($self, $name, $calllback) = @_;
+
+    $self->get_menu_popup_item($name)->configure( -command => $calllback );
+
+    return;
+}
+
+sub event_handler_for_tb_button {
+    my ($self, $name, $calllback) = @_;
+
+    $self->get_toolbar_btn($name)->bind(
+        '<ButtonRelease-1>' => $calllback,
+    );
+
+    return;
+}
+
+#-- Write
+
+=head2 control_write_e
+
+Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_e {
+    my ( $self, $control, $value, $state ) = @_;
+
+    $state = $state || $control->cget ('-state');
+
+    $value = q{} unless defined $value;    # Empty
+
+    $control->configure( -state => 'normal' );
+
+    $control->delete( 0, 'end' );
+    $control->insert( 0, $value ) if $value;
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_t
+
+Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_t {
+    my ( $self, $control, $value, $state ) = @_;
+
+    $state = $state || $control->cget ('-state');
+
+    $value = q{} unless defined $value;    # Empty
+
+    # Tip TextEntry 't'
+    $control->delete( '1.0', 'end' );
+    $control->insert( '1.0', $value ) if $value;
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_d
+
+Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_d {
+    my ( $self, $control, $value, $state, $date_format ) = @_;
+
+    $state = $state || $control->[1]->cget('-state');
+
+    $value = q{} unless defined $value;    # empty
+
+    if ($value) {
+
+        # Date should go to database in ISO format
+        my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
+        $value = Tpda3::Utils->dateentry_format_date( $date_format, $y, $m, $d );
+    }
+
+    ${ $control->[0] } = $value;
+
+    $control->[1]->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_m
+
+Write to a Tk::JComboBox widget.  If I<$value> not true, than only
+delete.
+
+=cut
+
+sub control_write_m {
+    my ( $self, $control, $value, $state ) = @_;
+
+    $state = $state || $control->[1]->cget ('-state');
+
+    if ($value) {
+        $control->[1]->setSelected( $value, -type => 'value' );
+    }
+    else {
+        ${ $control->[0] } = q{};    # Empty
+    }
+
+    $control->[1]->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_l
+
+Write to a Tk::MatchingBE widget.  Warning: cant write an empty value,
+must test with a key -> value pair like 'not set' => '?empty?'.
+
+=cut
+
+sub control_write_l {
+    my ( $self, $control, $value, $state ) = @_;
+
+    return unless defined $value;    # Empty
+
+    $state = $state || $control->cget ('-state');
+
+    $control->set_selected_value($value);
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_c
+
+Write to a Tk::Checkbox widget.
+
+=cut
+
+sub control_write_c {
+    my ( $self, $control, $value, $state ) = @_;
+
+    $state = $state || $control->cget ('-state');
+
+    $value = 0 unless $value;
+    if ( $value == 1 ) {
+        $control->select;
+    }
+    else {
+        $control->deselect;
+    }
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_r
+
+Write to a Tk::RadiobuttonGroup widget.
+
+=cut
+
+sub control_write_r {
+    my ( $self, $control, $value, $state ) = @_;
+
+    $state = $state || $control->[1]->cget('-state');
+
+    if ($value) {
+        ${ $control->[0] } = $value;
+    }
+    else {
+        ${ $control->[0] } = undef;
+    }
+
+    $control->[1]->configure( -state => $state );
+
+    return;
+}
+
+#-- Read
+
+=head2 control_read_e
+
+Read contents of a Tk::Entry control.
+
+=cut
+
+sub control_read_e {
+    my ( $self, $control ) = @_;
+
+    my $value = $control->get;
+
+    return $value;
+}
+
+=head2 control_read_t
+
+Read contents of a Tk::Text control.
+
+=cut
+
+sub control_read_t {
+    my ( $self, $control ) = @_;
+
+    my $value = $control->get( '0.0', 'end' );
+
+    return $value;
+}
+
+=head2 control_read_d
+
+Read contents of a Tk::DateEntry control.
+
+=cut
+
+sub control_read_d {
+    my ( $self, $ctrl_ref, $date_format ) = @_;
+
+    my $control = $ctrl_ref->[0];
+
+    # Value from variable or empty string
+    my $value = ${$control} || q{};
+
+    if ( $date_format and $value ) {
+
+        # Skip date formatting for find mode
+        if ( !$self->_model->is_mode('find') ) {
+
+            # Date should go to database in ISO format
+            my ( $y, $m, $d )
+                = Tpda3::Utils
+                ->dateentry_parse_date( $date_format, $value );
+
+            $value
+                = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
+        }
+    }
+
+    return $value;
+}
+
+=head2 control_read_m
+
+Read contents of a Tk::JComboBox control.
+
+=cut
+
+sub control_read_m {
+    my ( $self, $control ) = @_;
+
+    my $value = ${$control};    # value from variable
+
+    return $value;
+}
+
+=head2 control_read_l
+
+Read contents of a Tk::MatchingBE control.
+
+=cut
+
+sub control_read_l {
+    my ( $self, $control ) = @_;
+
+    my $value = $control->get_selected_value() || q{};
+
+    return $value;
+}
+
+=head2 control_read_c
+
+Read state of a Checkbox.
+
+=cut
+
+sub control_read_c {
+    my ( $self, $control ) = @_;
+
+    my $value = ${$control};
+
+    return $value;
+}
+
+=head2 control_read_r
+
+Read RadiobuttonGroup.
+
+=cut
+
+sub control_read_r {
+    my ( $self, $control ) = @_;
+
+    my $value = ${$control} || q{};
+
+    return $value;
+}
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=cut
+
+sub configure_controls {
+    my ($self, $ctrl_ref, $ctrl_state, $bg_color) = @_;
+
+    $ctrl_ref->configure( -state      => $ctrl_state, );
+    $ctrl_ref->configure( -background => $bg_color, );
+
+    return;
+}
+
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
