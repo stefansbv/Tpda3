@@ -6,9 +6,6 @@ use utf8;
 use Carp;
 use English;
 
-# use Tk;
-# use Tk::Font;
-
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
@@ -20,7 +17,6 @@ use Hash::Merge qw(merge);
 require Tpda3::Utils;
 require Tpda3::Config;
 require Tpda3::Model;
-#require Tpda3::Tk::View;
 require Tpda3::Lookup;
 
 use File::Basename;
@@ -75,12 +71,8 @@ sub new {
 
     my $model = Tpda3::Model->new();
 
-    # my $view = Tpda3::Tk::View->new($model);
-
     my $self = {
         _model   => $model,
-        #_app     => $view,                       # an alias as for Wx ...
-        #_view    => $view,
         _rscrcls => undef,
         _rscrobj => undef,
         _dscrcls => undef,
@@ -103,12 +95,11 @@ sub new {
 
     $self->_set_event_handlers();
 
-#    $self->_set_menus_enable('disabled');    # disable find mode menus
+    $self->_set_menus_enable('disabled');    # disable find mode menus
 
-#    $self->_check_app_menus();               # disable if no screen
+    $self->_check_app_menus();               # disable if no screen
 
-    # Restore default log level
-    $self->_log->level($loglevel_old);
+    $self->_log->level($loglevel_old);     # restore default log level
 
     return $self;
 }
@@ -371,15 +362,6 @@ sub _set_event_handlers {
     #- Base menu
 
     #-- Toggle find mode - Menu
-    # $self->_view->get_menu_popup_item('mn_fm')->configure(
-    #     -command => sub {
-    #         return if !defined $self->ask_to_save;
-
-    #         # From add mode forbid find mode
-    #         $self->toggle_mode_find() if !$self->_model->is_mode('add');
-
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_fm',
         sub {
@@ -391,13 +373,6 @@ sub _set_event_handlers {
     );
 
     #-- Toggle execute find - Menu
-    # $self->_view->get_menu_popup_item('mn_fe')->configure(
-    #     -command => sub {
-    #         $self->_model->is_mode('find')
-    #             ? $self->record_find_execute
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_fe',
         sub {
@@ -408,13 +383,6 @@ sub _set_event_handlers {
     );
 
     #-- Toggle execute count - Menu
-    # $self->_view->get_menu_popup_item('mn_fc')->configure(
-    #     -command => sub {
-    #         $self->_model->is_mode('find')
-    #             ? $self->record_find_count
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_fc',
         sub {
@@ -425,12 +393,6 @@ sub _set_event_handlers {
     );
 
     #-- Exit
-    # $self->_view->get_menu_popup_item('mn_qt')->configure(
-    #     -command => sub {
-    #         return if !defined $self->ask_to_save;
-    #         $self->_view->on_quit;
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_qt',
         sub {
@@ -440,11 +402,6 @@ sub _set_event_handlers {
     );
 
     #-- Help
-    # $self->_view->get_menu_popup_item('mn_gd')->configure(
-    #     -command => sub {
-    #         $self->guide;
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_gd',
         sub {
@@ -453,11 +410,6 @@ sub _set_event_handlers {
     );
 
     #-- About
-    # $self->_view->get_menu_popup_item('mn_ab')->configure(
-    #     -command => sub {
-    #         $self->about;
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_ab',
         sub {
@@ -466,18 +418,12 @@ sub _set_event_handlers {
     );
 
     #-- Preview RepMan report
-    # $self->_view->get_menu_popup_item('mn_pr')->configure(
-    #     -command => sub { $self->repman; }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_pr',
         sub { $self->repman; }
     );
 
     #-- Edit RepMan report metadata
-    # $self->_view->get_menu_popup_item('mn_er')->configure(
-    #     -command => sub { $self->screen_module_load('Reports','tools'); }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_er',
         sub {
@@ -486,11 +432,6 @@ sub _set_event_handlers {
     );
 
     #-- Save geometry
-    # $self->_view->get_menu_popup_item('mn_sg')->configure(
-    #     -command => sub {
-    #         $self->save_geometry();
-    #     }
-    # );
     $self->_view->event_handler_for_menu(
         'mn_sg',
         sub {
@@ -500,14 +441,6 @@ sub _set_event_handlers {
 
     #- Custom application menu from menu.yml
 
-    # my $appmenus = $self->_view->get_app_menus_list();
-    # foreach my $item ( @{$appmenus} ) {
-    #     $self->_view->get_menu_popup_item($item)->configure(
-    #         -command => sub {
-    #             $self->screen_module_load($item);
-    #         }
-    #     );
-    # }
     my $appmenus = $self->_view->get_app_menus_list();
     foreach my $item ( @{$appmenus} ) {
         $self->_view->event_handler_for_menu(
@@ -521,31 +454,16 @@ sub _set_event_handlers {
     #- Toolbar
 
     #-- Find mode
-    # $self->_view->get_toolbar_btn('tb_fm')->bind(
-    #     '<ButtonRelease-1>' => sub {
-
-    #         # From add mode forbid find mode
-    #         $self->toggle_mode_find() if !$self->_model->is_mode('add');
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_fm',
         sub {
 
-        # From add mode forbid find mode
-        if ( !$self->_model->is_mode('add') ) {
-            $self->toggle_mode_find();
+            # From add mode forbid find mode
+            $self->toggle_mode_find() if !$self->_model->is_mode('add');
         }
-    });
+    );
 
     #-- Find execute
-    # $self->_view->get_toolbar_btn('tb_fe')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('find')
-    #             ? $self->record_find_execute
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_fe',
         sub {
@@ -556,13 +474,6 @@ sub _set_event_handlers {
     );
 
     #-- Find count
-    # $self->_view->get_toolbar_btn('tb_fc')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('find')
-    #             ? $self->record_find_count
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_fc',
         sub {
@@ -573,13 +484,6 @@ sub _set_event_handlers {
     );
 
     #-- Print (preview) default report button
-    # $self->_view->get_toolbar_btn('tb_pr')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('edit')
-    #             ? $self->screen_report_print()
-    #             : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_pr',
         sub {
@@ -590,13 +494,6 @@ sub _set_event_handlers {
     );
 
     #-- Generate default document button
-    # $self->_view->get_toolbar_btn('tb_gr')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('edit')
-    #             ? $self->screen_document_generate()
-    #             : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_pr',
         sub {
@@ -607,16 +504,6 @@ sub _set_event_handlers {
     );
 
     #-- Take note
-    # $self->_view->get_toolbar_btn('tb_tn')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         (          $self->_model->is_mode('edit')
-    #                 or $self->_model->is_mode('add')
-    #             )
-    #             ? $self->take_note()
-    #             : $self->_view->set_status( 'Not add|edit mode',
-    #             'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_tn',
         sub {
@@ -630,13 +517,6 @@ sub _set_event_handlers {
     );
 
     #-- Restore note
-    # $self->_view->get_toolbar_btn('tb_tr')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('add')
-    #             ? $self->restore_note()
-    #             : $self->_view->set_status( 'Not add mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_tr',
         sub {
@@ -647,16 +527,6 @@ sub _set_event_handlers {
     );
 
     #-- Clear screen
-    # $self->_view->get_toolbar_btn('tb_cl')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         (          $self->_model->is_mode('edit')
-    #                 or $self->_model->is_mode('add')
-    #             )
-    #             ? $self->screen_clear()
-    #             : $self->_view->set_status( 'Not add|edit mode',
-    #             'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_cl',
         sub {
@@ -670,13 +540,6 @@ sub _set_event_handlers {
     );
 
     #-- Reload
-    # $self->_view->get_toolbar_btn('tb_rr')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->_model->is_mode('edit')
-    #             ? $self->record_reload()
-    #             : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_rr',
         sub {
@@ -687,11 +550,6 @@ sub _set_event_handlers {
     );
 
     #-- Add mode
-    # $self->_view->get_toolbar_btn('tb_ad')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->toggle_mode_add() if $self->{_rscrcls};
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_ad',
         sub {
@@ -700,11 +558,6 @@ sub _set_event_handlers {
     );
 
     #-- Delete
-    # $self->_view->get_toolbar_btn('tb_rm')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->event_record_delete();
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_rm',
         sub {
@@ -713,11 +566,6 @@ sub _set_event_handlers {
     );
 
     #-- Save record
-    # $self->_view->get_toolbar_btn('tb_sv')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->record_save();
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_sv',
         sub {
@@ -726,11 +574,6 @@ sub _set_event_handlers {
     );
 
     #-- Attach to desktop - pin (save geometry to config file)
-    # $self->_view->get_toolbar_btn('tb_at')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         $self->save_geometry();
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_at',
         sub {
@@ -739,12 +582,6 @@ sub _set_event_handlers {
     );
 
     #-- Quit
-    # $self->_view->get_toolbar_btn('tb_qt')->bind(
-    #     '<ButtonRelease-1>' => sub {
-    #         return if !defined $self->ask_to_save;
-    #         $self->_view->on_quit;
-    #     }
-    # );
     $self->_view->event_handler_for_tb_button(
         'tb_qt',
         sub {
@@ -1015,7 +852,6 @@ sub on_page_lst_activate {
     my $self = shift;
 
     $self->set_app_mode('sele');
-#    $self->_view->get_recordlist->focus;
 
     return;
 }
@@ -1179,9 +1015,8 @@ Disable some menus at start.
 sub _set_menus_enable {
     my ( $self, $state ) = @_;
 
-    foreach my $mnu (qw(mn_fm mn_fe mn_fc)) {
-        $self->_view->get_menu_popup_item($mnu)
-            ->configure( -state => $state, );
+    foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
+        $self->_view->set_menu_enable($menu, $state);
     }
 }
 
@@ -1197,14 +1032,12 @@ Only for I<menu_user> hardwired menu name for now!
 sub _check_app_menus {
     my $self = shift;
 
-    my $menu = $self->_view->get_menu_popup_item('menu_user');
-
     my $appmenus = $self->_view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
         eval { require $module_file };
         if ($@) {
-            $menu->entryconfigure( $menu_item, -state => 'disabled' );
+            $self->_view->set_menu_enable($menu_item, 'disabled');
         }
     }
 
@@ -1265,9 +1098,9 @@ sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
 
     my $dict     = Tpda3::Lookup->new;
-    my $ctrl_ref = $self->scrobj('rec')->get_controls();
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
 
-    my $bindings = $self->scrcfg('rec')->bindings;
+    my $bindings = $self->scrcfg($page)->bindings;
 
     $self->_log->trace("Setup binding for configured widgets ($page)");
 
@@ -1329,8 +1162,11 @@ sub setup_lookup_bindings_entry {
         $para->{columns} = [@cols];    # add columns info to parameters
 
         my $filter;
-        $ctrl_ref->{$column}[1]->bind(
-            '<Return>' => sub {
+        $self->_view->make_binding_entry(
+            $ctrl_ref->{$column}[1],
+            '<Return>',
+            sub {
+                print " binding\n";
                 my $record = $dict->lookup( $self->_view, $para, $filter );
                 $self->screen_write($record);
             }
@@ -2147,10 +1983,10 @@ sub screen_module_load {
     $self->_cfg->config_load_instance();
 
     #-- Lookup bindings for Tk::Entry widgets
-#    $self->setup_lookup_bindings_entry('rec');
+    $self->setup_lookup_bindings_entry('rec');
 
     #-- Lookup bindings for tables (TableMatrix)
-#    $self->setup_bindings_table();
+    $self->setup_bindings_table();
 
     # Set PK column name
     $self->screen_set_pk_col();
@@ -2174,7 +2010,7 @@ sub screen_module_load {
         $self->set_event_handler_screen($tm_ds);
     }
 
-    # $self->_set_menus_enable('normal');
+    $self->_set_menus_enable('normal');
 
     $self->_view->set_status( '', 'ms' );
 
@@ -2190,8 +2026,7 @@ sub screen_module_load {
     # Load lists into JComboBox widgets (JBrowseEntry not supported)
     $self->screen_init();
 
-    return 1;    # to make ok from Test::More happy
-                 # probably missing something :) TODO!
+    return 1;                       # to make ok from Test::More happy
 }
 
 =head2 set_event_handler_screen
@@ -2296,10 +2131,10 @@ sub screen_module_detail_load {
     # Event handlers
 
     #-- Lookup bindings for Tk::Entry widgets
-#    $self->setup_lookup_bindings_entry('det');
+    $self->setup_lookup_bindings_entry('det');
 
     #-- Lookup bindings for tables (TableMatrix)
-#    $self->setup_bindings_table();
+    $self->setup_bindings_table();
 
     # Load lists into JComboBox widgets (JBrowseEntry not supported)
     $self->screen_init();
@@ -3009,12 +2844,10 @@ sub control_read_e {
 
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);
-
         $self->{_scrdata}{$field} = $value;
         # print "Screen (e): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
@@ -3043,16 +2876,13 @@ sub control_read_t {
 
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);
-
         $self->{_scrdata}{$field} = $value;
         # print "Screen (t): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-
             # print "Screen (t): $field = undef\n";
         }
     }
@@ -3078,21 +2908,16 @@ sub control_read_d {
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
-
         # Delete '\n' from end
         $value =~ s/\n$//mg;    # m=multiline
-
         $self->{_scrdata}{$field} = $value;
-
-        print "Screen (d): $field = $value\n";
+        # print "Screen (d): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-
-            print "Screen (d): $field = undef\n";
+            # print "Screen (d): $field = undef\n";
         }
     }
 
@@ -3114,20 +2939,15 @@ sub control_read_m {
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
-
         # Delete '\n' from end
         $value =~ s/\n$//mg;                    # m=multiline
-
         $self->{_scrdata}{$field} = $value;
-
         # print "Screen (m): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-
             # print "Screen (m): $field = undef\n";
         }
     }
@@ -3150,20 +2970,15 @@ sub control_read_l {
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
-
         # Delete '\n' from end
         $value =~ s/\n$//mg;    # m=multiline
-
         $self->{_scrdata}{$field} = $value;
-
         # print "Screen (l): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-
             # print "Screen (l): $field = undef\n";
         }
     }
@@ -3186,15 +3001,12 @@ sub control_read_c {
 
     if ( $value == 1 ) {
         $self->{_scrdata}{$field} = $value;
-
         # print "Screen (c): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = $value;
-
             # print "Screen (c): $field = undef\n";
         }
     }
@@ -3218,15 +3030,12 @@ sub control_read_r {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
         $self->{_scrdata}{$field} = $value;
-
         # print "Screen (r): $field = $value\n";
     }
     else {
-
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{"$field:r"} = undef;
-
             # print "Screen (r): $field = undef\n";
         }
     }
@@ -3930,6 +3739,7 @@ sub ask_to {
         $detail  = 'Confirmați ștergerea înregistrării?';
     }
 
+    # TODO: generalize!
     $self->_view->{dialog_q}->configure(
         -message => $message,
         -detail  => $detail,

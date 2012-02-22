@@ -397,6 +397,14 @@ sub get_menu_popup_item {
     return $self->{_menu}{$name};
 }
 
+sub set_menu_enable {
+        my ( $self, $menu, $state ) = @_;
+
+        $self->get_menu_popup_item($menu)->configure( -state => $state );
+
+        return;
+}
+
 =head2 create_statusbar
 
 Create the status bar
@@ -1596,6 +1604,19 @@ sub configure_controls {
     return;
 }
 
+=head2 make_binding_entry
+
+Key is always ENTER.
+
+=cut
+
+sub make_binding_entry {
+    my ($self, $control, $key, $calllback) = @_;
+
+    $control->bind( $key => $calllback, );
+
+    return;
+}
 
 =head1 AUTHOR
 

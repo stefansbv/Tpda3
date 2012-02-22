@@ -2,6 +2,8 @@ package Tpda3::Wx::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use POSIX qw (floor ceil);
@@ -332,6 +334,17 @@ sub get_menubar {
     my $self = shift;
 
     return $self->{_menu};
+}
+
+sub set_menu_enable {
+    my ( $self, $menu, $state ) = @_;
+
+    $state = $state eq 'normal' ? 1 : 0;
+    my $mn = $self->get_menubar();
+    my $mn_id = $self->get_menu_popup_item($menu)->GetId;
+    $mn->Enable( $mn_id, $state );
+
+    return;
 }
 
 =head2 _create_toolbar
@@ -1109,11 +1122,10 @@ sub list_populate {
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-
-
         $list->InsertStringItem( $row_count, 'dummy' );
         for ( my $col = 0; $col < $column_count; $col++ ) {
-            $list->SetItemText( $row_count, $col, $record->[$col] );
+            my $col_data = $record->[$col] || q{}; # or empty
+            $list->SetItemText( $row_count, $col, $col_data );
         }
 
         $row_count++;
@@ -1381,6 +1393,8 @@ sub control_write_d {
     my ( $y, $m, $d )
     = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
 
+    return unless ($y and $m and $d);
+
     my $dt = Wx::DateTime->newFromDMY($d, $m, $y);
 
     $control->SetValue($dt) if $dt->isa('Wx::DateTime');
@@ -1544,6 +1558,20 @@ TODO
 
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
+
+    return;
+}
+
+=head2 make_binding_entry
+
+Key is always ENTER.
+
+=cut
+
+sub make_binding_entry {
+    my ($self, $control, $key, $calllback) = @_;
+
+    EVT_TEXT_ENTER $self, $control, $calllback;
 
     return;
 }
