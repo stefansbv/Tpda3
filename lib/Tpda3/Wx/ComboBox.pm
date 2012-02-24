@@ -1,0 +1,115 @@
+package Tpda3::Wx::ComboBox;
+
+use strict;
+use warnings;
+
+use Data::Dumper;
+
+use Wx;
+use Wx qw (wxNOT_FOUND);
+use base qw{Wx::ComboBox};
+use Wx::Event qw(EVT_SET_FOCUS EVT_CHAR EVT_KEY_DOWN EVT_KEY_UP);
+
+=head1 NAME
+
+Tpda3::Wx::ComboBox - A subclass of Wx::ComboBox.
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::ComboBox;
+    ...
+
+=head1 METHODS
+
+=head2 new
+
+Constructor method.
+
+=cut
+
+sub new {
+    my $class = shift;
+
+    my $self = $class->SUPER::new( @_ );
+
+    $self->{lookup} = {};
+
+    return $self;
+}
+
+sub add_choices {
+    my ($self, $choices) = @_;
+
+    foreach my $choice ( @{$choices} ) {
+        $self->{lookup}{ $choice->{-value} } = $choice->{-name};
+    }
+
+    unshift @{$choices}, { -name => '', -value => '' };
+
+    $self->Clear();
+    $self->Append($_->{-name}, $_->{-value}) foreach @{$choices};
+
+    return;
+}
+
+sub set_selected {
+    my ($self, $choice) = @_;
+
+    $choice = q{} unless defined $choice; # allow undef as choice
+
+    my $selection;
+    if ( $choice and exists $self->{lookup}{$choice} ) {
+        $selection = $self->{lookup}{$choice};
+    }
+    else {
+        $selection = q{};
+    }
+
+    $self->SetStringSelection($selection);
+
+    return;
+}
+
+sub get_selected {
+    my $self = shift;
+
+    my $selected = $self->GetSelection();
+    my $value = $self->GetValue();
+
+    if ($selected == wxNOT_FOUND) {
+        return;
+    }
+    else {
+        return $self->GetClientData($selected)
+    }
+}
+
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
+
+=head1 BUGS
+
+None known.
+
+Please report any bugs or feature requests to the author.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2010-2012 Stefan Suciu.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Wx::ComboBox
