@@ -8,6 +8,7 @@ use base 'Tpda3::Wx::Screen';
 
 use Wx::Event qw(EVT_DATE_CHANGED);
 use Wx::Calendar;
+use Tpda3::Wx::ComboBox;
 
 =head1 NAME
 
@@ -99,8 +100,14 @@ sub run_screen {
 
     #-- statuscode
     my $lstatuscode = Wx::StaticText->new( $rec_page, -1, 'Status' );
-    my $estatuscode
-        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ], );
+    my $bstatuscode = Tpda3::Wx::ComboBox->new(
+        $rec_page,
+        -1,
+        q{},
+        [-1, -1], [-1, -1],
+        [],
+        wxCB_SORT | wxTE_PROCESS_ENTER,
+    );
 
     #--- Layout
 
@@ -199,9 +206,9 @@ sub run_screen {
         wxLEFT | wxRIGHT, 5
     );
     $grid->Add(
-        $estatuscode,
+        $bstatuscode,
         gbpos( 4, 1 ),
-        gbspan( 1, 3 ),
+        gbspan( 1, 2 ),
         wxEXPAND | wxLEFT | wxRIGHT, 5
     );
 
@@ -247,7 +254,7 @@ sub run_screen {
         orderdate      => [ undef, $dorderdate ],
         requireddate   => [ undef, $drequireddate ],
         shippeddate    => [ undef, $dshippeddate ],
-        statuscode     => [ undef, $estatuscode ],
+        statuscode     => [ undef, $bstatuscode ],
         comments       => [ undef, $tcomments ],
     };
 
