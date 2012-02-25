@@ -22,7 +22,7 @@ BEGIN {
         plan( skip_all => 'wxPerl is required for this test' );
     }
     else {
-        plan tests => 4;
+        plan tests => 16;
         $ok_test = 1;
     }
 }
@@ -33,9 +33,6 @@ use if $ok_test, "Wx::Event", q{EVT_TIMER};
 use_ok('Tpda3::Wx::ComboBox');
 
 my $choices = [
-    {   '-name'  => '',
-        '-value' => ''
-    },
     {   '-name'  => 'Cancelled',
         '-value' => 'C'
     },
@@ -67,24 +64,13 @@ test {
         wxCB_SORT | wxTE_PROCESS_ENTER,
     );
 
-    my $timer1 = Wx::Timer->new( $frame, 1 );
-    $timer1->Start( 1000, 1 );    # one shot
+    is( $cb->add_choices($choices), undef, 'Add choices' );
 
-    EVT_TIMER $frame, 1, sub {
-        is( $cb->add_choices($choices), undef, 'Add choices' );
-    };
-
-    my $timer2 = Wx::Timer->new( $frame, 2 );
-    $timer2->Start(2000);
-
-    EVT_TIMER $frame, 2, sub {
-        foreach my $choice (@{$choices->{-value}}) {
-            diag $choice;
-            is( $cb->set_selected($choice), undef, "Set selected '$choice'" );
-            is( $cb->get_selected(), $choice, "Get selected '$choice'");
-        }
-        $timer2->Stop();
-    };
+    foreach my $choice (@{$choices}) {
+        my $value = $choice->{-value};
+        is( $cb->set_selected($value), undef, "Set selected '$value'" );
+        is( $cb->get_selected(), $value, "Get selected '$value'");
+    }
 }
 
 #-- End test
