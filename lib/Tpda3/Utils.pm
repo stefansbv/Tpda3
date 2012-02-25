@@ -3,6 +3,7 @@ package Tpda3::Utils;
 use strict;
 use warnings;
 use utf8;
+use Carp;
 
 =head1 NAME
 
@@ -70,6 +71,8 @@ sub dateentry_parse_date {
 
     my ( $self, $format, $date ) = @_;
 
+    croak unless $date;
+
     my ( $y, $m, $d );
 
     # Default date style format
@@ -109,6 +112,8 @@ Format date for Tk::DateEntry.
 sub dateentry_format_date {
 
     my ( $self, $format, $y, $m, $d ) = @_;
+
+    croak unless $y and $m and $d;
 
     my $date;
 
