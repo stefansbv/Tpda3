@@ -1305,7 +1305,16 @@ sub event_handler_for_tb_button {
     return;
 }
 
-#-- Write
+#-- Write to controls
+
+sub list_control_choices {
+    my ($self, $control, $choices) = @_;
+
+    $control->removeAllItems();
+    $control->configure( -choices => $choices );
+
+    return;
+}
 
 =head2 control_write_e
 
@@ -1314,7 +1323,9 @@ Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_e {
-    my ( $self, $control, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
 
     $state = $state || $control->cget ('-state');
 
@@ -1337,7 +1348,9 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $control, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
 
     $state = $state || $control->cget ('-state');
 
@@ -1356,25 +1369,29 @@ sub control_write_t {
 
 Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
 
+Date is required to come from the database in the ISO format.
+
 =cut
 
 sub control_write_d {
-    my ( $self, $control, $value, $state, $date_format ) = @_;
+    my ( $self, $control_ref, $value, $state, $date_format ) = @_;
 
-    $state = $state || $control->[1]->cget('-state');
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget('-state');
 
     $value = q{} unless defined $value;    # empty
 
     if ($value) {
-
-        # Date should go to database in ISO format
-        my ( $y, $m, $d ) = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
-        $value = Tpda3::Utils->dateentry_format_date( $date_format, $y, $m, $d );
+        my ( $y, $m, $d )
+            = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
+        $value
+            = Tpda3::Utils->dateentry_format_date( $date_format, $y, $m, $d );
     }
 
-    ${ $control->[0] } = $value;
+    ${ $control_ref->[0] } = $value;
 
-    $control->[1]->configure( -state => $state );
+    $control->configure( -state => $state );
 
     return;
 }
@@ -1387,37 +1404,18 @@ delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $control, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state ) = @_;
 
-    $state = $state || $control->[1]->cget ('-state');
-
-    if ($value) {
-        $control->[1]->setSelected( $value, -type => 'value' );
-    }
-    else {
-        ${ $control->[0] } = q{};    # Empty
-    }
-
-    $control->[1]->configure( -state => $state );
-
-    return;
-}
-
-=head2 control_write_l
-
-Write to a Tk::MatchingBE widget.  Warning: cant write an empty value,
-must test with a key -> value pair like 'not set' => '?empty?'.
-
-=cut
-
-sub control_write_l {
-    my ( $self, $control, $value, $state ) = @_;
-
-    return unless defined $value;    # Empty
+    my $control = $control_ref->[1];
 
     $state = $state || $control->cget ('-state');
 
-    $control->set_selected_value($value);
+    if ($value) {
+        $control->setSelected( $value, -type => 'value' );
+    }
+    else {
+        ${ $control_ref->[0] } = q{};    # Empty
+    }
 
     $control->configure( -state => $state );
 
@@ -1431,7 +1429,9 @@ Write to a Tk::Checkbox widget.
 =cut
 
 sub control_write_c {
-    my ( $self, $control, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
 
     $state = $state || $control->cget ('-state');
 
@@ -1455,18 +1455,20 @@ Write to a Tk::RadiobuttonGroup widget.
 =cut
 
 sub control_write_r {
-    my ( $self, $control, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state ) = @_;
 
-    $state = $state || $control->[1]->cget('-state');
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget('-state');
 
     if ($value) {
-        ${ $control->[0] } = $value;
+        ${ $control_ref->[0] } = $value;
     }
     else {
-        ${ $control->[0] } = undef;
+        ${ $control_ref->[0] } = undef;
     }
 
-    $control->[1]->configure( -state => $state );
+    $control->configure( -state => $state );
 
     return;
 }
@@ -1512,21 +1514,15 @@ sub control_read_d {
 
     my $control = $ctrl_ref->[0];
 
-    # Value from variable or empty string
+    # Value from widget variable or the empty string
     my $value = ${$control} || q{};
-
-    if ( $date_format and $value ) {
+    if ($value) {
 
         # Skip date formatting for find mode
         if ( !$self->_model->is_mode('find') ) {
-
-            # Date should go to database in ISO format
             my ( $y, $m, $d )
-                = Tpda3::Utils
-                ->dateentry_parse_date( $date_format, $value );
-
-            $value
-                = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
+                = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
+            $value = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
         }
     }
 
@@ -1540,23 +1536,11 @@ Read contents of a Tk::JComboBox control.
 =cut
 
 sub control_read_m {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
 
     my $value = ${$control};    # value from variable
-
-    return $value;
-}
-
-=head2 control_read_l
-
-Read contents of a Tk::MatchingBE control.
-
-=cut
-
-sub control_read_l {
-    my ( $self, $control ) = @_;
-
-    my $value = $control->get_selected_value() || q{};
 
     return $value;
 }
@@ -1568,7 +1552,9 @@ Read state of a Checkbox.
 =cut
 
 sub control_read_c {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
 
     my $value = ${$control};
 
@@ -1582,7 +1568,9 @@ Read RadiobuttonGroup.
 =cut
 
 sub control_read_r {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
 
     my $value = ${$control} || q{};
 

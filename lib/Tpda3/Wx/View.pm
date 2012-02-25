@@ -736,44 +736,44 @@ sub log_msg {
     return;
 }
 
-=head2 control_set_value
+# =head2 control_set_value
 
-Set new value for a controll
+# Set new value for a controll
 
-=cut
+# =cut
 
-sub control_set_value {
-    my ( $self, $name, $value ) = @_;
+# sub control_set_value {
+#     my ( $self, $name, $value ) = @_;
 
-    return unless defined $value;
+#     return unless defined $value;
 
-    my $ctrl = $self->get_control_by_name($name);
+#     my $ctrl = $self->get_control_by_name($name);
 
-    $ctrl->ClearAll;
-    $ctrl->AppendText($value);
-    $ctrl->AppendText("\n");
-    $ctrl->Colourise( 0, $ctrl->GetTextLength );
+#     $ctrl->ClearAll;
+#     $ctrl->AppendText($value);
+#     $ctrl->AppendText("\n");
+#     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 
-    return;
-}
+#     return;
+# }
 
-=head2 control_append_value
+# =head2 control_append_value
 
-Append value to a control.
+# Append value to a control.
 
-=cut
+# =cut
 
-sub control_append_value {
-    my ( $self, $name, $value ) = @_;
+# sub control_append_value {
+#     my ( $self, $name, $value ) = @_;
 
-    return unless defined $value;
+#     return unless defined $value;
 
-    my $ctrl = $self->get_control_by_name($name);
+#     my $ctrl = $self->get_control_by_name($name);
 
-    $ctrl->AppendText($value);
-    $ctrl->AppendText("\n");
-    $ctrl->Colourise( 0, $ctrl->GetTextLength );
-}
+#     $ctrl->AppendText($value);
+#     $ctrl->AppendText("\n");
+#     $ctrl->Colourise( 0, $ctrl->GetTextLength );
+# }
 
 =head2 toggle_status_cn
 
@@ -1260,16 +1260,15 @@ sub on_notebook_page_changed {
     return;
 }
 
-=head2 w_geometry
+=head2 get_geometry
 
-Return window geometry
+Return window geometry.
 
 =cut
 
-sub w_geometry {
+sub get_geometry {
     my $self = shift;
 
-    # my $wsys = $self->windowingsystem;
     my $name = $self->GetName();
     my $rect = $self->GetScreenRect();
 
@@ -1342,6 +1341,13 @@ sub event_handler_for_tb_button {
 
 #-- Write to controls
 
+sub list_control_choices {
+    my ($self, $control, $choices) = @_;
+
+    $control->add_choices($choices);
+
+    return;
+}
 
 =head2 control_write_e
 
@@ -1350,8 +1356,9 @@ Write to a Wx::Entry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_e {
-    my ( $self, $control, $value ) = @_;
+    my ( $self, $control_ref, $value ) = @_;
 
+    my $control = $control_ref->[1];
     $control->Clear;
     $control->SetValue($value) if defined $value;;
 
@@ -1365,7 +1372,9 @@ Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $control, $value ) = @_;
+    my ( $self, $control_ref, $value ) = @_;
+
+    my $control = $control_ref->[1];
 
     $control->ClearAll;
 
@@ -1379,25 +1388,28 @@ sub control_write_t {
 
 =head2 control_write_d
 
-Write to a Wx::DateEntry widget.  If I<$value> not true, than only delete.
+Write to a Wx::DateEntry widget.  If I<$value> not true, than clear.
 
 =cut
 
 sub control_write_d {
-    my ( $self, $ctrl_ref, $value, $state, $date_format ) = @_;
+    my ( $self, $control_ref, $value, $state, $format ) = @_;
 
-    return unless $value;
+    my $control = $control_ref->[1];
 
-    my $control = $ctrl_ref->[1];
+    my ( $y, $m, $d, $dt );
+    if ($value) {
+        ( $y, $m, $d )
+            = Tpda3::Utils->dateentry_parse_date( $format, $value );
 
-    my ( $y, $m, $d )
-    = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
+        return unless ($y and $m and $d);
 
-    return unless ($y and $m and $d);
-
-    my $dt = Wx::DateTime->newFromDMY($d, $m, $y);
-
-    $control->SetValue($dt) if $dt->isa('Wx::DateTime');
+        $dt = Wx::DateTime->newFromDMY($d, $m - 1, $y);
+        $control->SetValue($dt) if $dt->isa('Wx::DateTime');
+    }
+    else {
+        $control->SetValue( Wx::DateTime->new() ); # clear the date
+    }
 
     return;
 }
@@ -1409,31 +1421,11 @@ Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $control, $field, $value ) = @_;
+    my ( $self, $control_ref, $value ) = @_;
 
-    if ($value) {
-        $control->setSelected( $value, -type => 'value' );
-    }
-    else {
-        ${ $control->{$field}[0] } = q{};    # Empty
-    }
+    my $control = $control_ref->[1];
 
-    return;
-}
-
-=head2 control_write_l
-
-Write to a Wx::MatchingBE widget.  Warning: cant write an empty value,
-must test with a key -> value pair like 'not set' => '?empty?'.
-
-=cut
-
-sub control_write_l {
-    my ( $self, $control, $field, $value ) = @_;
-
-    return unless defined $value;    # Empty
-
-    $control->set_selected_value($value);
+    $control->set_selected($value);
 
     return;
 }
@@ -1485,22 +1477,8 @@ sub control_read_d {
     if($datetime->IsEqualTo($invalid)) {
         return q{};                          # empty
     } else {
-        my $value = $datetime->FormatISODate();
-        return $value;
+        return $datetime->FormatISODate();
     }
-
-    # ( $Wx::VERSION > 0.98 )
-    #     ? sub {
-    #     $textctrl->SetValue( ( $_[1]->GetDate->IsValid )
-    #         ? $_[1]->GetDate->FormatDate
-    #         : 'INVALID DATE' );
-    #     }
-    #     : sub {
-    #     my $invalid = Wx::DateTime->new();
-    #     $textctrl->SetValue( ( $_[1]->GetDate->IsEqualTo($invalid) )
-    #         ? 'INVALID DATE'
-    #         : $_[1]->GetDate->FormatDate );
-    #     }
 }
 
 =head2 control_read_m
@@ -1510,23 +1488,10 @@ Read contents of a Wx::ComboBox control.
 =cut
 
 sub control_read_m {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    return;
+    return $control_ref->[1]->get_selected();
 }
-
-=head2 control_read_l
-
-Read contents of a Wx::MatchingBE control.
-
-=cut
-
-sub control_read_l {
-    my ( $self, $control ) = @_;
-
-    return;
-}
-
 
 =head2 configure_controls
 
@@ -1587,6 +1552,8 @@ None known.
 Please report any bugs or feature requests to the author.
 
 =head1 ACKNOWLEDGEMENTS
+
+Mark Dootson for clarification regarding the DatePicker controll.
 
 =head1 LICENSE AND COPYRIGHT
 

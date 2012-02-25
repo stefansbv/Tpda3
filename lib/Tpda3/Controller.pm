@@ -2020,8 +2020,8 @@ sub screen_module_load {
     # Update window geometry
     $self->set_geometry();
 
-    # Load lists into JComboBox widgets (JBrowseEntry not supported)
-    $self->screen_init();
+    # Load lists into ComboBox type widgets
+    $self->screen_load_lists();
 
     return 1;                       # to make ok from Test::More happy
 }
@@ -2133,8 +2133,8 @@ sub screen_module_detail_load {
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
 
-    # Load lists into JComboBox widgets (JBrowseEntry not supported)
-    $self->screen_init();
+    # Load lists into ComboBox like widgets
+    $self->screen_load_lists();
 
     $self->_view->set_status( '', 'ms' );
 
@@ -2217,7 +2217,7 @@ sub set_geometry {
     return;
 }
 
-=head2 screen_init
+=head2 screen_load_lists
 
 Load options in Listbox like widgets - JCombobox support only.
 
@@ -2237,11 +2237,12 @@ Data source for list widgets (JCombobox)
 
 =cut
 
-sub screen_init {
+sub screen_load_lists {
     my $self = shift;
 
     # Entry objects hash
     my $ctrl_ref = $self->scrobj()->get_controls();
+
     return unless scalar keys %{$ctrl_ref};
 
     foreach my $field ( keys %{ $self->scrcfg()->main_table_columns } ) {
@@ -2251,31 +2252,24 @@ sub screen_init {
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{rw};
 
-        next unless $ctrl_ref->{$field}[0];    # Undefined widget variable
-
         my $para = $self->scrcfg()->{lists_ds}{$field};
 
         next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
-        my $cod_a_ref = $self->{_model}->get_codes( $field, $para, $ctrltype );
+        my $choices = $self->{_model}->get_codes( $field, $para, $ctrltype );
 
         if ( $ctrltype eq 'm' ) {
-
-            # JComboBox
             if ( $ctrl_ref->{$field}[1] ) {
-                $ctrl_ref->{$field}[1]->removeAllItems();
-                $ctrl_ref->{$field}[1]->configure( -choices => $cod_a_ref );
+                my $control = $ctrl_ref->{$field}[1];
+                $self->_view->list_control_choices($control, $choices);
+            }
+            else {
+                print "EE: config error for '$field'\n";
             }
         }
-        elsif ( $ctrltype eq 'l' ) {
-
-            # MatchingBE
-            if ( $ctrl_ref->{$field}[1] ) {
-                $ctrl_ref->{$field}[1]->configure(
-                    -labels_and_values => $cod_a_ref,
-                );
-            }
+        else {
+            print "EE: No '$ctrltype' ctrl type for writing '$field'!\n";
         }
     }
 
@@ -2547,18 +2541,14 @@ sub record_find_execute {
 
     my $ary_ref = $self->_model->query_records_find($params);
 
-    return unless ref $ary_ref eq 'ARRAY';
+    return unless defined $ary_ref->[0];     # test if AoA ?
 
     $self->_view->list_init();
     my $record_count = $self->_view->list_populate($ary_ref);
-    if ( $record_count > 0 ) {
-        $self->_view->list_raise();
-    }
+    $self->_view->list_raise() if $record_count > 0;
 
     # Set mode to sele if found
-    if ( $record_count > 0 ) {
-        $self->set_app_mode('sele');
-    }
+    $self->set_app_mode('sele') if $record_count > 0;
 
     return;
 }
@@ -2825,7 +2815,7 @@ sub screen_read {
 
 =head2 control_read_e
 
-Read contents of a Tk::Entry control.
+Read contents of a Entry control.
 
 =cut
 
@@ -2842,13 +2832,13 @@ sub control_read_e {
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (e): $field = $value\n";
+        print "Screen (e): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-            # print "Screen (e): $field = undef\n";
+            print "Screen (e): $field = undef\n";
         }
     }
 
@@ -2857,7 +2847,7 @@ sub control_read_e {
 
 =head2 control_read_t
 
-Read contents of a Tk::Text control.
+Read contents of a Text control.
 
 =cut
 
@@ -2874,13 +2864,13 @@ sub control_read_t {
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (t): $field = $value\n";
+        print "Screen (t): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-            # print "Screen (t): $field = undef\n";
+            print "Screen (t): $field = undef\n";
         }
     }
 
@@ -2889,7 +2879,7 @@ sub control_read_t {
 
 =head2 control_read_d
 
-Read contents of a Tk::DateEntry control.
+Read contents of a DateEntry control.
 
 =cut
 
@@ -2908,13 +2898,13 @@ sub control_read_d {
         # Delete '\n' from end
         $value =~ s/\n$//mg;    # m=multiline
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (d): $field = $value\n";
+        print "Screen (d): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-            # print "Screen (d): $field = undef\n";
+            print "Screen (d): $field = undef\n";
         }
     }
 
@@ -2923,60 +2913,27 @@ sub control_read_d {
 
 =head2 control_read_m
 
-Read contents of a Tk::JComboBox control.
+Read selected value of a ComboBox control.
 
 =cut
 
 sub control_read_m {
     my ( $self, $field ) = @_;
 
-    my $control = $self->scrobj()->get_controls($field)->[0];
-
-    my $value = $self->_view->control_read_m($control);
+    my $control = $self->scrobj()->get_controls($field);
+    my $value   = $self->_view->control_read_m($control) || q{};
 
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
-        # Delete '\n' from end
-        $value =~ s/\n$//mg;                    # m=multiline
+        $value =~ s/\n$//mg;
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (m): $field = $value\n";
+        print "Screen (m): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = undef;
-            # print "Screen (m): $field = undef\n";
-        }
-    }
-
-    return;
-}
-
-=head2 control_read_l
-
-Read contents of a Tk::MatchingBE control.
-
-=cut
-
-sub control_read_l {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    my $value = $self->_view->control_read_l($control);
-
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-        # Delete '\n' from end
-        $value =~ s/\n$//mg;    # m=multiline
-        $self->{_scrdata}{$field} = $value;
-        # print "Screen (l): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = undef;
-            # print "Screen (l): $field = undef\n";
+            print "Screen (m): $field = undef\n";
         }
     }
 
@@ -2985,7 +2942,7 @@ sub control_read_l {
 
 =head2 control_read_c
 
-Read state of a Checkbox.
+Read state of a CheckBox control.
 
 =cut
 
@@ -2998,13 +2955,13 @@ sub control_read_c {
 
     if ( $value == 1 ) {
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (c): $field = $value\n";
+        print "Screen (c): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{$field} = $value;
-            # print "Screen (c): $field = undef\n";
+            print "Screen (c): $field = undef\n";
         }
     }
 
@@ -3027,13 +2984,13 @@ sub control_read_r {
     # Add value if not empty
     if ( $value =~ /\S+/ ) {
         $self->{_scrdata}{$field} = $value;
-        # print "Screen (r): $field = $value\n";
+        print "Screen (r): $field = $value\n";
     }
     else {
         # If update(=edit) status, add NULL value
         if ( $self->_model->is_mode('edit') ) {
             $self->{_scrdata}{"$field:r"} = undef;
-            # print "Screen (r): $field = undef\n";
+            print "Screen (r): $field = undef\n";
         }
     }
 
@@ -3059,6 +3016,9 @@ sub screen_write {
     return unless scalar keys %{$ctrl_ref};    # no controls?
 
     my $cfg_ref = $self->scrcfg($page);
+
+    # Get configured date style, default is ISO
+    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
 
     # my $cfgdeps = $self->scrcfg($page)->dependencies;
 
@@ -3092,7 +3052,7 @@ sub screen_write {
             }
         }
 
-        $self->ctrl_write_to($field, $value, $state);
+        $self->ctrl_write_to($field, $value, $state, $date_format);
     }
 
     return;
@@ -3105,13 +3065,14 @@ Run the appropriate sub according to control (entry widget) type.
 =cut
 
 sub ctrl_write_to {
-    my ($self, $field, $value, $state) = @_;
+    my ($self, $field, $value, $state, $date_format) = @_;
 
     my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
 
     my $sub_name = qq{control_write_$ctrltype};
-    if ( $self->can($sub_name) ) {
-        $self->$sub_name($field, $value, $state);
+    if ( $self->_view->can($sub_name) ) {
+        my $control_ref = $self->scrobj()->get_controls($field);
+        $self->_view->$sub_name($control_ref, $value, $state, $date_format);
     }
     else {
         print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
@@ -3334,138 +3295,6 @@ sub format_as_number {
     }
 
     return $value;
-}
-
-=head2 control_write_e
-
-Write to a Text widget.  If I<$value> not true, than only delete.
-
-=cut
-
-sub control_write_e {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    $self->_view->control_write_e($control, $value, $state);
-
-    return;
-}
-
-=head2 control_write_t
-
-Write to a multiline Text widget.  If I<$value> not true, than only
-delete.
-
-=cut
-
-sub control_write_t {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    $self->_view->control_write_t($control, $value, $state);
-
-    return;
-}
-
-=head2 control_write_d
-
-Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
-
-=cut
-
-sub control_write_d {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field);
-
-    # Get configured date style and format accordingly
-    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
-
-    $self->_view->control_write_d( $control, $value, $state, $date_format );
-
-    return;
-}
-
-=head2 control_write_m
-
-Write to a Tk::JComboBox widget.  If I<$value> not true, than only
-delete.
-
-=cut
-
-sub control_write_m {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field);
-
-    $self->_view->control_write_m($control, $value, $state);
-
-    return;
-}
-
-=head2 control_write_l
-
-Write to a Tk::MatchingBE widget.  Warning: cant write an empty value,
-must test with a key -> value pair like 'not set' => '?empty?'.
-
-=cut
-
-sub control_write_l {
-    my ( $self, $field, $value, $state ) = @_;
-
-    return unless defined $value;    # Empty
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    $self->_view->control_write_l($control, $value, $state);
-
-    return;
-}
-
-=head2 control_write_c
-
-Write to a Tk::Checkbox widget.
-
-=cut
-
-sub control_write_c {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    $self->_view->control_write_c($control, $value, $state);
-
-    # Execute method bound to radiobutton if defined in screen.
-    # Name must be: 'toggle_' + 'field_name'.
-    my $sub_name = "toggle_$field";
-    if ( $self->scrobj()->can($sub_name) ) {
-        $self->scrobj()->$sub_name($value);
-    }
-
-    return;
-}
-
-=head2 control_write_r
-
-Write to a Tk::RadiobuttonGroup widget.
-
-=cut
-
-sub control_write_r {
-    my ( $self, $field, $value, $state ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field);
-
-    # Execute method bound to radiobutton if defined in screen.
-    # Name must be: 'toggle_' + 'field_name'.
-    my $sub_name = "toggle_$field";
-    if ( $self->scrobj()->can($sub_name) ) {
-        $self->scrobj()->$sub_name($value);
-    }
-
-    return;
 }
 
 =head2 control_states
