@@ -2813,6 +2813,32 @@ sub screen_read {
     return;
 }
 
+=head2 clean_and_save_value
+
+Trim value and save to global data structure.
+
+=cut
+
+sub clean_and_save_value {
+    my ($self, $field, $value) = @_;
+
+    # Add value if not empty
+    if ( $value =~ /\S+/ ) {
+
+        # Trim spaces and '\n' from the end
+        $value = Tpda3::Utils->trim($value);
+        $self->{_scrdata}{$field} = $value;
+    }
+    else {
+        # If update(=edit) status, add NULL value
+        if ( $self->_model->is_mode('edit') ) {
+            $self->{_scrdata}{$field} = undef;
+        }
+    }
+
+    return;
+}
+
 =head2 control_read_e
 
 Read contents of a Entry control.
@@ -2826,21 +2852,7 @@ sub control_read_e {
 
     my $value = $self->_view->control_read_e($control);
 
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-
-        # Trim spaces and '\n' from the end
-        $value = Tpda3::Utils->trim($value);
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (e): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = undef;
-            print "Screen (e): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -2858,21 +2870,7 @@ sub control_read_t {
 
     my $value = $self->_view->control_read_t($control);
 
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-
-        # Trim spaces and '\n' from the end
-        $value = Tpda3::Utils->trim($value);
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (t): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = undef;
-            print "Screen (t): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -2893,20 +2891,7 @@ sub control_read_d {
 
     my $value = $self->_view->control_read_d($control, $date_format);
 
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-        # Delete '\n' from end
-        $value =~ s/\n$//mg;    # m=multiline
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (d): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = undef;
-            print "Screen (d): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -2923,19 +2908,7 @@ sub control_read_m {
     my $control = $self->scrobj()->get_controls($field);
     my $value   = $self->_view->control_read_m($control) || q{};
 
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-        $value =~ s/\n$//mg;
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (m): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = undef;
-            print "Screen (m): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -2949,21 +2922,11 @@ Read state of a CheckBox control.
 sub control_read_c {
     my ( $self, $field ) = @_;
 
-    my $control = $self->scrobj()->get_controls($field)->[0];
+    my $control = $self->scrobj()->get_controls($field);
 
     my $value = $self->_view->control_read_c($control);
 
-    if ( $value == 1 ) {
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (c): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{$field} = $value;
-            print "Screen (c): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -2981,18 +2944,7 @@ sub control_read_r {
 
     my $value = $self->_view->control_read_r($control);
 
-    # Add value if not empty
-    if ( $value =~ /\S+/ ) {
-        $self->{_scrdata}{$field} = $value;
-        print "Screen (r): $field = $value\n";
-    }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
-            $self->{_scrdata}{"$field:r"} = undef;
-            print "Screen (r): $field = undef\n";
-        }
-    }
+    $self->clean_and_save_value($field, $value);
 
     return;
 }
