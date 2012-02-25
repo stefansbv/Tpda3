@@ -1482,11 +1482,9 @@ Read contents of a Tk::Entry control.
 =cut
 
 sub control_read_e {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    my $value = $control->get;
-
-    return $value;
+    return $control_ref->[1]->get;
 }
 
 =head2 control_read_t
@@ -1496,11 +1494,9 @@ Read contents of a Tk::Text control.
 =cut
 
 sub control_read_t {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    my $value = $control->get( '0.0', 'end' );
-
-    return $value;
+    return $control_ref->[1]->get( '0.0', 'end' );
 }
 
 =head2 control_read_d
@@ -1510,9 +1506,9 @@ Read contents of a Tk::DateEntry control.
 =cut
 
 sub control_read_d {
-    my ( $self, $ctrl_ref, $date_format ) = @_;
+    my ( $self, $control_ref, $date_format ) = @_;
 
-    my $control = $ctrl_ref->[0];
+    my $control = $control_ref->[0];
 
     # Value from widget variable or the empty string
     my $value = ${$control} || q{};

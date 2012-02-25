@@ -2781,7 +2781,9 @@ sub screen_read {
 
     return unless scalar keys %{$ctrl_ref};
 
-    # Scan read from controls
+    # Get configured date style, default is ISO
+    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
+
     foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
         my $fld_cfg = $scrcfg->main_table_column($field);
 
@@ -2795,18 +2797,37 @@ sub screen_read {
             }
         }
 
-        # Call the appropriate method according to control (widget) type
-        my $sub_name = "control_read_$ctrltype";
-        if ( $self->can($sub_name) ) {
-            unless ( $ctrl_ref->{$field}[1] ) {
-                print "EE: Undefined field '$field', check configuration!\n";
-                next;
-            }
-            $self->$sub_name($field);
-        }
-        else {
-            print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
-        }
+        $self->ctrl_read_from($field, $date_format);
+    }
+
+    return;
+}
+
+=head2 ctrl_read_from
+
+Run the appropriate sub according to control (entry widget) type to
+read from the screen controls.
+
+=cut
+
+sub ctrl_read_from {
+    my ($self, $field, $date_format) = @_;
+
+    my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
+
+    my $sub_name = "control_read_$ctrltype";
+    if ( $self->_view->can($sub_name) ) {
+        my $control_ref = $self->scrobj()->get_controls($field);
+        # unless ( $control_ref->{$field}[1] ) {
+        #     print "EE: Undefined field '$field', check configuration!\n";
+        # }
+        # else {
+        my $value = $self->_view->$sub_name($control_ref, $date_format);
+        $self->clean_and_save_value($field, $value);
+        # }
+    }
+    else {
+        print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
     }
 
     return;
@@ -2856,116 +2877,6 @@ sub clean_and_save_value {
             $self->{_scrdata}{$field} = undef;
         }
     }
-
-    return;
-}
-
-=head2 control_read_e
-
-Read contents of a Entry control.
-
-=cut
-
-sub control_read_e {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    my $value = $self->_view->control_read_e($control);
-
-    $self->clean_and_save_value($field, $value);
-
-    return;
-}
-
-=head2 control_read_t
-
-Read contents of a Text control.
-
-=cut
-
-sub control_read_t {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[1];
-
-    my $value = $self->_view->control_read_t($control);
-
-    $self->clean_and_save_value($field, $value);
-
-    return;
-}
-
-=head2 control_read_d
-
-Read contents of a DateEntry control.
-
-=cut
-
-sub control_read_d {
-    my ( $self, $field ) = @_;
-
-    # Get configured date style and format accordingly
-    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
-
-    my $control = $self->scrobj()->get_controls($field);
-
-    my $value = $self->_view->control_read_d($control, $date_format);
-
-    $self->clean_and_save_value($field, $value);
-
-    return;
-}
-
-=head2 control_read_m
-
-Read selected value of a ComboBox control.
-
-=cut
-
-sub control_read_m {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field);
-    my $value   = $self->_view->control_read_m($control) || q{};
-
-    $self->clean_and_save_value($field, $value);
-
-    return;
-}
-
-=head2 control_read_c
-
-Read state of a CheckBox control.
-
-=cut
-
-sub control_read_c {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field);
-
-    my $value = $self->_view->control_read_c($control);
-
-    $self->clean_and_save_value($field, $value);
-
-    return;
-}
-
-=head2 control_read_r
-
-Read RadiobuttonGroup.
-
-=cut
-
-sub control_read_r {
-    my ( $self, $field ) = @_;
-
-    my $control = $self->scrobj()->get_controls($field)->[0];
-
-    my $value = $self->_view->control_read_r($control);
-
-    $self->clean_and_save_value($field, $value);
 
     return;
 }
@@ -3033,7 +2944,8 @@ sub screen_write {
 
 =head2 ctrl_write_to
 
-Run the appropriate sub according to control (entry widget) type.
+Run the appropriate sub according to control (entry widget) type to
+write to screen controls.
 
 =cut
 
@@ -3053,6 +2965,12 @@ sub ctrl_write_to {
 
     return;
 }
+
+=head2 make_empty_record
+
+Make empty record, used for clearing the screen.
+
+=cut
 
 sub make_empty_record {
     my $self = shift;

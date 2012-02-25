@@ -1439,9 +1439,9 @@ Read contents of a Wx::TextCtrl control.
 =cut
 
 sub control_read_e {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    my $value = $control->GetValue;
+    my $value = $control_ref->[1]->GetValue;
 
     return $value;
 }
@@ -1453,9 +1453,9 @@ Read contents of a Wx::Text control.
 =cut
 
 sub control_read_t {
-    my ( $self, $control ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    my $value = $control->GetValue;
+    my $value = $control_ref->[1]->GetValue;
 
     return $value;
 }
@@ -1467,11 +1467,9 @@ Read contents of a Wx::DateEntry control.
 =cut
 
 sub control_read_d {
-    my ( $self, $ctrl_ref ) = @_;
+    my ( $self, $control_ref ) = @_;
 
-    my $control = $ctrl_ref->[1];
-
-    my $datetime = $control->GetValue();
+    my $datetime = $control_ref->[1]->GetValue();
     my $invalid  = Wx::DateTime->new();
 
     if($datetime->IsEqualTo($invalid)) {
