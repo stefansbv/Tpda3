@@ -34,9 +34,9 @@ Constructor method.
 =cut
 
 sub new {
-    my ( $self, $gui ) = @_;
+    my ( $class, $gui ) = @_;
 
-    $self = $self->SUPER::new(
+    my $self = $class->SUPER::new(
         $gui, -1,
         [ -1, -1 ],
         [ -1, -1 ],
