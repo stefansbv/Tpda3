@@ -1649,7 +1649,7 @@ content in the I<Screen> and change the background to the default
 color as specified in the configuration.
 
 Create an empty record and write it to the controls. If default values
-are defined for some fileds, then fill in that value.
+are defined for some fields, then fill in that value.
 
 =cut
 
@@ -2736,7 +2736,7 @@ sub get_alternate_data_record {
 
 =head2 screen_read
 
-Read screen controls (widgets) and save in a Perl data stucture.
+Read screen controls (widgets) and save in a Perl data structure.
 
 Returns different data for different application modes.
 
@@ -2748,11 +2748,10 @@ Read the fields that have the configured I<rw> attribute set to I<rw>
 and I<ro> ignoring the fields with I<r>, but also ignoring the fields
 with no values.
 
-
 =item I<Edit> mode
 
 Read the fields that have the configured I<rw> attribute set to I<rw>,
-ignoring the rest (I<r> and I<ro>), but incuding the fields with no
+ignoring the rest (I<r> and I<ro>), but including the fields with no
 values as I<undef> for the value.
 
 =item I<Add>  mode
@@ -2763,9 +2762,9 @@ no values.
 
 =back
 
-Option to read all fields regardles of the configured I<rw> attribute.
+Option to read all fields regardless of the configured I<rw> attribute.
 
-TODO: Find a better attribute name than I<rw>.
+TODO: Find a better attribute name than I<rw>?
 
 =cut
 
@@ -2817,13 +2816,35 @@ sub screen_read {
 
 Trim value and save to global data structure.
 
+If value is not empty or 0 add it to the data structure. Else add it
+only if in edit mode.
+
+There are two according to the application mode:
+
+=over
+
+=item find and add mode
+
+When in L<find> mode Tpda3 builds a query using the data entered by
+the user in the controls.  Same for L<add> mode when the SQL INSERT is
+built also using the data entered by the user, ignoring the empty
+controls or the controls that have default value equal with 0 (like
+the CheckBox control).
+
+=item edit mode
+
+When in L<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
+because some of them may be empty, interpreted as NULL values.
+
+=back
+
 =cut
 
 sub clean_and_save_value {
     my ($self, $field, $value) = @_;
 
     # Add value if not empty
-    if ( $value =~ /\S+/ ) {
+    if ( $value =~ m{\S+} and $value !~ m{^0$} ) {
 
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);
@@ -3232,7 +3253,7 @@ sub controls_state_set {
 
 =head2 formated
 
-Return trimed and formated value if places is greater than 0.
+Return trimmed and formated value if places is greater than 0.
 
 TODO: Should make $value = 0, than format as number?
 
@@ -3289,7 +3310,7 @@ sub record_load_new {
 
 =head2 record_reload
 
-Reload the curent record.
+Reload the current record.
 
 Reads the contents of the (primary) key field, retrieves the record from
 the database table and loads the record data in the controls.
@@ -3739,7 +3760,7 @@ sub list_update_add {
 
 =head2 list_update_remove
 
-Compare the selected row in the I<List> with given Pk and optionaly Fk
+Compare the selected row in the I<List> with given Pk and optionally Fk
 values and remove it.
 
 =cut
@@ -4439,7 +4460,7 @@ sub tmshr_compute_value {
 
 =head2 tmshr_get_function
 
-Make a reusable anonimous function to compute a field's value, using
+Make a reusable anonymous function to compute a field's value, using
 the definition from the screen configuration and the Math::Symbolic
 module.
 
@@ -4447,7 +4468,7 @@ It's intended use is for simple functions, like in this example:
 
   datasource => '=quantityordered*priceeach'
 
-Suported operations: arithmetic (-+/*).
+Supported operations: arithmetic (-+/*).
 
 =cut
 
