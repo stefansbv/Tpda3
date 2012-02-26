@@ -3,10 +3,7 @@ package Tpda3::Wx::ComboBox;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
-use Wx;
-use Wx qw (wxNOT_FOUND);
+use Wx qw (wxCB_SORT wxTE_PROCESS_ENTER wxNOT_FOUND);
 use base qw{Wx::ComboBox};
 use Wx::Event qw(EVT_SET_FOCUS EVT_CHAR EVT_KEY_DOWN EVT_KEY_UP);
 
@@ -36,9 +33,17 @@ Constructor method.
 =cut
 
 sub new {
-    my $class = shift;
+    my ( $class, $parent, $id, $pos, $size, $style ) = @_;
 
-    my $self = $class->SUPER::new( @_ );
+    my $self = $class->SUPER::new(
+        $parent,
+        $id || -1,
+        q{},
+        $pos  || [ -1, -1 ],
+        $size || [ -1, -1 ],
+        [],
+        ( $style || 0 ) | wxCB_SORT | wxTE_PROCESS_ENTER
+    );
 
     $self->{lookup} = {};
 
@@ -101,6 +106,11 @@ Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 None known.
 
 Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGEMENTS
+
+Default paramaters handling inspired from Wx::Perl::ListView,
+Copyright (c) 2007 Mattia Barbon
 
 =head1 LICENSE AND COPYRIGHT
 
