@@ -2865,7 +2865,7 @@ sub clean_and_save_value {
     my ($self, $field, $value) = @_;
 
     # Add value if not empty
-    if ( $value =~ m{\S+} and $value !~ m{^0$} ) {
+    if ( defined($value) and $value =~ m{\S+} and $value !~ m{^0$} ) {
 
         # Trim spaces and '\n' from the end
         $value = Tpda3::Utils->trim($value);

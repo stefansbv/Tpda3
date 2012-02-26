@@ -1400,7 +1400,7 @@ sub control_write_d {
     my ( $y, $m, $d, $dt );
     if ($value) {
         ( $y, $m, $d )
-            = Tpda3::Utils->dateentry_parse_date( $format, $value );
+            = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
 
         return unless ($y and $m and $d);
 
@@ -1501,11 +1501,11 @@ sub configure_controls {
     my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
 
     $state = $state eq 'normal' ? 1 : 0;
-    if ($fld_cfg->{ctrltype} eq 'd') {
-        $control->Enable($state);
+    if ($fld_cfg->{ctrltype} eq 'e' or $fld_cfg->{ctrltype} eq 't') {
+        $control->SetEditable($state);
     }
     else {
-        $control->SetEditable($state);
+        $control->Enable($state);
     }
     $control->SetBackgroundColour( Wx::Colour->new($bg_color) )
         if $bg_color;

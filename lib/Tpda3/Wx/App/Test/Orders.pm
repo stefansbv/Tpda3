@@ -100,14 +100,7 @@ sub run_screen {
 
     #-- statuscode
     my $lstatuscode = Wx::StaticText->new( $rec_page, -1, 'Status' );
-    my $bstatuscode = Tpda3::Wx::ComboBox->new(
-        $rec_page,
-        -1,
-        q{},
-        [-1, -1], [-1, -1],
-        [],
-        wxCB_SORT | wxTE_PROCESS_ENTER,
-    );
+    my $bstatuscode = Tpda3::Wx::ComboBox->new( $rec_page );
 
     #--- Layout
 
