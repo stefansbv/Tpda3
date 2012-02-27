@@ -1061,26 +1061,26 @@ sub list_item_clear_all {
     $self->get_recordlist->DeleteAllItems;
 }
 
-=head2 list_remove_item
+# =head2 list_remove_item
 
-Remove item from list control and select the first item
+# Remove item from list control and select the first item
 
-=cut
+# =cut
 
-sub list_remove_item {
-    my $self = shift;
+# sub list_remove_item {
+#     my $self = shift;
 
-    my $sel_item = $self->get_list_selected_index();
-    my $file_fqn = $self->get_list_data($sel_item);
+#     my $sel_item = $self->get_list_selected_index();
+#     my $file_fqn = $self->get_list_data($sel_item);
 
-    # Remove from list
-    $self->list_item_clear($sel_item);
+#     # Remove from list
+#     $self->list_item_clear($sel_item);
 
-    # Set item 0 selected
-    $self->list_item_select_first();
+#     # Set item 0 selected
+#     $self->list_item_select_first();
 
-    return $file_fqn;
-}
+#     return $file_fqn;
+# }
 
 =head2 list_init
 

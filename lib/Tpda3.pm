@@ -7,7 +7,6 @@ use 5.008009;
 use Log::Log4perl qw(get_logger);
 
 require Tpda3::Config;
-require Tpda3::Controller;
 
 =head1 NAME
 
@@ -15,11 +14,11 @@ Tpda3 - Tpda3 (Tiny Perl Database Application 3.
 
 =head1 VERSION
 
-Version 0.45_01
+Version 0.45
 
 =cut
 
-our $VERSION = '0.45_01';
+our $VERSION = '0.45';
 
 =head1 SYNOPSIS
 
@@ -101,61 +100,41 @@ wxPerl application instance.
 sub _init {
     my ( $self, $args ) = @_;
 
-    Tpda3::Config->instance($args);
+    my $cfg = Tpda3::Config->instance($args);
 
-    $self->{gui} = Tpda3::Controller->new();
+    # $self->{_log} = get_logger();
 
-    $self->{gui}->start();                   # stuff to run at start
+    my $widgetset = $cfg->application->{widgetset};
+
+    unless ($widgetset) {
+        print "Required configuration not found: 'widgetset'\n";
+        exit;
+    }
+
+    if ( $widgetset =~ m{wx}ix ) {
+        require Tpda3::Wx::Controller;
+        $self->{gui} = Tpda3::Wx::Controller->new();
+
+        # $self->{_log}->info('Using Wx ...');
+    }
+    elsif ( $widgetset =~ m{tk}ix ) {
+        require Tpda3::Tk::Controller;
+        $self->{gui} = Tpda3::Tk::Controller->new();
+
+        # $self->{_log}->info('Using Tk ...');
+    }
+    else {
+        warn "Unknown widget set!\n";
+
+        # $self->{_log}->debug('Unknown widget set!');
+
+        exit;
+    }
+
+    $self->{gui}->start();    # stuff to run at start
 
     return;
 }
-
-
-# =head2 _init
-
-# Initialize the configurations module and create the PerlTk or the
-# wxPerl application instance.
-
-# =cut
-
-# sub _init {
-#     my ( $self, $args ) = @_;
-
-#     my $cfg = Tpda3::Config->instance($args);
-
-#     # $self->{_log} = get_logger();
-
-#     my $widgetset = $cfg->application->{widgetset};
-
-#     unless ($widgetset) {
-#         print "Required configuration not found: 'widgetset'\n";
-#         exit;
-#     }
-
-#     if ( $widgetset =~ m{wx}ix ) {
-#         require Tpda3::Wx::Controller;
-#         $self->{gui} = Tpda3::Wx::Controller->new();
-
-#         # $self->{_log}->info('Using Wx ...');
-#     }
-#     elsif ( $widgetset =~ m{tk}ix ) {
-#         require Tpda3::Tk::Controller;
-#         $self->{gui} = Tpda3::Tk::Controller->new();
-
-#         # $self->{_log}->info('Using Tk ...');
-#     }
-#     else {
-#         warn "Unknown widget set!\n";
-
-#         # $self->{_log}->debug('Unknown widget set!');
-
-#         exit;
-#     }
-
-#     $self->{gui}->start();    # stuff to run at start
-
-#     return;
-# }
 
 =head2 run
 

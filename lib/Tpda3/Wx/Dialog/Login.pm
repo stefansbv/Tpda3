@@ -8,7 +8,7 @@ use Wx::Event qw(EVT_TEXT_ENTER);
 
 use base qw{Wx::Dialog};
 
-use Tpda3::Config;
+require Tpda3::Config;
 
 =head2 new
 
@@ -26,13 +26,13 @@ sub new {
     return $self;
 }
 
-=head2 login_dialog
+=head2 login
 
 Login dialog GUI.
 
 =cut
 
-sub login_dialog {
+sub login {
     my ( $class, $view ) = @_;
 
     my $dlg = $class->SUPER::new(
@@ -155,7 +155,17 @@ sub get_login {
     my $user = $self->{user_ctrl}->GetValue();
     my $pass = $self->{pass_ctrl}->GetValue();
 
-    return ( $user, $pass );
+    my $return_string = '';
+    if ( $user && $pass ) {
+        my $cfg = Tpda3::Config->instance();
+        $cfg->user($user);
+        $cfg->pass($pass);
+    }
+    else {
+        $return_string = 'else';
+    }
+
+    return $return_string;
 }
 
 =head1 AUTHOR

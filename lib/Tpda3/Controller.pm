@@ -114,35 +114,37 @@ Require the appropriate modules for the configured widget set.
 sub _init {
     my $self = shift;
 
-    $self->{widgetset} = $self->{_cfg}->application->{widgetset};
+    print '_init not implemented in ', __PACKAGE__, "\n";
 
-    my $view;
-    unless ( $self->{widgetset} ) {
-        print "Required configuration not found: 'widgetset'\n";
-        exit;
-    }
+    # $self->{widgetset} = $self->{_cfg}->application->{widgetset};
 
-    if ( $self->{widgetset} =~ m{wx}ix ) {
-        require Tpda3::Wx::App;
-        require Tpda3::Wx::View;
-        require Tpda3::Wx::Dialog::Login;
-        my $app = Tpda3::Wx::App->create($self->_model);
-        $self->{_app}  = $app;                  # an alias as for Wx ...
-        $self->{_view} = $app->{_view};
-    }
-    elsif ( $self->{widgetset} =~ m{tk}ix ) {
-        require Tpda3::Tk::View;
-        require Tpda3::Tk::Dialog::Login;
-        require Tpda3::Tk::Dialog::Help;
-        require Tpda3::Tk::Dialog::Repman;
-        $view = Tpda3::Tk::View->new($self->_model);
-        $self->{_app}  = $view;                  # an alias as for Wx ...
-        $self->{_view} = $view;
-    }
-    else {
-        print "Unknown widget set!: ", $self->{widgetset}, "\n";
-        exit;
-    }
+    # my $view;
+    # unless ( $self->{widgetset} ) {
+    #     print "Required configuration not found: 'widgetset'\n";
+    #     exit;
+    # }
+
+    # if ( $self->{widgetset} =~ m{wx}ix ) {
+    #     require Tpda3::Wx::App;
+    #     require Tpda3::Wx::View;
+    #     require Tpda3::Wx::Dialog::Login;
+    #     my $app = Tpda3::Wx::App->create($self->_model);
+    #     $self->{_app}  = $app;                  # an alias as for Wx ...
+    #     $self->{_view} = $app->{_view};
+    # }
+    # elsif ( $self->{widgetset} =~ m{tk}ix ) {
+    #     require Tpda3::Tk::View;
+    #     require Tpda3::Tk::Dialog::Login;
+    #     require Tpda3::Tk::Dialog::Help;
+    #     require Tpda3::Tk::Dialog::Repman;
+    #     $view = Tpda3::Tk::View->new($self->_model);
+    #     $self->{_app}  = $view;                  # an alias as for Wx ...
+    #     $self->{_view} = $view;
+    # }
+    # else {
+    #     print "Unknown widget set!: ", $self->{widgetset}, "\n";
+    #     exit;
+    # }
 
     return;
 }
@@ -198,10 +200,9 @@ Login dialog.
 sub login_dialog {
     my $self = shift;
 
-    require Tpda3::Tk::Dialog::Login;
-    my $pd = Tpda3::Tk::Dialog::Login->new;
+    print 'login_dialog not implemented in ', __PACKAGE__, "\n";
 
-    return $pd->login( $self->_view );
+    return;
 }
 
 =head2 message_error_dialog
@@ -591,74 +592,74 @@ sub _set_event_handlers {
         }
     );
 
-    return unless $self->{widgetset} =~ m{tk}ix; # from here is for Tk only
+    # return unless $self->{widgetset} =~ m{tk}ix; # from here is for Tk only
 
-    #-- Tk
+    # #-- Tk
 
-    #-- Make some key bindings
+    # #-- Make some key bindings
 
-    #-- Quit Ctrl-q
-    $self->_view->bind(
-        '<Control-q>' => sub {
-            return if !defined $self->ask_to_save;
-            $self->_view->on_quit;
-        }
-    );
+    # #-- Quit Ctrl-q
+    # $self->_view->bind(
+    #     '<Control-q>' => sub {
+    #         return if !defined $self->ask_to_save;
+    #         $self->_view->on_quit;
+    #     }
+    # );
 
-    #-- Reload - F5
-    $self->_view->bind(
-        '<F5>' => sub {
-            $self->_model->is_mode('edit')
-                ? $self->record_reload()
-                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
-        }
-    );
+    # #-- Reload - F5
+    # $self->_view->bind(
+    #     '<F5>' => sub {
+    #         $self->_model->is_mode('edit')
+    #             ? $self->record_reload()
+    #             : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+    #     }
+    # );
 
-    #-- Toggle find mode - F7
-    $self->_view->bind(
-        '<F7>' => sub {
+    # #-- Toggle find mode - F7
+    # $self->_view->bind(
+    #     '<F7>' => sub {
 
-            # From add mode forbid find mode
-            $self->toggle_mode_find()
-                if $self->{_rscrcls} and !$self->_model->is_mode('add');
-        }
-    );
+    #         # From add mode forbid find mode
+    #         $self->toggle_mode_find()
+    #             if $self->{_rscrcls} and !$self->_model->is_mode('add');
+    #     }
+    # );
 
-    #-- Execute find - F8
-    $self->_view->bind(
-        '<F8>' => sub {
-            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-                ? $self->record_find_execute
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-        }
-    );
+    # #-- Execute find - F8
+    # $self->_view->bind(
+    #     '<F8>' => sub {
+    #         ( $self->{_rscrcls} and $self->_model->is_mode('find') )
+    #             ? $self->record_find_execute
+    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+    #     }
+    # );
 
-    #-- Execute count - F9
-    $self->_view->bind(
-        '<F9>' => sub {
-            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-                ? $self->record_find_count
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-        }
-    );
-
-    return;
-}
-
-sub _set_event_handler_nb {
-    my ( $self, $page ) = @_;
-
-    if ($self->{widgetset} =~ m{tk}ix ) {
-        #-- TK
-        $self->_set_event_handler_nb_tk($page);
-    }
-    elsif ( $self->{widgetset} =~ m{wx}ix ) {
-        #-- Wx
-        $self->_set_event_handler_nb_wx($page);
-    }
+    # #-- Execute count - F9
+    # $self->_view->bind(
+    #     '<F9>' => sub {
+    #         ( $self->{_rscrcls} and $self->_model->is_mode('find') )
+    #             ? $self->record_find_count
+    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+    #     }
+    # );
 
     return;
 }
+
+# sub _set_event_handler_nb {
+#     my ( $self, $page ) = @_;
+
+#     if ($self->{widgetset} =~ m{tk}ix ) {
+#         #-- TK
+#         $self->_set_event_handler_nb_tk($page);
+#     }
+#     elsif ( $self->{widgetset} =~ m{wx}ix ) {
+#         #-- Wx
+#         $self->_set_event_handler_nb_wx($page);
+#     }
+
+#     return;
+# }
 
 =head2 _set_event_handler_nb_tk
 
@@ -674,47 +675,47 @@ success, for (now) obvious reasons.
 
 =cut
 
-sub _set_event_handler_nb_tk {
-    my ( $self, $page ) = @_;
+# sub _set_event_handler_nb_tk {
+#     my ( $self, $page ) = @_;
 
-    $self->_log->trace("Setup event handler on NoteBook for '$page'");
+#     $self->_log->trace("Setup event handler on NoteBook for '$page'");
 
-    #- NoteBook events
+#     #- NoteBook events
 
-    my $nb = $self->_view->get_notebook();
+#     my $nb = $self->_view->get_notebook();
 
-    $nb->pageconfigure(
-        $page,
-        -raisecmd => sub {
-            $self->_view->set_nb_current($page);
+#     $nb->pageconfigure(
+#         $page,
+#         -raisecmd => sub {
+#             $self->_view->set_nb_current($page);
 
-        #-- On page activate
+#         #-- On page activate
 
-        SWITCH: {
-                $page eq 'lst'
-                    && do { $self->on_page_lst_activate; last SWITCH; };
-                $page eq 'rec'
-                    && do { $self->on_page_rec_activate; last SWITCH; };
-                $page eq 'det'
-                    && do { $self->on_page_det_activate; last SWITCH; };
-                print "EE: \$page is not in (lst rec det)\n";
-            }
+#         SWITCH: {
+#                 $page eq 'lst'
+#                     && do { $self->on_page_lst_activate; last SWITCH; };
+#                 $page eq 'rec'
+#                     && do { $self->on_page_rec_activate; last SWITCH; };
+#                 $page eq 'det'
+#                     && do { $self->on_page_det_activate; last SWITCH; };
+#                 print "EE: \$page is not in (lst rec det)\n";
+#             }
 
-            # $self->_view->set_status( '', 'ms' );    # clear status message
-        },
-    );
+#             # $self->_view->set_status( '', 'ms' );    # clear status message
+#         },
+#     );
 
-    #- Enter on list item activates record page
-    $self->_view->get_recordlist()->bind(
-        '<Return>',
-        sub {
-            $self->_view->get_notebook->raise('rec');
-            Tk->break;
-        }
-    );
+#     #- Enter on list item activates record page
+#     $self->_view->get_recordlist()->bind(
+#         '<Return>',
+#         sub {
+#             $self->_view->get_notebook->raise('rec');
+#             Tk->break;
+#         }
+#     );
 
-    return;
-}
+#     return;
+# }
 
 =head2 _set_event_handler_nb_wx
 
@@ -724,7 +725,7 @@ required (selected from the applications menu) to load.
 
 =cut
 
-sub _set_event_handler_nb_wx {
+sub _set_event_handler_nb {
     my $self = shift;
 
     $self->_log->trace('Setup event handler on NoteBook');
@@ -1874,10 +1875,12 @@ Main application class name.
 sub application_class {
     my $self = shift;
 
-    my $app_name  = $self->_cfg->application->{module};
-    my $widgetset = $self->{widgetset};
+    print 'application_class not implemented in ', __PACKAGE__, "\n";
 
-    return "Tpda3::${widgetset}::App::${app_name}";
+    # my $app_name  = $self->_cfg->application->{module};
+    # my $widgetset = $self->{widgetset};
+
+    # return "Tpda3::${widgetset}::App::${app_name}";
 }
 
 =head2 screen_module_class
@@ -1889,19 +1892,21 @@ Return screen module class and file name.
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
 
-    my $widgetset = $self->{widgetset};
+    print 'screen_module_class not implemented in ', __PACKAGE__, "\n";
 
-    my $module_class;
-    if ($from_tools) {
-        $module_class = "Tpda3::${widgetset}::Tools::${module}";
-    }
-    else {
-        $module_class = $self->application_class . "::${module}";
-    }
+    # my $widgetset = $self->{widgetset};
 
-    ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
+    # my $module_class;
+    # if ($from_tools) {
+    #     $module_class = "Tpda3::${widgetset}::Tools::${module}";
+    # }
+    # else {
+    #     $module_class = $self->application_class . "::${module}";
+    # }
 
-    return ( $module_class, $module_file );
+    # ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
+
+    # return ( $module_class, $module_file );
 }
 
 =head2 screen_module_load
