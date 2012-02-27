@@ -39,8 +39,8 @@ our $VERSION = '0.34';
 
     use Tpda3::Wx::View;
 
-    $self->{_view} = TpdaQrt::Wx::View->new(
-        $model, undef, -1, 'TpdaQrt::wxPerl',
+    $self->{_view} = Tpda3::Wx::View->new(
+        $model, undef, -1, 'Tpda3::wxPerl',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDEFAULT_FRAME_STYLE,

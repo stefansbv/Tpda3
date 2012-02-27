@@ -86,67 +86,7 @@ sub new {
 
     bless $self, $class;
 
-    $self->_init;
-
-    my $loglevel_old = $self->_log->level();
-
-    $self->_log->trace('Controller new');
-
-    $self->_control_states_init();
-
-    $self->_set_event_handlers();
-
-    $self->_set_menus_enable('disabled');    # disable find mode menus
-
-    $self->_check_app_menus();               # disable if no screen
-
-    $self->_log->level($loglevel_old);     # restore default log level
-
     return $self;
-}
-
-=head2 _init
-
-Require the appropriate modules for the configured widget set.
-
-=cut
-
-sub _init {
-    my $self = shift;
-
-    print '_init not implemented in ', __PACKAGE__, "\n";
-
-    # $self->{widgetset} = $self->{_cfg}->application->{widgetset};
-
-    # my $view;
-    # unless ( $self->{widgetset} ) {
-    #     print "Required configuration not found: 'widgetset'\n";
-    #     exit;
-    # }
-
-    # if ( $self->{widgetset} =~ m{wx}ix ) {
-    #     require Tpda3::Wx::App;
-    #     require Tpda3::Wx::View;
-    #     require Tpda3::Wx::Dialog::Login;
-    #     my $app = Tpda3::Wx::App->create($self->_model);
-    #     $self->{_app}  = $app;                  # an alias as for Wx ...
-    #     $self->{_view} = $app->{_view};
-    # }
-    # elsif ( $self->{widgetset} =~ m{tk}ix ) {
-    #     require Tpda3::Tk::View;
-    #     require Tpda3::Tk::Dialog::Login;
-    #     require Tpda3::Tk::Dialog::Help;
-    #     require Tpda3::Tk::Dialog::Repman;
-    #     $view = Tpda3::Tk::View->new($self->_model);
-    #     $self->{_app}  = $view;                  # an alias as for Wx ...
-    #     $self->{_view} = $view;
-    # }
-    # else {
-    #     print "Unknown widget set!: ", $self->{widgetset}, "\n";
-    #     exit;
-    # }
-
-    return;
 }
 
 =head2 start
@@ -191,20 +131,6 @@ sub start {
     return;
 }
 
-=head2 login_dialog
-
-Login dialog.
-
-=cut
-
-sub login_dialog {
-    my $self = shift;
-
-    print 'login_dialog not implemented in ', __PACKAGE__, "\n";
-
-    return;
-}
-
 =head2 message_error_dialog
 
 Error message dialog.
@@ -223,131 +149,66 @@ sub message_error_dialog {
     return;
 }
 
-=head2 guide
+=head2 _model
 
-Quick help dialog.
+Return model instance variable
 
 =cut
 
-sub guide {
+sub _model {
     my $self = shift;
 
-    my $gui = $self->_view;
-
-    require Tpda3::Tk::Dialog::Help;
-    my $gd = Tpda3::Tk::Dialog::Help->new;
-
-    $gd->help_dialog($gui);
-
-    return;
+    return $self->{_model};
 }
 
-=head2 repman
+=head2 _view
 
-Report Manager application dialog.
+Return view instance variable
 
 =cut
 
-sub repman {
+sub _view {
     my $self = shift;
 
-    my $gui = $self->_view;
-
-    require Tpda3::Tk::Dialog::Repman;
-    my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
-
-    $gd->run_screen($gui);
-
-    return;
+    return $self->{_view};
 }
 
-=head2 about
+=head2 _cfg
 
-About application dialog.
+Return config instance variable
 
 =cut
 
-sub about {
+sub _cfg {
     my $self = shift;
 
-    my $gui = $self->_view;
+    return $self->{_cfg};
+}
 
-    # Create a dialog.
-    my $dbox = $gui->DialogBox(
-        -title   => 'Despre ... ',
-        -buttons => ['Close'],
-    );
+=head2 _log
 
-    # Windows has the annoying habit of setting the background color
-    # for the Text widget differently from the rest of the window.  So
-    # get the dialog box background color for later use.
-    my $bg = $dbox->cget('-background');
+Return log instance variable
 
-    # Insert a text widget to display the information.
-    my $text = $dbox->add(
-        'Text',
-        -height     => 15,
-        -width      => 35,
-        -background => $bg
-    );
+=cut
 
-    # Define some fonts.
-    my $textfont = $text->cget('-font')->Clone( -family => 'Helvetica' );
-    my $italicfont = $textfont->Clone( -slant => 'italic' );
-    $text->tag(
-        'configure', 'italic',
-        -font    => $italicfont,
-        -justify => 'center',
-    );
-    $text->tag(
-        'configure', 'normal',
-        -font    => $textfont,
-        -justify => 'center',
-    );
+sub _log {
+    my $self = shift;
 
-    # Framework version
-    my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
-    my $PROGRAM_VER  = $Tpda3::VERSION;
+    return $self->{_log};
+}
 
-    # Get application version
-    my $app_class = $self->application_class;
-    ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
-    my ( $APP_VER, $APP_NAME ) = ( '', '' );
-    eval {
-        require $app_file;
-        $app_class->import();
-    };
-    if ($@) {
-        print "WW: Can't load '$app_file'\n";
-        return;
-    }
-    else {
-        $APP_VER  = $app_class->VERSION;
-        $APP_NAME = $app_class->application_name();
-    }
+=head2 login_dialog
 
-    # Add the about text.
-    $text->insert( 'end', "\n" );
-    $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
-    $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
-    $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
-    $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
-    $text->insert( 'end', "stefansbv at users . sourceforge . net",
-        'italic' );
-    $text->insert( 'end', "\n\n" );
-    $text->insert( 'end', "$APP_NAME\n", 'normal' );
-    $text->insert( 'end', "Version " . $APP_VER . "\n", 'normal' );
-    $text->insert( 'end', "\n\n" );
-    $text->insert( 'end', "Perl " . $PERL_VERSION . "\n", 'normal' );
-    $text->insert( 'end', "Tk v" . $Tk::VERSION . "\n", 'normal' );
+Login dialog.
 
-    $text->configure( -state => 'disabled' );
-    $text->pack(
-        -expand => 1,
-        -fill   => 'both'
-    );
-    $dbox->Show();
+=cut
+
+sub login_dialog {
+    my $self = shift;
+
+    print 'login_dialog not implemented in ', __PACKAGE__, "\n";
+
+    return;
 }
 
 =head2 _set_event_handlers
@@ -592,169 +453,13 @@ sub _set_event_handlers {
         }
     );
 
-    # return unless $self->{widgetset} =~ m{tk}ix; # from here is for Tk only
-
-    # #-- Tk
-
-    # #-- Make some key bindings
-
-    # #-- Quit Ctrl-q
-    # $self->_view->bind(
-    #     '<Control-q>' => sub {
-    #         return if !defined $self->ask_to_save;
-    #         $self->_view->on_quit;
-    #     }
-    # );
-
-    # #-- Reload - F5
-    # $self->_view->bind(
-    #     '<F5>' => sub {
-    #         $self->_model->is_mode('edit')
-    #             ? $self->record_reload()
-    #             : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
-    #     }
-    # );
-
-    # #-- Toggle find mode - F7
-    # $self->_view->bind(
-    #     '<F7>' => sub {
-
-    #         # From add mode forbid find mode
-    #         $self->toggle_mode_find()
-    #             if $self->{_rscrcls} and !$self->_model->is_mode('add');
-    #     }
-    # );
-
-    # #-- Execute find - F8
-    # $self->_view->bind(
-    #     '<F8>' => sub {
-    #         ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-    #             ? $self->record_find_execute
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
-
-    # #-- Execute count - F9
-    # $self->_view->bind(
-    #     '<F9>' => sub {
-    #         ( $self->{_rscrcls} and $self->_model->is_mode('find') )
-    #             ? $self->record_find_count
-    #             : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
-    #     }
-    # );
-
     return;
 }
 
-# sub _set_event_handler_nb {
-#     my ( $self, $page ) = @_;
-
-#     if ($self->{widgetset} =~ m{tk}ix ) {
-#         #-- TK
-#         $self->_set_event_handler_nb_tk($page);
-#     }
-#     elsif ( $self->{widgetset} =~ m{wx}ix ) {
-#         #-- Wx
-#         $self->_set_event_handler_nb_wx($page);
-#     }
-
-#     return;
-# }
-
-=head2 _set_event_handler_nb_tk
-
-Separate event handler for NoteBook because must be initialized only
-after the NoteBook is (re)created and that happens when a new screen is
-required (selected from the applications menu) to load.
-
-Known limitation: Doesn't ask to save the record when the user changes
-from the I<Detail> page to the I<Record> page.
-
-Note: Tried to emulate L<on_page_leave>using I<raisecmd> but without
-success, for (now) obvious reasons.
-
-=cut
-
-# sub _set_event_handler_nb_tk {
-#     my ( $self, $page ) = @_;
-
-#     $self->_log->trace("Setup event handler on NoteBook for '$page'");
-
-#     #- NoteBook events
-
-#     my $nb = $self->_view->get_notebook();
-
-#     $nb->pageconfigure(
-#         $page,
-#         -raisecmd => sub {
-#             $self->_view->set_nb_current($page);
-
-#         #-- On page activate
-
-#         SWITCH: {
-#                 $page eq 'lst'
-#                     && do { $self->on_page_lst_activate; last SWITCH; };
-#                 $page eq 'rec'
-#                     && do { $self->on_page_rec_activate; last SWITCH; };
-#                 $page eq 'det'
-#                     && do { $self->on_page_det_activate; last SWITCH; };
-#                 print "EE: \$page is not in (lst rec det)\n";
-#             }
-
-#             # $self->_view->set_status( '', 'ms' );    # clear status message
-#         },
-#     );
-
-#     #- Enter on list item activates record page
-#     $self->_view->get_recordlist()->bind(
-#         '<Return>',
-#         sub {
-#             $self->_view->get_notebook->raise('rec');
-#             Tk->break;
-#         }
-#     );
-
-#     return;
-# }
-
-=head2 _set_event_handler_nb_wx
-
-Separate event handler for NoteBook because must be initialized only
-after the NoteBook is (re)created and that happens when a new screen is
-required (selected from the applications menu) to load.
-
-=cut
-
 sub _set_event_handler_nb {
-    my $self = shift;
+    my ( $self, $page ) = @_;
 
-    $self->_log->trace('Setup event handler on NoteBook');
-
-    #- NoteBook events
-
-    $self->_view->on_notebook_page_changed(
-        sub {
-            my $page = $self->_view->get_nb_current_page;
-            $self->_view->set_nb_current($page);
-
-          SWITCH: {
-                $page eq 'lst'
-                    && do { $self->on_page_lst_activate; last SWITCH; };
-                $page eq 'rec'
-                    && do { $self->on_page_rec_activate; last SWITCH; };
-                $page eq  'det'
-                    && do { $self->on_page_det_activate; last SWITCH; };
-                print "EE: \$page is not in (lst rec det)\n";
-            }
-        }
-    );
-
-    #-- Enter on list item activates record page
-    $self->_view->on_list_item_activated(
-        sub {
-            $self->_view->get_notebook->SetSelection(0);    # 'rec'
-        }
-    );
+    print '_init not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -1048,7 +753,7 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings_entry
 
-Creates widget bindings that use the L<Tpda3::Tk::Dialog::Search>
+Creates widget bindings that use the L<Tpda3::??::Dialog::Search>
 module to look-up value key translations from a table and put them in
 one or more widgets.
 
@@ -1774,54 +1479,6 @@ sub _control_states_init {
     return;
 }
 
-=head2 _model
-
-Return model instance variable
-
-=cut
-
-sub _model {
-    my $self = shift;
-
-    return $self->{_model};
-}
-
-=head2 _view
-
-Return view instance variable
-
-=cut
-
-sub _view {
-    my $self = shift;
-
-    return $self->{_view};
-}
-
-=head2 _cfg
-
-Return config instance variable
-
-=cut
-
-sub _cfg {
-    my $self = shift;
-
-    return $self->{_cfg};
-}
-
-=head2 _log
-
-Return log instance variable
-
-=cut
-
-sub _log {
-    my $self = shift;
-
-    return $self->{_log};
-}
-
 =head2 scrcfg
 
 Return screen configuration object for I<page>, or for the current
@@ -1877,10 +1534,7 @@ sub application_class {
 
     print 'application_class not implemented in ', __PACKAGE__, "\n";
 
-    # my $app_name  = $self->_cfg->application->{module};
-    # my $widgetset = $self->{widgetset};
-
-    # return "Tpda3::${widgetset}::App::${app_name}";
+    return;
 }
 
 =head2 screen_module_class
@@ -1894,19 +1548,7 @@ sub screen_module_class {
 
     print 'screen_module_class not implemented in ', __PACKAGE__, "\n";
 
-    # my $widgetset = $self->{widgetset};
-
-    # my $module_class;
-    # if ($from_tools) {
-    #     $module_class = "Tpda3::${widgetset}::Tools::${module}";
-    # }
-    # else {
-    #     $module_class = $self->application_class . "::${module}";
-    # }
-
-    # ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
-
-    # return ( $module_class, $module_file );
+    return;
 }
 
 =head2 screen_module_load

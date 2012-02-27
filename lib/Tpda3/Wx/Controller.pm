@@ -10,22 +10,7 @@ use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
     EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
     EVT_LIST_ITEM_ACTIVATED);
 
-# use Scalar::Util qw(blessed);
-# use List::MoreUtils qw{uniq};
-# use Class::Unload;
-# use Log::Log4perl qw(get_logger :levels);
-# use Storable qw (store retrieve);
-# use Math::Symbolic;
-# use Hash::Merge qw(merge);
-# use Tpda3::Utils;
-# use Tpda3::Config;
-# use Tpda3::Model;
-# use Tpda3::Lookup;
-# use File::Basename;
-# use File::Spec::Functions qw(catfile);
-
 require Tpda3::Wx::App;
-require Tpda3::Wx::View;
 require Tpda3::Wx::Dialog::Login;
 
 use base qw{Tpda3::Controller};
@@ -50,8 +35,37 @@ our $VERSION = '0.52';
 
     $controller->start();
 
-
 =head1 METHODS
+
+=head2 new
+
+Constructor method.
+
+=cut
+
+sub new {
+    my $class = shift;
+
+    my $self = $class->SUPER::new();
+
+    $self->_init;
+
+    my $loglevel_old = $self->_log->level();
+
+    $self->_log->trace('Controller new');
+
+    $self->_control_states_init();
+
+    $self->_set_event_handlers();
+
+    $self->_set_menus_enable('disabled');    # disable find mode menus
+
+    $self->_check_app_menus();               # disable if no screen
+
+    $self->_log->level($loglevel_old);     # restore default log level
+
+    return $self;
+}
 
 =head2 _init
 
@@ -65,49 +79,6 @@ sub _init {
     my $app = Tpda3::Wx::App->create($self->_model);
     $self->{_app}  = $app;                  # an alias as for Wx ...
     $self->{_view} = $app->{_view};
-
-    return;
-}
-
-=head2 start
-
-Try to connect first even if we have no user and pass. Retry and show
-login dialog, until connected unless fatal error message received from
-the RDBMS.
-
-=cut
-
-sub start {
-    my $self = shift;
-
-    $self->_log->trace('starting ...');
-
-    # Try until connected or canceled
-    my $return_string = '';
-    while ( !$self->_model->is_connected ) {
-        $self->_model->db_connect();
-        if ( my $message = $self->_model->get_exception ) {
-            my ($type, $mesg) = split /#/, $message, 2;
-            if ($type =~ m{fatal}imx) {
-                $self->message_error_dialog($mesg);
-                $return_string = 'shutdown';
-                last;
-            }
-        }
-
-        # Try with the login dialog if still not connected
-        if ( !$self->_model->is_connected ) {
-            $return_string = $self->login_dialog();
-            last if $return_string eq 'shutdown';
-        }
-    }
-
-    if ($return_string eq 'shutdown') {
-        print " shutting down ...\n";
-        $self->_view->on_quit;
-    }
-
-    $self->_log->trace('... started');
 
     return;
 }
@@ -372,45 +343,47 @@ sub about {
 #     return;
 # }
 
-# =head2 _set_event_handler_nb
+=head2 _set_event_handler_nb
 
-# Separate event handler for NoteBook because must be initialized only
-# after the NoteBook is (re)created and that happens when a new screen is
-# required (selected from the applications menu) to load.
+Separate event handler for NoteBook because must be initialized only
+after the NoteBook is (re)created and that happens when a new screen is
+required (selected from the applications menu) to load.
 
-# =cut
+=cut
 
-# sub _set_event_handler_nb {
-#     my ( $self, $page ) = @_;
+sub _set_event_handler_nb {
+    my $self = shift;
 
-#     $self->_log->trace('Setup event handler on NoteBook');
+    $self->_log->trace('Setup event handler on NoteBook');
 
-#     #- NoteBook events
+    #- NoteBook events
 
-#     my $nb = $self->_view->get_notebook();
+    $self->_view->on_notebook_page_changed(
+        sub {
+            my $page = $self->_view->get_nb_current_page;
+            $self->_view->set_nb_current($page);
 
-#     EVT_AUINOTEBOOK_PAGE_CHANGED $self->_view, $nb->GetId, sub {
-#         my $current_page = $nb->GetSelection();
-#         if ( $current_page == 1 ) {    # 'lst'
-#             $self->set_app_mode('sele');
-#         }
-#         else {
-#             if ( $self->record_load_new ) {
-#                 $self->set_app_mode('edit');
-#             }
-#             else {
-#                 $self->set_app_mode('idle');
-#             }
-#         }
-#     };
+          SWITCH: {
+                $page eq 'lst'
+                    && do { $self->on_page_lst_activate; last SWITCH; };
+                $page eq 'rec'
+                    && do { $self->on_page_rec_activate; last SWITCH; };
+                $page eq  'det'
+                    && do { $self->on_page_det_activate; last SWITCH; };
+                print "EE: \$page is not in (lst rec det)\n";
+            }
+        }
+    );
 
-#     #-- Enter on list item activates record page
-#     EVT_LIST_ITEM_ACTIVATED $self->_view, $self->_view->get_listcontrol, sub {
-#         $self->_view->get_notebook->SetSelection(0);    # 'rec'
-#     };
+    #-- Enter on list item activates record page
+    $self->_view->on_list_item_activated(
+        sub {
+            $self->_view->get_notebook->SetSelection(0);    # 'rec'
+        }
+    );
 
-#     return;
-# }
+    return;
+}
 
 # =cut
 

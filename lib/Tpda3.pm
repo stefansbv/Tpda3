@@ -114,19 +114,13 @@ sub _init {
     if ( $widgetset =~ m{wx}ix ) {
         require Tpda3::Wx::Controller;
         $self->{gui} = Tpda3::Wx::Controller->new();
-
-        # $self->{_log}->info('Using Wx ...');
     }
     elsif ( $widgetset =~ m{tk}ix ) {
         require Tpda3::Tk::Controller;
         $self->{gui} = Tpda3::Tk::Controller->new();
-
-        # $self->{_log}->info('Using Tk ...');
     }
     else {
         warn "Unknown widget set!\n";
-
-        # $self->{_log}->debug('Unknown widget set!');
 
         exit;
     }
@@ -145,11 +139,7 @@ Execute the application.
 sub run {
     my $self = shift;
 
-    # $self->{_log}->trace('Run ...');
-
     $self->{gui}{_app}->MainLoop();
-
-    # $self->{_log}->trace('Stop.');
 
     return;
 }
