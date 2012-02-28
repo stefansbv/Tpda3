@@ -76,7 +76,8 @@ sub db_connect {
                 . $conf->{host}
                 . ";port="
                 . $conf->{port}
-                . ";ib_dialect=3",
+                . ";ib_dialect=3"
+                . ";ib_charset=UTF8",
             $conf->{user},
             $conf->{pass},
             {   FetchHashKeyName => 'NAME_lc',
@@ -97,6 +98,8 @@ sub db_connect {
     $self->{_dbh}->{ib_timestampformat} = '%y-%m-%d %H:%M';
     $self->{_dbh}->{ib_dateformat}      = '%Y-%m-%d';
     $self->{_dbh}->{ib_timeformat}      = '%H:%M';
+
+    $self->{_dbh}{ib_enable_utf8} = 1;
 
     $log->info("Connected to '$conf->{dbname}'");
 
