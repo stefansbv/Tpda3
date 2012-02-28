@@ -7,6 +7,7 @@ use Carp;
 use English;
 
 use Data::Dumper;
+use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
@@ -2573,6 +2574,7 @@ sub screen_write {
         # }
 
         if ($value) {
+            $value = decode( 'utf8', $value ) unless is_utf8($value);
 
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);
