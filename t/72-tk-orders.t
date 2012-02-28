@@ -30,8 +30,8 @@ use_ok('Tpda3::Tk::App::Test::Orders');
 
 my $args = {
     cfname => 'test-tk',
-    user   => $ENV{USER},
-    pass   => 'pass',
+    user   => undef,
+    pass   => undef,
 };
 
 my $delay = 1;
