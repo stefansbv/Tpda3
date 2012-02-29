@@ -36,8 +36,8 @@ use_ok('Tpda3::Wx::App::Test::Customers');
 
 my $args = {
     cfname => 'test-wx',
-    user   => 'user',
-    pass   => 'pass',
+    user   => undef,
+    pass   => undef,
 };
 
 ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
