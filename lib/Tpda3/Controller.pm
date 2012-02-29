@@ -3,9 +3,9 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
-use Carp;
-use English;
 
+use English;
+use Ouch;
 use Data::Dumper;
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed);
@@ -231,8 +231,10 @@ sub _set_event_handlers {
         sub {
             return if !defined $self->ask_to_save;
 
-            # From add mode forbid find mode
-            $self->toggle_mode_find() if !$self->_model->is_mode('add');
+            # From add or sele mode forbid find mode
+            $self->toggle_mode_find()
+                unless ( $self->_model->is_mode('add')
+                    or $self->_model->is_mode('sele') );
         }
     );
 
@@ -322,8 +324,10 @@ sub _set_event_handlers {
         'tb_fm',
         sub {
 
-            # From add mode forbid find mode
-            $self->toggle_mode_find() if !$self->_model->is_mode('add');
+            # From add or sele mode forbid find mode
+            $self->toggle_mode_find()
+                unless ( $self->_model->is_mode('add')
+                    or $self->_model->is_mode('sele') );
         }
     );
 
@@ -413,11 +417,12 @@ sub _set_event_handlers {
         }
     );
 
-    #-- Add mode
+    #-- Add mode; From sele mode forbid add mode
     $self->_view->event_handler_for_tb_button(
         'tb_ad',
         sub {
-            $self->toggle_mode_add() if $self->{_rscrcls};
+            $self->toggle_mode_add()
+                unless $self->_model->is_mode('sele');
         }
     );
 
@@ -425,7 +430,9 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_rm',
         sub {
-            $self->event_record_delete();
+            $self->_model->is_mode('edit')
+                ? $self->event_record_delete
+                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
         }
     );
 
@@ -1495,9 +1502,7 @@ sub scrcfg {
     return unless $page;
 
     if ( $page eq 'lst' ) {
-        warn "Wrong page (scrcfg): $page!\n";
-
-        return;
+        ouch 'WrongPage', "Wrong page (scrcfg): $page!";
     }
 
     return $self->scrobj($page)->{scrcfg};
@@ -1751,7 +1756,7 @@ sub screen_module_detail_load {
     my ( $class, $module_file ) = $self->screen_module_class($module);
     eval { require $module_file };
     if ($@) {
-        croak "EE: Can't load '$module_file'\n";
+        ouch("EE: Can't load '$module_file'");
     }
 
     unless ( $class->can('run_screen') ) {
@@ -3357,7 +3362,7 @@ sub record_changed {
 
     unless ( -f $witness_file ) {
         $self->_view->set_status( 'Error!', 'ms', 'orange' );
-        croak "Can't find saved data for comparison!\n";
+        ouch 'CompareError', "Can't find saved data for comparison!";
         return;
     }
 
@@ -3703,7 +3708,7 @@ sub screen_set_pk_col {
         $self->{_tblkeys}{$pk_col} = undef;
     }
     else {
-        croak "ERR: Unknown PK column name!\n";
+        ouch 'PK?', 'ERR: Unknown PK column name!';
     }
 
     return;
@@ -3724,7 +3729,7 @@ sub screen_set_pk_val {
         $self->{_tblkeys}{$pk_col} = $pk_val;
     }
     else {
-        croak "ERR: Unknown PK column name!\n";
+        ouch 'PK?', 'Unknown PK column name!';
     }
 
     return;
@@ -3978,7 +3983,7 @@ sub flatten_cfg {
 sub tmshr_compute_value {
     my ($self, $field, $record, $attribs) = @_;
 
-    croak "$field field's config is EMPTY\n" unless %{$attribs};
+    ouch 'ConfigError', "$field field's config is EMPTY" unless %{$attribs};
 
     my ( $col, $validtype, $width, $places, $datasource )
         = @$attribs{ 'id', 'validation', 'width', 'places', 'datasource' };
@@ -4045,8 +4050,7 @@ sub tmshr_get_function {
     return $self->{$field} if exists $self->{$field}; # don't recreate it
 
     unless ($field and $funcdef) {
-        croak "$field field's compute is EMPTY\n" unless $funcdef;
-        return;
+        ouch 'FuncDefError', "$field field's compute is EMPTY" unless $funcdef;
     }
 
     # warn "new function for: $field = ($funcdef)\n";
@@ -4056,7 +4060,7 @@ sub tmshr_get_function {
     my $tree = Math::Symbolic->parse_from_string($funcdef);
     my @vars = split /\s+/, $varsstr; # extract the names of the variables
     unless ($self->tmshr_check_varnames(\@vars) ) {
-        croak "Config error: computed variable names doesn't match field names!";
+        ouch 'CfgError', "Computed variable names don't match field names!";
     }
 
     my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );
