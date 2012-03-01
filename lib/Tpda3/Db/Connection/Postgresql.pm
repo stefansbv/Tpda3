@@ -250,8 +250,7 @@ sub table_keys {
 
     my $log = get_logger();
 
-    my $type = 'PRIMARY KEY';
-    $type = 'FOREIGN KEY' if $foreign;
+    my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY';
 
     $log->info("Geting '$table' table primary key(s) names");
 
