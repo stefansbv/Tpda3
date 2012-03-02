@@ -183,7 +183,7 @@ sub config_interface_load {
     foreach my $section ( keys %{ $self->cfiface } ) {
         my $cfg_file = $self->config_iface_file_name($section);
 
-        my $msg = qq{\nConfiguration error: \n Can't read configurations};
+        my $msg = qq{\nInterface config error: Can't read configurations};
         $msg .= qq{\n  from '$cfg_file'!};
 
         $self->{_log}->info("Loading '$section' config");
