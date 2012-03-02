@@ -2,8 +2,6 @@ package Tpda3::Tree;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 
 use Tree::DAG_Node;

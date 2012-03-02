@@ -11,15 +11,15 @@ require Tpda3::Config;
 
 =head1 NAME
 
-Tpda3 - Tpda3 (Tiny Perl Database Application 3.
+Tpda3 - Tpda3 (Tiny Perl Database Application 3).
 
 =head1 VERSION
 
-Version 0.45_02
+Version 0.46
 
 =cut
 
-our $VERSION = '0.45_02';
+our $VERSION = '0.46';
 
 =head1 SYNOPSIS
 

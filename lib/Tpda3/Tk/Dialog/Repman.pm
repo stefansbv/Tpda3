@@ -549,8 +549,6 @@ sub load_report_details {
 
     $self->{_rdd} = $view->{_model}->table_batch_query($args);
 
-    # print Dumper('Det:', $self->{_rdd} );
-
     my $eobj = $self->get_controls();
 
     #- Write report detail data to controls

@@ -2,8 +2,6 @@ package Tpda3::Wx::View;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use POSIX qw (floor ceil);
