@@ -107,7 +107,7 @@ sub db_connect {
     }
 
     # Is realy connected ?
-    if (blessed $self->{_dbh}) {
+    if ( blessed $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
         $self->get_connection_observable->set(1);    # assuming yes
         $self->_print('info#Connected');
     }

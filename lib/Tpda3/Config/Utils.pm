@@ -3,6 +3,7 @@ package Tpda3::Config::Utils;
 use strict;
 use warnings;
 use Carp;
+use Ouch;
 
 use Log::Log4perl qw(get_logger);
 use File::Basename;
@@ -52,7 +53,7 @@ sub config_file_load {
     if ( !-f $conf_file ) {
         if ($message) {
             print "$message";
-            exit;
+            ouch 'FileNotFound', $message;
         }
         else {
             $log->info("No '$conf_file' yet");

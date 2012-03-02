@@ -109,7 +109,7 @@ sub config_screen_load_file {
     my $file_name = "$scrcls.conf";
     my $cfg_file  = $self->config_scr_file_name($file_name);
 
-    my $msg = qq{\nConfiguration error: \n Can't read configurations};
+    my $msg = qq{\nScreen config error: Can't read configurations};
     $msg .= qq{\n  from '$cfg_file'!};
 
     $log->info("Loading '$file_name' config");

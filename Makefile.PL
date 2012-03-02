@@ -44,10 +44,10 @@ requires 'Tk'                   => '804.028';
 requires 'Tk::ToolBar'          => '0.09';
 requires 'Tk::StatusBar'        => '0.04';
 requires 'Tk::MListbox'         => '1.11';
-requires 'Tk::JComboBox'        => '1.14';
-requires 'Tk::DateEntry'        => '1.39';
+requires 'Tk::JComboBox'        => '0';
+requires 'Tk::DateEntry'        => '0';
 requires 'Tk::TableMatrix'      => '1.23';
-requires 'Tk::RadiobuttonGroup' => '0.2.2';
+requires 'Tk::RadiobuttonGroup' => '0';
 
 #- For generating PDF from TeX
 

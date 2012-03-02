@@ -3,21 +3,25 @@ package Tpda3::Wx::View;
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Carp;
+
 use POSIX qw (floor ceil);
-
 use Log::Log4perl qw(get_logger);
-
 use File::Spec::Functions qw(abs2rel);
+
 use Wx qw{:everything};
+use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
+    EVT_TEXT_ENTER EVT_AUINOTEBOOK_PAGE_CHANGED
+    EVT_LIST_ITEM_ACTIVATED);
 use Wx::Perl::ListCtrl;
 
 use base 'Wx::Frame';
 
-use Tpda3::Config;
-use Tpda3::Utils;
-use Tpda3::Wx::Notebook;
-use Tpda3::Wx::ToolBar;
+require Tpda3::Config;
+require Tpda3::Utils;
+require Tpda3::Wx::Notebook;
+require Tpda3::Wx::ToolBar;
 
 =head1 NAME
 
@@ -35,8 +39,8 @@ our $VERSION = '0.34';
 
     use Tpda3::Wx::View;
 
-    $self->{_view} = TpdaQrt::Wx::View->new(
-        $model, undef, -1, 'TpdaQrt::wxPerl',
+    $self->{_view} = Tpda3::Wx::View->new(
+        $model, undef, -1, 'Tpda3::wxPerl',
         [ -1, -1 ],
         [ -1, -1 ],
         wxDEFAULT_FRAME_STYLE,
@@ -332,6 +336,17 @@ sub get_menubar {
     return $self->{_menu};
 }
 
+sub set_menu_enable {
+    my ( $self, $menu, $state ) = @_;
+
+    $state = $state eq 'normal' ? 1 : 0;
+    my $mn = $self->get_menubar();
+    my $mn_id = $self->get_menu_popup_item($menu)->GetId;
+    $mn->Enable( $mn_id, $state );
+
+    return;
+}
+
 =head2 _create_toolbar
 
 Create toolbar
@@ -523,16 +538,39 @@ sub create_notebook {
     return;
 }
 
+# sub get_nb_current_page {
+#     my $self = shift;
+
+#     my $nb = $self->get_notebook();
+
+#     my $page_idx = $nb->GetSelection();
+
+#     my $current_page = $nb->{pages}{$page_idx};
+
+#     return $current_page;
+# }
 sub get_nb_current_page {
     my $self = shift;
 
-    my $nb = $self->get_notebook();
+    return $self->get_notebook->get_current;
+}
 
-    my $page_idx = $nb->GetSelection();
+sub set_nb_current {
+    my ( $self, $page ) = @_;
 
-    my $current_page = $nb->{pages}{$page_idx};
+    my $nb = $self->get_notebook;
+    $nb->{nb_prev} = $nb->{nb_curr};    # previous tab name
+    $nb->{nb_curr} = $page;             # current tab name
 
-    return $current_page;
+    return;
+}
+
+sub get_nb_previous_page {
+    my $self = shift;
+
+    my $nb = $self->get_notebook;
+
+    return $nb->{nb_prev};
 }
 
 =head2 get_notebook
@@ -698,44 +736,44 @@ sub log_msg {
     return;
 }
 
-=head2 control_set_value
+# =head2 control_set_value
 
-Set new value for a controll
+# Set new value for a controll
 
-=cut
+# =cut
 
-sub control_set_value {
-    my ( $self, $name, $value ) = @_;
+# sub control_set_value {
+#     my ( $self, $name, $value ) = @_;
 
-    return unless defined $value;
+#     return unless defined $value;
 
-    my $ctrl = $self->get_control_by_name($name);
+#     my $ctrl = $self->get_control_by_name($name);
 
-    $ctrl->ClearAll;
-    $ctrl->AppendText($value);
-    $ctrl->AppendText("\n");
-    $ctrl->Colourise( 0, $ctrl->GetTextLength );
+#     $ctrl->ClearAll;
+#     $ctrl->AppendText($value);
+#     $ctrl->AppendText("\n");
+#     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 
-    return;
-}
+#     return;
+# }
 
-=head2 control_append_value
+# =head2 control_append_value
 
-Append value to a control.
+# Append value to a control.
 
-=cut
+# =cut
 
-sub control_append_value {
-    my ( $self, $name, $value ) = @_;
+# sub control_append_value {
+#     my ( $self, $name, $value ) = @_;
 
-    return unless defined $value;
+#     return unless defined $value;
 
-    my $ctrl = $self->get_control_by_name($name);
+#     my $ctrl = $self->get_control_by_name($name);
 
-    $ctrl->AppendText($value);
-    $ctrl->AppendText("\n");
-    $ctrl->Colourise( 0, $ctrl->GetTextLength );
-}
+#     $ctrl->AppendText($value);
+#     $ctrl->AppendText("\n");
+#     $ctrl->Colourise( 0, $ctrl->GetTextLength );
+# }
 
 =head2 toggle_status_cn
 
@@ -1023,26 +1061,26 @@ sub list_item_clear_all {
     $self->get_recordlist->DeleteAllItems;
 }
 
-=head2 list_remove_item
+# =head2 list_remove_item
 
-Remove item from list control and select the first item
+# Remove item from list control and select the first item
 
-=cut
+# =cut
 
-sub list_remove_item {
-    my $self = shift;
+# sub list_remove_item {
+#     my $self = shift;
 
-    my $sel_item = $self->get_list_selected_index();
-    my $file_fqn = $self->get_list_data($sel_item);
+#     my $sel_item = $self->get_list_selected_index();
+#     my $file_fqn = $self->get_list_data($sel_item);
 
-    # Remove from list
-    $self->list_item_clear($sel_item);
+#     # Remove from list
+#     $self->list_item_clear($sel_item);
 
-    # Set item 0 selected
-    $self->list_item_select_first();
+#     # Set item 0 selected
+#     $self->list_item_select_first();
 
-    return $file_fqn;
-}
+#     return $file_fqn;
+# }
 
 =head2 list_init
 
@@ -1084,11 +1122,10 @@ sub list_populate {
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-
-
         $list->InsertStringItem( $row_count, 'dummy' );
         for ( my $col = 0; $col < $column_count; $col++ ) {
-            $list->SetItemText( $row_count, $col, $record->[$col] );
+            my $col_data = $record->[$col] || q{}; # or empty
+            $list->SetItemText( $row_count, $col, $col_data );
         }
 
         $row_count++;
@@ -1167,7 +1204,7 @@ sub list_read_selected {
         }
     }
 
-    return $selected_value;
+    return [$selected_value];              # return an array reference
 }
 
 =head2 list_raise
@@ -1185,16 +1222,53 @@ sub list_raise {
     return;
 }
 
-=head2 w_geometry
+=head2 on_list_item_activated
 
-Return window geometry
+Enter on list item activates record page.
 
 =cut
 
-sub w_geometry {
+sub on_list_item_activated {
+    my ($self, $callback) = @_;
+
+    my $lc = $self->get_listcontrol;
+
+    EVT_LIST_ITEM_ACTIVATED $self, $lc, $callback;
+
+    return;
+}
+
+=head2 get_listcontrol
+
+Return list control handler.
+
+=cut
+
+sub get_listcontrol {
     my $self = shift;
 
-    # my $wsys = $self->windowingsystem;
+    return $self->{_rc};
+}
+
+sub on_notebook_page_changed {
+    my ($self, $callback) = @_;
+
+    my $nb = $self->get_notebook();
+
+    EVT_AUINOTEBOOK_PAGE_CHANGED $self, $nb->GetId, $callback;
+
+    return;
+}
+
+=head2 get_geometry
+
+Return window geometry.
+
+=cut
+
+sub get_geometry {
+    my $self = shift;
+
     my $name = $self->GetName();
     my $rect = $self->GetScreenRect();
 
@@ -1243,6 +1317,228 @@ sub on_quit {
     return;
 }
 
+#-- Event handlers
+
+sub event_handler_for_menu {
+    my ($self, $name, $calllback) = @_;
+
+    my $menu_id = $self->get_menu_popup_item($name)->GetId;
+
+    EVT_MENU $self, $menu_id, $calllback;
+
+    return;
+}
+
+sub event_handler_for_tb_button {
+    my ($self, $name, $calllback) = @_;
+
+    my $tb_id = $self->get_toolbar_btn($name)->GetId;
+
+    EVT_TOOL $self, $tb_id, $calllback;
+
+    return;
+}
+
+#-- Write to controls
+
+sub list_control_choices {
+    my ($self, $control, $choices) = @_;
+
+    $control->add_choices($choices);
+
+    return;
+}
+
+=head2 control_write_e
+
+Write to a Wx::Entry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_e {
+    my ( $self, $control_ref, $value ) = @_;
+
+    my $control = $control_ref->[1];
+    $control->Clear;
+    $control->SetValue($value) if defined $value;;
+
+    return;
+}
+
+=head2 control_write_t
+
+Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_t {
+    my ( $self, $control_ref, $value ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $control->ClearAll;
+
+    return unless defined $value;
+
+    $control->AppendText($value);
+    $control->AppendText("\n");
+
+    return;
+}
+
+=head2 control_write_d
+
+Write to a Wx::DateEntry widget.  If I<$value> not true, than clear.
+
+=cut
+
+sub control_write_d {
+    my ( $self, $control_ref, $value, $state, $format ) = @_;
+
+    my $control = $control_ref->[1];
+
+    my ( $y, $m, $d, $dt );
+    if ($value) {
+        ( $y, $m, $d )
+            = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
+
+        return unless ($y and $m and $d);
+
+        $dt = Wx::DateTime->newFromDMY($d, $m - 1, $y);
+        $control->SetValue($dt) if $dt->isa('Wx::DateTime');
+    }
+    else {
+        $control->SetValue( Wx::DateTime->new() ); # clear the date
+    }
+
+    return;
+}
+
+=head2 control_write_m
+
+Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_m {
+    my ( $self, $control_ref, $value ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $control->set_selected($value);
+
+    return;
+}
+
+#-- Read from controls
+
+=head2 control_read_e
+
+Read contents of a Wx::TextCtrl control.
+
+=cut
+
+sub control_read_e {
+    my ( $self, $control_ref ) = @_;
+
+    my $value = $control_ref->[1]->GetValue;
+
+    return $value;
+}
+
+=head2 control_read_t
+
+Read contents of a Wx::Text control.
+
+=cut
+
+sub control_read_t {
+    my ( $self, $control_ref ) = @_;
+
+    my $value = $control_ref->[1]->GetValue;
+
+    return $value;
+}
+
+=head2 control_read_d
+
+Read contents of a Wx::DateEntry control.
+
+=cut
+
+sub control_read_d {
+    my ( $self, $control_ref ) = @_;
+
+    my $datetime = $control_ref->[1]->GetValue();
+    my $invalid  = Wx::DateTime->new();
+
+    if($datetime->IsEqualTo($invalid)) {
+        return q{};                          # empty
+    } else {
+        return $datetime->FormatISODate();
+    }
+}
+
+=head2 control_read_m
+
+Read contents of a Wx::ComboBox control.
+
+=cut
+
+sub control_read_m {
+    my ( $self, $control_ref ) = @_;
+
+    return $control_ref->[1]->get_selected();
+}
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=cut
+
+sub configure_controls {
+    my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
+
+    $state = $state eq 'normal' ? 1 : 0;
+    if ($fld_cfg->{ctrltype} eq 'e' or $fld_cfg->{ctrltype} eq 't') {
+        $control->SetEditable($state);
+    }
+    else {
+        $control->Enable($state);
+    }
+    $control->SetBackgroundColour( Wx::Colour->new($bg_color) )
+        if $bg_color;
+
+    return;
+}
+
+=head2 nb_set_page_state
+
+TODO
+
+=cut
+
+sub nb_set_page_state {
+    my ($self, $page, $state) = @_;
+
+    return;
+}
+
+=head2 make_binding_entry
+
+Key is always ENTER.
+
+=cut
+
+sub make_binding_entry {
+    my ($self, $control, $key, $calllback) = @_;
+
+    EVT_TEXT_ENTER $self, $control, $calllback;
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
@@ -1254,6 +1550,8 @@ None known.
 Please report any bugs or feature requests to the author.
 
 =head1 ACKNOWLEDGEMENTS
+
+Mark Dootson for clarification regarding the DatePicker controll.
 
 =head1 LICENSE AND COPYRIGHT
 

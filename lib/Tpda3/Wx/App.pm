@@ -6,6 +6,8 @@ use warnings;
 use Wx q(:everything);
 use base qw(Wx::App);
 
+require Tpda3::Wx::View;
+
 =head1 NAME
 
 Tpda3::Wx::App - Wx Perl application class

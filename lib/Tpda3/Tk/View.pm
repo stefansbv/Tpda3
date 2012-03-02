@@ -397,6 +397,14 @@ sub get_menu_popup_item {
     return $self->{_menu}{$name};
 }
 
+sub set_menu_enable {
+        my ( $self, $menu, $state ) = @_;
+
+        $self->get_menu_popup_item($menu)->configure( -state => $state );
+
+        return;
+}
+
 =head2 create_statusbar
 
 Create the status bar
@@ -1275,6 +1283,323 @@ sub list_locate {
     }
 
     return $idx;
+}
+
+#-- Event handlers
+
+sub event_handler_for_menu {
+    my ($self, $name, $calllback) = @_;
+
+    $self->get_menu_popup_item($name)->configure( -command => $calllback );
+
+    return;
+}
+
+sub event_handler_for_tb_button {
+    my ($self, $name, $calllback) = @_;
+
+    $self->get_toolbar_btn($name)->bind(
+        '<ButtonRelease-1>' => $calllback,
+    );
+
+    return;
+}
+
+#-- Write to controls
+
+sub list_control_choices {
+    my ($self, $control, $choices) = @_;
+
+    $control->removeAllItems();
+    $control->configure( -choices => $choices );
+
+    return;
+}
+
+=head2 control_write_e
+
+Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_e {
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget ('-state');
+
+    $value = q{} unless defined $value;    # Empty
+
+    $control->configure( -state => 'normal' );
+
+    $control->delete( 0, 'end' );
+    $control->insert( 0, $value ) if $value;
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_t
+
+Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+
+=cut
+
+sub control_write_t {
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget ('-state');
+
+    $value = q{} unless defined $value;    # Empty
+
+    # Tip TextEntry 't'
+    $control->delete( '1.0', 'end' );
+    $control->insert( '1.0', $value ) if $value;
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_d
+
+Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
+
+Date is required to come from the database in the ISO format.
+
+=cut
+
+sub control_write_d {
+    my ( $self, $control_ref, $value, $state, $date_format ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget('-state');
+
+    $value = q{} unless defined $value;    # empty
+
+    if ($value) {
+        my ( $y, $m, $d )
+            = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
+        $value
+            = Tpda3::Utils->dateentry_format_date( $date_format, $y, $m, $d );
+    }
+
+    ${ $control_ref->[0] } = $value;
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_m
+
+Write to a Tk::JComboBox widget.  If I<$value> not true, than only
+delete.
+
+=cut
+
+sub control_write_m {
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget ('-state');
+
+    if ($value) {
+        $control->setSelected( $value, -type => 'value' );
+    }
+    else {
+        ${ $control_ref->[0] } = q{};    # Empty
+    }
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_c
+
+Write to a Tk::Checkbox widget.
+
+=cut
+
+sub control_write_c {
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget ('-state');
+
+    $value = 0 unless $value;
+    if ( $value == 1 ) {
+        $control->select;
+    }
+    else {
+        $control->deselect;
+    }
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+=head2 control_write_r
+
+Write to a Tk::RadiobuttonGroup widget.
+
+=cut
+
+sub control_write_r {
+    my ( $self, $control_ref, $value, $state ) = @_;
+
+    my $control = $control_ref->[1];
+
+    $state = $state || $control->cget('-state');
+
+    if ($value) {
+        ${ $control_ref->[0] } = $value;
+    }
+    else {
+        ${ $control_ref->[0] } = undef;
+    }
+
+    $control->configure( -state => $state );
+
+    return;
+}
+
+#-- Read
+
+=head2 control_read_e
+
+Read contents of a Tk::Entry control.
+
+=cut
+
+sub control_read_e {
+    my ( $self, $control_ref ) = @_;
+
+    return $control_ref->[1]->get;
+}
+
+=head2 control_read_t
+
+Read contents of a Tk::Text control.
+
+=cut
+
+sub control_read_t {
+    my ( $self, $control_ref ) = @_;
+
+    return $control_ref->[1]->get( '0.0', 'end' );
+}
+
+=head2 control_read_d
+
+Read contents of a Tk::DateEntry control.
+
+=cut
+
+sub control_read_d {
+    my ( $self, $control_ref, $date_format ) = @_;
+
+    my $control = $control_ref->[0];
+
+    # Value from widget variable or the empty string
+    my $value = ${$control} || q{};
+    if ($value) {
+
+        # Skip date formatting for find mode
+        if ( !$self->_model->is_mode('find') ) {
+            my ( $y, $m, $d )
+                = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
+            $value = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
+        }
+    }
+
+    return $value;
+}
+
+=head2 control_read_m
+
+Read contents of a Tk::JComboBox control.
+
+=cut
+
+sub control_read_m {
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
+
+    my $value = ${$control};    # value from variable
+
+    return $value;
+}
+
+=head2 control_read_c
+
+Read state of a Checkbox.
+
+=cut
+
+sub control_read_c {
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
+
+    my $value = ${$control};
+
+    return $value;
+}
+
+=head2 control_read_r
+
+Read RadiobuttonGroup.
+
+=cut
+
+sub control_read_r {
+    my ( $self, $control_ref ) = @_;
+
+    my $control = $control_ref->[0];
+
+    my $value = ${$control} || q{};
+
+    return $value;
+}
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=cut
+
+sub configure_controls {
+    my ($self, $ctrl_ref, $ctrl_state, $bg_color) = @_;
+
+    $ctrl_ref->configure( -state      => $ctrl_state, );
+    $ctrl_ref->configure( -background => $bg_color, );
+
+    return;
+}
+
+=head2 make_binding_entry
+
+Key is always ENTER.
+
+=cut
+
+sub make_binding_entry {
+    my ($self, $control, $key, $calllback) = @_;
+
+    $control->bind( $key => $calllback, );
+
+    return;
 }
 
 =head1 AUTHOR

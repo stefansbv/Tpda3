@@ -5,7 +5,7 @@ use warnings;
 
 use Tk;
 
-use Tpda3::Config;
+require Tpda3::Config;
 
 =head1 NAME
 

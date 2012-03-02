@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use Carp;
 
-use Tpda3::Utils;
-use Tpda3::Config::Screen;
+require Tpda3::Utils;
+require Tpda3::Config::Screen;
 
 =head1 NAME
 
@@ -78,16 +78,34 @@ sub get_controls {
 
 =head2 get_tm_controls
 
-Get a data structure containing references to table matrix widgets.
+Get a data structure containing references to table widgets.
+
+Not yet!
 
 =cut
 
 sub get_tm_controls {
     my ( $self, $tm ) = @_;
 
-    # if ( exists $self->{tm_controls} ) {
-    #     return ${ $self->{tm_controls}{rec}{$tm} }->Subwidget('scrolled');
-    # }
+    return {};
+}
+
+=head2 get_rq_controls
+
+Get a HoA reference data structure with the field names that are
+required to have values as keys and labels as values.
+
+Usually all fields from the table marked in the I<SQL> structure as
+I<NOT NULL>.
+
+=cut
+
+sub get_rq_controls {
+    my $self = shift;
+
+    return {} if !exists $self->{rq_controls};
+
+    return $self->{rq_controls};
 }
 
 =head2 get_toolbar_btn
@@ -125,8 +143,7 @@ Return the background color of the main window.
 
 Must be setup like this in run_screen method of every screen
 
- my $gui     = $inreg_p->toplevel;
- $self->{bg} = $gui->cget('-background');
+...
 
 =cut
 

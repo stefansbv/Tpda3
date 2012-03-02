@@ -6,6 +6,7 @@ use warnings;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger);
 
+use Ouch;
 use Try::Tiny;
 use DBI;
 
@@ -90,7 +91,12 @@ sub db_connect {
     }
     catch {
         my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message);
+        if ( $self->{model} and $self->{model}->can('exception_log') ) {
+            $self->{model}->exception_log($user_message);
+        }
+        else {
+            ouch 'ConnError','Connection failed!';
+        }
     };
 
     ## Date format
