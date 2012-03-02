@@ -2165,14 +2165,13 @@ sub record_find_execute {
 
     $self->screen_read();
 
-    # Table configs
-    my $main_table = $self->scrcfg('rec')->main_table;
-    my $columns    = $self->scrcfg('rec')->main_table_columns;
-
     my $params = {};
 
     # Columns data (from list header)
     $params->{columns} = $self->list_column_names();
+
+    # Table configs
+    my $columns = $self->scrcfg('rec')->main_table_columns;
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
@@ -2189,8 +2188,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $main_table->{view};        # use view instead of table
-    $params->{pkcol} = $main_table->{pkcol}{name};
+    $params->{table} = $self->scrcfg('rec')->main_table_view; # use view
+    $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
 
     my $ary_ref = $self->_model->query_records_find($params);
 
