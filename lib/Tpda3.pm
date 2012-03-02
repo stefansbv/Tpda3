@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.008009;
 
+use Ouch;
 use Log::Log4perl qw(get_logger);
 
 require Tpda3::Config;
@@ -102,27 +103,22 @@ sub _init {
 
     my $cfg = Tpda3::Config->instance($args);
 
-    # $self->{_log} = get_logger();
-
     my $widgetset = $cfg->application->{widgetset};
 
     unless ($widgetset) {
-        print "Required configuration not found: 'widgetset'\n";
-        exit;
+        ouch "ConfigError", "Required configuration not found: 'widgetset'";
     }
 
-    if ( $widgetset =~ m{wx}ix ) {
+    if ( uc $widgetset eq q{WX} ) {
         require Tpda3::Wx::Controller;
         $self->{gui} = Tpda3::Wx::Controller->new();
     }
-    elsif ( $widgetset =~ m{tk}ix ) {
+    elsif ( uc $widgetset eq q{TK} ) {
         require Tpda3::Tk::Controller;
         $self->{gui} = Tpda3::Tk::Controller->new();
     }
     else {
-        warn "Unknown widget set!\n";
-
-        exit;
+        ouch "ConfigError", "Unknown widget set!: '$widgetset'";
     }
 
     $self->{gui}->start();    # stuff to run at start
