@@ -222,7 +222,7 @@ the I<datasource> section.
 =cut
 
 sub clear_totals {
-    my ( $self, $fields, $places ) = @_;
+    my ( $self, $fields, $numscale ) = @_;
 
     $self->walk_down({
         callback => sub {
@@ -250,7 +250,7 @@ preserved when summing up.
 =cut
 
 sub format_numbers {
-    my ( $self, $fields, $places ) = @_;
+    my ( $self, $fields, $numscale ) = @_;
 
     $self->walk_down({
         callback => sub {
@@ -258,7 +258,7 @@ sub format_numbers {
                 foreach my $field ( @{$fields} ) {
                     my $cell_value = $node->get_attributes($field);
                     $node->set_attributes( $field,
-                        sprintf( "%.${places}f", $cell_value ) );
+                        sprintf( "%.${numscale}f", $cell_value ) );
                 }
             1;
         }
@@ -275,7 +275,7 @@ in the I<datasource> section.
 =cut
 
 sub sum_up {
-    my ( $self, $fields, $places ) = @_;
+    my ( $self, $fields, $numscale ) = @_;
 
     $self->walk_down({
         callbackback => sub {

@@ -874,7 +874,7 @@ sub list_header {
     if ( defined $col_attribs->{order} ) {
 
         # TODO: Figure out how to sort
-        # if ($attr->{order} eq 'N') {
+        # if ($attr->{coltype} !~ m{alpha}i ) {
         #     $self->{_rc}->columnGet($colcnt)
         #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
         # }

@@ -184,8 +184,10 @@ sub search_dialog {
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
                 ->configure( -width => $rec->{$field}{width} );
 
-            if ( defined $rec->{$field}{order} ) {
-                if ( $rec->{$field}{order} eq 'N' ) {
+            if ( defined $rec->{$field}{coltype} ) {
+                if (   $rec->{$field}{coltype} eq 'integer'
+                    or $rec->{$field}{coltype} eq 'numeric' )
+                {
                     $self->{box}->columnGet($colcnt)
                         ->configure(
                         -comparecommand => sub { $_[0] <=> $_[1] } );
@@ -349,7 +351,7 @@ sub search_command {
 
         # Add the filter to the WHERE (merge hash refs)
         @{ $params->{where} }{ keys %{$filter} }
-            = [ values %{$filter}, 'allstr' ];
+            = [ values %{$filter}, 'full' ];
     }
 
     my $records = $model->query_dictionary($params);

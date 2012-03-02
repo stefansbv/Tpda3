@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use POSIX qw (floor);
@@ -1011,14 +1013,14 @@ sub list_header {
         ->configure( -width => $col->{width} );
 
     # Sort order, (A)lpha is default
-    if ( defined $col->{order} ) {
-        if ( $col->{order} eq 'N' ) {
+    if ( defined $col->{coltype} ) {
+        if ( $col->{coltype} eq 'integer' or $col->{coltype} eq 'numeric' ) {
             $self->get_recordlist->columnGet($colcnt)
                 ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
         }
     }
     else {
-        print "WW: No sort option for '$col'\n";
+        print "WW: No sort option for '$col->{label}'\n";
     }
 
     return;

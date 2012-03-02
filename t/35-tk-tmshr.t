@@ -34,29 +34,29 @@ use_ok('Tpda3::Tk::TMSHR');
 # Header for TMSHR, slightly modified data, all cols are 'ro'
 
 my $header = {
-    colstretch  => undef,
-    rowcount    => 'nr_crt',
-    columns     => {
+    colstretch => undef,
+    rowcount   => 'nr_crt',
+    columns    => {
         nr_crt => {
             id         => 1,
-            places     => 0,
+            numscale   => 0,
             width      => 3,
-            validation => 'integer',
+            coltype    => 'integer',
             order      => 'N',
             label      => '#',
             tag        => 'ro_center',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => '=count',
         },
         productline => {
             id         => 2,
-            places     => 0,
+            numscale   => 0,
             width      => 15,
-            validation => 'alphanumplus',
+            coltype    => 'alphanumplus',
             order      => 'A',
             label      => 'Line',
             tag        => 'ro_left',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => {
                 level0 => 'tablename',
                 level1 => undef,
@@ -64,13 +64,13 @@ my $header = {
         },
         productname => {
             id         => 3,
-            places     => 0,
+            numscale   => 0,
             width      => 30,
-            validation => 'alphanumplus',
+            coltype    => 'alphanumplus',
             order      => 'A',
             label      => 'Product',
             tag        => 'ro_left',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => 'firme',
             datasource => {
                 level0 => undef,
@@ -79,13 +79,13 @@ my $header = {
         },
         quantityordered => {
             id         => 4,
-            places     => 0,
+            numscale   => 0,
             width      => 8,
-            validation => 'numeric',
+            coltype    => 'numeric',
             order      => 'N',
             label      => 'Quantity',
             tag        => 'enter_right',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => {
                 level0 => undef,
                 level1 => 'tablename'
@@ -93,13 +93,13 @@ my $header = {
         },
         priceeach => {
             id         => 5,
-            places     => 2,
+            numscale   => 2,
             width      => 8,
-            validation => 'numeric',
+            coltype    => 'numeric',
             order      => 'N',
             label      => 'Price',
             tag        => 'enter_right',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => {
                 level0 => undef,
                 level1 => 'tablename'
@@ -107,13 +107,13 @@ my $header = {
         },
         ordervalue => {
             id         => 6,
-            places     => 2,
+            numscale   => 2,
             width      => 8,
-            validation => 'numeric',
+            coltype    => 'numeric',
             order      => 'A',
             label      => 'Value',
             tag        => 'ro_right',
-            rw         => 'ro',
+            readwrite  => 'ro',
             datasource => '=quantityordered*priceeach',
         },
     },

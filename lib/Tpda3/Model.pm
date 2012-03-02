@@ -555,7 +555,7 @@ Valid configuration options are:
 
 =item contains - the field value contains the search string
 
-=item allstr   - the field value equals the search string
+=item full   - the field value equals the search string
 
 =item date     - special case for date type fields
 
@@ -590,7 +590,7 @@ sub build_where {
             $where->{$field}
                 = { $cmp => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
         }
-        elsif ( $find_type eq 'allstr' ) {
+        elsif ( $find_type eq 'full' ) {
             $where->{$field} = $attrib->[0];
         }
         elsif ( $find_type eq 'date' ) {
@@ -952,7 +952,7 @@ sub prepare_record_insert {
         my $pkcol    = $depmeta->{pkcol};
 
         # Update params for where
-        $depmeta->{where}{$pkcol} = [ $pk_id, 'allstr' ];
+        $depmeta->{where}{$pkcol} = [ $pk_id, 'full' ];
 
         # Update PK column with the new $pk_id
         foreach my $rec ( @{$depdata} ) {

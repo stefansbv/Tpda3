@@ -779,7 +779,7 @@ field, looks like this:
 This configuration allows to lookup for a I<customernumber> in the
 I<customers> table when knowing the I<customername>.  The
 I<customername> and I<customernumber> fields must be defined in the
-current table, with properties like width, label and order. this are
+current table, with properties like width, label and coltype. this are
 also the names of the widgets in the screen I<Orders>.  Multiple
 I<field> items can be added to the configuration, to return more than
 one value, and write its contents to the screen.
@@ -848,7 +848,7 @@ sub setup_lookup_bindings_entry {
         $rec->{$search} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
-            order => $field_cfg->{order},
+            order => $field_cfg->{coltype},
         };
         $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1127,17 +1127,17 @@ An example of a returned data structure, for the Orders screen:
     'columns' => [
         {
             'productname' => {
-                'width' => 36,
-                'order' => 'A',
-                'name'  => 'productname',
-                'label' => 'Product',
+                'width'   => 36,
+                'coltype' => 'alphanum',
+                'name'    => 'productname',
+                'label'   => 'Product',
             }
         },
         {
             'productcode' => {
-                'width' => 15,
-                'order' => 'A',
-                'label' => 'Code',
+                'width'   => 15,
+                'coltype' => 'alphanum',
+                'label'   => 'Code',
             }
         },
     ],
@@ -1191,7 +1191,7 @@ sub get_lookup_setings {
     $rec->{$search} = {
         width => $field_cfg->{width},
         label => $field_cfg->{label},
-        order => $field_cfg->{order},
+        order => $field_cfg->{coltype},
     };
     $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1245,7 +1245,7 @@ sub fields_cfg_array {
         $rec->{$lookup_field} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
-            order => $field_cfg->{order},
+            order => $field_cfg->{coltype},
         };
         push @cols, $rec;
     }
@@ -1280,7 +1280,7 @@ sub fields_cfg_hash {
         $rec->{$lookup_field} = {
             width => $field_cfg->{width},
             label => $field_cfg->{label},
-            order => $field_cfg->{order},
+            order => $field_cfg->{coltype},
             name  => $scr_field,
         };
         push @cols, $rec;
@@ -1903,7 +1903,7 @@ sub screen_load_lists {
         # Control config attributes
         my $fld_cfg  = $self->scrcfg()->main_table_column($field);
         my $ctrltype = $fld_cfg->{ctrltype};
-        my $ctrlrw   = $fld_cfg->{rw};
+        my $ctrlrw   = $fld_cfg->{readwrite};
 
         my $para = $self->scrcfg()->{lists_ds}{$field};
 
@@ -2107,7 +2107,7 @@ The accepted values for I<findtype> are:
 
 =item contains - Translated to LIKE | CONTAINING I<%searchstring%>
 
-=item allstr   - field = I<searchstring>
+=item full   - field = I<searchstring>
 
 =item date     - Used for date widgets, see below
 
@@ -2396,27 +2396,26 @@ Returns different data for different application modes.
 
 =item I<Find> mode
 
-Read the fields that have the configured I<rw> attribute set to I<rw>
-and I<ro> ignoring the fields with I<r>, but also ignoring the fields
-with no values.
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw> and I<ro> ignoring the fields with I<r>, but also ignoring the
+fields with no values.
 
 =item I<Edit> mode
 
-Read the fields that have the configured I<rw> attribute set to I<rw>,
-ignoring the rest (I<r> and I<ro>), but including the fields with no
-values as I<undef> for the value.
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw>, ignoring the rest (I<r> and I<ro>), but including the fields
+with no values as I<undef> for the value.
 
 =item I<Add>  mode
 
-Read the fields that have the configured I<rw> attribute set to I<rw>,
-ignoring the rest (I<r> and I<ro>), but also ignoring the fields with
-no values.
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw>, ignoring the rest (I<r> and I<ro>), but also ignoring the
+fields with no values.
 
 =back
 
-Option to read all fields regardless of the configured I<rw> attribute.
-
-TODO: Find a better attribute name than I<rw>?
+Option to read all fields regardless of the configured I<readwrite>
+attribute.
 
 =cut
 
@@ -2441,7 +2440,7 @@ sub screen_read {
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
-        my $ctrlrw   = $fld_cfg->{rw};
+        my $ctrlrw   = $fld_cfg->{readwrite};
 
         if ( !$all ) {
             unless ( $self->_model->is_mode('find') ) {
@@ -2584,8 +2583,8 @@ sub screen_write {
             $value = Tpda3::Utils->trim($value);
 
             # Number
-            if ( $fldcfg->{validation} eq 'numeric' ) {
-                $self->format_as_number( $value, $fldcfg->{places} );
+            if ( $fldcfg->{coltype} eq 'numeric' ) {
+                $self->format_as_number( $value, $fldcfg->{numscale} );
             }
         }
 
@@ -2824,18 +2823,18 @@ sub controls_state_set {
 
 =head2 formated
 
-Return trimmed and formated value if places is greater than 0.
+Return trimmed and formated value if numscale is greater than 0.
 
 TODO: Should make $value = 0, than format as number?
 
 =cut
 
 sub format_as_number {
-    my ( $self, $value, $places ) = @_;
+    my ( $self, $value, $numscale ) = @_;
 
-    # If places > 0, format as number
-    if ( $places and ( $places > 0 ) ) {
-        $value = sprintf( "%.${places}f", $value );
+    # If numscale > 0, format as number
+    if ( $numscale and ( $numscale > 0 ) ) {
+        $value = sprintf( "%.${numscale}f", $value );
     }
 
     return $value;
@@ -3902,7 +3901,7 @@ sub tmshr_fill_table {
     #- Fill TMSHR widget
 
     #print map "$_\n", @{ $tree->draw_ascii_tree }; # for debug
-    $tree->clear_totals($sum_up_cols, 2); # hardwired decimal places
+    $tree->clear_totals($sum_up_cols, 2); # hardwired numeric scale
     $tree->sum_up($sum_up_cols, 2);
     $tree->format_numbers($sum_up_cols, 2);
     #$tree->print_wealth($sum_up_cols->[0]); # for debug
@@ -3984,8 +3983,8 @@ sub tmshr_compute_value {
 
     ouch 'ConfigError', "$field field's config is EMPTY" unless %{$attribs};
 
-    my ( $col, $validtype, $width, $places, $datasource )
-        = @$attribs{ 'id', 'validation', 'width', 'places', 'datasource' };
+    my ( $col, $validtype, $width, $numscale, $datasource )
+        = @$attribs{ 'id', 'coltype', 'width', 'numscale', 'datasource' };
 
     my $value;
     if ( $datasource =~ m{=count|=sumup} ) {
@@ -4018,8 +4017,8 @@ sub tmshr_compute_value {
 
     if ( $validtype eq 'numeric' ) {
         $value = 0 unless $value;
-        if ( defined $places ) {
-            $value = sprintf( "%.${places}f", $value );
+        if ( defined $numscale ) {
+            $value = sprintf( "%.${numscale}f", $value );
         }
         else {
             $value = sprintf( "%.0f", $value );
@@ -4103,7 +4102,7 @@ sub record_merge_columns {
 
     my %hr;
     foreach my $field ( keys %{ $header->{columns} } ) {
-        my $field_type = $header->{columns}{$field}{validation};
+        my $field_type = $header->{columns}{$field}{coltype};
         my $default_value
         # column type          default
         = $field_type eq 'numeric' ? 0

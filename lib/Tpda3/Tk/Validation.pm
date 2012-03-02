@@ -117,7 +117,7 @@ sub maintable_attribs {
 
     my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
 
-    return @{$table_cfg}{qw(validation width places)};    # hash slice
+    return @{$table_cfg}{qw(coltype width numscale)};    # hash slice
 }
 
 =head2 deptable_attribs
@@ -132,7 +132,7 @@ sub deptable_attribs {
 
     my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
 
-    return @{$table_cfg}{qw(validation width places)};    # hash slice
+    return @{$table_cfg}{qw(coltype width numscale)};    # hash slice
 }
 
 =head2 validate_entry
@@ -148,16 +148,16 @@ interpreted as a 'column IS NULL' SQL WHERE clause.
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
 
-    my ( $type, $width, $places ) = $self->maintable_attribs($column);
+    my ( $type, $width, $numscale ) = $self->maintable_attribs($column);
 
-    return $self->validate( $type, $p1, $width, $places, $column );
+    return $self->validate( $type, $p1, $width, $numscale, $column );
 }
 
 =head2 validate_table_cell
 
 Entry validation for tables.
 
-Get I<type>, I<width> and I<places> from the table's configuration.
+Get I<type>, I<width> and I<numscale> from the table's configuration.
 
 =cut
 
@@ -166,10 +166,10 @@ sub validate_table_cell {
 
     my $column = $self->column_name_from_idx( $tm_ds, $col );
 
-    my ( $type, $width, $places )
+    my ( $type, $width, $numscale )
         = $self->deptable_attribs( $tm_ds, $column );
 
-    return $self->validate( $type, $new, $width, $places, $column );
+    return $self->validate( $type, $new, $width, $numscale, $column );
 }
 
 =head2 validate
@@ -179,7 +179,7 @@ Validate sub calls the appropriate function for data validation.
 =cut
 
 sub validate {
-    my ( $self, $proc, $p1, $maxlen, $places, $column ) = @_;
+    my ( $self, $proc, $p1, $maxlen, $numscale, $column ) = @_;
 
     if ( !$proc ) {
         print "EE: Config error for '$column', no proc for validation!\n";
@@ -188,7 +188,7 @@ sub validate {
 
     my $retval;
     if ( exists $self->{procs}{$proc} ) {
-        $retval = $self->{procs}{$proc}->( $self, $p1, $maxlen, $places );
+        $retval = $self->{procs}{$proc}->( $self, $p1, $maxlen, $numscale );
     }
     else {
         print "WW: Validation for '$proc' not yet implemented!";
@@ -295,16 +295,16 @@ TODO: Allow comma as decimal separator?
 =cut
 
 sub numeric {
-    my ( $self, $myvar, $maxlen, $places ) = @_;
+    my ( $self, $myvar, $maxlen, $numscale ) = @_;
 
-    $places = 0 unless ( defined $places );
+    $numscale = 0 unless ( defined $numscale );
 
     my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
-        $maxlen - $places - 1, $places;
+        $maxlen - $numscale - 1, $numscale;
 
 # TODO:
 # my $pattern =
-#     qr/^\-?\p{IsDigit}{0,$maxlen -$places -1}(\.\p{IsDigit}{0,$places})?$/x;
+#     qr/^\-?\p{IsDigit}{0,$maxlen -$numscale -1}(\.\p{IsDigit}{0,$numscale})?$/x;
 
     if ( $myvar =~ m/$pattern/ ) {
         $self->{view}->set_status( '', 'ms' );    # clear messages

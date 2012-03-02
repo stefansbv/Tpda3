@@ -279,16 +279,16 @@ sub fill {
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
 
-            my ( $col, $validtype, $width, $places )
-                = @$fld_cfg{ 'id', 'validation', 'width',
-                'places' };                        # hash slice
+            my ( $col, $coltype, $width, $numscale )
+                = @$fld_cfg{ 'id', 'coltype', 'width',
+                'numscale' };                        # hash slice
 
-            if ( $validtype eq 'numeric' ) {
+            if ( $coltype eq 'numeric' ) {
                 $value = 0 unless $value;
-                if ( defined $places ) {
+                if ( defined $numscale ) {
 
                     # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${places}f", $value );
+                    $value = sprintf( "%.${numscale}f", $value );
                 }
                 else {
                     $value = sprintf( "%.0f", $value );
@@ -328,15 +328,15 @@ sub write_row {
         my $fld_cfg = $self->{columns}{$field};
         my $value   = $record_ref->{$field};
 
-        my ( $col, $validtype, $width, $places )
-            = @$fld_cfg{ 'id', 'validation', 'width', 'places' }; # hash slice
+        my ( $col, $coltype, $width, $numscale )
+            = @$fld_cfg{ 'id', 'coltype', 'width', 'numscale' }; # hash slice
 
-        if ( $validtype =~ /digit/ ) {
+        if ( $coltype =~ /digit/ ) {
             $value = 0 unless $value;
-            if ( defined $places ) {
+            if ( defined $numscale ) {
 
                 # Daca SCALE >= 0, Formatez numarul
-                $value = sprintf( "%.${places}f", $value );
+                $value = sprintf( "%.${numscale}f", $value );
             }
             else {
                 $value = sprintf( "%.0f", $value );
@@ -387,9 +387,9 @@ sub data_read {
             my $col_name   = $cols_ref->[$col];
 
             my $fld_cfg = $fields_cfg->{$col_name};
-            my ($rw) = @$fld_cfg{'rw'};    # hash slice
+            my ($readwrite) = @$fld_cfg{'readwrite'};    # hash slice
 
-            next if $rw eq 'ro';    # skip ro cols
+            next if $readwrite eq 'ro';    # skip ro cols
 
             $rowdata->{$col_name} = $cell_value;
         }
