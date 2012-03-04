@@ -944,7 +944,7 @@ sub setup_bindings_table {
                 print "WW: Binding type '$bind_type' not implemented\n";
                 return;
             }
-        }
+       }
 
         # Bindings:
         my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
@@ -1682,7 +1682,7 @@ sub screen_module_load {
 =head2 set_event_handler_screen
 
 Setup event handlers for the toolbar buttons configured in the
-L<deptable> section of the current screen configuration.
+L<scrtoolbar> section of the current screen configuration.
 
 Default usage is for the I<add> and I<delete> buttons attached to the
 TableMatrix widget.
@@ -1693,22 +1693,17 @@ sub set_event_handler_screen {
     my ( $self, $tm_ds ) = @_;
 
     # Get ToolBar button atributes
-    my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
+    my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($tm_ds);
+    foreach my $tb_btn ( @{$toolbars} ) {
+        my $method = $attribs->{$tb_btn};
+        $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
 
-    foreach my $tb_btn ( keys %{$attribs} ) {
-        my $method = $attribs->{$tb_btn}{method};
-        $self->_log->trace("Handler for $tb_btn: $method ($tm_ds)");
-
-        # Check current screen for method for binding
-        my $scrobj;
-        if ( $self->scrobj('rec')->can($method) ) {
-            $scrobj = $self->scrobj('rec');
-        }
-        else {
-
-            # Fallback to $self
-            $scrobj = $self;
-        }
+        # Check current screen for method for binding, or fallback to
+        # methods in controlller
+        my $scrobj
+            = $self->scrobj('rec')->can($method)
+            ? $self->scrobj('rec')
+            : $self;
 
         $self->scrobj('rec')->get_toolbar_btn( $tm_ds, $tb_btn )->bind(
             '<ButtonRelease-1>' => sub {
@@ -2010,30 +2005,13 @@ sub toggle_screen_interface_controls {
 
     return if $page eq 'lst';
 
-    #- Toolbar
-
-    my ( $toolbars, $attribs ) = $self->scrobj()->toolbar_names();
-
-    foreach my $name ( @{$toolbars} ) {
-        my $status = $attribs->{$name}{state}{$page}{$mode};
-
-        #- Set status for toolbar buttons
-
-        $self->_view->enable_tool( $name, $status );
-    }
-
-    #- TableMatrix
+    #- Toolbar TableMatrix
 
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
-
-        # Get ToolBar button atributes
-        my $attribs = $self->scrcfg->dep_table_toolbars($tm_ds);
-
-        my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-        foreach my $name ( @{$toolbars} ) {
-            my $status = $attribs->{$name}{state}{$page}{$mode};
-            $self->scrobj($page)->enable_tool( $tm_ds, $name, $status );
+        my ( $toolbars, $attribs ) = $self->scrobj()->app_toolbar_names($tm_ds);
+        foreach my $button_name ( @{$toolbars} ) {
+            my $status = $attribs->{$button_name}{state}{$page}{$mode};
+            $self->scrobj($page)->enable_tool( $tm_ds, $button_name, $status );
         }
     }
 

@@ -187,13 +187,13 @@ sub config_interface_load {
         $msg .= qq{\n  from '$cfg_file'!};
 
         $self->{_log}->info("Loading '$section' config");
-        $self->{_log}->trace("file: $cfg_file");
+        $self->{_log}->info("file: $cfg_file");
 
         my $cfg_hr
             = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
-        $self->{_log}->trace("Making accessors for: @accessor");
+        $self->{_log}->info("Making accessors for: @accessor");
 
         $self->make_accessors($cfg_hr);
     }
@@ -223,7 +223,7 @@ sub config_application_load {
         my $cfg_file = $self->config_app_file_name($section);
 
         $self->{_log}->info("Loading '$section' config");
-        $self->{_log}->trace("file: $cfg_file");
+        $self->{_log}->info("file: $cfg_file");
 
         my $msg = qq{Configuration '$cf_name' not found!\n\n};
         $msg .= qq{To create it, run:\n};
@@ -234,7 +234,7 @@ sub config_application_load {
             = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
 
         my @accessor = keys %{$cfg_hr};
-        $self->{_log}->trace("runtime: Making accessors for: @accessor");
+        $self->{_log}->info("runtime: Making accessors for: @accessor");
 
         $self->make_accessors($cfg_hr);
     }

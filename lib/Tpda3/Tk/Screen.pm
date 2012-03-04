@@ -2,7 +2,7 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
-use Carp;
+use Ouch;
 
 use Tpda3::Tk::Entry;
 
@@ -143,7 +143,8 @@ toggle.  State can come as 0 | 1 and normal | disabled.
 sub enable_tool {
     my ( $self, $tm_ds, $btn_name, $state ) = @_;
 
-    return if not defined $self->{tb}{$tm_ds};
+    ouch 'NoTbButton', "No ToolBar '$tm_ds' ($btn_name)"
+        if not defined $self->{tb}{$tm_ds};
 
     $self->{tb}{$tm_ds}->enable_tool( $btn_name, $state );
 
@@ -175,15 +176,14 @@ buttons.
 =cut
 
 sub make_toolbar_for_table {
-    my ( $self, $tm_ds, $tbf ) = @_;
+    my ( $self, $name, $tb_frame ) = @_;
 
-    $self->{tb}{$tm_ds} = $tbf->TB();
+    $self->{tb}{$name} = $tb_frame->TB();
 
-    my $attribs = $self->{scrcfg}->dep_table_toolbars($tm_ds);
+    my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($name);
+    my $attribs    = $self->{scrcfg}->app_toolbar_attribs($name);
 
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-    $self->{tb}{$tm_ds}->make_toolbar_buttons( $toolbars, $attribs );
+    $self->{tb}{$name}->make_toolbar_buttons( $toolbars, $attribs );
 
     return;
 }
@@ -232,15 +232,11 @@ Get Toolbar names as array reference from screen config.
 
 =cut
 
-sub toolbar_names {
-    my $self = shift;
+sub app_toolbar_names {
+    my ($self, $name) = @_;
 
-    # Get ToolBar button atributes
-    my $attribs = $self->{scrcfg}->toolbar;
-
-    # TODO: Change the config file so we don't need this sorting anymore
-    # or better keep them sorted and ready to use in config
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+    my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($name);
+    my $attribs    = $self->{scrcfg}->app_toolbar_attribs;
 
     return ( $toolbars, $attribs );
 }

@@ -3,6 +3,8 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
@@ -613,17 +615,47 @@ sub dep_table_column_attr {
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
 
-=head2 dep_table_toolbars
+=head2 app_toolbar_attribs
 
-Return the toolbar configuration data structure bound to the related
-Tk::TableMatrix widget.
+Return the toolbar configuration data structure defined for the
+current application, in the etc/toolbar.yml file.
 
 =cut
 
-sub dep_table_toolbars {
-    my ( $self, $tm_ds ) = @_;
+sub app_toolbar_attribs {
+    my $self = shift;
 
-    return $self->dep_table($tm_ds)->{toolbar};
+    return $self->_cfg->toolbar2;
+}
+
+=head2 screen_toolbars
+
+Return the L<scrtoolbar> configuration data structure defined for the
+curren screen.
+
+=cut
+
+sub _screen_toolbars {
+    my ( $self, $name ) = @_;
+
+    return $self->scrtoolbar->{$name};
+}
+
+=head2 app_toolbar_names
+
+Return the toolbar names and their method names configured for the
+current screen.
+
+=cut
+
+sub scr_toolbar_names {
+    my ($self, $name) = @_;
+
+    my $attribs = $self->_screen_toolbars($name);
+    my @tbnames = map { $_->{name} } @{$attribs};
+    my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
+
+    return (\@tbnames, \%tbattrs);
 }
 
 =head2 dep_table_header_info
