@@ -2,6 +2,7 @@ package Tpda3::Tk::Dialog::Search;
 
 use strict;
 use warnings;
+use Ouch;
 
 use Tk::LabFrame;
 use Tk::MListbox;
@@ -194,7 +195,7 @@ sub search_dialog {
                 }
             }
             else {
-                warn "Warning: no sort option for $field\n";
+                ouch 'BadConfig',"No column type for $field\n";
             }
 
             $colcnt++;

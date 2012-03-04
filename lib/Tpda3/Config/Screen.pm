@@ -106,18 +106,9 @@ Load a Screen configuration files at request.
 sub config_screen_load_file {
     my ( $self, $scrcls ) = @_;
 
-    my $log = get_logger();
+    my $cfg_file  = $self->config_scr_file_name("$scrcls.conf");
 
-    my $file_name = "$scrcls.conf";
-    my $cfg_file  = $self->config_scr_file_name($file_name);
-
-    my $msg = qq{\nScreen config error: Can't read configurations};
-    $msg .= qq{\n  from '$cfg_file'!};
-
-    $log->info("Loading '$file_name' config");
-    $log->trace(" file: $cfg_file");
-
-    return Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+    return $self->_cfg->config_file_load($cfg_file);
 }
 
 =head2 _cfg

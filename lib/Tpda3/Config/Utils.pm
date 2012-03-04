@@ -2,11 +2,10 @@ package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
-use Carp;
 use Ouch;
 
 use Log::Log4perl qw(get_logger);
-use File::Basename;
+#use File::Basename;
 use File::Copy;
 use File::Find::Rule;
 use File::Path qw( make_path );
@@ -32,48 +31,41 @@ our $VERSION = '0.16';
 
     my $cu = Tpda3::Config::Utils->new();
 
-
 =head1 METHODS
 
-=head2 config_file_load
+# =head2 config_file_load
 
-Load a config file and return the Perl data structure.  croak,
-if can't read file.
+# Load a config file and return the Perl data structure.  It loads a
+# file in Config::General format or in YAML::Tiny format, depending on
+# the extension of the file.
 
-It loads a file in Config::General format or in YAML::Tiny format,
-depending on the extension of the file.
+# =cut
 
-=cut
+# sub config_file_load {
+#     my ( $self, $conf_file, $not_fatal ) = @_;
 
-sub config_file_load {
-    my ( $self, $conf_file, $message ) = @_;
+#     print " $conf_file ... ";
+#     my $log = get_logger();
 
-    my $log = get_logger();
+#     if ( !-f $conf_file ) {
+#         print "\r $conf_file ... not found\n";
+#         ouch 'FileNotFound', ' Configuration error!' unless $not_fatal;
+#     }
+#     print "\r $conf_file ... found\n";
 
-    if ( !-f $conf_file ) {
-        if ($message) {
-            print "$message";
-            ouch 'FileNotFound', $message;
-        }
-        else {
-            $log->info("No '$conf_file' yet");
-            return;
-        }
-    }
+#     my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
+#     if ( $suf =~ m{conf} ) {
+#         return Tpda3::Config::Utils->load_conf($conf_file);
+#     }
+#     elsif ( $suf =~ m{yml} ) {
+#         return Tpda3::Config::Utils->load_yaml($conf_file);
+#     }
+#     else {
+#         ouch 'BadSuffix', "Config file: $conf_file has wrong suffix ($suf)";
+#     }
 
-    my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
-    if ( $suf =~ m{conf} ) {
-        return Tpda3::Config::Utils->load_conf($conf_file);
-    }
-    elsif ( $suf =~ m{yml} ) {
-        return Tpda3::Config::Utils->load_yaml($conf_file);
-    }
-    else {
-        croak("Config file: $conf_file has wrong suffix ($suf)");
-    }
-
-    return;
-}
+#     return;
+# }
 
 =head2 load_conf
 
@@ -175,7 +167,7 @@ sub create_path {
         for my $diag (@$err) {
             my ( $file_err, $message ) = %{$diag};
             if ( $file_err eq '' ) {
-                die "Error: $message\n";
+                ouch 'MkdirError', "Error: $message\n";
             }
         }
     }

@@ -2,9 +2,10 @@ package Tpda3::Config;
 
 use strict;
 use warnings;
+use Ouch;
 
 use Log::Log4perl qw(get_logger :levels);
-
+use File::Basename;
 use File::HomeDir;
 use File::ShareDir qw(dist_dir);
 use File::UserConfig;
@@ -111,11 +112,12 @@ sub config_main_load {
     )->configdir;
 
     my $base_methods_hr = {
-        cfpath => $configpath,
-        cfapps => catdir( $configpath, 'apps' ),
-        cfetc  => catdir( $configpath, 'etc' ),
-        user   => $args->{user},                   # make accessors for user
-        pass   => $args->{pass},                   # and pass
+        cfpath  => $configpath,
+        cfapps  => catdir( $configpath, 'apps' ),
+        cfetc   => catdir( $configpath, 'etc' ),
+        user    => $args->{user},                   # make accessors for user
+        pass    => $args->{pass},                   # and pass
+        verbose => $args->{verbose},
     };
     $self->make_accessors($base_methods_hr);
 
@@ -132,14 +134,14 @@ sub config_main_load {
     $self->{_log}->info('-------------------------');
     $self->{_log}->info('*** NEW SESSION BEGIN ***');
 
+    print "Loading configuration files ...\n" if $self->verbose;
+
     # Main config file name, load
     my $main_fqn = catfile( $configpath, $args->{cfgmain} );
-    $self->{_log}->info("Loading 'main' config");
-    $self->{_log}->info("file: $main_fqn");
+    # $self->{_log}->info("Loading 'main' config");
+    # $self->{_log}->info("file: $main_fqn");
 
-    my $msg = qq{\nConfiguration error: \n Can't read 'main.conf'};
-    $msg .= qq{\n  from '$main_fqn'!};
-    my $maincfg = Tpda3::Config::Utils->config_file_load( $main_fqn, $msg );
+    my $maincfg = $self->config_file_load($main_fqn);
 
     # FIXIT: Refactor
     my $main_hr = {
@@ -183,14 +185,10 @@ sub config_interface_load {
     foreach my $section ( keys %{ $self->cfiface } ) {
         my $cfg_file = $self->config_iface_file_name($section);
 
-        my $msg = qq{\nInterface config error: Can't read configurations};
-        $msg .= qq{\n  from '$cfg_file'!};
-
         $self->{_log}->info("Loading '$section' config");
         $self->{_log}->info("file: $cfg_file");
 
-        my $cfg_hr
-            = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr = $self->config_file_load($cfg_file);
 
         my @accessor = keys %{$cfg_hr};
         $self->{_log}->info("Making accessors for: @accessor");
@@ -225,13 +223,7 @@ sub config_application_load {
         $self->{_log}->info("Loading '$section' config");
         $self->{_log}->info("file: $cfg_file");
 
-        my $msg = qq{Configuration '$cf_name' not found!\n\n};
-        $msg .= qq{To create it, run:\n};
-        $msg .= qq{% tpda3 -init $cf_name\n};
-        $msg .= qq{and Edit the configuration files in: };
-        $msg .= $self->configdir() . qq{\n};
-        my $cfg_hr
-            = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+        my $cfg_hr = $self->config_file_load($cfg_file);
 
         my @accessor = keys %{$cfg_hr};
         $self->{_log}->info("runtime: Making accessors for: @accessor");
@@ -264,8 +256,6 @@ sub config_app_file_name {
     my ( $self, $section ) = @_;
 
     my $fl = catfile( $self->configdir, $self->cfapp->{$section} );
-
-    #    print "$section: config_app_file_name is $fl \n";
 
     return $fl;
 }
@@ -346,8 +336,7 @@ Print configuration details.
 sub list_configs_details {
     my ( $self, $cfg_file ) = @_;
 
-    my $msg = qq{Configuration error\n};
-    my $cfg_hr = Tpda3::Config::Utils->config_file_load( $cfg_file, $msg );
+    my $cfg_hr = $self->config_file_load($cfg_file);
 
     while ( my ( $key, $value ) = each( %{ $cfg_hr->{connection} } ) ) {
         print sprintf( "%*s", 10, $key ), ' = ';
@@ -379,8 +368,7 @@ sub config_save_instance {
 
 =head2 config_load_instance
 
-Load instance configuarations.  Only window geometry configuration for
-now.
+Load instance configurations.  User window geometry configuration.
 
 =cut
 
@@ -391,7 +379,7 @@ sub config_load_instance {
 
     my $inst_fqn = catfile( $self->configdir, $inst );
 
-    my $cfg_hr = Tpda3::Config::Utils->config_file_load($inst_fqn);
+    my $cfg_hr = $self->config_file_load($inst_fqn, 'notfatal');
 
     $self->make_accessors($cfg_hr);
 
@@ -500,7 +488,7 @@ sub configdir_populate {
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
-        or Carp::croak( "Failed to copy user data to " . $configdir );
+        or ouch 'CfgInsErr', "Failed to copy user data to '$configdir'";
 
     return;
 }
@@ -586,6 +574,40 @@ Return a file name and path for logging.
 sub get_log_filename {
 
     return catfile(File::HomeDir->my_data, 'tpda3.log');
+}
+
+=head2 config_file_load
+
+Load a config file and return the Perl data structure.  It loads a
+file in Config::General format or in YAML::Tiny format, depending on
+the extension of the file.
+
+=cut
+
+sub config_file_load {
+    my ( $self, $conf_file, $not_fatal ) = @_;
+
+    print " $conf_file ... " if $self->verbose;
+    my $log = get_logger();
+
+    if ( !-f $conf_file ) {
+        print "\r $conf_file ... not found\n" if $self->verbose;
+        ouch 'FileNotFound', ' Configuration error!' unless $not_fatal;
+    }
+    print "\r $conf_file ... found\n" if $self->verbose;
+
+    my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
+    if ( $suf =~ m{conf} ) {
+        return Tpda3::Config::Utils->load_conf($conf_file);
+    }
+    elsif ( $suf =~ m{yml} ) {
+        return Tpda3::Config::Utils->load_yaml($conf_file);
+    }
+    else {
+        ouch 'BadSuffix', "Config file: $conf_file has wrong suffix ($suf)";
+    }
+
+    return;
 }
 
 =head1 AUTHOR
