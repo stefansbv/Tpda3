@@ -394,19 +394,6 @@ sub _set_event_handlers {
         }
     );
 
-    #-- Clear screen
-    $self->_view->event_handler_for_tb_button(
-        'tb_cl',
-        sub {
-            (          $self->_model->is_mode('edit')
-                    or $self->_model->is_mode('add')
-                )
-                ? $self->screen_clear()
-                : $self->_view->set_status( 'Not add|edit mode',
-                'ms', 'orange' );
-        }
-    );
-
     #-- Reload
     $self->_view->event_handler_for_tb_button(
         'tb_rr',
@@ -2038,31 +2025,6 @@ sub toggle_screen_interface_controls {
     #     my $control = $self->scrobj()->get_controls($field)->[1];
     #     $control->configure( -state => $state );
     # }
-
-    return;
-}
-
-=head2 screen_clear
-
-Clear the screen: empty all controls.
-
-=cut
-
-sub screen_clear {
-    my $self = shift;
-
-    return unless ref $self->scrobj('rec');    # check if screen loaded
-
-    $self->record_clear;
-
-    # TODO: Don't change mode at all?
-    # # Don't change mode if 'det' page
-    # my $page = $self->_view->get_nb_current_page();
-    # if ( $self->_model->is_mode('edit') ) {
-    #     $self->set_app_mode('idle') unless $page eq 'det';
-    # }
-
-    $self->_view->set_status( 'Cleared', 'ms', 'orange' );
 
     return;
 }

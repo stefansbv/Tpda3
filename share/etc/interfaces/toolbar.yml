@@ -144,28 +144,8 @@ toolbar:
         edit: disabled
         find: disabled
         sele: disabled
-  tb_cl:
-    id:      1008
-    type:    _item_normal
-    icon:    filenew16
-    tooltip: Clear
-    help:    Clear
-    sep:     none
-    state:
-      rec:
-        idle: disabled
-        add:  normal
-        edit: disabled
-        find: disabled
-        sele: disabled
-      det:
-        idle: disabled
-        add:  disabled
-        edit: disabled
-        find: disabled
-        sele: disabled
   tb_rr:
-    id:      1009
+    id:      1008
     type:    _item_normal
     icon:    actreload16
     tooltip: Refresh
@@ -185,7 +165,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_ad:
-    id:      1010
+    id:      1009
     type:    _item_check
     icon:    actitemadd16
     tooltip: Add record
@@ -205,7 +185,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_rm:
-    id:      1011
+    id:      1010
     type:    _item_normal
     icon:    actitemdelete16
     tooltip: Remove record
@@ -225,7 +205,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_sv:
-    id:      1012
+    id:      1011
     type:    _item_normal
     icon:    filesave16
     tooltip: Save record
@@ -245,7 +225,7 @@ toolbar:
         find: disabled
         sele: disabled
   tb_at:
-    id:      1013
+    id:      1012
     type:    _item_normal
     icon:    actattach16
     tooltip: Attach to desktop, here
@@ -265,7 +245,7 @@ toolbar:
         find: disabled
         sele: normal
   tb_qt:
-    id:      1014
+    id:      1013
     type:    _item_normal
     icon:    actexit16
     tooltip: Quit
