@@ -3,9 +3,9 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
+use Ouch;
 
 use English;
-use Ouch;
 use Data::Dumper;
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed);
@@ -846,9 +846,9 @@ sub setup_lookup_bindings_entry {
         my @cols;
         my $rec = {};
         $rec->{$search} = {
-            width => $field_cfg->{width},
-            label => $field_cfg->{label},
-            order => $field_cfg->{coltype},
+            width   => $field_cfg->{width},
+            label   => $field_cfg->{label},
+            coltype => $field_cfg->{coltype},
         };
         $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1189,9 +1189,9 @@ sub get_lookup_setings {
     my @cols;
     my $rec = {};
     $rec->{$search} = {
-        width => $field_cfg->{width},
-        label => $field_cfg->{label},
-        order => $field_cfg->{coltype},
+        width   => $field_cfg->{width},
+        label   => $field_cfg->{label},
+        coltype => $field_cfg->{coltype},
     };
     $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1243,9 +1243,9 @@ sub fields_cfg_array {
         }
         my $rec = {};
         $rec->{$lookup_field} = {
-            width => $field_cfg->{width},
-            label => $field_cfg->{label},
-            order => $field_cfg->{coltype},
+            width   => $field_cfg->{width},
+            label   => $field_cfg->{label},
+            coltype => $field_cfg->{coltype},
         };
         push @cols, $rec;
     }
@@ -1278,10 +1278,10 @@ sub fields_cfg_hash {
 
         my $rec = {};
         $rec->{$lookup_field} = {
-            width => $field_cfg->{width},
-            label => $field_cfg->{label},
-            order => $field_cfg->{coltype},
-            name  => $scr_field,
+            width   => $field_cfg->{width},
+            label   => $field_cfg->{label},
+            coltype => $field_cfg->{coltype},
+            name    => $scr_field,
         };
         push @cols, $rec;
     }
@@ -3536,8 +3536,7 @@ sub dep_table_metadata {
         $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
     }
     else {
-        warn "Wrong parameter: $for_sql\n";
-        return;
+        ouch 'BadParam', "Bad parameter: $for_sql";
     }
 
     my $columns = $self->scrcfg->dep_table_columns($tm_ds);
