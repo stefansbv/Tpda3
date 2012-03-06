@@ -2,6 +2,8 @@ package Tpda3::Config;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Ouch;
 
 use Log::Log4perl qw(get_logger :levels);
@@ -606,6 +608,27 @@ sub config_file_load {
     else {
         ouch 'BadSuffix', "Config file: $conf_file has wrong suffix ($suf)";
     }
+
+    return;
+}
+
+=head2 list_config_files
+
+List screen configuration files.
+
+=cut
+
+sub list_config_files {
+    my $self = shift;
+
+    my $scrdir = catdir( $self->configdir, 'scr' );
+    my $conlst = Tpda3::Config::Utils->find_files($scrdir);
+
+    print "Screen configurations:\n";
+    foreach my $cfg_name ( @{$conlst} ) {
+        print " > $cfg_name\n";
+    }
+    print "\n";
 
     return;
 }

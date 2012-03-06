@@ -5,11 +5,12 @@ use warnings;
 use Ouch;
 
 use Log::Log4perl qw(get_logger);
-#use File::Basename;
+use File::Basename;
 use File::Copy;
 use File::Find::Rule;
 use File::Path qw( make_path );
 
+use Try::Tiny;
 use YAML::Tiny;
 use Config::General;
 
@@ -98,7 +99,16 @@ structure.
 sub load_yaml {
     my ( $self, $yaml_file ) = @_;
 
-    return YAML::Tiny::LoadFile($yaml_file);
+    my $conf;
+    try {
+        $conf = YAML::Tiny::LoadFile($yaml_file);
+    }
+    catch {
+        my $msg = YAML::Tiny->errstr;
+        ouch 'LoadFailed', " but failed to load because:\n $msg\n";
+    };
+
+    return $conf;
 }
 
 =head2 find_subdirs
@@ -110,18 +120,35 @@ Find subdirectories of a directory, not recursively
 sub find_subdirs {
     my ( $self, $dir ) = @_;
 
-    # Find all the sub directories of a given directory
     my $rule = File::Find::Rule->new->mindepth(1)->maxdepth(1);
-
-    # Ignore git
     $rule->or( $rule->new->directory->name('.git')->prune->discard,
-        $rule->new );
+        $rule->new );    # ignore git
 
     my @subdirs = $rule->directory->in($dir);
 
     my @dbs = map { basename($_); } @subdirs;
 
     return \@dbs;
+}
+
+=head2 find_files
+
+Find files in directory at depth 1, not recursively.
+
+=cut
+
+sub find_files {
+    my ( $self, $dir ) = @_;
+
+    my $rule = File::Find::Rule->new->mindepth(1)->maxdepth(1);
+    $rule->or( $rule->new->directory->name('.git')->prune->discard,
+        $rule->new );    # ignore git
+
+    my @files = $rule->file->in($dir);
+
+    my @justnames = map { basename($_); } @files;
+
+    return \@justnames;
 }
 
 =head2 save_yaml
@@ -208,7 +235,6 @@ Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 None known.
 
 Please report any bugs or feature requests to the author.
-
 
 =head1 LICENSE AND COPYRIGHT
 
