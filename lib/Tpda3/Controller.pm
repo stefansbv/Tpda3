@@ -323,11 +323,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_fm',
         sub {
-
-            # From add or sele mode forbid find mode
-            $self->toggle_mode_find()
-                unless ( $self->_model->is_mode('add')
-                    or $self->_model->is_mode('sele') );
+            $self->toggle_mode_find();
         }
     );
 
@@ -335,9 +331,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_fe',
         sub {
-            $self->_model->is_mode('find')
-                ? $self->record_find_execute
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+            $self->record_find_execute();
         }
     );
 
@@ -345,9 +339,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_fc',
         sub {
-            $self->_model->is_mode('find')
-                ? $self->record_find_count
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+            $self->record_find_count();
         }
     );
 
@@ -355,9 +347,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_pr',
         sub {
-            $self->_model->is_mode('edit')
-                ? $self->screen_report_print()
-                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+            $self->screen_report_print();
         }
     );
 
@@ -365,9 +355,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_pr',
         sub {
-            $self->_model->is_mode('edit')
-                ? $self->screen_document_generate()
-                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+            $self->screen_document_generate();
         }
     );
 
@@ -375,12 +363,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_tn',
         sub {
-            (          $self->_model->is_mode('edit')
-                    or $self->_model->is_mode('add')
-                )
-                ? $self->take_note()
-                : $self->_view->set_status( 'Not add|edit mode',
-                'ms', 'orange' );
+            $self->take_note();
         }
     );
 
@@ -388,9 +371,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_tr',
         sub {
-            $self->_model->is_mode('add')
-                ? $self->restore_note()
-                : $self->_view->set_status( 'Not add mode', 'ms', 'orange' );
+            $self->restore_note();
         }
     );
 
@@ -398,9 +379,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_rr',
         sub {
-            $self->_model->is_mode('edit')
-                ? $self->record_reload()
-                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+            $self->record_reload();
         }
     );
 
@@ -408,8 +387,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_ad',
         sub {
-            $self->toggle_mode_add()
-                unless $self->_model->is_mode('sele');
+            $self->toggle_mode_add();
         }
     );
 
@@ -417,9 +395,7 @@ sub _set_event_handlers {
     $self->_view->event_handler_for_tb_button(
         'tb_rm',
         sub {
-            $self->_model->is_mode('edit')
-                ? $self->event_record_delete
-                : $self->_view->set_status( 'Not edit mode', 'ms', 'orange' );
+            $self->event_record_delete();
         }
     );
 

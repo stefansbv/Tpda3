@@ -584,7 +584,7 @@ Create toolbar
 sub _create_toolbar {
     my $self = shift;
 
-    $self->{_tb} = $self->TB();
+    $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
 
     my ( $toolbars, $attribs ) = $self->toolbar_names();
 
@@ -1298,8 +1298,8 @@ sub event_handler_for_menu {
 sub event_handler_for_tb_button {
     my ($self, $name, $calllback) = @_;
 
-    $self->get_toolbar_btn($name)->bind(
-        '<ButtonRelease-1>' => $calllback,
+    $self->get_toolbar_btn($name)->configure(
+        -command => $calllback,
     );
 
     return;
