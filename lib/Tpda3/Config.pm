@@ -589,14 +589,19 @@ the extension of the file.
 sub config_file_load {
     my ( $self, $conf_file, $not_fatal ) = @_;
 
-    print " $conf_file ... " if $self->verbose;
-    my $log = get_logger();
-
+    # my $log = get_logger();
     if ( !-f $conf_file ) {
-        print "\r $conf_file ... not found\n" if $self->verbose;
-        ouch 'FileNotFound', ' Configuration error!' unless $not_fatal;
+        if ($not_fatal) {
+            print " $conf_file ... not found\n" if $self->verbose;
+            return;
+        }
+        else {
+            ouch 'FileNotFound', ' Configuration error!'
+        }
     }
-    print "\r $conf_file ... found\n" if $self->verbose;
+    else {
+        print " $conf_file ... found\n" if $self->verbose;
+    }
 
     my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
     if ( $suf =~ m{conf} ) {
