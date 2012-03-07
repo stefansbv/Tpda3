@@ -591,12 +591,14 @@ sub config_file_load {
 
     # my $log = get_logger();
     if ( !-f $conf_file ) {
+        print " $conf_file ... not found\n" if $self->verbose;
         if ($not_fatal) {
-            print " $conf_file ... not found\n" if $self->verbose;
             return;
         }
         else {
-            ouch 'FileNotFound', ' Configuration error!'
+            my $msg = 'Configuration error!';
+            $msg .= $self->verbose ? '' : ", file not found:\n$conf_file";
+            ouch 404, $msg;
         }
     }
     else {
