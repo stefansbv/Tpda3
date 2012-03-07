@@ -2,10 +2,9 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-use Carp;
+use Ouch;
 
 use Try::Tiny;
-use Ouch;
 use SQL::Abstract;
 use List::Compare;
 use Data::Compare;
@@ -582,7 +581,7 @@ sub build_where {
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
-            croak "Configuration error: unknown 'findtype' for '$field'";
+            ouch 'CfgError', "Unknown 'find_type': $find_type for '$field'";
         }
 
         if ( $find_type eq 'contains' ) {
@@ -614,6 +613,9 @@ sub build_where {
         elsif ( $find_type eq 'none' ) {
 
             # just skip
+        }
+        else {
+            ouch 'CfgError', "Unknown 'find_type': $find_type for '$field'";
         }
     }
 
@@ -889,10 +891,10 @@ sub table_record_delete {
 
     my $sql = SQL::Abstract->new();
 
-    croak "Empty TABLE name in DELETE command!"
+    ouch 'DBFatal', "Empty TABLE name in DELETE command!"
         unless $table;
 
-    croak "Empty SQL WHERE in DELETE command!"
+    ouch 'DBFatal', "Empty SQL WHERE in DELETE command!"
         unless ( %{$where} );    # safety net, is enough ???
 
     $self->_log->debug("Deleting from $table: ");

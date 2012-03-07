@@ -635,7 +635,7 @@ sub screen_detail_load {
     my $dscrstr = $self->screen_string('det');
 
     unless ( $dscrstr && ( $dscrstr eq lc $dsm ) ) {
-        print "Loading detail screen ($dsm)\n";
+        #print "Loading detail screen ($dsm)\n";
         $self->screen_module_detail_load($dsm);
     }
     return;
@@ -1312,9 +1312,8 @@ sub on_screen_mode_idle {
 
     $self->controls_state_set('off');
 
-    my $nb = $self->_view->get_notebook();
-    # $nb->pageconfigure( 'det', -state => 'disabled' );
-    # $nb->pageconfigure( 'lst', -state => 'normal' );
+    $self->_view->nb_set_page_state( 'det', 'disabled');
+    $self->_view->nb_set_page_state( 'lst', 'normal');
 
     return;
 }
@@ -1346,9 +1345,8 @@ sub on_screen_mode_add {
     my $record = $self->get_screen_data_record('ins');
     $self->screen_write( $record->[0]{data} );
 
-    my $nb = $self->_view->get_notebook();
-    # $nb->pageconfigure( 'lst', -state => 'disabled' );
-    # $nb->pageconfigure( 'det', -state => 'disabled' );
+    $self->_view->nb_set_page_state( 'det', 'disabled');
+    $self->_view->nb_set_page_state( 'lst', 'disabled');
 
     return;
 }
@@ -1387,11 +1385,8 @@ sub on_screen_mode_edit {
     my $self = shift;
 
     $self->controls_state_set('edit');
-
-    my $nb = $self->_view->get_notebook();
-
-    # # $nb->pageconfigure('det', -state => 'normal');
-    # $nb->pageconfigure( 'lst', -state => 'normal' );
+    $self->_view->nb_set_page_state( 'det', 'normal');
+    $self->_view->nb_set_page_state( 'lst', 'normal');
 
     return;
 }
@@ -1786,6 +1781,12 @@ sub screen_string {
     return lc $scrstr;
 }
 
+=head2 save_geometry
+
+Save geometry in instance configuration file.
+
+=cut
+
 sub save_geometry {
     my $self = shift;
 
@@ -1967,15 +1968,6 @@ sub toggle_screen_interface_controls {
     my $mode = $self->_model->get_appmode;
 
     return if $page eq 'lst';
-
-    # #- Toolbar (main)
-
-    # my ( $toolbars, $attribs ) = $self->scrobj()->alter_toolbar();
-
-    # foreach my $name ( @{$toolbars} ) {
-    #     my $status = $attribs->{$name}{state}{$page}{$mode};
-    #     $self->_view->enable_tool( $name, $status );
-    # }
 
     #- Toolbar (table)
 
@@ -2289,6 +2281,12 @@ sub screen_document_generate {
     return;
 }
 
+=head2 get_alternate_data_record
+
+Datasource from configuration for default document assigned to screen.
+
+=cut
+
 sub get_alternate_data_record {
     my ( $self, $datasource ) = @_;
 
@@ -2297,7 +2295,6 @@ sub get_alternate_data_record {
     my $record = {};
     $record->{metadata} = $self->main_table_metadata('qry');
     $record->{data}     = {};
-
     $record->{metadata}{table} = $datasource;      # change datasource
 
     #-- Data
@@ -2305,7 +2302,6 @@ sub get_alternate_data_record {
     $record->{data} = $self->_model->query_record( $record->{metadata} );
 
     my @rec;
-
     push @rec, $record;    # rec data at index 0
 
     return \@rec;
@@ -3536,6 +3532,12 @@ sub report_table_metadata {
     return $metadata;
 }
 
+=head2 get_table_sumup_cols
+
+Return table L<sumup> cols.
+
+=cut
+
 sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
 
@@ -3873,6 +3875,12 @@ sub tmshr_process_level {
     return $newleveldata;
 }
 
+=head2 tmshr_format_record
+
+TMSHR format record.
+
+=cut
+
 sub tmshr_format_record {
     my ($self, $level, $rec, $header) = @_;
 
@@ -3885,6 +3893,12 @@ sub tmshr_format_record {
 
     return $rec;
 }
+
+=head2 flatten_cfg
+
+TODO
+
+=cut
 
 sub flatten_cfg {
     my ( $self, $level, $attribs ) = @_;
@@ -3901,6 +3915,12 @@ sub flatten_cfg {
 
     return \%flatten;
 }
+
+=head2 tmshr_compute_value
+
+TODO
+
+=cut
 
 sub tmshr_compute_value {
     my ($self, $field, $record, $attribs) = @_;
