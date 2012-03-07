@@ -8,9 +8,9 @@ use Data::Dumper;
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
 
-use Tpda3::Config;
-use Tpda3::Config::Utils;
-use Tpda3::Utils;
+require Tpda3::Config;
+require Tpda3::Config::Utils;
+require Tpda3::Utils;
 
 use base qw(Class::Accessor);
 
@@ -53,6 +53,7 @@ sub new {
     bless $self, $class;
 
     $self->config_screen_load($args);
+    $self->alter_toolbar_config();
 
     return $self;
 }
@@ -144,6 +145,32 @@ sub config_scr_file_name {
     }
 }
 
+=head2 alter_toolbar_config
+
+Fine tune the configuration for screens, alter behavior of toolbar
+buttons per screen.
+
+=cut
+
+sub alter_toolbar_config {
+    my $self = shift;
+
+    my $tb_m = $self->_cfg->toolbar();
+    my $tb_a = $self->screen_alter_toolbar();
+
+    foreach my $tb ( keys %{$tb_a} ) {
+        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
+            while ( my ( $k, $v ) = each( %{ $tb_a->{$tb}{state}{$pg} } ) ) {
+                $tb_m->{$tb}{state}{$pg}{$k} = $v;
+            }
+        }
+    }
+
+    $self->_cfg->toolbar($tb_m);
+
+    return;
+}
+
 =head2 app_dateformat
 
 Date format configuration.
@@ -173,7 +200,7 @@ sub get_defaultreport_file {
 
 =head2 get_defaultreport_name
 
-Return default report description, used by the print tool button, for
+Return default report description, used by the print tool button, as
 the baloon label.
 
 =cut
@@ -186,7 +213,8 @@ sub get_defaultreport_name {
 
 =head2 get_defaultdocument_file
 
-
+Return default document description, used by the generate tool button,
+as the baloon label.
 
 =cut
 
@@ -215,8 +243,7 @@ sub get_defaultdocument_name {
 
 =head2 get_defaultdocument_datasource
 
-Return default document description, used by the edit tool button, for
-the baloon label.
+Return default document datasource.
 
 =cut
 
@@ -604,6 +631,12 @@ sub dep_table_column_attr {
     my ( $self, $tm_ds, $column, $attr ) = @_;
 
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
+}
+
+sub screen_alter_toolbar {
+    my $self = shift;
+
+    return $self->toolbar;
 }
 
 =head2 app_toolbar_attribs

@@ -353,7 +353,7 @@ sub _set_event_handlers {
 
     #-- Generate default document button
     $self->_view->event_handler_for_tb_button(
-        'tb_pr',
+        'tb_gr',
         sub {
             $self->screen_document_generate();
         }
@@ -475,12 +475,13 @@ the current page.
 sub on_page_rec_activate {
     my $self = shift;
 
+    $self->_view->set_status( '', 'ms' );    # clear
+
     if ( $self->_model->is_mode('sele') ) {
         $self->set_app_mode('edit');
     }
     else {
         $self->toggle_interface_controls;
-        # $self->toggle_screen_interface_controls;            EXPERIMENT
     }
 
     $self->_view->nb_set_page_state( 'lst', 'normal');
@@ -550,7 +551,6 @@ sub on_page_det_activate {
     }
     else {
         $self->_view->get_notebook()->raise('rec');
-        print "Not selected\n";
         return;
     }
 
@@ -1406,7 +1406,7 @@ sub on_screen_mode_sele {
     my $self = shift;
 
     my $nb = $self->_view->get_notebook();
-    # $nb->pageconfigure( 'det', -state => 'disabled' );
+    $self->_view->nb_set_page_state( 'det', 'disabled');
 
     return;
 }
@@ -1550,6 +1550,9 @@ sub screen_module_load {
             $self->{_dscrcls} = undef;
         }
     }
+
+    # reload toolbar - if? altered by prev screen
+    $self->_cfg->toolbar_interface_reload();
 
     # Make new NoteBook widget and setup callback
     $self->_view->create_notebook();
@@ -1952,9 +1955,6 @@ sub toggle_interface_controls {
 Toggle screen controls (toolbar buttons) appropriate for different
 states of the application.
 
-Used to fine tune the configuration for screens, enable disable
-toolbar buttons per screen.
-
 Also used by the toolbar buttons attached to the TableMatrix widget in
 some screens.
 
@@ -1968,7 +1968,16 @@ sub toggle_screen_interface_controls {
 
     return if $page eq 'lst';
 
-    #- Toolbar TableMatrix
+    # #- Toolbar (main)
+
+    # my ( $toolbars, $attribs ) = $self->scrobj()->alter_toolbar();
+
+    # foreach my $name ( @{$toolbars} ) {
+    #     my $status = $attribs->{$name}{state}{$page}{$mode};
+    #     $self->_view->enable_tool( $name, $status );
+    # }
+
+    #- Toolbar (table)
 
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
         my ( $toolbars, $attribs ) = $self->scrobj()->app_toolbar_names($tm_ds);
@@ -2788,7 +2797,7 @@ sub record_load_new {
     $self->record_load();
 
     if ( $self->_model->is_loaded ) {
-        $self->_view->set_status( 'Record loaded', 'ms', 'blue' );
+        $self->_view->set_status( 'Record loaded (r)', 'ms', 'blue' );
     }
 
     return;

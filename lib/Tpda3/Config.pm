@@ -65,7 +65,7 @@ sub _new_instance {
 
         # If no config name don't bother to load this
         # Interface configs
-        $self->config_interface_load();
+        $self->config_interfaces_load();
 
         # Application configs
         $self->config_application_load($args);
@@ -172,7 +172,7 @@ sub config_main_load {
     return $maincfg;
 }
 
-=head2 config_interface_load
+=head2 config_interfaces_load
 
 Process the main configuration file and automaticaly load all the
 interface defined configuration files.  That means if we add a YAML
@@ -181,21 +181,12 @@ at restart.
 
 =cut
 
-sub config_interface_load {
+sub config_interfaces_load {
     my $self = shift;
 
     foreach my $section ( keys %{ $self->cfiface } ) {
         my $cfg_file = $self->config_iface_file_name($section);
-
-        $self->{_log}->info("Loading '$section' config");
-        $self->{_log}->info("file: $cfg_file");
-
-        my $cfg_hr = $self->config_file_load($cfg_file);
-
-        my @accessor = keys %{$cfg_hr};
-        $self->{_log}->info("Making accessors for: @accessor");
-
-        $self->make_accessors($cfg_hr);
+        $self->config_load_file($cfg_file);
     }
 
     return;
@@ -221,19 +212,30 @@ sub config_application_load {
 
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->config_app_file_name($section);
-
-        $self->{_log}->info("Loading '$section' config");
-        $self->{_log}->info("file: $cfg_file");
-
-        my $cfg_hr = $self->config_file_load($cfg_file);
-
-        my @accessor = keys %{$cfg_hr};
-        $self->{_log}->info("runtime: Making accessors for: @accessor");
-
-        $self->make_accessors($cfg_hr);
+        $self->config_load_file($cfg_file);
     }
 
     return;
+}
+
+=head2 config_load
+
+Load configuration file and make accessors.
+
+=cut
+
+sub config_load_file {
+    my ($self, $cfg_file) = @_;
+
+    $self->{_log}->info("Loading file: $cfg_file");
+
+    my $cfg_hr = $self->config_file_load($cfg_file);
+
+    my @accessor = keys %{$cfg_hr};
+    $self->{_log}->info("Making accessors for: @accessor");
+
+    $self->make_accessors($cfg_hr);
+
 }
 
 =head2 config_iface_file_name
@@ -384,6 +386,21 @@ sub config_load_instance {
     my $cfg_hr = $self->config_file_load($inst_fqn, 'notfatal');
 
     $self->make_accessors($cfg_hr);
+
+    return;
+}
+
+=head2 toolbar_interface_reload
+
+Reload toolbar.
+
+=cut
+
+sub toolbar_interface_reload {
+    my $self = shift;
+
+    my $cfg_file = $self->config_iface_file_name('toolbar');
+    $self->config_load_file($cfg_file);
 
     return;
 }

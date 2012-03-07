@@ -2,6 +2,8 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use POSIX qw (floor);
@@ -1285,22 +1287,34 @@ sub list_locate {
     return $idx;
 }
 
-#-- Event handlers
+=head2 event_handler_for_tb_button
+
+Event handlers.
+
+Configure callback for menu
+
+=cut
 
 sub event_handler_for_menu {
-    my ($self, $name, $calllback) = @_;
+    my ( $self, $name, $calllback ) = @_;
 
     $self->get_menu_popup_item($name)->configure( -command => $calllback );
 
     return;
 }
 
-sub event_handler_for_tb_button {
-    my ($self, $name, $calllback) = @_;
+=head2 event_handler_for_tb_button
 
-    $self->get_toolbar_btn($name)->configure(
-        -command => $calllback,
-    );
+Event handlers.
+
+Configure callback for toolbar button.
+
+=cut
+
+sub event_handler_for_tb_button {
+    my ( $self, $name, $calllback ) = @_;
+
+    $self->get_toolbar_btn($name)->configure( -command => $calllback );
 
     return;
 }
