@@ -71,7 +71,7 @@ sub dateentry_parse_date {
 
     my ( $self, $format, $date ) = @_;
 
-    croak unless $date;
+    return unless $date;
 
     my ( $y, $m, $d );
 
@@ -113,7 +113,7 @@ sub dateentry_format_date {
 
     my ( $self, $format, $y, $m, $d ) = @_;
 
-    croak unless $y and $m and $d;
+    return unless $y and $m and $d;
 
     my $date;
 

@@ -1518,7 +1518,10 @@ sub control_read_d {
         if ( !$self->_model->is_mode('find') ) {
             my ( $y, $m, $d )
                 = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
-            $value = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m, $d );
+            if ( $y and $m and $d ) {
+                $value = Tpda3::Utils->dateentry_format_date( 'iso', $y, $m,
+                    $d );
+            }
         }
     }
 
