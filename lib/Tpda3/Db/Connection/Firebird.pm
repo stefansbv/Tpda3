@@ -173,7 +173,7 @@ sub table_list {
 
     $log->info('Geting list of tables');
 
-    my $sql = q{SELECT RDB$RELATION_NAME
+    my $sql = q{SELECT LOWER(RDB$RELATION_NAME)
                    FROM RDB$RELATIONS
                     WHERE RDB$SYSTEM_FLAG=0
                       AND RDB$VIEW_BLR IS NULL
@@ -209,14 +209,46 @@ sub table_info_short {
 
     $table = uc $table;
 
-    my $sql = qq( SELECT RDB\$FIELD_POSITION AS pos
-                    , r.RDB\$FIELD_NAME AS name
-                    , r.RDB\$DESCRIPTION AS field_description
+    my $sql = qq(SELECT RDB\$FIELD_POSITION AS pos
+                    , LOWER(r.RDB\$FIELD_NAME) AS name
                     , r.RDB\$DEFAULT_VALUE AS defa
                     , r.RDB\$NULL_FLAG AS is_nullable
                     , f.RDB\$FIELD_LENGTH AS length
                     , f.RDB\$FIELD_PRECISION AS prec
-                    , f.RDB\$FIELD_SCALE AS scale
+                    , CASE
+                        WHEN f.RDB\$FIELD_SCALE > 0 THEN (f.RDB\$FIELD_SCALE)
+                        WHEN f.RDB\$FIELD_SCALE < 0 THEN (f.RDB\$FIELD_SCALE * -1)
+                        ELSE 0
+                      END AS scale
+                    , CASE f.RDB\$FIELD_TYPE
+                        WHEN 261 THEN 'blob'
+                        WHEN 14  THEN 'char'
+                        WHEN 40  THEN 'cstring'
+                        WHEN 11  THEN 'd_float'
+                        WHEN 27  THEN 'double'
+                        WHEN 10  THEN 'float'
+                        WHEN 16  THEN
+                          CASE f.RDB\$FIELD_SCALE
+                            WHEN 0 THEN 'int64'
+                            ELSE 'numeric'
+                          END
+                        WHEN 8   THEN
+                          CASE f.RDB\$FIELD_SCALE
+                            WHEN 0 THEN 'integer'
+                            ELSE 'numeric'
+                          END
+                        WHEN 9   THEN 'quad'
+                        WHEN 7   THEN
+                          CASE f.RDB\$FIELD_SCALE
+                            WHEN 0 THEN 'smallint'
+                            ELSE 'numeric'
+                          END
+                        WHEN 12  THEN 'date'
+                        WHEN 13  THEN 'time'
+                        WHEN 35  THEN 'timestamp'
+                        WHEN 37  THEN 'varchar'
+                      ELSE 'UNKNOWN'
+                      END AS type
                     FROM RDB\$RELATION_FIELDS r
                        LEFT JOIN RDB\$FIELDS f
                             ON r.RDB\$FIELD_SOURCE = f.RDB\$FIELD_NAME
@@ -240,7 +272,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-
 =head2 table_keys
 
 Get the primary key field name of the table.
@@ -259,7 +290,7 @@ sub table_keys {
 
     $table = uc $table;
 
-    my $sql = qq( SELECT s.RDB\$FIELD_NAME AS column_name
+    my $sql = qq( SELECT LOWER(s.RDB\$FIELD_NAME) AS column_name
                      FROM RDB\$INDEX_SEGMENTS s
                         LEFT JOIN RDB\$INDICES i
                           ON i.RDB\$INDEX_NAME = s.RDB\$INDEX_NAME
@@ -294,123 +325,40 @@ sub table_keys {
     return $pkf;
 }
 
-# SELECT rc.RDB$CONSTRAINT_NAME,
-#           s.RDB$FIELD_NAME AS field_name,
-#           rc.RDB$CONSTRAINT_TYPE AS constraint_type,
-#           i.RDB$DESCRIPTION AS description,
-#           rc.RDB$DEFERRABLE AS is_deferrable,
-#           rc.RDB$INITIALLY_DEFERRED AS is_deferred,
-#           refc.RDB$UPDATE_RULE AS on_update,
-#           refc.RDB$DELETE_RULE AS on_delete,
-#           refc.RDB$MATCH_OPTION AS match_type,
-#           i2.RDB$RELATION_NAME AS references_table,
-#           s2.RDB$FIELD_NAME AS references_field,
-#           (s.RDB$FIELD_POSITION + 1) AS field_position
-#      FROM RDB$INDEX_SEGMENTS s
-# LEFT JOIN RDB$INDICES i ON i.RDB$INDEX_NAME = s.RDB$INDEX_NAME
-# LEFT JOIN RDB$RELATION_CONSTRAINTS rc ON rc.RDB$INDEX_NAME = s.RDB$INDEX_NAME
-# LEFT JOIN RDB$REF_CONSTRAINTS refc ON rc.RDB$CONSTRAINT_NAME = refc.RDB$CONSTRAINT_NAME
-# LEFT JOIN RDB$RELATION_CONSTRAINTS rc2 ON rc2.RDB$CONSTRAINT_NAME = refc.RDB$CONST_NAME_UQ
-# LEFT JOIN RDB$INDICES i2 ON i2.RDB$INDEX_NAME = rc2.RDB$INDEX_NAME
-# LEFT JOIN RDB$INDEX_SEGMENTS s2 ON i2.RDB$INDEX_NAME = s2.RDB$INDEX_NAME
-#     WHERE i.RDB$RELATION_NAME='FIRME'       -- table nam
-#       AND rc.RDB$CONSTRAINT_TYPE IS NOT NULL
-#  ORDER BY s.RDB$FIELD_POSITION
-
 =head2 table_exists
 
 Check if table exists in the database.
 
-TODO: Implement using SQL::Abstract !
-
 =cut
 
-# sub table_exists {
-#     my ($self, $table) = @_;
+sub table_exists {
+    my ($self, $table) = @_;
 
-#     my $log = get_logger();
-#     $log->info("Checking if $table table exists");
+    my $log = get_logger();
+    $log->info("Checking if $table table exists");
 
-#     my $sql = qq( SELECT COUNT(table_name)
-#                 FROM information_schema.tables
-#                 WHERE table_type = 'BASE TABLE'
-#                     AND table_schema NOT IN
-#                     ('pg_catalog', 'information_schema')
-#                     AND table_name = '$table';
-#     );
+    $table = uc $table;
 
-#     $log->trace("SQL= $sql");
+    my $sql = qq(SELECT COUNT(RDB\$RELATION_NAME)
+                     FROM RDB\$RELATIONS
+                     WHERE RDB\$SYSTEM_FLAG=0
+                         AND RDB\$VIEW_BLR IS NULL
+                         AND RDB\$RELATION_NAME = '$table';
+    );
 
-#     my $val_ret;
-#     try {
-#         ($val_ret) = $self->{_dbh}->selectrow_array($sql);
-#     }
-#     catch {
-#         $log->fatal("Transaction aborted because $_")
-#             or print STDERR "$_\n";
-#     };
+    $log->trace("SQL= $sql");
 
-#     return $val_ret;
-# }
+    my $val_ret;
+    try {
+        ($val_ret) = $self->{_dbh}->selectrow_array($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
 
-=head2 table_keys
-
-Get the primary key field name of the table.
-
-TODO: Implement using SQL::Abstract !
-
-=cut
-
-# sub table_keys {
-#     my ($self, $table, $foreign) = @_;
-
-#     my $log = get_logger();
-
-#     my $type = 'PRIMARY KEY';
-#     $type = 'FOREIGN KEY' if $foreign;
-
-#     $log->info("Geting '$table' table primary key(s) names");
-
-#     #  From http://www.alberton.info/postgresql_meta_info.html
-#     my $sql = qq( SELECT kcu.column_name
-#                    FROM information_schema.table_constraints tc
-#                      LEFT JOIN information_schema.key_column_usage kcu
-#                           ON tc.constraint_catalog = kcu.constraint_catalog
-#                             AND tc.constraint_schema = kcu.constraint_schema
-#                             AND tc.constraint_name = kcu.constraint_name
-#                    WHERE tc.table_name = '$table'
-#                      AND tc.constraint_type = '$type';
-#     );
-
-#     $log->trace("SQL= $sql");
-
-#     $self->{_dbh}{AutoCommit} = 1;    # disable transactions
-#     $self->{_dbh}{RaiseError} = 0;
-
-#     my $pkf = [];
-#     try {
-#         # List of lists
-#         $pkf = $self->{_dbh}->selectall_arrayref( $sql );
-#     }
-#     catch {
-#         $log->fatal("Transaction aborted because $_")
-#             or print STDERR "$_\n";
-#     };
-
-#     return $pkf;
-# }
-
-=head2 table_deps
-
-Return table dependencies and their Id field.
-
-=cut
-
-# sub table_deps {
-#     my ($self, $table) = @_;
-
-#     return;
-# }
+    return $val_ret;
+}
 
 =head1 AUTHOR
 
@@ -421,10 +369,13 @@ Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
 None known.
 
 Please report any bugs or feature requests to the author.
+
 =head1 ACKNOWLEDGEMENTS
 
-Information schema queries by Lorenzo Alberton from
-http://www.alberton.info/firebird_sql_meta_info.html
+Information schema queries inspired from:
+
+ - http://www.alberton.info/firebird_sql_meta_info.html by Lorenzo Alberton
+ - Flamerobin Copyright (c) 2004-2012 The FlameRobin Development Team
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -101,10 +101,11 @@ sub login_dialog {
     return $pd->login( $self->_view );
 }
 
-
 =head2 application_class
 
 Main application class name.
+
+TODO: This should go to Config?
 
 =cut
 
@@ -138,156 +139,11 @@ sub screen_module_class {
     return ( $module_class, $module_file );
 }
 
-# =head2 message_error_dialog
+=head2 _set_event_handlers_keys
 
-# Error message dialog.
+Setup event handlers for the interface.
 
-# =cut
-
-# sub message_error_dialog {
-#     my ($self, $mesg) = @_;
-
-#     $self->_view->{dialog_e}->configure(
-#         -message => 'Not connected to the database!',
-#         -detail  => $mesg,
-#     );
-#     $self->_view->{dialog_e}->Show();
-
-#     return;
-# }
-
-# =head2 guide
-
-# Quick help dialog.
-
-# =cut
-
-# sub guide {
-#     my $self = shift;
-
-#     my $gui = $self->_view;
-
-#     require Tpda3::Tk::Dialog::Help;
-#     my $gd = Tpda3::Tk::Dialog::Help->new;
-
-#     $gd->help_dialog($gui);
-
-#     return;
-# }
-
-# =head2 repman
-
-# Report Manager application dialog.
-
-# =cut
-
-# sub repman {
-#     my $self = shift;
-
-#     my $gui = $self->_view;
-
-#     require Tpda3::Tk::Dialog::Repman;
-#     my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
-
-#     $gd->run_screen($gui);
-
-#     return;
-# }
-
-# =head2 about
-
-# About application dialog.
-
-# =cut
-
-# sub about {
-#     my $self = shift;
-
-#     my $gui = $self->_view;
-
-#     # Create a dialog.
-#     my $dbox = $gui->DialogBox(
-#         -title   => 'Despre ... ',
-#         -buttons => ['Close'],
-#     );
-
-#     # Windows has the annoying habit of setting the background color
-#     # for the Text widget differently from the rest of the window.  So
-#     # get the dialog box background color for later use.
-#     my $bg = $dbox->cget('-background');
-
-#     # Insert a text widget to display the information.
-#     my $text = $dbox->add(
-#         'Text',
-#         -height     => 15,
-#         -width      => 35,
-#         -background => $bg
-#     );
-
-#     # Define some fonts.
-#     my $textfont = $text->cget('-font')->Clone( -family => 'Helvetica' );
-#     my $italicfont = $textfont->Clone( -slant => 'italic' );
-#     $text->tag(
-#         'configure', 'italic',
-#         -font    => $italicfont,
-#         -justify => 'center',
-#     );
-#     $text->tag(
-#         'configure', 'normal',
-#         -font    => $textfont,
-#         -justify => 'center',
-#     );
-
-#     # Framework version
-#     my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
-#     my $PROGRAM_VER  = $Tpda3::VERSION;
-
-#     # Get application version
-#     my $app_class = $self->application_class;
-#     ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
-#     my ( $APP_VER, $APP_NAME ) = ( '', '' );
-#     eval {
-#         require $app_file;
-#         $app_class->import();
-#     };
-#     if ($@) {
-#         print "WW: Can't load '$app_file'\n";
-#         return;
-#     }
-#     else {
-#         $APP_VER  = $app_class->VERSION;
-#         $APP_NAME = $app_class->application_name();
-#     }
-
-#     # Add the about text.
-#     $text->insert( 'end', "\n" );
-#     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
-#     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
-#     $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
-#     $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
-#     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
-#     $text->insert( 'end', "stefansbv at users . sourceforge . net",
-#         'italic' );
-#     $text->insert( 'end', "\n\n" );
-#     $text->insert( 'end', "$APP_NAME\n", 'normal' );
-#     $text->insert( 'end', "Version " . $APP_VER . "\n", 'normal' );
-#     $text->insert( 'end', "\n\n" );
-#     $text->insert( 'end', "Perl " . $PERL_VERSION . "\n", 'normal' );
-#     $text->insert( 'end', "Tk v" . $Tk::VERSION . "\n", 'normal' );
-
-#     $text->configure( -state => 'disabled' );
-#     $text->pack(
-#         -expand => 1,
-#         -fill   => 'both'
-#     );
-#     $dbox->Show();
-# }
-
-# =head2 _set_event_handlers
-
-# Setup event handlers for the interface.
-
-# =cut
+=cut
 
 sub _set_event_handlers_keys {
     my $self = shift;
@@ -397,7 +253,6 @@ sub _set_event_handler_nb {
 
     return;
 }
-
 
 =head2 guide
 

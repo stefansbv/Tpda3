@@ -2505,7 +2505,7 @@ sub screen_write {
 
             # Number
             if ( $fldcfg->{coltype} eq 'numeric' ) {
-                $self->format_as_number( $value, $fldcfg->{numscale} );
+                $value = $self->format_number( $value, $fldcfg->{numscale} );
             }
         }
 
@@ -2742,7 +2742,7 @@ sub controls_state_set {
     return;
 }
 
-=head2 formated
+=head2 format_number
 
 Return trimmed and formated value if numscale is greater than 0.
 
@@ -2750,7 +2750,7 @@ TODO: Should make $value = 0, than format as number?
 
 =cut
 
-sub format_as_number {
+sub format_number {
     my ( $self, $value, $numscale ) = @_;
 
     # If numscale > 0, format as number
