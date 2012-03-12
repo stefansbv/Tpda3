@@ -3,7 +3,7 @@ package Tpda3::Wx::Controller;
 use strict;
 use warnings;
 use utf8;
-use Carp;
+use English;
 
 use Wx q{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
@@ -11,7 +11,6 @@ use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
     EVT_LIST_ITEM_ACTIVATED);
 
 require Tpda3::Wx::App;
-require Tpda3::Wx::Dialog::Login;
 
 use base qw{Tpda3::Controller};
 
@@ -77,7 +76,7 @@ sub _init {
     my $self = shift;
 
     my $app = Tpda3::Wx::App->create($self->_model);
-    $self->{_app}  = $app;                  # an alias as for Wx ...
+    $self->{_app}  = $app;
     $self->{_view} = $app->{_view};
 
     return;
@@ -117,7 +116,6 @@ sub application_class {
     my $self = shift;
 
     my $app_name  = $self->_cfg->application->{module};
-    my $widgetset = $self->{widgetset};
 
     return "Tpda3::Wx::App::${app_name}";
 }
@@ -142,6 +140,64 @@ sub screen_module_class {
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
 
     return ( $module_class, $module_file );
+}
+
+=head2 _set_event_handlers_keys
+
+Setup event handlers for the interface.
+
+=cut
+
+sub _set_event_handlers_keys {
+    my $self = shift;
+
+    #-- Make some key bindings
+
+    #   Not implemented
+
+    return;
+}
+
+=head2 _set_event_handler_nb
+
+Separate event handler for NoteBook because must be initialized only
+after the NoteBook is (re)created and that happens when a new screen is
+required (selected from the applications menu) to load.
+
+=cut
+
+sub _set_event_handler_nb {
+    my $self = shift;
+
+    $self->_log->trace('Setup event handler on NoteBook');
+
+    #- NoteBook events
+
+    $self->_view->on_notebook_page_changed(
+        sub {
+            my $page = $self->_view->get_nb_current_page;
+            $self->_view->set_nb_current($page);
+
+          SWITCH: {
+                $page eq 'lst'
+                    && do { $self->on_page_lst_activate; last SWITCH; };
+                $page eq 'rec'
+                    && do { $self->on_page_rec_activate; last SWITCH; };
+                $page eq  'det'
+                    && do { $self->on_page_det_activate; last SWITCH; };
+                print "EE: \$page is not in (lst rec det)\n";
+            }
+        }
+    );
+
+    #-- Enter on list item activates record page
+    $self->_view->on_list_item_activated(
+        sub {
+            $self->_view->get_notebook->SetSelection(0);    # 'rec'
+        }
+    );
+
+    return;
 }
 
 =head2 about
@@ -342,48 +398,6 @@ sub about {
 
 #     return;
 # }
-
-=head2 _set_event_handler_nb
-
-Separate event handler for NoteBook because must be initialized only
-after the NoteBook is (re)created and that happens when a new screen is
-required (selected from the applications menu) to load.
-
-=cut
-
-sub _set_event_handler_nb {
-    my $self = shift;
-
-    $self->_log->trace('Setup event handler on NoteBook');
-
-    #- NoteBook events
-
-    $self->_view->on_notebook_page_changed(
-        sub {
-            my $page = $self->_view->get_nb_current_page;
-            $self->_view->set_nb_current($page);
-
-          SWITCH: {
-                $page eq 'lst'
-                    && do { $self->on_page_lst_activate; last SWITCH; };
-                $page eq 'rec'
-                    && do { $self->on_page_rec_activate; last SWITCH; };
-                $page eq  'det'
-                    && do { $self->on_page_det_activate; last SWITCH; };
-                print "EE: \$page is not in (lst rec det)\n";
-            }
-        }
-    );
-
-    #-- Enter on list item activates record page
-    $self->_view->on_list_item_activated(
-        sub {
-            $self->_view->get_notebook->SetSelection(0);    # 'rec'
-        }
-    );
-
-    return;
-}
 
 # =cut
 

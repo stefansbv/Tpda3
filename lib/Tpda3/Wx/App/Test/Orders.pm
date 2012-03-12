@@ -216,7 +216,7 @@ sub run_screen {
 
     #--- Comment
 
-    my $tcomments = Wx::TextCtrl->new(
+    my $ecomments = Wx::TextCtrl->new(
         $rec_page,
         -1,
         q{},
@@ -230,7 +230,7 @@ sub run_screen {
     my $sbox_sz_comment = Wx::StaticBoxSizer->new(
         Wx::StaticBox->new( $rec_page, -1, ' Comment ', ), wxVERTICAL );
 
-    $sbox_sz_comment->Add( $tcomments, 0, wxEXPAND );
+    $sbox_sz_comment->Add( $ecomments, 0, wxEXPAND );
     $right_sz->Add( $sbox_sz_comment, 0, wxALL | wxGROW, 5 );
 
     $top_sz ->Add( $left_sz, 3, wxALL | wxGROW, 5 );
@@ -248,7 +248,7 @@ sub run_screen {
         requireddate   => [ undef, $drequireddate ],
         shippeddate    => [ undef, $dshippeddate ],
         statuscode     => [ undef, $bstatuscode ],
-        comments       => [ undef, $tcomments ],
+        comments       => [ undef, $ecomments ],
     };
 
     return;

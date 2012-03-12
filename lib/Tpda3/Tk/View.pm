@@ -3,19 +3,13 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use Data::Dumper;
-use Carp;
-
 use POSIX qw (floor);
-
 use Log::Log4perl qw(get_logger);
-
 use File::Spec::Functions qw(abs2rel catfile);
+
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
     LabFrame Listbox JComboBox MsgBox);
-
-# require Tk::ErrorDialog;
 
 use base 'Tk::MainWindow';
 
@@ -399,6 +393,12 @@ sub get_menu_popup_item {
     return $self->{_menu}{$name};
 }
 
+=head2 set_menu_enable
+
+Enable / disable menus.
+
+=cut
+
 sub set_menu_enable {
         my ( $self, $menu, $state ) = @_;
 
@@ -760,6 +760,12 @@ sub get_nb_current_page {
     return $nb->raised();
 }
 
+=head2 set_nb_current
+
+Save current notbook page.
+
+=cut
+
 sub set_nb_current {
     my ( $self, $page ) = @_;
 
@@ -1020,7 +1026,7 @@ sub list_header {
         }
     }
     else {
-        print "WW: No sort option for '$col->{label}'\n";
+        print "WW: No 'coltype' attribute for '$col->{label}'\n";
     }
 
     return;
@@ -1319,7 +1325,11 @@ sub event_handler_for_tb_button {
     return;
 }
 
-#-- Write to controls
+=head2 list_control_choices
+
+Configure choices.
+
+=cut
 
 sub list_control_choices {
     my ($self, $control, $choices) = @_;

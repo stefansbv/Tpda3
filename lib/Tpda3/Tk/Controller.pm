@@ -3,16 +3,12 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 use utf8;
-use Carp;
 use English;
 
 use Tk;
 use Tk::Font;
 
 require Tpda3::Tk::View;
-require Tpda3::Tk::Dialog::Login;
-require Tpda3::Tk::Dialog::Help;
-require Tpda3::Tk::Dialog::Repman;
 
 use base qw{Tpda3::Controller};
 
@@ -237,8 +233,6 @@ sub _set_event_handler_nb {
                     && do { $self->on_page_det_activate; last SWITCH; };
                 print "EE: \$page is not in (lst rec det)\n";
             }
-
-            # $self->_view->set_status( '', 'ms' );    # clear status message
         },
     );
 
@@ -250,44 +244,6 @@ sub _set_event_handler_nb {
             Tk->break;
         }
     );
-
-    return;
-}
-
-=head2 guide
-
-Quick help dialog.
-
-=cut
-
-sub guide {
-    my $self = shift;
-
-    my $gui = $self->_view;
-
-    require Tpda3::Tk::Dialog::Help;
-    my $gd = Tpda3::Tk::Dialog::Help->new;
-
-    $gd->help_dialog($gui);
-
-    return;
-}
-
-=head2 repman
-
-Report Manager application dialog.
-
-=cut
-
-sub repman {
-    my $self = shift;
-
-    my $gui = $self->_view;
-
-    require Tpda3::Tk::Dialog::Repman;
-    my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
-
-    $gd->run_screen($gui);
 
     return;
 }
@@ -379,6 +335,44 @@ sub about {
         -fill   => 'both'
     );
     $dbox->Show();
+}
+
+=head2 guide
+
+Quick help dialog.
+
+=cut
+
+sub guide {
+    my $self = shift;
+
+    my $gui = $self->_view;
+
+    require Tpda3::Tk::Dialog::Help;
+    my $gd = Tpda3::Tk::Dialog::Help->new;
+
+    $gd->help_dialog($gui);
+
+    return;
+}
+
+=head2 repman
+
+Report Manager application dialog.
+
+=cut
+
+sub repman {
+    my $self = shift;
+
+    my $gui = $self->_view;
+
+    require Tpda3::Tk::Dialog::Repman;
+    my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
+
+    $gd->run_screen($gui);
+
+    return;
 }
 
 =head1 AUTHOR

@@ -2,7 +2,6 @@ package Tpda3::Wx::View;
 
 use strict;
 use warnings;
-use Carp;
 
 use POSIX qw (floor ceil);
 use Log::Log4perl qw(get_logger);
@@ -848,9 +847,9 @@ sub header_width {
     $width = $label_len >= $width ? $label_len + 2 : $width;
     my $char_width = $self->GetCharWidth();
     my $field_attr = {
-        label => $field->{label},
-        width => $width * $char_width,
-        order => $field->{order},
+        label   => $field->{label},
+        width   => $width * $char_width,
+        coltype => $field->{coltype},
     };
 
     return $field_attr;
@@ -863,13 +862,13 @@ Make header for the list in the List tab.
 =cut
 
 sub list_header {
-    my ( $self, $col_attribs, $colcnt ) = @_;
+    my ( $self, $col, $colcnt ) = @_;
 
-    # Label
-    $self->get_recordlist->InsertColumn( $colcnt, $col_attribs->{label},
-        wxLIST_FORMAT_LEFT, $col_attribs->{width}, );
+    # Label and width
+    $self->get_recordlist->InsertColumn( $colcnt, $col->{label},
+        wxLIST_FORMAT_LEFT, $col->{width} );
 
-    if ( defined $col_attribs->{order} ) {
+    if ( defined $col->{coltype} ) {
 
         # TODO: Figure out how to sort
         # if ($attr->{coltype} !~ m{alpha}i ) {
@@ -878,7 +877,7 @@ sub list_header {
         # }
     }
     else {
-        warn " Warning: no sort option for '$col_attribs->{label}'\n";
+        print "WW: No 'coltype' attribute for '$col->{label}'\n";
     }
 
     return;
@@ -945,6 +944,7 @@ Return item data from list control
 
 sub get_list_data {
     my ( $self, $item ) = @_;
+
     return $self->get_recordlist->GetItemData($item);
 }
 
