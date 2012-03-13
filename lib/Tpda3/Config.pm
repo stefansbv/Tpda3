@@ -502,8 +502,8 @@ sub configdir_populate {
         $sharedir = catdir( $sharedir, 'apps', $cfname );
     }
 
-    $self->{_log}->info("Config dir is '$configdir'");
-    $self->{_log}->info("Share dir is '$sharedir'");
+    $self->{_log}->info("Config: $configdir");
+    $self->{_log}->info("Share : $sharedir");
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )

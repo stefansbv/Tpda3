@@ -849,7 +849,7 @@ sub header_width {
     my $field_attr = {
         label   => $field->{label},
         width   => $width * $char_width,
-        coltype => $field->{coltype},
+        datatype => $field->{datatype},
     };
 
     return $field_attr;
@@ -868,16 +868,16 @@ sub list_header {
     $self->get_recordlist->InsertColumn( $colcnt, $col->{label},
         wxLIST_FORMAT_LEFT, $col->{width} );
 
-    if ( defined $col->{coltype} ) {
+    if ( defined $col->{datatype} ) {
 
         # TODO: Figure out how to sort
-        # if ($attr->{coltype} !~ m{alpha}i ) {
+        # if ($attr->{datatype} !~ m{alpha}i ) {
         #     $self->{_rc}->columnGet($colcnt)
         #         ->configure( -comparecommand => sub { $_[0] <=> $_[1]} );
         # }
     }
     else {
-        print "WW: No 'coltype' attribute for '$col->{label}'\n";
+        print "WW: No 'datatype' attribute for '$col->{label}'\n";
     }
 
     return;

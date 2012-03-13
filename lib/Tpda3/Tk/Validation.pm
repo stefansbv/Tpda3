@@ -117,7 +117,7 @@ sub maintable_attribs {
 
     my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
 
-    return @{$table_cfg}{qw(coltype width numscale)};    # hash slice
+    return @{$table_cfg}{qw(datatype width numscale)};    # hash slice
 }
 
 =head2 deptable_attribs
@@ -132,7 +132,7 @@ sub deptable_attribs {
 
     my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
 
-    return @{$table_cfg}{qw(coltype width numscale)};    # hash slice
+    return @{$table_cfg}{qw(datatype width numscale)};    # hash slice
 }
 
 =head2 validate_entry

@@ -196,7 +196,7 @@ sub set_tags {
         -bg     => 'lightblue',
     );
     $self->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
-    $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
+    # $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
     # TableMatrix header, Set Name, Align, Width
     foreach my $field ( keys %{ $self->{columns} } ) {
@@ -279,11 +279,11 @@ sub fill {
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
 
-            my ( $col, $coltype, $width, $numscale )
-                = @$fld_cfg{ 'id', 'coltype', 'width',
+            my ( $col, $datatype, $width, $numscale )
+                = @$fld_cfg{ 'id', 'datatype', 'width',
                 'numscale' };                        # hash slice
 
-            if ( $coltype eq 'numeric' ) {
+            if ( $datatype eq 'numeric' ) {
                 $value = 0 unless $value;
                 if ( defined $numscale ) {
 
@@ -328,10 +328,10 @@ sub write_row {
         my $fld_cfg = $self->{columns}{$field};
         my $value   = $record_ref->{$field};
 
-        my ( $col, $coltype, $width, $numscale )
-            = @$fld_cfg{ 'id', 'coltype', 'width', 'numscale' }; # hash slice
+        my ( $col, $datatype, $width, $numscale )
+            = @$fld_cfg{ 'id', 'datatype', 'width', 'numscale' }; # hash slice
 
-        if ( $coltype =~ /digit/ ) {
+        if ( $datatype =~ /digit/ ) {
             $value = 0 unless $value;
             if ( defined $numscale ) {
 

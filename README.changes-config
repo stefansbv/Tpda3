@@ -1,0 +1,92 @@
+- Section: maintable
+
+- Changes in the column attribute labels:
+
+<column_name>
+    ...
+    places     = 0         | renamed to numscale
+    rw         = r         | renamed to readwrite
+    order      = N         | merged to coltype
+    validation = integer   |
+    required   = no        | removed
+    ...
+</column_name>
+
+
+-- And finaly, the last change (2012-03-13):
+
+    renamed atribute label 'coltype' to 'datatype'.
+
+
+-- Full, ordered, set of values and labels:
+
+<column_name>
+    state     = disabled | normal        default widget state
+    ctrltype  = e                        widget type Tk::Entry
+                | t                                  Tk::Text
+                | m                                  JComboBox
+                | d                                  Tk::DateEntry
+                | c                                  Tk::Checkbutton
+                | r                                  Tk::Radiobuttongroup
+    width     = <smallint>               used only for the List table display
+    numscale  = 0                        numeric scale, number of digits after
+              | >0                         the decimal separator [.]
+
+    readwrite = r
+              | rw
+              | ro
+    findtype  = full
+              | contents
+              | date
+    bgcolor   = <color_name>             background color in default state
+    datatype  = alphanumplus
+              | alphanum
+              | alpha
+              | integer
+              | numeric
+              | anychar
+              | email
+              | date
+<column_name>
+
+- Section: deptable
+
+-- Changes in the column attribute labels:
+
+<column_name>
+  ...
+    rw         = r         | renamed to readwrite
+    places     = 0         | renamed to numscale
+    order      = N         | merged to coltype
+    validation = integer   |
+  ...
+</column_name>
+
+<column_name>
+    id        = <pos>                     position in the TM table (from 0)
+    label     = <Label>                   label of the column
+    width     = 5                         width of the column
+    readwrite = rw                        read and write
+              | ro                        read only
+    tag       = ro_center                 column tags, see Tpda3::Tk::TM
+              | find_left
+              | find_center
+              | find_right
+              | ro_left
+              | ro_center
+              | ro_right
+              | enter_left
+              | enter_center
+              | enter_right
+              | enter_center_blue
+    numscale  = 0                        numeric scale, number of digits after
+              | >0                         the decimal separator [.]
+    datatype  = alphanumplus
+              | alphanum
+              | alpha
+              | integer
+              | numeric
+              | anychar
+              | email
+              | date
+<column_name>

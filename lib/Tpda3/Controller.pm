@@ -742,7 +742,7 @@ field, looks like this:
 This configuration allows to lookup for a I<customernumber> in the
 I<customers> table when knowing the I<customername>.  The
 I<customername> and I<customernumber> fields must be defined in the
-current table, with properties like width, label and coltype. this are
+current table, with properties like width, label and datatype. this are
 also the names of the widgets in the screen I<Orders>.  Multiple
 I<field> items can be added to the configuration, to return more than
 one value, and write its contents to the screen.
@@ -811,7 +811,7 @@ sub setup_lookup_bindings_entry {
         $rec->{$search} = {
             width   => $field_cfg->{width},
             label   => $field_cfg->{label},
-            coltype => $field_cfg->{coltype},
+            datatype => $field_cfg->{datatype},
         };
         $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1091,7 +1091,7 @@ An example of a returned data structure, for the Orders screen:
         {
             'productname' => {
                 'width'   => 36,
-                'coltype' => 'alphanum',
+                'datatype' => 'alphanum',
                 'name'    => 'productname',
                 'label'   => 'Product',
             }
@@ -1099,7 +1099,7 @@ An example of a returned data structure, for the Orders screen:
         {
             'productcode' => {
                 'width'   => 15,
-                'coltype' => 'alphanum',
+                'datatype' => 'alphanum',
                 'label'   => 'Code',
             }
         },
@@ -1154,7 +1154,7 @@ sub get_lookup_setings {
     $rec->{$search} = {
         width   => $field_cfg->{width},
         label   => $field_cfg->{label},
-        coltype => $field_cfg->{coltype},
+        datatype => $field_cfg->{datatype},
     };
     $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1208,7 +1208,7 @@ sub fields_cfg_array {
         $rec->{$lookup_field} = {
             width   => $field_cfg->{width},
             label   => $field_cfg->{label},
-            coltype => $field_cfg->{coltype},
+            datatype => $field_cfg->{datatype},
         };
         push @cols, $rec;
     }
@@ -1243,7 +1243,7 @@ sub fields_cfg_hash {
         $rec->{$lookup_field} = {
             width   => $field_cfg->{width},
             label   => $field_cfg->{label},
-            coltype => $field_cfg->{coltype},
+            datatype => $field_cfg->{datatype},
             name    => $scr_field,
         };
         push @cols, $rec;
@@ -2504,7 +2504,7 @@ sub screen_write {
             $value = Tpda3::Utils->trim($value);
 
             # Number
-            if ( $fldcfg->{coltype} eq 'numeric' ) {
+            if ( $fldcfg->{datatype} eq 'numeric' ) {
                 $value = $self->format_number( $value, $fldcfg->{numscale} );
             }
         }
@@ -3928,7 +3928,7 @@ sub tmshr_compute_value {
     ouch 'ConfigError', "$field field's config is EMPTY" unless %{$attribs};
 
     my ( $col, $validtype, $width, $numscale, $datasource )
-        = @$attribs{ 'id', 'coltype', 'width', 'numscale', 'datasource' };
+        = @$attribs{ 'id', 'datatype', 'width', 'numscale', 'datasource' };
 
     my $value;
     if ( $datasource =~ m{=count|=sumup} ) {
@@ -4046,7 +4046,7 @@ sub record_merge_columns {
 
     my %hr;
     foreach my $field ( keys %{ $header->{columns} } ) {
-        my $field_type = $header->{columns}{$field}{coltype};
+        my $field_type = $header->{columns}{$field}{datatype};
         my $default_value
         # column type          default
         = $field_type eq 'numeric' ? 0

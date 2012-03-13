@@ -185,9 +185,9 @@ sub search_dialog {
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
                 ->configure( -width => $rec->{$field}{width} );
 
-            if ( defined $rec->{$field}{coltype} ) {
-                if (   $rec->{$field}{coltype} eq 'integer'
-                    or $rec->{$field}{coltype} eq 'numeric' )
+            if ( defined $rec->{$field}{datatype} ) {
+                if (   $rec->{$field}{datatype} eq 'integer'
+                    or $rec->{$field}{datatype} eq 'numeric' )
                 {
                     $self->{box}->columnGet($colcnt)
                         ->configure(

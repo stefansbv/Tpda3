@@ -1019,14 +1019,14 @@ sub list_header {
         ->configure( -width => $col->{width} );
 
     # Sort order, (A)lpha is default
-    if ( defined $col->{coltype} ) {
-        if ( $col->{coltype} eq 'integer' or $col->{coltype} eq 'numeric' ) {
+    if ( defined $col->{datatype} ) {
+        if ( $col->{datatype} eq 'integer' or $col->{datatype} eq 'numeric' ) {
             $self->get_recordlist->columnGet($colcnt)
                 ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
         }
     }
     else {
-        print "WW: No 'coltype' attribute for '$col->{label}'\n";
+        print "WW: No 'datatype' attribute for '$col->{label}'\n";
     }
 
     return;
