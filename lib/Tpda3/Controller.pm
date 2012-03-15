@@ -1617,7 +1617,12 @@ sub screen_module_load {
         $self->set_event_handler_screen($tm_ds);
     }
 
-    $self->_set_menus_enable('normal');
+    # Toggle find mode menus
+    my $menus_state
+        = $self->scrcfg()->screen_style() eq 'report'
+        ? 'disabled'
+        : 'normal';
+    $self->_set_menus_enable($menus_state);
 
     $self->_view->set_status( '', 'ms' );
 

@@ -169,7 +169,9 @@ sub _set_event_handlers_keys {
 
             # From add mode forbid find mode
             $self->toggle_mode_find()
-                if $self->{_rscrcls} and !$self->_model->is_mode('add');
+                if $self->{_rscrcls}
+                    and !$self->_model->is_mode('add')
+                    and $self->scrcfg()->screen_style() ne 'report';
         }
     );
 
