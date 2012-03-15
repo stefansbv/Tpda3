@@ -375,6 +375,24 @@ sub repman {
     return;
 }
 
+=head2 message_error_dialog
+
+Error message dialog.
+
+=cut
+
+sub message_error_dialog {
+    my ($self, $mesg) = @_;
+
+    $self->_view->{dialog_e}->configure(
+        -message => 'Not connected to the database!',
+        -detail  => $mesg,
+    );
+    $self->_view->{dialog_e}->Show();
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>

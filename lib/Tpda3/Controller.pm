@@ -141,11 +141,7 @@ Error message dialog.
 sub message_error_dialog {
     my ($self, $mesg) = @_;
 
-    $self->_view->{dialog_e}->configure(
-        -message => 'Not connected to the database!',
-        -detail  => $mesg,
-    );
-    $self->_view->{dialog_e}->Show();
+    print 'message_error_dialog not implemented in ', __PACKAGE__, "\n";
 
     return;
 }

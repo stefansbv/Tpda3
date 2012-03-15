@@ -2,8 +2,6 @@ package Tpda3::Config;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Ouch;
 
 use Log::Log4perl qw(get_logger :levels);
@@ -634,6 +632,45 @@ sub config_file_load {
     }
 
     return;
+}
+
+=head2 config_scrdir
+
+Return the screen configuration directory.
+
+=cut
+
+sub config_scrdir {
+    my $self = shift;
+
+    return catdir( $self->configdir, 'scr' );
+}
+
+=head2 config_scr_file_name
+
+Return fully qualified screen configuration file name.
+
+=cut
+
+sub config_scr_file_name {
+    my ( $self, $file_name ) = @_;
+
+    # Check if has extension and add it if not
+    my (undef, undef, $type) = fileparse($file_name, '\.conf' );
+    unless ($type eq '.conf') {
+        $file_name .= '.conf';
+    }
+
+    my $conf_fn = catfile( $self->config_scrdir, $file_name );
+
+    if (-f $conf_fn) {
+        return $conf_fn;
+    }
+    else {
+
+        # Fallback to alternative location (tools)
+        return catfile( $self->cfpath, 'scr', $file_name );
+    }
 }
 
 =head2 list_config_files

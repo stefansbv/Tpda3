@@ -107,7 +107,7 @@ Load a Screen configuration files at request.
 sub config_screen_load_file {
     my ( $self, $scrcls ) = @_;
 
-    my $cfg_file  = $self->config_scr_file_name("$scrcls.conf");
+    my $cfg_file = $self->_cfg->config_scr_file_name($scrcls);
 
     return $self->_cfg->config_file_load($cfg_file);
 }
@@ -122,27 +122,6 @@ sub _cfg {
     my $self = shift;
 
     return $self->{_cfg};
-}
-
-=head2 config_scr_file_name
-
-Return fully qualified screen configuration file name.
-
-=cut
-
-sub config_scr_file_name {
-    my ( $self, $file_name ) = @_;
-
-    my $conf_fn = catfile( $self->_cfg->configdir, 'scr', $file_name );
-
-    if (-f $conf_fn) {
-        return $conf_fn;
-    }
-    else {
-
-        # Fallback to alternative location (tools)
-        return catfile( $self->_cfg->cfpath, 'scr', $file_name );
-    }
 }
 
 =head2 alter_toolbar_config
@@ -657,12 +636,23 @@ sub app_toolbar_attribs {
 Return the L<scrtoolbar> configuration data structure defined for the
 curren screen.
 
+If there is only one toolbar button then return it as an array reference.
+
 =cut
 
 sub _screen_toolbars {
     my ( $self, $name ) = @_;
 
-    return $self->scrtoolbar->{$name};
+    my $scrtb = $self->scrtoolbar->{$name};
+    my @toolbars;
+    if (ref($scrtb) eq 'ARRAY') {
+        @toolbars = @{$scrtb};
+    }
+    else {
+        @toolbars = ($scrtb);
+    }
+
+    return \@toolbars;
 }
 
 =head2 app_toolbar_names

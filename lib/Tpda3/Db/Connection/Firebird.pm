@@ -123,7 +123,7 @@ RDBMS specific (and maybe version specific?).
 sub parse_db_error {
     my ($self, $fb) = @_;
 
-    # print "\nFB: $fb\n\n";
+    print "\nFB: $fb\n\n";
 
     my $message_type =
          $fb eq q{}                                          ? "nomessage"
@@ -132,6 +132,7 @@ sub parse_db_error {
        : $fb =~ m/user name and password/smi                 ? "userpass"
        : $fb =~ m/no route to host/smi                       ? "network"
        : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
+       : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi ? "driver:$1"
        :                                                       "unknown";
 
     # Analize and translate
@@ -140,6 +141,7 @@ sub parse_db_error {
     $name = $name ? $name : '';
 
     my $translations = {
+        driver      => "fatal#Database driver $name not found",
         nomessage   => "weird#Error without message",
         dbnotfound  => "fatal#Database $name not found",
         relnotfound => "fatal#Relation $name not found",

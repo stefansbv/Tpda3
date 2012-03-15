@@ -1,13 +1,14 @@
 #
 # Tpda3 Wx GUI test script
 #
-
+# TODO: Change to properly skip if no Wx (use MyTest problem)
+#
 use strict;
 use warnings;
 
 use lib qw(t/lib);
 
-use Test::More;
+use Test::More skip_all => 'Not ready';
 use MyTest;
 
 my $ok_test;
