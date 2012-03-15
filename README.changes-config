@@ -2,6 +2,8 @@
 
 - Changes in the column attribute labels:
 
+-- Version 1
+
 <column_name>
     ...
     places     = 0         | renamed to numscale
@@ -12,13 +14,14 @@
     ...
 </column_name>
 
+-- Version 2
 
--- And finaly, the last change (2012-03-13):
+-- Changes (2012-03-13):
 
     renamed atribute label 'coltype' to 'datatype'.
 
 
--- Full, ordered, set of values and labels:
+- Full, ordered, set of values and labels:
 
 <column_name>
     state     = disabled | normal        default widget state
