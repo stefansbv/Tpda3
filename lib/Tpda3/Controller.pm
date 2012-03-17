@@ -13,16 +13,15 @@ use List::MoreUtils qw{uniq};
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
 use Storable qw (store retrieve);
-use Math::Symbolic;
 use Hash::Merge qw(merge);
+use File::Basename;
+use File::Spec::Functions qw(catfile);
+use Math::Symbolic;
 
 require Tpda3::Utils;
 require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
-
-use File::Basename;
-use File::Spec::Functions qw(catfile);
 
 =head1 NAME
 
@@ -422,6 +421,12 @@ sub _set_event_handlers {
 
     return;
 }
+
+=head2 _set_event_handler_nb
+
+set event handler for the notebook pages.
+
+=cut
 
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
@@ -1328,8 +1333,8 @@ are defined for some fields, then fill in that value.
 sub on_screen_mode_add {
     my ( $self, ) = @_;
 
-    $self->record_clear;           # empty the main controls and TM
-    $self->tmatrix_set_selected(); # initialize selector
+    $self->record_clear;              # empty the main controls and TM
+    $self->tmatrix_set_selected();    # initialize selector
 
     foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
         $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
@@ -1337,12 +1342,12 @@ sub on_screen_mode_add {
 
     $self->controls_state_set('edit');
 
-    # Fill in the default values
-    my $record = $self->get_screen_data_record('ins');
-    $self->screen_write( $record->[0]{data} );
+    # Fill in the default values ???
+    # my $record = $self->get_screen_data_record('ins');
+    # $self->screen_write( $record->[0]{data} );
 
-    $self->_view->nb_set_page_state( 'det', 'disabled');
-    $self->_view->nb_set_page_state( 'lst', 'disabled');
+    $self->_view->nb_set_page_state( 'det', 'disabled' );
+    $self->_view->nb_set_page_state( 'lst', 'disabled' );
 
     return;
 }
@@ -2696,9 +2701,9 @@ Toggle all controls state from I<Screen>.
 =cut
 
 sub controls_state_set {
-    my ( $self, $state ) = @_;
+    my ( $self, $set_state ) = @_;
 
-    $self->_log->trace("Screen 'rec' controls state is '$state'");
+    $self->_log->trace("Screen 'rec' controls state is '$set_state'");
 
     my $page = $self->_view->get_nb_current_page();
     my $bg   = $self->scrobj($page)->get_bgcolor();
@@ -2706,7 +2711,7 @@ sub controls_state_set {
     my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};
 
-    my $control_states = $self->control_states($state);
+    my $control_states = $self->control_states($set_state);
 
     return unless defined $self->scrcfg($page);
 
@@ -2725,10 +2730,10 @@ sub controls_state_set {
             if $bkground eq 'disabled_bgcolor';
 
         # Special case for find mode and fields with 'findtype' set to none
-        if ( $state eq 'find' ) {
+        if ( $set_state eq 'find' ) {
             if ( $fld_cfg->{findtype} eq 'none' ) {
-                $state = 'disabled';
-                $bg_color   = $self->scrobj($page)->get_bgcolor();
+                $state    = 'disabled';
+                $bg_color = $self->scrobj($page)->get_bgcolor();
             }
         }
 
@@ -3383,6 +3388,12 @@ sub get_screen_data_record {
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
+
+    # Experimenting a default value
+    # if ($for_sql eq 'ins') {
+    #     $record->{data} = {id_user => 'stefan'};
+    # }
+
     push @record, $record;    # rec data at index 0
 
     #-  Dependent table(s), if any

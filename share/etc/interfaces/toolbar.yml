@@ -1,5 +1,5 @@
 # tpda3
-# Toolbar interface configuration
+# Main toolbar interface configuration.
 # Don't change, unless you know what you are doing!
 # The toolbar Id's start at 1000
 ---
@@ -148,8 +148,8 @@ toolbar:
     id:      1008
     type:    _item_normal
     icon:    actreload16
-    tooltip: Refresh
-    help:    Refresh
+    tooltip: Reload record
+    help:    Reload record
     sep:     after
     state:
       rec:

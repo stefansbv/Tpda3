@@ -37,7 +37,7 @@ if ( $man or $help or $#ARGV >= 0 ) {
     if ($help)    { tpda3_version(); pod2usage(1); }
 }
 
-my $cfname = shift;         # Runtime configuration name or database name
+my $cfname = shift;         # Run-time configuration name or database name
 
 #- Options
 my $opts = {};
@@ -92,15 +92,15 @@ sub tpda3_version {
 
 =head1 NAME
 
-tpda3 - Tpda (Tiny Perl Database Application the 3'rd)
+tpda3 - Tpda (Tiny Perl Database Application 3)
 
 =head1 SYNOPSIS
+
+tpda3 <config-name> [-user <user>] [-password <pass>]
 
 tpda3 -list
 
 tpda3 <config-name> -init <new-config-name>
-
-tpda3 <config-name> [-user <user> [-password <pass>]]
 
 Options:
 
@@ -110,7 +110,7 @@ Options:
  -password            Password
  -help                Brief help message
  -man                 Full documentation
- -version             Current version
+ -verbose             Be verbose
 
 =head1 DESCRIPTION
 
@@ -121,11 +121,14 @@ database application framework, written in Perl and pTk.
 
 A configuration name is the name of the directory underneath the
 B<.tpda3/apps/> path.  This directory contains two other directories
-B<etc> and B<scr>. The B<etc> directory contains two required
+B<etc> and B<scr>. The B<etc> directory contains three required
 configuration files. The first is B<connection.yml>.  This file has to
 be updated with the connection configuration for your database.  The
-other configuration file is B<menu.yml>.  The other directory named
-B<etc> is the place where your screen configuration files are stored.
+second configuration file is B<menu.yml> and contains the applications
+menu definitions. The third file is B<toolbar.yml>, for the custom
+toolbars in the screens for example the [+] and [-] buttons asociated
+with tables.  The other directory named B<scr> is the place where the
+screen configuration files are stored.
 
 Configuration files are in YAML format, the format described in the
 documentation of the YAML::Tiny module, except the screen

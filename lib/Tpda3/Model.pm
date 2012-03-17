@@ -400,7 +400,7 @@ sub query_records_count {
         ouch( 'CountError', $self->user_message($_) );
     };
 
-    $self->_print("info#$record_count records") if $record_count;
+    $self->_print("info#$record_count records") if defined $record_count;
 
     return;
 }
