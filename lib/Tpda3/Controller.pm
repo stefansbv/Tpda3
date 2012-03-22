@@ -1635,7 +1635,7 @@ sub screen_module_load {
 
     # Change application title
     my $descr = $self->scrcfg('rec')->screen_description;
-    # $self->_view->title(' Tpda3 - ' . $descr) if $descr;
+    $self->_view->title(' Tpda3 - ' . $descr) if $descr;
 
     # Update window geometry
     $self->set_geometry();
