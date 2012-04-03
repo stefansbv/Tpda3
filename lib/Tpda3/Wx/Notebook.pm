@@ -14,11 +14,11 @@ Tpda3::Wx::Notebook - Create a notebook
 
 =head1 VERSION
 
-Version 0.06
+Version 0.49
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

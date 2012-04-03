@@ -11,9 +11,34 @@ my @maindata;                  # TODO: find better way to collect data
 my $expdata  = {};
 my $colslist = [];
 
+=head1 NAME
+
+Tpda3::Tree
+
+=head1 VERSION
+
+Version 0.49
+
+=cut
+
+our $VERSION = 0.49;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tree;
+    my $tree = Tpda3::Tree->new({});
+    $tree->name('root');
+    ...
+
+=head1 DESCRIPTION
+
+Subclass of L<Tree::DAG_Node>.
+
+=head1 METHODS
+
 =head2 new
 
-Constructor.
+Constructor method.
 
 =cut
 

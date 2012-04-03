@@ -29,11 +29,11 @@ Tpda3::Controller - The Controller
 
 =head1 VERSION
 
-Version 2.27
+Version 0.49
 
 =cut
 
-our $VERSION = '2.27';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

@@ -15,11 +15,11 @@ Tpda3::Tk::Dialog::Search - Dialog for dictionary search
 
 =head1 VERSION
 
-Version 0.18
+Version 0.49
 
 =cut
 
-our $VERSION = '0.18';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

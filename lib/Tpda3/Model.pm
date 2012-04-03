@@ -25,11 +25,11 @@ Tpda3::Model - The Model
 
 =head1 VERSION
 
-Version 0.83
+Version 0.49
 
 =cut
 
-our $VERSION = '0.83';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

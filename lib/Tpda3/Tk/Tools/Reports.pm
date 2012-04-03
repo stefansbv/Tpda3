@@ -18,11 +18,11 @@ Tpda3::Tk::App::Fpimm::Reports screen.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.49
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

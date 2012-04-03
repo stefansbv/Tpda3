@@ -20,11 +20,11 @@ Tpda3::Config::Screen - Configuration module for screen
 
 =head1 VERSION
 
-Version 0.43
+Version 0.49
 
 =cut
 
-our $VERSION = '0.43';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

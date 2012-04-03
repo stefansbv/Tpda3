@@ -16,11 +16,11 @@ Tpda3::Db::Connection::Postgresql - Connect to a PostgreSQL database.
 
 =head1 VERSION
 
-Version 0.18
+Version 0.49
 
 =cut
 
-our $VERSION = '0.18';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

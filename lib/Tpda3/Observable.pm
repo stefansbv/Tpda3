@@ -9,11 +9,11 @@ Tpda3::Observable - Observer patern implementation
 
 =head1 VERSION
 
-Version 0.09
+Version 0.49
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

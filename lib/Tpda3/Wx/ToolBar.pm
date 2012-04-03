@@ -12,11 +12,11 @@ Tpda3::Wx::ToolBar - Create a toolbar
 
 =head1 VERSION
 
-Version 0.12
+Version 0.49
 
 =cut
 
-our $VERSION = '0.12';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 

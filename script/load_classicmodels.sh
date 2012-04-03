@@ -3,8 +3,8 @@
 # Load Classic Models data into tables for Firebird, PostgreSQL,
 # or SQLite
 #
-# Author Stefan Suciu, 2009-2012
-#
+# Version: 0.49
+# Author: Stefan Suciu, (C) 2009-2012
 
 # With help from:
 #  Advanced Bash-Scripting Guide

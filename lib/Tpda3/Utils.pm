@@ -11,11 +11,11 @@ Tpda3::Utils - Various utility functions
 
 =head1 VERSION
 
-Version 0.24
+Version 0.49
 
 =cut
 
-our $VERSION = '0.24';
+our $VERSION = 0.49;
 
 =head1 SYNOPSIS
 
