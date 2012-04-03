@@ -139,6 +139,20 @@ sub _set_model_callbacks {
     return;
 }
 
+=head2 title
+
+Set window title.
+
+=cut
+
+sub title {
+    my ($self, $string) = @_;
+
+    $self->SetTitle($string);
+
+    return;
+}
+
 =head2 update_gui_components
 
 When the application status (mode) changes, update gui components.
