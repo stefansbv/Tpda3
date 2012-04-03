@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+  <meta name="GENERATOR" content="hand">
+  <!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+  <OBJECT type="text/site properties">
+    <param name="ImageType" value="Folder">
+  </OBJECT>
+  <UL> <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="contents.html">
+        <param name="ID" value="50">
+        <param name="Name" value="Cuprins">
+      </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="intro.html">
+        <param name="ID" value="100">
+        <param name="Name" value="Introducere">
+      </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="inreg.html">
+        <param name="ID" value="150">
+        <param name="Name" value="Inregistrare">
+      </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="caut.html">
+        <param name="ID" value="200">
+        <param name="Name" value="Cautare">
+      </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="adaug.html">
+        <param name="ID" value="250">
+        <param name="Name" value="Adaugare">
+      </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="sterg.html">
+        <param name="ID" value="300">
+        <param name="Name" value="Stergere">
+      </OBJECT>
+  </UL>
+</BODY>
+</HTML>

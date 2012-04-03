@@ -269,6 +269,26 @@ sub about {
     # );
 }
 
+=head2 guide
+
+Quick help dialog.
+
+=cut
+
+sub guide {
+    my $self = shift;
+
+    my $gui = $self->_view;
+
+    require Tpda3::Wx::Dialog::Help;
+    my $gd = Tpda3::Wx::Dialog::Help->new;
+
+    # $gd->help_dialog($gui);
+    $gd->show_html_help();
+
+    return;
+}
+
 # =head2 _set_event_handlers
 
 # Setup event handlers for the interface.

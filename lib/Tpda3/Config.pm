@@ -725,6 +725,18 @@ END_LICENSE
     }
 }
 
+=head2 get_help_file
+
+Return help file path.
+
+=cut
+
+sub get_help_file {
+    my ($self, $help_file) = @_;
+
+    return catfile( dist_dir('Tpda3'), 'help', $help_file);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>

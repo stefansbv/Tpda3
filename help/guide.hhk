@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<head>
+  <meta name="GENERATOR" content="hand">
+  <!-- Sitemap 1.0 -->
+</HEAD>
+<BODY> <OBJECT type="text/site properties">
+    <param name="ImageType" value="Folder">
+  </OBJECT>
+  <UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="intro.html">
+        <param name="Name" value="Introducere">
+      </OBJECT>
+    </LI>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="inreg.html">
+        <param name="Name" value="Inregistrari">
+      </OBJECT>
+    </LI>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="caut.html">
+        <param name="Name" value="Cautare">
+      </OBJECT>
+    </LI>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="adaug.html">
+        <param name="Name" value="Adaugare">
+      </OBJECT>
+    </LI>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Local" value="sterg.html">
+        <param name="Name" value="Stergere">
+      </OBJECT>
+    </LI>
+  </UL>
+</BODY>
+</HTML>
+

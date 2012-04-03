@@ -194,7 +194,7 @@ sub get_toolbar_btn {
 sub load_gpl_text {
     my $self = shift;
 
-    my $cfg = Tpda3::Config->instance(),
+    my $cfg = Tpda3::Config->instance();
 
     $self->{ttext}->configure( -state => 'normal' );
     $self->{ttext}->delete( '1.0', 'end' );
