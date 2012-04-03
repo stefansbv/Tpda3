@@ -73,16 +73,28 @@ sub run_screen {
         = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
 
     my $lquantityinstock = Wx::StaticText->new( $rec_page, -1, 'Stock' );
-    my $equantityinstock
-        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $equantityinstock = Wx::TextCtrl->new(
+        $rec_page, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxALIGN_RIGHT,
+    );
 
     my $lbuyprice = Wx::StaticText->new( $rec_page, -1, 'Buy price' );
-    my $ebuyprice
-        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $ebuyprice = Wx::TextCtrl->new(
+        $rec_page, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxALIGN_RIGHT,
+    );
 
     my $lmsrp = Wx::StaticText->new( $rec_page, -1, 'MSRP' );
-    my $emsrp
-        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $emsrp = Wx::TextCtrl->new(
+        $rec_page, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxALIGN_RIGHT,
+    );
 
     # Description
 
