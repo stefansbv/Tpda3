@@ -5,6 +5,7 @@
 geometry:
   main: 520x80+20+20
 interface:
+  localize: etc/localisation/romanian.conf
   toolbar: etc/interfaces/toolbar.yml
   menubar: etc/interfaces/menubar.yml
 application:

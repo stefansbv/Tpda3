@@ -109,7 +109,7 @@ sub start {
         if ( my $message = $self->_model->get_exception ) {
             my ($type, $mesg) = split /#/, $message, 2;
             if ($type =~ m{fatal}imx) {
-                my $message = 'Not connected to the database!';
+                my $message = $self->localize('dialog','error-conn');
                 $self->dialog_error($message, $mesg);
                 $return_string = 'shutdown';
                 last;
@@ -166,6 +166,18 @@ sub _cfg {
     my $self = shift;
 
     return $self->{_cfg};
+}
+
+sub localize {
+    my ($self, $section, $string) = @_;
+
+    my $localized = $self->_cfg->localize->{$section}{$string};
+    unless ($localized) {
+        $localized = "'$string'";
+        print "Localization error for '$string'\n";
+    }
+
+    return $localized;
 }
 
 =head2 _log
@@ -226,7 +238,9 @@ sub _set_event_handlers {
         sub {
             $self->_model->is_mode('find')
                 ? $self->record_find_execute
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+                : $self->_view->set_status(
+                    $self->localize( 'status', 'not-find' ),
+                    'ms', 'orange' );
         }
     );
 
@@ -236,7 +250,9 @@ sub _set_event_handlers {
         sub {
             $self->_model->is_mode('find')
                 ? $self->record_find_count
-                : $self->_view->set_status( 'Not find mode', 'ms', 'orange' );
+                : $self->_view->set_status(
+                    $self->localize( 'status', 'not-find' ),
+                    'ms', 'orange' );
         }
     );
 
@@ -478,7 +494,8 @@ sub on_page_rec_activate {
 
     my $selected = $self->_view->list_read_selected();    # array reference
     unless ($selected) {
-        $self->_view->set_status( 'Nothing selected', 'ms', 'orange' );
+        $self->_view->set_status( $self->localize( 'status', 'not-selected' ),
+            'ms', 'orange' );
         $self->set_app_mode('idle');
 
         return;
@@ -546,7 +563,8 @@ sub on_page_det_activate {
 
     $self->record_load();                    # load detail record
 
-    $self->_view->set_status( 'Record loaded (d)', 'ms', 'blue' );
+    $self->_view->set_status( $self->localize( 'status', 'info-rec-load-d' ),
+                              'ms', 'blue' );
     $self->set_app_mode('edit');
 
     # $self->_model->set_scrdata_rec(q{});    # empty
@@ -2101,16 +2119,32 @@ sub record_find_execute {
     $params->{table} = $self->scrcfg('rec')->main_table_view; # use view
     $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
 
-    my $ary_ref = $self->_model->query_records_find($params);
+    my ($ary_ref, $limit) = $self->_model->query_records_find($params);
 
-    return unless defined $ary_ref->[0];     # test if AoA ?
+    # return unless defined $ary_ref->[0];     # test if AoA ?
+    unless (ref $ary_ref eq 'ARRAY') {
+        ouch 'queryerror', "Find failed!";
+    }
+
+    my $record_count = scalar @{$ary_ref};
+    my $msg1 = $self->localize( 'status', 'count_record' );
+    my $msg0 = $record_count == $limit
+             ? $self->localize( 'status', 'first' )
+             : q{};
+
+    $self->_view->set_status( "$msg0 $record_count $msg1", 'ms', 'darkgreen' );
 
     $self->_view->list_init();
-    my $record_count = $self->_view->list_populate($ary_ref);
-    $self->_view->list_raise() if $record_count > 0;
+    my $record_inlist = $self->_view->list_populate($ary_ref);
+    $self->_view->list_raise() if $record_inlist > 0;
+
+    # Double check
+    if ($record_inlist != $record_count) {
+        ouch 'notequal', "Record count error?!";
+    }
 
     # Set mode to sele if found
-    $self->set_app_mode('sele') if $record_count > 0;
+    $self->set_app_mode('sele') if $record_inlist > 0;
 
     return;
 }
@@ -2151,7 +2185,10 @@ sub record_find_count {
     $params->{table} = $self->scrcfg('rec')->main_table_view;
     $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
 
-    $self->_model->query_records_count($params);
+    my $record_count = $self->_model->query_records_count($params);
+
+    my $msg = $self->localize( 'status', 'count_record' );
+    $self->_view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
 
     return;
 }
@@ -2201,7 +2238,8 @@ sub screen_report_print {
     $self->_log->debug("Report cmd: $cmd.");
 
     if ( system $cmd ) {
-        $self->_view->set_status( 'Report failed!', 'ms' );
+        $self->_view->set_status( $self->localize( 'status', 'error-repo' ),
+            'ms' );
     }
 
     return;
@@ -2230,20 +2268,25 @@ sub screen_document_generate {
 
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
-        $self->_view->set_status( 'No data', 'ms', 'red' );
-        $self->_log->error('Generator: No data');
+        $self->_view->set_status( $self->localize( 'status', 'empty-record' ),
+            'ms', 'red' );
+        $self->_log->error('Generator: No data!');
     }
 
     my $model_file = $self->scrcfg()->get_defaultdocument_file();
-    unless (-f $model_file) {
-        $self->_view->set_status( 'Template not found', 'ms', 'red' );
+    unless ( -f $model_file ) {
+        $self->_view->set_status(
+            $self->localize( ' status ', ' error-repo ' ),
+            'ms', 'red' );
         $self->_log->error('Generator: Template not found');
         return;
     }
 
     my $output_path = $self->_cfg->config_tex_output_path();
-    unless (-d $output_path) {
-        $self->_view->set_status( 'Output path not found', 'ms', 'red' );
+    unless ( -d $output_path ) {
+        $self->_view->set_status(
+            $self->localize( ' status ', 'no-out-path' ),
+            'ms', 'red' );
         $self->_log->error('Generator: Output path not found');
         return;
     }
@@ -2255,8 +2298,9 @@ sub screen_document_generate {
 
     my $tex_file = $gen->tex_from_template($record, $model_file, $output_path);
     unless ( $tex_file and ( -f $tex_file ) ) {
-        $self->_view->set_status( 'Failed: template -> LaTeX', 'ms', 'red' );
-        $self->_log->error('Template to LaTeX failed');
+        my $msg = $self->localize( 'status', 'error-gen-tex' );
+        $self->_view->set_status( $msg, 'ms', 'red' );
+        $self->_log->error($msg);
         return;
     }
 
@@ -2264,8 +2308,9 @@ sub screen_document_generate {
 
     my $pdf_file = $gen->pdf_from_latex($tex_file);
     unless ( $pdf_file and ( -f $pdf_file ) ) {
-        $self->_view->set_status( 'Failed: LaTeX -> PDF', 'ms', 'red' );
-        $self->_log->error('LaTeX to PDF failed');
+        my $msg = $self->localize( 'status', 'error-gen-pdf' );
+        $self->_view->set_status( $msg, 'ms', 'red' );
+        $self->_log->error($msg);
         return;
     }
 
@@ -2786,7 +2831,9 @@ sub record_load_new {
     $self->record_load();
 
     if ( $self->_model->is_loaded ) {
-        $self->_view->set_status( 'Record loaded (r)', 'ms', 'blue' );
+        $self->_view->set_status(
+            $self->localize( 'status', 'info-rec-load-r' ),
+            'ms', 'blue' );
     }
 
     return;
@@ -2821,7 +2868,8 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-    $self->_view->set_status( "Reloaded", 'ms', 'blue' );
+    $self->_view->set_status( $self->localize( 'status', 'info-rec-reload' ),
+        'ms', 'blue' );
 
     $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
@@ -2896,7 +2944,8 @@ sub event_record_delete {
 
     $self->record_delete();
 
-    $self->_view->set_status( 'Sters', 'ms', 'darkgreen' ); # removed
+    $self->_view->set_status( $self->localize( 'status', 'info-deleted' ),
+        'ms', 'darkgreen' );    # removed
 
     return;
 }
@@ -2980,14 +3029,18 @@ sub ask_to_save {
         if ( $self->record_changed ) {
             my $answer = $self->ask_to('save');
 
-            if ( $answer =~ m{yes}i ) {
+            if ( $answer eq 'yes' ) {
                 $self->record_save();
             }
-            elsif ( $answer =~ m{No}i ) {
-                $self->_view->set_status( 'Not saved!', 'ms', 'blue' );
+            elsif ( $answer eq 'no' ) {
+                $self->_view->set_status(
+                    $self->localize( 'status', 'not-saved' ),
+                    'ms', 'blue' );
             }
             else {
-                $self->_view->set_status( 'Canceled', 'ms', 'blue' );
+                $self->_view->set_status(
+                    $self->localize( 'status', 'canceled' ),
+                    , 'ms', 'blue' );
                 return;
             }
         }
@@ -3010,16 +3063,16 @@ sub ask_to {
 
     my ($message, $details);
     if ( $for_action eq 'save' ) {
-        $message = 'Înregistrarea a fost modificată';
-        $details = 'Doriți să păstrați modificările?';
+        $message = $self->localize('dialog','msg-sav');
+        $details = $self->localize('dialog','msg-sav');
     }
     elsif ( $for_action eq 'save_insert' ) {
-        $message = 'Înregistrare nouă';
-        $details = 'Doriți să păstrați înregistrarea?';
+        $message = $self->localize('dialog','msg-add');
+        $details = $self->localize('dialog','det-add');
     }
     elsif ( $for_action eq 'delete' ) {
-        $message = 'Ștergere înregistare';
-        $details = 'Confirmați ștergerea înregistrării?';
+        $message = $self->localize('dialog','msg-del');
+        $details = $self->localize('dialog','det-del');
     }
 
     return $self->_view->dialog_confirm($message, $details);
@@ -3051,13 +3104,22 @@ sub record_save {
             if ($pk_val) {
                 $self->record_reload();
                 $self->list_update_add(); # insert the new record in the list
-                $self->_view->set_status( "$pk_val salvat", 'ms', 'darkgreen' );
+                $self->_view->set_status(
+                    $self->localize( 'status', 'info-saved' ),
+                    , 'ms', 'darkgreen' );
             }
+        }
+        else {
+            $self->_view->set_status(
+                $self->localize( 'status', 'canceled' ),
+                , 'ms', 'orange' );
         }
     }
     elsif ( $self->_model->is_mode('edit') ) {
         if ( !$self->is_record ) {
-            $self->_view->set_status( 'Empty screen', 'ms', 'orange' );
+            $self->_view->set_status(
+                $self->localize( 'status', 'empty-record' ),
+                'ms', 'orange' );
             return;
         }
 
@@ -3066,10 +3128,12 @@ sub record_save {
         return if !$self->if_check_required_data($record);
 
         $self->_model->prepare_record_update($record);
-        $self->_view->set_status( "Saved", 'ms', 'darkgreen' );
+        $self->_view->set_status( $self->localize( 'status', 'info-saved' ),
+            'ms', 'darkgreen' );
     }
     else {
-        $self->_view->set_status( 'Not in edit|add mode!', 'ms', 'darkred' );
+        $self->_view->set_status( $self->localize( 'status', 'not-editadd' ),
+            'ms', 'darkred' );
         return;
     }
 
@@ -3117,7 +3181,8 @@ sub if_check_required_data {
     my ($self, $record) = @_;
 
     unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
-        $self->_view->set_status( 'No data to save ...', 'ms', 'darkred' );
+        $self->_view->set_status( $self->localize( 'status', 'empty-record' ),
+            'ms', 'darkred' );
         return 0;
     }
 
@@ -3165,7 +3230,8 @@ sub if_check_required_data {
         }
         else {
             # No data for condition field?
-            $self->_view->set_status( "$cond_field field?", 'ms', 'darkred' );
+            #$self->_view->set_status( "$cond_field field?", 'ms', 'darkred' );
+            print "No data for condition field: $cond_field field?\n";
         }
     }
 
@@ -3179,7 +3245,7 @@ sub if_check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $message = 'Rog completați datele pentru:';
+        my $message = $self->localize( 'status', 'info-add' );
         my $details = join( "\n", @message );
         $self->_view->dialog_info($message, $details);
     }
@@ -3264,7 +3330,8 @@ sub record_changed {
     my $witness_file = $self->storable_file_name('orig');
 
     unless ( -f $witness_file ) {
-        $self->_view->set_status( 'Error!', 'ms', 'orange' );
+        $self->_view->set_status( $self->localize( 'status', 'err-chkchanged' ),
+            'ms', 'orange' );
         ouch 'CompareError', "Can't find saved data for comparison!";
         return;
     }
@@ -3288,8 +3355,8 @@ sub take_note {
 
     my $msg
         = $self->save_screendata( $self->storable_file_name )
-        ? 'Note taken'
-        : 'Note take failed';
+        ? $self->localize( 'status', 'info-note-take' )
+        : $self->localize( 'status', 'error-note-take' );
 
     $self->_view->set_status( $msg, 'ms', 'blue' );
 
@@ -3308,8 +3375,8 @@ sub restore_note {
 
     my $msg
         = $self->restore_screendata( $self->storable_file_name )
-        ? 'Note restored'
-        : 'Note restore failed';
+        ? $self->localize( 'status', 'info-note-rest' )
+        : $self->localize( 'status', 'error-note-rest' );
 
     $self->_view->set_status( $msg, 'ms', 'blue' );
 
@@ -3562,7 +3629,7 @@ sub restore_screendata {
     my ( $self, $data_file ) = @_;
 
     unless ( -f $data_file ) {
-        print "$data_file not found!\n";
+        warn "Data file '$data_file' not found!\n";
         return;
     }
 

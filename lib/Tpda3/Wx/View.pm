@@ -1180,14 +1180,12 @@ sub list_populate {
 
         $row_count++;
 
-        $self->set_status( "$row_count records fetched", 'ms' );
+        $self->set_status( "$row_count", 'ms' );
 
         # Progress bar
         # my $p = floor( $row_count * 10 / $record_cnt ) * 10;
         # if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
-
-    $self->set_status( "$row_count records", 'ms' );
 
     # $self->{progres} = 0;
 

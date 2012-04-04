@@ -400,9 +400,9 @@ sub query_records_count {
         ouch( 'CountError', $self->user_message($_) );
     };
 
-    $self->_print("info#$record_count records") if defined $record_count;
+    $record_count = 0 unless defined $record_count;
 
-    return;
+    return $record_count;
 }
 
 =head2 query_records_find
@@ -437,12 +437,7 @@ sub query_records_find {
         ouch( 'FindError', $self->user_message($_) );
     };
 
-    if (ref $ary_ref eq 'ARRAY') {
-        my $record_count = scalar @{$ary_ref};
-        $self->_print("info#$record_count records");
-    }
-
-    return $ary_ref;
+    return ($ary_ref, $search_limit);
 }
 
 =head2 query_record

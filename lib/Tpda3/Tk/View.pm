@@ -1110,8 +1110,6 @@ sub list_populate {
         if ( $p % 10 == 0 ) { $self->{progres} = $p; }
     }
 
-    $self->set_status( "$row_count records", 'ms' );
-
     # Activate and select last
     $list->selectionClear( 0, 'end' );
     $list->activate('end');
