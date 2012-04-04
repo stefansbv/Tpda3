@@ -30,14 +30,14 @@ sub application_name {
     $name .= "Author: Stefan Suciu\n";
     $name .= "Copyright 2010-2012\n";
     $name .= "GNU General Public License (GPL)\n";
-    $name .= "stefansbv at users . sourceforge . net";
+    $name .= "stefan@s2i2.ro";
 
     return $name;
 }
 
 =head1 AUTHOR
 
-Stefan Suciu, C<< <stefansbv at users.sourceforge.net> >>
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
 
 =head1 BUGS
 

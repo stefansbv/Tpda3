@@ -739,7 +739,7 @@ sub get_help_file {
 
 =head1 AUTHOR
 
-Stefan Suciu, C<< <stefansbv at users . sourceforge . net> >>
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
 
 =head1 BUGS
 

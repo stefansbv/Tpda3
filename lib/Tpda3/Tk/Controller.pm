@@ -328,7 +328,7 @@ sub about {
     $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
     $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
-    $text->insert( 'end', "stefansbv at users . sourceforge . net",
+    $text->insert( 'end', "stefan@s2i2.ro",
         'italic' );
     $text->insert( 'end', "\n\n" );
     $text->insert( 'end', "$APP_NAME\n", 'normal' );
@@ -385,7 +385,7 @@ sub repman {
 
 =head1 AUTHOR
 
-Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
 
 =head1 BUGS
 

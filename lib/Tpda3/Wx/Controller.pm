@@ -254,7 +254,7 @@ sub about {
     # $about_text .= "Author: Stefan Suciu\n";
     # $about_text .= "Copyright 2010-2012\n";
     # $about_text .= "GNU General Public License (GPL)\n";
-    # $about_text .= "stefansbv at users . sourceforge . net";
+    # $about_text .= "stefan@s2i2.ro";
     # $about_text .= "\n\n";
     # $about_text .= "$APP_NAME\n";
     # $about_text .=  "Version " . $APP_VER . "\n";
@@ -439,7 +439,7 @@ sub guide {
 
 =head1 AUTHOR
 
-Stefan Suciu, C<< <stefansbv at user.sourceforge.net> >>
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
 
 =head1 BUGS
 
