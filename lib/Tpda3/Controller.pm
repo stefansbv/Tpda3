@@ -109,7 +109,8 @@ sub start {
         if ( my $message = $self->_model->get_exception ) {
             my ($type, $mesg) = split /#/, $message, 2;
             if ($type =~ m{fatal}imx) {
-                $self->message_error_dialog($mesg);
+                my $message = 'Not connected to the database!';
+                $self->dialog_error($message, $mesg);
                 $return_string = 'shutdown';
                 last;
             }
@@ -117,7 +118,7 @@ sub start {
 
         # Try with the login dialog if still not connected
         if ( !$self->_model->is_connected ) {
-            $return_string = $self->login_dialog();
+            $return_string = $self->dialog_login();
             last if $return_string eq 'shutdown';
         }
     }
@@ -127,20 +128,6 @@ sub start {
     }
 
     $self->_log->trace('... started');
-
-    return;
-}
-
-=head2 message_error_dialog
-
-Error message dialog.
-
-=cut
-
-sub message_error_dialog {
-    my ($self, $mesg) = @_;
-
-    print 'message_error_dialog not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -199,10 +186,10 @@ Login dialog.
 
 =cut
 
-sub login_dialog {
+sub dialog_login {
     my $self = shift;
 
-    print 'login_dialog not implemented in ', __PACKAGE__, "\n";
+    print 'dialog_login not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -870,7 +857,7 @@ table to execute the appropriate function when the return key is
 pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
-activates the L<Tpda3::Tk::Dialog::Search> module, to look-up value
+activates the L<Tpda3::??::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.  The second can call a method in the current screen.
 
@@ -990,7 +977,7 @@ sub method_for {
 
 =head2 lookup
 
-Activates the L<Tpda3::Tk::Dialog::Search> module, to look-up value
+Activates the L<Tpda3::??::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.
 
@@ -1049,7 +1036,7 @@ sub method {
 
 =head2 get_lookup_setings
 
-Return the data structure used by the L<Tpda3::Tk::Dialog::Search>
+Return the data structure used by the L<Tpda3::??::Dialog::Search>
 module.  Uses the I<tablebindings> section of the screen configuration
 and the related field attributes from the I<dep_table> section.
 
@@ -1594,7 +1581,7 @@ sub screen_module_load {
     # Load instance config
     $self->_cfg->config_load_instance();
 
-    #-- Lookup bindings for Tk::Entry widgets
+    #-- Lookup bindings for Entry widgets
     $self->setup_lookup_bindings_entry('rec');
 
     #-- Lookup bindings for tables (TableMatrix)
@@ -1742,7 +1729,7 @@ sub screen_module_detail_load {
 
     # Event handlers
 
-    #-- Lookup bindings for Tk::Entry widgets
+    #-- Lookup bindings for Entry widgets
     $self->setup_lookup_bindings_entry('det');
 
     #-- Lookup bindings for tables (TableMatrix)
@@ -2903,7 +2890,7 @@ sub event_record_delete {
 
     my $answer = $self->ask_to('delete');
 
-    return if $answer eq 'cancel' or $answer =~ /^N/i;
+    return if $answer eq 'cancel' or $answer eq 'no';
 
     $self->list_update_remove();    # first remove from list
 
@@ -3021,27 +3008,21 @@ sub ask_to {
 
     #- Dialog texts
 
-    my ($message, $detail);
+    my ($message, $details);
     if ( $for_action eq 'save' ) {
         $message = 'Înregistrarea a fost modificată';
-        $detail  = 'Doriți să păstrați modificările?';
+        $details = 'Doriți să păstrați modificările?';
     }
     elsif ( $for_action eq 'save_insert' ) {
         $message = 'Înregistrare nouă';
-        $detail  = 'Doriți să păstrați înregistrarea?';
+        $details = 'Doriți să păstrați înregistrarea?';
     }
     elsif ( $for_action eq 'delete' ) {
         $message = 'Ștergere înregistare';
-        $detail  = 'Confirmați ștergerea înregistrării?';
+        $details = 'Confirmați ștergerea înregistrării?';
     }
 
-    # TODO: generalize!
-    $self->_view->{dialog_q}->configure(
-        -message => $message,
-        -detail  => $detail,
-    );
-
-    return $self->_view->{dialog_q}->Show();
+    return $self->_view->dialog_confirm($message, $details);
 }
 
 =head2 record_save
@@ -3198,12 +3179,9 @@ sub if_check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $detail = join( "\n", @message );
-        $self->_view->{dialog_i}->configure(
-            -message => 'Rog completați datele pentru:',
-            -detail  => $detail,
-        );
-        $self->_view->{dialog_i}->Show();
+        my $message = 'Rog completați datele pentru:';
+        my $details = join( "\n", @message );
+        $self->_view->dialog_info($message, $details);
     }
 
     return $ok_to_save;

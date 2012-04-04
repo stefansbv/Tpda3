@@ -82,13 +82,13 @@ sub _init {
     return;
 }
 
-=head2 login_dialog
+=head2 dialog_login
 
 Login dialog.
 
 =cut
 
-sub login_dialog {
+sub dialog_login {
     my $self = shift;
 
     require Tpda3::Wx::Dialog::Login;
@@ -283,7 +283,6 @@ sub guide {
     require Tpda3::Wx::Dialog::Help;
     my $gd = Tpda3::Wx::Dialog::Help->new;
 
-    # $gd->help_dialog($gui);
     $gd->show_html_help();
 
     return;

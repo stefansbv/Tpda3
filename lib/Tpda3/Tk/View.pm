@@ -9,7 +9,7 @@ use File::Spec::Functions qw(abs2rel catfile);
 
 use Tk;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
-    LabFrame Listbox JComboBox MsgBox);
+    LabFrame MListbox JComboBox MsgBox);
 
 use base 'Tk::MainWindow';
 
@@ -83,8 +83,6 @@ sub new {
     $self->_set_model_callbacks();
 
     $self->set_geometry_main();
-
-    $self->define_dialogs();
 
     $self->{lookup}  = undef;    # info about list header
     $self->{nb_prev} = q{};
@@ -822,40 +820,64 @@ sub nb_set_page_state {
     return;
 }
 
-=head2 define_dialogs
+=head2 dialog_confirm
 
-Define some dialogs
+Confirmation dialog.
 
 =cut
 
-sub define_dialogs {
-    my $self = shift;
+sub dialog_confirm {
+    my ( $self, $message, $details ) = @_;
 
-    $self->{dialog_q} = $self->MsgBox(
+    my $dialog_q = $self->MsgBox(
         -title   => 'Question',
         -type    => 'yesnocancel',
         -icon    => 'question',
-        -message => '',
-        detail   => '',
+        -message => $message,
+        -detail  => $details,
     );
 
-    $self->{dialog_i} = $self->MsgBox(
+    return $dialog_q->Show();
+}
+
+=head2 dialog_info
+
+Informations message dialog.
+
+=cut
+
+sub dialog_info {
+    my ( $self, $message, $details ) = @_;
+
+    my $dialog_i = $self->MsgBox(
         -title   => 'Info',
         -type    => 'ok',
         -icon    => 'info',
-        -message => '',
-        -detail  => '',
+        -message => $message,
+        -detail  => $details,
     );
 
-    $self->{dialog_e} = $self->MsgBox(
+    return $dialog_i->Show();
+}
+
+=head2 dialog_error
+
+Error message dialog.
+
+=cut
+
+sub dialog_error {
+    my ( $self, $message, $details ) = @_;
+
+    my $dialog_e = $self->MsgBox(
         -title   => 'Info',
         -type    => 'ok',
         -icon    => 'error',
-        -message => '',
-        -detail  => '',
+        -message => $message,
+        -detail  => $details,
     );
 
-    return;
+    return $dialog_e->Show();
 }
 
 =head2 get_toolbar_btn

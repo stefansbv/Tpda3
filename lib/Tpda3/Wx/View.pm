@@ -450,45 +450,65 @@ sub get_statusbar {
     return $self->{_sb};
 }
 
-=head2 dialog_popup
+=head2 dialog_confirm
 
-Define a dialog popup.
+Confirmation dialog.
 
 =cut
 
-sub dialog_popup {
-    my ( $self, $msgtype, $msg ) = @_;
+sub dialog_confirm {
+    my ( $self, $message, $details ) = @_;
 
-    if ( $msgtype eq 'Error' ) {
-        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_ERROR, $self );
+    my $dialog_c = Wx::MessageDialog->new(
+        $self,
+        "$message\n$details",
+        'Confirm',
+        wxYES_NO | wxNO_DEFAULT | wxCANCEL,
+    );
+
+    my $answer = $dialog_c->ShowModal();
+
+    $dialog_c->Destroy;
+
+    if ( $answer == wxID_NO ) {
+        return 'no';
     }
-    elsif ( $msgtype eq 'Warning' ) {
-        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_WARNING, $self );
+    elsif ( $answer == wxID_CANCEL ) {
+        return 'cancel';
     }
     else {
-        Wx::MessageBox( $msg, $msgtype, wxOK | wxICON_INFORMATION, $self );
+        return 'yes';
     }
 }
 
-=head2 action_confirmed
+=head2 dialog_info
 
-Yes - No message dialog.
+Informations message dialog.
 
 =cut
 
-sub action_confirmed {
-    my ( $self, $msg ) = @_;
+sub dialog_info {
+    my ( $self, $message, $details ) = @_;
 
-    my ($answer) = Wx::MessageBox(
-        $msg,
-        'Confirm',
-        Wx::wxYES_NO(),    # if you use Wx ':everything', it's wxYES_NO
-        undef,             # you needn't pass anything, much less $frame
-    );
+    Wx::MessageBox( "$message\n$details", 'Info', wxOK | wxICON_INFORMATION,
+        $self );
 
-    if ( $answer == Wx::wxYES() ) {
-        return 1;
-    }
+    return;
+}
+
+=head2 dialog_error
+
+Error message dialog.
+
+=cut
+
+sub dialog_error {
+    my ( $self, $message, $details ) = @_;
+
+    Wx::MessageBox( "$message\n$details", 'Error', wxOK | wxICON_ERROR,
+        $self );
+
+    return;
 }
 
 =head2 create_notebook
@@ -549,17 +569,6 @@ sub create_notebook {
     return;
 }
 
-# sub get_nb_current_page {
-#     my $self = shift;
-
-#     my $nb = $self->get_notebook();
-
-#     my $page_idx = $nb->GetSelection();
-
-#     my $current_page = $nb->{pages}{$page_idx};
-
-#     return $current_page;
-# }
 sub get_nb_current_page {
     my $self = shift;
 
@@ -717,18 +726,6 @@ sub set_status {
     }
 
     return;
-}
-
-=head2 dialog_msg
-
-Set dialog message
-
-=cut
-
-sub dialog_msg {
-    my ( $self, $message ) = @_;
-
-    $self->dialog_popup( 'Error', $message );
 }
 
 =head2 log_msg
@@ -990,8 +987,6 @@ sub list_item_select_last {
     my $lst = $self->get_recordlist;
     my $idx = $self->get_list_max_index() - 1;
 
-    #$lst->Select( $idx, 1 );
-    #$lst->EnsureVisible($idx);
     $self->{_rc}->Select( $idx, 1 );
     $self->{_rc}->EnsureVisible($idx);
 
@@ -1073,26 +1068,69 @@ sub list_item_clear_all {
     $self->get_recordlist->DeleteAllItems;
 }
 
-# =head2 list_remove_item
+=head2 list_remove_selected
 
-# Remove item from list control and select the first item
+Remove the selected row from the list.
 
-# =cut
+First it compares the Pk and the Fk values from the screen, with the
+selected row contents in the list.
 
-# sub list_remove_item {
-#     my $self = shift;
+=cut
 
-#     my $sel_item = $self->get_list_selected_index();
-#     my $file_fqn = $self->get_list_data($sel_item);
+sub list_remove_selected {
+    my ( $self, $pk_val, $fk_val ) = @_;
 
-#     # Remove from list
-#     $self->list_item_clear($sel_item);
+    my $sel = $self->list_read_selected();
+    if ( !ref $sel ) {
+        print "EE: Nothing selected!, use brute force? :)\n";
+        return;
+    }
 
-#     # Set item 0 selected
-#     $self->list_item_select_first();
+    my $fk_idx = $self->{lookup}[1];
 
-#     return $file_fqn;
-# }
+    my $found;
+    if ( $sel->[0] eq $pk_val ) {
+
+        # Check fk, if defined
+        if ( defined $fk_idx ) {
+            $found = 1 if $sel->[1] eq $fk_val;
+        }
+        else {
+            $found = 1;
+        }
+    }
+    else {
+        print "EE: No matching list row!\n";
+        return;
+    }
+
+    #- OK, found, delete from list
+
+    $self->list_remove_item();
+
+    return;
+}
+
+=head2 list_remove_item
+
+Remove item from list control and select the first item
+
+=cut
+
+sub list_remove_item {
+    my $self = shift;
+
+    my $item = $self->get_list_selected_index();
+    my $file = $self->get_list_data($item);
+
+    # Remove from list
+    $self->list_item_clear($item);
+
+    # Set item 0 selected
+    $self->list_item_select_first();
+
+    return $file;
+}
 
 =head2 list_init
 

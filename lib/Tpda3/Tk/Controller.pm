@@ -82,13 +82,13 @@ sub _init {
     return;
 }
 
-=head2 login_dialog
+=head2 dialog_login
 
 Login dialog.
 
 =cut
 
-sub login_dialog {
+sub dialog_login {
     my $self = shift;
 
     require Tpda3::Tk::Dialog::Login;
@@ -373,24 +373,6 @@ sub repman {
     my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
 
     $gd->run_screen($gui);
-
-    return;
-}
-
-=head2 message_error_dialog
-
-Error message dialog.
-
-=cut
-
-sub message_error_dialog {
-    my ($self, $mesg) = @_;
-
-    $self->_view->{dialog_e}->configure(
-        -message => 'Not connected to the database!',
-        -detail  => $mesg,
-    );
-    $self->_view->{dialog_e}->Show();
 
     return;
 }

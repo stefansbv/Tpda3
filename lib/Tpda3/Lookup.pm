@@ -3,8 +3,6 @@ package Tpda3::Lookup;
 use strict;
 use warnings;
 
-require Tpda3::Tk::Dialog::Search;
-
 =head1 NAME
 
 Tpda3::Lookup - Lookup field values in dictionary like tables
@@ -40,11 +38,11 @@ sub new {
     my $ws  = $cfg->application->{widgetset};
     $self->{_ws} = $ws;
 
-    if ( $ws =~ m{wx}ix ) {
+    if ( $ws =~ m{wx}i ) {
         require Tpda3::Wx::Dialog::Search;
         $self->{dlg} = Tpda3::Wx::Dialog::Search->new();
     }
-    elsif ( $ws =~ m{tk}ix ) {
+    elsif ( $ws =~ m{tk}i ) {
         require Tpda3::Tk::Dialog::Search;
         $self->{dlg} = Tpda3::Tk::Dialog::Search->new();
     }
