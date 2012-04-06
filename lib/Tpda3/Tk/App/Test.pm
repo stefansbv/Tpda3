@@ -30,7 +30,7 @@ sub application_name {
     $name .= "Author: Stefan Suciu\n";
     $name .= "Copyright 2010-2012\n";
     $name .= "GNU General Public License (GPL)\n";
-    $name .= "stefan@s2i2.ro";
+    $name .= 'stefan@s2i2.ro';
 
     return $name;
 }

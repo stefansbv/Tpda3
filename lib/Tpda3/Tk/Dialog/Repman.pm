@@ -53,6 +53,7 @@ sub new {
     $self->{_tm} = undef;    # TableMatrix
     $self->{_rl} = undef;    # report titles list
     $self->{_rd} = undef;    # report details
+    $self->{cfg} = Tpda3::Config->instance();
 
     return $self;
 }
@@ -485,6 +486,12 @@ sub dlg_exit {
     return;
 }
 
+=head2 load_report_list
+
+Load report list from the L<reports> table.
+
+=cut
+
 sub load_report_list {
     my ($self, $view, $sc) = @_;
 
@@ -495,8 +502,6 @@ sub load_report_list {
     $args->{order}    = 'title';
 
     my $reports_list = $view->{_model}->table_batch_query($args);
-
-    # return unless scalar @{$reports_list} > 0;
 
     my $recno = 0;
     foreach my $rec ( @{$reports_list} ) {
@@ -518,6 +523,13 @@ sub load_report_list {
     return;
 }
 
+=head2 load_report_details
+
+On selected report, load the configuration details from the
+L<reports_det> table.
+
+=cut
+
 sub load_report_details {
     my ($self, $view) = @_;
 
@@ -526,7 +538,7 @@ sub load_report_details {
     return unless $selected_row;
 
     my $idx    = $selected_row - 1;                 # index for array
-    my $id_rep = $self->{_rl}->[$idx]{id_rep};
+    my $id_rep = $self->{_rl}[$idx]{id_rep};
 
     #- main table
 
@@ -575,6 +587,14 @@ sub load_report_details {
     return;
 }
 
+=head2 preview_report
+
+Preview the report using the Report manager utility L<printrep.bin> on
+GNU/Linux L<printrepxp.exe> on Windows.  Fool path to this utilities
+is set in the <main.yml> configuration file.
+
+=cut
+
 sub preview_report {
     my $self = shift;
 
@@ -584,9 +604,7 @@ sub preview_report {
     my $parameters = $self->get_parameters();
     print "Parameters: [ $parameters ]\n";
 
-    my $cfg = Tpda3::Config->instance();
-
-    my $report_path = $cfg->config_rep_file($report_file);
+    my $report_path = $self->{cfg}->config_rep_file($report_file);
     unless (-f $report_path) {
         print "Report file not found: $report_path\n";
         return;
@@ -595,7 +613,7 @@ sub preview_report {
 
     # Metaviewxp param for pages:  -from 1 -to 1
 
-    my $report_exe  = $cfg->cfextapps->{repman}{exe_path};
+    my $report_exe  = $self->{cfg}->cfextapps->{repman}{exe_path};
     print "repman exe: $report_exe \n";
 
     my $cmd = qq{"$report_exe" -preview $parameters "$report_path"};
@@ -646,8 +664,8 @@ sub get_parameters {
 Callback to update the value of the paramater, using the I<Search>
 dialog.
 
-Prerequisite: configuration file name is the same as the main table
-name.  Underscore chars are ignored (removed).
+Info for the Search dialog table header is from L<etc/search.conf>, in
+the application's L<etc> config dir.
 
 =cut
 
@@ -662,13 +680,13 @@ sub update_value {
 
     #- Compose the parameter for the 'Search' dialog
 
-    ( my $table = $rdd->{tablename} ) =~ s{_}{}gmx; # remove '_' chars
+    my $table = $rdd->{tablename};
 
     my $resultfield = $rdd->{resultfield};
     my $searchfield = $rdd->{searchfield};
 
-    my $conf = $self->{scrcfg}->config_screen_load_file($table);
-    my $attr = $conf->{maintable}{columns};
+    my $conf = $self->{cfg}->config_search_load_file();
+    my $attr = $conf->{columns};
 
     my $para = {
         table   => $table,
@@ -684,9 +702,9 @@ sub update_value {
     foreach my $field (@fields) {
         my $rec = {};
         $rec->{$field} = {
-            width => $attr->{$field}{width},
-            label => $attr->{$field}{label},
-            order => $attr->{$field}{order},
+            width    => $attr->{$field}{width},
+            label    => $attr->{$field}{label},
+            datatype => $attr->{$field}{datatype},
         };
         push @cols, $rec;
     }
@@ -699,10 +717,14 @@ sub update_value {
     #- Update control value
 
     my $eobj = $self->get_controls();
-    my $field_val = "paraval$p_no";
-    my $value = $record->{$resultfield};
-    $eobj->{$field_val}[1]->delete( 0, 'end' );
-    $eobj->{$field_val}[1]->insert( 0, $value ) if $value;
+    my $field_name_hnt = "parahnt$p_no";
+    my $field_name_val = "paraval$p_no";
+    my $value_label = $record->{$searchfield};
+    my $value_param = $record->{$resultfield};
+    $eobj->{$field_name_hnt}[1]->delete( 0, 'end' );
+    $eobj->{$field_name_hnt}[1]->insert( 0, $value_label ) if $value_label;
+    $eobj->{$field_name_val}[1]->delete( 0, 'end' );
+    $eobj->{$field_name_val}[1]->insert( 0, $value_param ) if $value_param;
 
     return;
 }

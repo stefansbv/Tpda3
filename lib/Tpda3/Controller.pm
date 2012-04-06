@@ -815,8 +815,8 @@ sub setup_lookup_bindings_entry {
         my @cols;
         my $rec = {};
         $rec->{$search} = {
-            width   => $field_cfg->{width},
-            label   => $field_cfg->{label},
+            width    => $field_cfg->{width},
+            label    => $field_cfg->{label},
             datatype => $field_cfg->{datatype},
         };
         $rec->{$search}{name} = $column if $column;    # add name attribute

@@ -195,7 +195,7 @@ sub search_dialog {
                 }
             }
             else {
-                ouch 'BadConfig',"No column type for $field\n";
+                ouch 'BadConfig',"No data type for '$field'\n";
             }
 
             $colcnt++;

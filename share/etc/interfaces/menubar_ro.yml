@@ -59,8 +59,8 @@ menubar:
 
   menu_help:
     id:    5003
-    label: Help
-    underline: 0
+    label: Ajutor
+    underline: 1
     popup:
       1:
         name: mn_gd

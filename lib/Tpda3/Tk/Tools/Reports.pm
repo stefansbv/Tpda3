@@ -9,6 +9,7 @@ use Tk::widgets qw(); # DateEntry JComboBox
 use base q{Tpda3::Tk::Screen};
 
 use POSIX qw (strftime);
+use File::Spec;
 
 use Tpda3::Utils;
 
@@ -98,13 +99,18 @@ sub run_screen {
     );
 
     my $erepofile = $frm_top->MEntry(
-        -width              => 40,
+        -width              => 50,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
     $erepofile->form(
         -top  => [ '&', $lrepofile, 0 ],
         -left => [ %0,  $f1d ],
+    );
+    $erepofile->bind(
+        '<KeyPress-Return>' => sub {
+            $self->report_file();
+        }
     );
 
     #- title (title)
@@ -117,7 +123,7 @@ sub run_screen {
     );
 
     my $etitle = $frm_top->MEntry(
-        -width              => 30,
+        -width              => 50,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
@@ -223,6 +229,34 @@ sub run_screen {
     return;
 }
 
+sub report_file {
+    my $self = shift;
+
+    my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
+
+    # my $rep_path =  $conf->{CONFIG}{misc}{rep_path};
+    # $rep_path = File::Spec->canonpath($rep_path);
+
+    my $path = $self->{view}->getOpenFile(
+        -filetypes  => $types,
+        -initialdir => '.',
+    );
+
+    return unless $path;
+
+    my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
+
+    eval {
+        my $state = $self->{controls}{repofile}[1]->cget(-state);
+        $self->{controls}{repofile}[1]->configure( -state => 'normal' );
+        $self->{controls}{repofile}[1]->delete( 0, 'end' );
+        $self->{controls}{repofile}[1]->insert( 0, $file );
+        $self->{controls}{repofile}[1]->xview('end');
+        $self->{controls}{repofile}[1]->configure( -state => $state );
+    };
+
+    return;
+}
 
 =head1 AUTHOR
 
