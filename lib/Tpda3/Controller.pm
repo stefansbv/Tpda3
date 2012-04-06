@@ -1593,7 +1593,7 @@ sub screen_module_load {
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_detail;
     if ($has_det) {
-        my $lbl_details = $self->_cfg->localize->{notebook}{lbl_details};
+        my $lbl_details = $self->localize( 'notebook', 'lbl_details' );
         $self->_view->create_notebook_panel( 'det', $lbl_details );
         $self->_set_event_handler_nb('det');
     }
@@ -3073,7 +3073,7 @@ sub ask_to {
     my ($message, $details);
     if ( $for_action eq 'save' ) {
         $message = $self->localize('dialog','msg-sav');
-        $details = $self->localize('dialog','msg-sav');
+        $details = $self->localize('dialog','det-sav');
     }
     elsif ( $for_action eq 'save_insert' ) {
         $message = $self->localize('dialog','msg-add');
