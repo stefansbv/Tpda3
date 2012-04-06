@@ -1593,7 +1593,8 @@ sub screen_module_load {
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_detail;
     if ($has_det) {
-        $self->_view->create_notebook_panel( 'det', 'Details' );
+        my $lbl_details = $self->_cfg->localize->{notebook}{lbl_details};
+        $self->_view->create_notebook_panel( 'det', $lbl_details );
         $self->_set_event_handler_nb('det');
     }
 

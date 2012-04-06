@@ -639,10 +639,9 @@ sub create_notebook {
 
     #- Panels
 
-    $self->create_notebook_panel( 'rec', 'Record' );
-    $self->create_notebook_panel( 'lst', 'List' );
-
-    # $self->create_notebook_panel('det', 'Details') if $det_page;
+    my $localized = $self->_cfg->localize->{notebook};
+    $self->create_notebook_panel( 'rec', $localized->{lbl_record} );
+    $self->create_notebook_panel( 'lst', $localized->{lbl_list} );
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
