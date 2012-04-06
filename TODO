@@ -1,10 +1,21 @@
-To do:
+TODO                                                      -*- mode: org; -*-
 
-- Test and improve exception handling, erorr reporting and user
-  messages.
+Note: Main development focus is on the PerlTk interface, at least
+      until I find (and learn to use) equivalent Wx controls to use in
+      screens, with the same functionality with the PerlTk widgets.
 
-- Enable/disable Logging from CLI and/or GUI.
+* To do [16%]
+  - [ ] Test and improve exception handling, error reporting and user messages;
+  - [ ] Enable/disable Logging from CLI and/or GUI;
+  - [ ] Test Log::Dispatch::FileRotate;
+  - [X] Implement language support (translations);
+  - [ ] Date fields in TM;
+  - [ ] Search string with/without diacritical marks;
 
-- Test Log::Dispatch::FileRotate.
 
-- Implement language suport (translations).
+* Someday, maybe [0%]
+  - [ ] Custom search menu and tool (for queries like records inserted today);
+  - [ ] Allow comma as decimal separator;
+  - [ ] Admin tool screen to show the connected users;
+  - [ ] Paginate records in the List tab (prev 50, next 50);
+
