@@ -168,6 +168,12 @@ sub _cfg {
     return $self->{_cfg};
 }
 
+=head2 localize
+
+Simple localisation.
+
+=cut
+
 sub localize {
     my ($self, $section, $string) = @_;
 
@@ -781,7 +787,9 @@ configuration will be a little more complicated:
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $dict     = Tpda3::Lookup->new;
+    my $locale_data = $self->_cfg->localize->{search};
+
+    my $dict     = Tpda3::Lookup->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
     my $bindings = $self->scrcfg($page)->bindings;

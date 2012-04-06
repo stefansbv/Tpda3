@@ -2,6 +2,9 @@ package Tpda3::Tk::Dialog::Search;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
+use utf8;
 use Ouch;
 
 use Tk::LabFrame;
@@ -38,9 +41,15 @@ Constructor method
 =cut
 
 sub new {
-    my $class = shift;
+    my ($class, $opts) = @_;
 
-    return bless( {}, $class );
+    my $self = {};
+
+    $self->{localize} = $opts;
+
+    bless( $self, $class );
+
+    return $self;
 }
 
 =head2 search_dialog
@@ -52,17 +61,23 @@ Define and show search dialog.
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
 
+    my $title    = $self->{localize}{title};
+    my $b_load   = $self->{localize}{b_load};
+    my $b_clear  = $self->{localize}{b_clear};
+    my $b_cancel = $self->{localize}{b_cancel};
+    my $b_find   = $self->{localize}{b_find};
+
     #--- Dialog Box
 
     my $dlg = $view->DialogBox(
-        -title   => 'Search dialog',
-        -buttons => [ 'Load', 'Clear', 'Cancel' ],
+        -title   => $title,
+        -buttons => [ $b_load, $b_clear, $b_cancel ],
     );
 
     #-- Key bindings
 
-    $dlg->bind( '<Escape>', sub { $dlg->Subwidget('B_Cancel')->invoke } );
-    $dlg->bind( '<Alt-r>' , sub { $dlg->Subwidget('B_Clear' )->invoke } );
+    $dlg->bind( '<Escape>', sub { $dlg->Subwidget("B_$b_cancel")->invoke } );
+    $dlg->bind( '<Alt-r>' , sub { $dlg->Subwidget("B_$b_clear" )->invoke } );
 
     #-- Main frame
 
@@ -97,14 +112,18 @@ sub search_dialog {
         -pady   => 5,
     );
 
+    my $opt_contains = $self->{localize}{opt_contains};
+    my $opt_starts   = $self->{localize}{opt_starts};
+    my $opt_ends     = $self->{localize}{opt_ends};
+
     my $selected;
     my $searchopt = $frm1->JComboBox(
         -entrywidth   => 10,
         -textvariable => \$selected,
         -choices      => [
-            { -name => 'contains',    -value => 'C', -selected => 1 },
-            { -name => 'starts with', -value => 'S' },
-            { -name => 'ends with',   -value => 'E' },
+            { -name => $opt_contains, -value => 'C', -selected => 1 },
+            { -name => $opt_starts  , -value => 'S', },
+            { -name => $opt_ends    , -value => 'E', },
         ],
         )->grid(
         -row    => 0,
@@ -118,7 +137,7 @@ sub search_dialog {
 
     # Buton cautare
     my $find_button = $frm1->Button(
-        -text    => 'Find',
+        -text    => $b_find,
         -width   => 4,
         -command => [
             sub {
@@ -139,7 +158,7 @@ sub search_dialog {
     #-- Frame (lista rezultate)
 
     my $frm2 = $mf->LabFrame(
-        -label      => 'Rezult',
+        -label      => $self->{localize}{lbl_result},
         -foreground => 'darkgreen',
         )->pack(
         -expand => 1,
@@ -228,7 +247,9 @@ sub search_dialog {
 
     #- Label
 
-    my $fltlbl = $frm3->Label( -text => 'Filter:', )->grid(
+    my $fltlbl = $frm3->Label(
+        -text   =>  $self->{localize}{lbl_filter},
+    )->grid(
         -row    => 0,
         -column => 0,
         -sticky => 'e',
@@ -275,7 +296,6 @@ sub search_dialog {
     if ( ref $filter ) {
         my $message;
         while ( my ( $key, $value ) = each( %{$filter} ) ) {
-            print "$key: $value\n";
             $message .= "$key = $value ";
         }
         if ($message) {
@@ -291,13 +311,10 @@ sub search_dialog {
     my $result = $dlg->Show;
     my $ind_cod;
 
-    if ( $result =~ /Load/i ) {
-
-        # Sunt inreg. in lista?
+    if ( $result =~ /$b_load/i ) {
         eval { $ind_cod = $self->{box}->curselection(); };
         if ($@) {
             warn "Error: $@";
-
             return;
         }
         else {
@@ -314,7 +331,7 @@ sub search_dialog {
 
         return $row_data;
     }
-    elsif ( $result =~ /Clear/i ) {
+    elsif ( $result =~ /$b_clear/i ) {
 
         # Prepare empty values
         my $row_data = {};
@@ -325,7 +342,7 @@ sub search_dialog {
         return $row_data;
     }
     else {
-        return;
+        return;                 # cancel
     }
 }
 

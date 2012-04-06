@@ -3,6 +3,9 @@ package Tpda3::Lookup;
 use strict;
 use warnings;
 
+use Data::Dumper;
+use utf8;
+
 =head1 NAME
 
 Tpda3::Lookup - Lookup field values in dictionary like tables
@@ -28,7 +31,7 @@ Constructor method.
 =cut
 
 sub new {
-    my $type = shift;
+    my ($type, $opts) = @_;
 
     my $self = {};
 
@@ -40,11 +43,11 @@ sub new {
 
     if ( $ws =~ m{wx}i ) {
         require Tpda3::Wx::Dialog::Search;
-        $self->{dlg} = Tpda3::Wx::Dialog::Search->new();
+        $self->{dlg} = Tpda3::Wx::Dialog::Search->new($opts);
     }
     elsif ( $ws =~ m{tk}i ) {
         require Tpda3::Tk::Dialog::Search;
-        $self->{dlg} = Tpda3::Tk::Dialog::Search->new();
+        $self->{dlg} = Tpda3::Tk::Dialog::Search->new($opts);
     }
     else {
         warn "Unknown widget set!\n";
