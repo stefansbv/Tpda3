@@ -3084,7 +3084,13 @@ sub ask_to {
         $details = $self->localize('dialog','det-del');
     }
 
-    return $self->_view->dialog_confirm($message, $details);
+    # Message dialog
+    # return $self->_view->dialog_confirm($message, $details);
+
+    my $locale_data = $self->_cfg->localize->{dialog};
+    require Tpda3::Tk::Dialog::Message;
+    $self->{dlg} = Tpda3::Tk::Dialog::Message->new($locale_data);
+    return $self->{dlg}->message_dialog($self->_view, $message, $details);
 }
 
 =head2 record_save
