@@ -3260,7 +3260,7 @@ sub if_check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $message = $self->localize( 'status', 'info-add' );
+        my $message = $self->localize( 'dialog', 'info-add' );
         my $details = join( "\n", @message );
         $self->_view->dialog_info($message, $details);
     }
