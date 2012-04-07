@@ -98,8 +98,6 @@ sub run_screen {
 
     # Description
 
-    my $descr_sb = Wx::StaticBox->new( $rec_page, -1, ' Description ' );
-
     my $eproductdescription = Wx::TextCtrl->new(
         $rec_page,
         -1, q{},
@@ -237,6 +235,8 @@ sub run_screen {
     #--
 
     my $descr_vbox = Wx::BoxSizer->new(wxVERTICAL);
+
+    my $descr_sb  = Wx::StaticBox->new( $rec_page, -1, ' Description ' );
     my $descr_sbs = Wx::StaticBoxSizer->new( $descr_sb, wxHORIZONTAL, );
 
     $descr_sbs->Add( $eproductdescription, 1, wxEXPAND, 0 );

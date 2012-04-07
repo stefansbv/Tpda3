@@ -8,7 +8,9 @@ use base 'Tpda3::Wx::Screen';
 
 use Wx::Event qw(EVT_DATE_CHANGED);
 use Wx::Calendar;
+
 use Tpda3::Wx::ComboBox;
+use Tpda3::Wx::Table;
 
 =head1 NAME
 
@@ -104,12 +106,19 @@ sub run_screen {
 
     #--- Layout
 
+    my $main_sz = Wx::BoxSizer->new(wxVERTICAL);
+
     my $top_sz = Wx::BoxSizer->new(wxHORIZONTAL);
+    my $middle_sz = Wx::BoxSizer->new(wxVERTICAL);
+    my $bottom_sz = Wx::BoxSizer->new(wxHORIZONTAL);
 
-    my $left_sz = Wx::BoxSizer->new(wxVERTICAL);
+    #-- Top
 
-    my $sbox_sz = Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $rec_page, -1, ' Order ', ), wxVERTICAL );
+    my $top_left_sz = Wx::BoxSizer->new(wxVERTICAL);
+
+    #-- Label frame
+    my $order_sb  = Wx::StaticBox->new( $rec_page, -1, ' Order ' );
+    my $order_sbs = Wx::StaticBoxSizer->new( $order_sb, wxHORIZONTAL, );
 
     my $grid = Wx::GridBagSizer->new( 5, 0 );
 
@@ -211,8 +220,8 @@ sub run_screen {
     $grid->AddGrowableCol(2);
     $grid->AddGrowableCol(3);
 
-    $sbox_sz->Add( $grid, 0, wxALL | wxGROW, 0 );
-    $left_sz->Add( $sbox_sz, 0, wxALL | wxGROW, 5 );
+    $order_sbs->Add( $grid, 0, wxALL | wxGROW, 0 );
+    $top_left_sz->Add( $order_sbs, 0, wxALL | wxGROW, 5 );
 
     #--- Comment
 
@@ -225,18 +234,35 @@ sub run_screen {
         wxTE_MULTILINE,
     );
 
-    my $right_sz = Wx::BoxSizer->new(wxVERTICAL);
+    my $top_right_sz = Wx::BoxSizer->new(wxVERTICAL);
 
-    my $sbox_sz_comment = Wx::StaticBoxSizer->new(
-        Wx::StaticBox->new( $rec_page, -1, ' Comment ', ), wxVERTICAL );
+    my $comment_sb  = Wx::StaticBox->new( $rec_page, -1, ' Comment ' );
+    my $comment_sbs = Wx::StaticBoxSizer->new( $comment_sb, wxHORIZONTAL, );
 
-    $sbox_sz_comment->Add( $ecomments, 0, wxEXPAND );
-    $right_sz->Add( $sbox_sz_comment, 0, wxALL | wxGROW, 5 );
+    $comment_sbs->Add( $ecomments, 1, wxEXPAND, 0 );
+    $top_right_sz->Add( $comment_sbs, 0, wxALL | wxEXPAND, 5 );
 
-    $top_sz ->Add( $left_sz, 3, wxALL | wxGROW, 5 );
-    $top_sz ->Add( $right_sz, 1, wxALL | wxGROW, 5 );
+    #--
 
-    $rec_page->SetSizer($top_sz);
+    my $table = Tpda3::Wx::Table->new( $rec_page );
+
+    my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
+    my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
+
+    $article_sbs->Add( $table, 1, wxEXPAND, 0 );
+
+    $middle_sz->Add($article_sbs, 0, wxEXPAND, 0 );
+
+    #--
+
+    $top_sz->Add( $top_left_sz, 3, wxALL | wxGROW, 5 );
+    $top_sz->Add( $top_right_sz, 1, wxALL | wxGROW, 5 );
+
+    $main_sz->Add( $top_sz,    1, wxALL | wxGROW, 5 );
+    $main_sz->Add( $middle_sz, 1, wxALL | wxGROW, 5 );
+    $main_sz->Add( $bottom_sz, 1, wxALL | wxGROW, 5 );
+
+    $rec_page->SetSizer($main_sz);
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'orders.conf'
