@@ -110,7 +110,7 @@ sub start {
             my ($type, $mesg) = split /#/, $message, 2;
             if ($type =~ m{fatal}imx) {
                 my $message = $self->localize('dialog','error-conn');
-                $self->dialog_error($message, $mesg);
+                $self->_view->dialog_error($message, $mesg);
                 $return_string = 'shutdown';
                 last;
             }
@@ -125,6 +125,7 @@ sub start {
 
     if ($return_string eq 'shutdown') {
         $self->_view->on_quit;
+        return;
     }
 
     $self->_log->trace('... started');

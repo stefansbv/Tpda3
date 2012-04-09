@@ -1321,7 +1321,7 @@ sub list_locate {
     return $idx;
 }
 
-=head2 event_handler_for_tb_button
+=head2 event_handler_for_menu
 
 Event handlers.
 

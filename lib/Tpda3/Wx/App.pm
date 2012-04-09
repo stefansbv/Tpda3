@@ -61,10 +61,6 @@ Override OnInit from WxPerl
 
 sub OnInit {1}
 
-# sub OnExit {
-#     print "OnExit.\n";
-# }
-
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

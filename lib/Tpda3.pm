@@ -1,8 +1,8 @@
 package Tpda3;
 
+use 5.008009;
 use strict;
 use warnings;
-use 5.008009;
 
 use Ouch;
 use Log::Log4perl qw(get_logger);
