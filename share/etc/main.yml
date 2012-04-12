@@ -1,11 +1,6 @@
 # tpda3
 # Interface configuration
-# Plain an simple localisation support:
-# Configuration example for romanian:
-# interface:
-# localize: etc/localisation/romanian.conf
-# toolbar: etc/interfaces/toolbar_ro.yml
-# menubar: etc/interfaces/menubar_ro.yml
+# Plain an simple localisation support.
 ---
 geometry:
   main: 520x80+20+20
@@ -13,6 +8,10 @@ interface:
   localize: etc/localisation/english.conf
   toolbar: etc/interfaces/toolbar.yml
   menubar: etc/interfaces/menubar.yml
+  # Configuration example for romanian:
+  #localize: etc/localisation/romanian.conf
+  #toolbar: etc/interfaces/toolbar_ro.yml
+  #menubar: etc/interfaces/menubar_ro.yml
 application:
   appmain:  etc/application.yml
   conninfo: etc/connection.yml

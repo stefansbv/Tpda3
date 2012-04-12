@@ -40,7 +40,7 @@ sub new {
 
     my $self = {};
 
-    $self->{localize} = $opts;
+    $self->{dialog} = $opts;
 
     bless( $self, $class );
 
@@ -57,10 +57,10 @@ button labels.
 sub message_dialog {
     my ( $self, $view, $message, $details ) = @_;
 
-    my $title    = $self->{localize}{title};
-    my $b_yes    = $self->{localize}{b_yes};
-    my $b_cancel = $self->{localize}{b_cancel};
-    my $b_no     = $self->{localize}{b_no};
+    my $title    = $self->{dialog}{title};
+    my $b_yes    = $self->{dialog}{b_yes};
+    my $b_cancel = $self->{dialog}{b_cancel};
+    my $b_no     = $self->{dialog}{b_no};
 
     #--- Dialog Box
 
