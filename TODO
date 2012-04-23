@@ -1,7 +1,7 @@
 TODO                                                      -*- mode: org; -*-
 
 Note: Main development focus is on the PerlTk interface, at least
-      until I find (and learn to use) equivalent Wx controls to use in
+      until I find (and learn to use) equivalent Wx controls for the
       screens, with the same functionality with the PerlTk widgets.
 
 * To do [16%]
@@ -9,9 +9,8 @@ Note: Main development focus is on the PerlTk interface, at least
   - [ ] Enable/disable Logging from CLI and/or GUI;
   - [ ] Test Log::Dispatch::FileRotate;
   - [X] Implement language support (translations);
-  - [ ] Date fields in TM;
+  - [ ] Date fields and date validation in TM;
   - [ ] Search string with/without diacritical marks;
-
 
 * Someday, maybe [0%]
   - [ ] Custom search menu and tool (for queries like records inserted today);
