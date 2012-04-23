@@ -239,34 +239,12 @@ sub about {
     $about->SetDescription("$PROGRAM_DESC\nDatabase application framework and run-time");
     $about->SetCopyright('(c) 2010-2012 Ştefan Suciu <stefan@s2i2.ro>');
     $about->SetLicense($LICENSE);
-    $about->SetWebSite( 'http://tpda.s2i2.ro/', 'The Tpda3 web site');
+    # $about->SetWebSite( 'http://tpda.s2i2.ro/', 'The Tpda3 web site');
     $about->AddDeveloper( 'Ştefan Suciu <stefan@s2i2.ro>' );
-    #$about->AddDeveloper( 'I wish there was somebody else...' );
-    #$about->SetArtists( [ 'Unluckily', 'none', 'so', 'the',
-    #                     'graphic', 'is', 'bad' ] );
 
     Wx::AboutBox( $about );
 
-    # # Add the about text.
-    # my $about_text = qq{\n};
-    # $about_text .= $PROGRAM_NAME . "\n";
-    # $about_text .= "Version " . $PROGRAM_VER . "\n";
-    # $about_text .= "Author: Stefan Suciu\n";
-    # $about_text .= "Copyright 2010-2012\n";
-    # $about_text .= "GNU General Public License (GPL)\n";
-    # $about_text .= "stefan@s2i2.ro";
-    # $about_text .= "\n\n";
-    # $about_text .= "$APP_NAME\n";
-    # $about_text .=  "Version " . $APP_VER . "\n";
-    # $about_text .= " - WxPerl $Wx::VERSION\n";
-    # $about_text .= " - " . Wx::wxVERSION_STRING;
-
-    # Wx::MessageBox(
-    #     $about_text,
-    #     'About Tpda3',
-    #     wxOK | wxICON_INFORMATION | wxCENTRE,
-    #     $self->_view,
-    # );
+    return;
 }
 
 =head2 guide
