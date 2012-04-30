@@ -740,6 +740,41 @@ sub tbl_dict_query {
     return \@dictrows;
 }
 
+sub tbl_lookup_query {
+    my ( $self, $para ) = @_;
+
+    my $table  = $para->{table};
+    my $fields = [ $para->{field} ];
+    my $where  = $para->{where};
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
+
+    my $sth;
+    try { $sth = $self->dbh->prepare($stmt); }
+    catch {
+        ouch( 'DictQueryError', $self->user_message($_) );
+    };
+
+    my $row_rf;
+    try {
+        if (@bind) {
+            $sth->execute(@bind);
+        }
+        else {
+            $sth->execute();
+        }
+
+        $row_rf = $sth->fetchrow_arrayref();
+    }
+    catch {
+        ouch( 'DictQueryError', $self->user_message($_) );
+    };
+
+    return $row_rf;
+}
+
 =head2 get_codes
 
 Return the data structure used to fill the list of choices.
