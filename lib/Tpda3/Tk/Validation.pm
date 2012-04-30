@@ -273,7 +273,7 @@ integers.
 sub integer {
     my ( $self, $myvar, $maxlen ) = @_;
 
-    my $pattern = qr/^\p{IsDigit}{0,$maxlen}$/;
+    my $pattern = qr/^[+-]?\p{IsDigit}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
         $self->{view}->set_status( '', 'ms' );    # clear messages
