@@ -1381,12 +1381,12 @@ sub control_write_e {
 
     $state = $state || $control->cget ('-state');
 
-    $value = q{} unless defined $value;    # Empty
+    $value = q{} unless defined $value;    # empty
 
     $control->configure( -state => 'normal' );
 
     $control->delete( 0, 'end' );
-    $control->insert( 0, $value ) if $value;
+    $control->insert( 0, $value ) if defined $value;
 
     $control->configure( -state => $state );
 
@@ -1410,7 +1410,7 @@ sub control_write_t {
 
     # Tip TextEntry 't'
     $control->delete( '1.0', 'end' );
-    $control->insert( '1.0', $value ) if $value;
+    $control->insert( '1.0', $value ) if defined $value;
 
     $control->configure( -state => $state );
 
@@ -1655,6 +1655,28 @@ sub make_binding_entry {
     $control->bind( $key => $calllback, );
 
     return;
+}
+
+=head2 lookup_descr_caen
+
+TEMPORARY function, until generalized?
+
+Lookup CAEN code in caen table.
+
+=cut
+
+sub lookup_descr_caen {
+    my ($self, $user_input, $field) = @_;
+
+    my $para = {};
+
+    $para->{table} = 'caen';
+    $para->{field} = 'descr_caen';
+    $para->{where}{$field} = $user_input;
+
+    my $descr_caen = $self->_model->tbl_lookup_query($para);
+
+    return $descr_caen->[0];
 }
 
 =head1 AUTHOR

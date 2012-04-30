@@ -2443,7 +2443,7 @@ sub ctrl_read_from {
         # }
         # else {
         my $value = $self->_view->$sub_name($control_ref, $date_format);
-        $self->clean_and_save_value($field, $value);
+        $self->clean_and_save_value($field, $value, $ctrltype);
         # }
     }
     else {
@@ -2455,47 +2455,68 @@ sub ctrl_read_from {
 
 =head2 clean_and_save_value
 
-Trim value and save to global data structure.
-
-If value is not empty or 0 add it to the data structure. Else add it
-only if in edit mode.
-
-There are two according to the application mode:
+Trim value and add it to the L<_scrdata> global data structure.
 
 =over
 
-=item find and add mode
+=item find mode
 
-When in L<find> mode Tpda3 builds a query using the data entered by
-the user in the controls.  Same for L<add> mode when the SQL INSERT is
-built also using the data entered by the user, ignoring the empty
-controls or the controls that have default value equal with 0 (like
-the CheckBox control).
+Add to the data structure the values that Perl recognise as true
+values.  Add value 0 when read from an Entry controll, but ignore it
+when read from a CheckBox control.  This allows searching for L<0> in
+numeric fields.
+
+=item add mode
+
+Add to the data structure the values that Perl recognise as true
+values.  Add value 0 when read from an Entry controll, or from a
+CheckBox control.
 
 =item edit mode
 
 When in L<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
-because some of them may be empty, interpreted as NULL values.
+because some of them may be empty, interpreted as a new NULL value.
 
 =back
 
 =cut
 
 sub clean_and_save_value {
-    my ($self, $field, $value) = @_;
+    my ($self, $field, $value, $ctrltype) = @_;
 
-    # Add value if not empty
-    if ( defined($value) and $value =~ m{\S+} and $value !~ m{^0$} ) {
+    $value = Tpda3::Utils->trim($value);
 
-        # Trim spaces and '\n' from the end
-        $value = Tpda3::Utils->trim($value);
-        $self->{_scrdata}{$field} = $value;
+    # Find mode
+    if ( $self->_model->is_mode('find') ) {
+        if ($value) {
+            $self->{_scrdata}{$field} = $value;
+        }
+        else {
+            if ($ctrltype eq 'e') {
+                # Can't use numeric eq (==) here
+                if ( $value =~ m{^0+$} ) {
+                    $self->{_scrdata}{$field} = $value;
+                }
+            }
+        }
     }
-    else {
-        # If update(=edit) status, add NULL value
-        if ( $self->_model->is_mode('edit') ) {
+    # Add mode
+    elsif ( $self->_model->is_mode('add') ) {
+        if (defined $value) {
+            $self->{_scrdata}{$field} = $value;
+        }
+    }
+    # Edit mode
+    elsif ( $self->_model->is_mode('edit') ) {
+        if (defined $value) {
+            $self->{_scrdata}{$field} = $value;
+        }
+        else {
             $self->{_scrdata}{$field} = undef;
         }
+    }
+    else {
+        # Error!
     }
 
     return;
@@ -2552,7 +2573,9 @@ sub screen_write {
             $value = Tpda3::Utils->trim($value);
 
             # Number
-            if ( $fldcfg->{datatype} eq 'numeric' ) {
+            if (   ( $fldcfg->{datatype} eq 'numeric' )
+                or ( $fldcfg->{datatype} eq 'integer' ) )
+            {
                 $value = $self->format_number( $value, $fldcfg->{numscale} );
             }
         }
@@ -2792,19 +2815,15 @@ sub controls_state_set {
 
 =head2 format_number
 
-Return trimmed and formated value if numscale is greater than 0.
-
-TODO: Should make $value = 0, than format as number?
+Return trimmed and formated numeric value.
 
 =cut
 
 sub format_number {
     my ( $self, $value, $numscale ) = @_;
 
-    # If numscale > 0, format as number
-    if ( $numscale and ( $numscale > 0 ) ) {
-        $value = sprintf( "%.${numscale}f", $value );
-    }
+    $value = 0 unless defined $value;
+    $value = sprintf( "%.${numscale}f", $value );
 
     return $value;
 }
@@ -3184,8 +3203,6 @@ Fields depending on other fields. Check field1 only if tip1 has some value.
 
 Returns I<true> if all required fields have values.
 
-BUG: Dialog not always has focus in GNU/Linux.
-
 =cut
 
 sub if_check_required_data {
@@ -3208,11 +3225,13 @@ sub if_check_required_data {
         return $ok_to_save;
     }
 
+    # List of the fields with values from the screen
     my @scr_fields;
     foreach my $field ( keys %{ $record->[0]{data} } ) {
-        push @scr_fields, $field if $record->[0]{data}{$field};
+        push @scr_fields, $field if defined $record->[0]{data}{$field};
     }
 
+    # List of the required fields from the rq_controls screen variable
     my (@req_fields, @req_cond);
     foreach my $field ( keys %{$ctrl_req} ) {
         my $cond = $ctrl_req->{$field}[2];
