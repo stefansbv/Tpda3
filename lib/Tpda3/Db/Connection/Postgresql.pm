@@ -125,6 +125,7 @@ sub parse_db_error {
        : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
        : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi ? "colnotfound:$2.$1"
        : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
+       : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
        : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
        : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
        : $pg =~ m/no password supplied/smi                   ? "password"
@@ -149,6 +150,7 @@ sub parse_db_error {
         unknown     => "fatal#Database error",
         duplicate   => "error#Duplicate $name",
         colnotfound => "error#Column not found $name",
+        checkconstr => "error#Check: $name",
         nullvalue   => "error#Null value for $name",
     };
 
