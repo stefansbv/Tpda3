@@ -1657,22 +1657,14 @@ sub make_binding_entry {
     return;
 }
 
-=head2 lookup_descr_caen
+=head2 lookup_description
 
-TEMPORARY function, until generalized?
-
-Lookup CAEN code in caen table.
+Dictionary lookup.
 
 =cut
 
-sub lookup_descr_caen {
-    my ($self, $user_input, $field) = @_;
-
-    my $para = {};
-
-    $para->{table} = 'caen';
-    $para->{field} = 'descr_caen';
-    $para->{where}{$field} = $user_input;
+sub lookup_description {
+    my ($self, $para) = @_;
 
     my $descr_caen = $self->_model->tbl_lookup_query($para);
 
