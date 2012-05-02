@@ -8,7 +8,7 @@ use Ouch;
 use English;
 use Data::Dumper;
 use Encode qw(is_utf8 encode decode);
-use Scalar::Util qw(blessed);
+use Scalar::Util qw(blessed looks_like_number);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
 use Log::Log4perl qw(get_logger :levels);
@@ -2438,13 +2438,8 @@ sub ctrl_read_from {
     my $sub_name = "control_read_$ctrltype";
     if ( $self->_view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        # unless ( $control_ref->{$field}[1] ) {
-        #     print "EE: Undefined field '$field', check configuration!\n";
-        # }
-        # else {
-        my $value = $self->_view->$sub_name($control_ref, $date_format);
-        $self->clean_and_save_value($field, $value, $ctrltype);
-        # }
+        my $value = $self->_view->$sub_name( $control_ref, $date_format );
+        $self->clean_and_save_value( $field, $value, $ctrltype );
     }
     else {
         print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
@@ -2500,15 +2495,15 @@ sub clean_and_save_value {
             }
         }
     }
-    # Add mode
+    # Add mode, non empty fields, 0 is allowed
     elsif ( $self->_model->is_mode('add') ) {
-        if (defined $value) {
+        if ( defined($value) and ( $value =~ m{\S+} ) ) {
             $self->{_scrdata}{$field} = $value;
         }
     }
-    # Edit mode
+    # Edit mode, non empty fields, 0 is allowed
     elsif ( $self->_model->is_mode('edit') ) {
-        if (defined $value) {
+        if ( defined($value) and ( $value =~ m{\S+} ) ) {
             $self->{_scrdata}{$field} = $value;
         }
         else {
@@ -2557,8 +2552,9 @@ sub screen_write {
 
         my $fldcfg = $cfg_ref->main_table_column($field);
 
-        my $value = $record->{$field}
-            || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
+        my $value = $record->{$field};
+        # Defaults in columns config?
+        # || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
 
         # # Process dependencies
         my $state;
@@ -2566,7 +2562,7 @@ sub screen_write {
         #     $state = $self->dependencies($field, $cfgdeps, $record);
         # }
 
-        if ($value) {
+        if (defined $value) {
             $value = decode( 'utf8', $value ) unless is_utf8($value);
 
             # Trim spaces and '\n' from the end
@@ -2822,6 +2818,9 @@ Return trimmed and formated numeric value.
 sub format_number {
     my ( $self, $value, $numscale ) = @_;
 
+    # Check if looks like a number
+    return $value unless looks_like_number $value;
+
     $value = 0 unless defined $value;
     $value = sprintf( "%.${numscale}f", $value );
 
@@ -2923,7 +2922,6 @@ sub record_load {
     my $params = $self->main_table_metadata('qry');
 
     my $record = $self->_model->query_record($params);
-
     my $textstr = 'Empty record';
     $self->_view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
@@ -3228,7 +3226,9 @@ sub if_check_required_data {
     # List of the fields with values from the screen
     my @scr_fields;
     foreach my $field ( keys %{ $record->[0]{data} } ) {
-        push @scr_fields, $field if defined $record->[0]{data}{$field};
+        push @scr_fields, $field
+            if defined( $record->[0]{data}{$field} )
+                and $record->[0]{data}{$field} =~ m{\S+};
     }
 
     # List of the required fields from the rq_controls screen variable
