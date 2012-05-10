@@ -1,4 +1,4 @@
- package Tpda3::Model;
+package Tpda3::Model;
 
 use strict;
 use warnings;
@@ -381,7 +381,7 @@ sub query_records_count {
     my ( $self, $rec ) = @_;
 
     my $table = $rec->{table};
-    my $pkcol = $rec->{pkcol};
+    my $pkcol = $rec->{pkcol} ? $rec->{pkcol} : '*';
     my $where = $self->build_where($rec);
 
     return if !ref $where;
@@ -447,18 +447,21 @@ Same as L<query_records_find> but returns an AoH suitable for TM fill.
 =cut
 
 sub query_filter_find {
-    my ( $self, $rec ) = @_;
+    my ( $self, $rec, $debug ) = @_;
 
     my $table = $rec->{table};
     my $cols  = $rec->{columns};
-    my $pkcol = $rec->{pkcol};
+    my $order = $rec->{order} ? $rec->{order} : $rec->{pkcol};
+
     my $where = $self->build_where($rec);
 
     return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
-    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+
+    return (undef, $stmt) if $debug;
 
     # my $search_limit = $self->_cfg->application->{limits}{search} || 100;
     # my $args = { MaxRows => $search_limit };    # limit search result

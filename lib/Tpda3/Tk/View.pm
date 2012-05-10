@@ -1678,11 +1678,25 @@ Call method in Model.
 =cut
 
 sub tbl_find_query {
+    my ($self, $para, $debug) = @_;
+
+    my ($ary_ref, $sql) = $self->_model->query_filter_find($para, $debug);
+
+    return ($ary_ref, $sql);
+}
+
+=head2 tbl_find_query
+
+Call method in Model.
+
+=cut
+
+sub tbl_count_query {
     my ($self, $para) = @_;
 
-    my ($ary_ref, $limit) = $self->_model->query_filter_find($para);
+    my $records_count = $self->_model->query_records_count($para);
 
-    return ($ary_ref, $limit);
+    return $records_count;
 }
 
 =head1 AUTHOR
