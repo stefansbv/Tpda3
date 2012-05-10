@@ -1671,6 +1671,14 @@ sub lookup_description {
     return $descr_caen->[0];
 }
 
+sub tbl_find_query {
+    my ($self, $para) = @_;
+
+    my ($ary_ref, $limit) = $self->_model->query_records_find($para);
+
+    return ($ary_ref, $limit);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>
