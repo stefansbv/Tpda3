@@ -440,6 +440,47 @@ sub query_records_find {
     return ($ary_ref, $search_limit);
 }
 
+=head2 query_filter_find
+
+Same as L<query_records_find> but returns an AoH suitable for TM fill.
+
+=cut
+
+sub query_filter_find {
+    my ( $self, $rec ) = @_;
+
+    my $table = $rec->{table};
+    my $cols  = $rec->{columns};
+    my $pkcol = $rec->{pkcol};
+    my $where = $self->build_where($rec);
+
+    return if !ref $where;
+
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+
+    # my $search_limit = $self->_cfg->application->{limits}{search} || 100;
+    # my $args = { MaxRows => $search_limit };    # limit search result
+
+    my @records;
+    try {
+        my $sth = $self->dbh->prepare($stmt);
+        $sth->execute(@bind);
+        my $recnum = 0;
+        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
+            $recnum++;
+            $record->{id_art} = $recnum;
+            push( @records, $record );
+        }
+    }
+    catch {
+        ouch( 'BatchQueryError', $self->user_message($_) );
+    };
+
+    return \@records;
+}
+
 =head2 query_record
 
 Return a record as hash reference

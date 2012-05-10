@@ -2,8 +2,6 @@ package Tpda3::Tk::Tools::QSelect;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 
 use Tk::widgets qw(DateEntry JComboBox Table Checkbox); #
@@ -221,7 +219,7 @@ sub run_screen {
 
     my $addB = $frm_tr->Button(
         -text => 'Query',
-        -command => sub { $self->make_query($scrcfg) },
+        -command => sub { $self->execute_query($scrcfg) },
     )->pack(-side => 'right', -padx => 12);
 
     #--- Details
@@ -288,16 +286,31 @@ sub run_screen {
     return;
 }
 
-sub make_query {
+=head2 execute_query
+
+Execute query.
+
+=cut
+
+sub execute_query {
     my ($self, $scrcfg) = @_;
 
     my $para = $self->build_query($scrcfg);
 
-    my ($ary_ref, $limit) = $self->{view}->tbl_find_query($para);
+    my ($records, $limit) = $self->{view}->tbl_find_query($para);
 
-    print Dumper( $ary_ref );
+    my $tmx = $self->get_tm_controls('tm1');
+    $tmx->clear_all();
+    $tmx->fill($records);
+
     return;
 }
+
+=head2 build_query
+
+Build query.
+
+=cut
 
 sub build_query {
     my ($self, $scrcfg) = @_;
@@ -326,13 +339,19 @@ sub build_query {
     return $params;
 }
 
+=head2 table_entry_read
+
+Read user input data.
+
+=cut
+
 sub table_entry_read {
     my $self = shift;
 
     # my $col_idx = 5;
     my $rows = $self->{table}->totalRows;
 
-    print "Total rows = $rows\n";
+    $self->{_scrdata} = {};                  # init
 
     for ( my $row_idx = 0; $row_idx < $rows; $row_idx++ ) {
         my $widgets = $self->{widgets}[$row_idx];
@@ -342,8 +361,6 @@ sub table_entry_read {
         my $enable = ${ $widgets->[2] };
 
         next unless $enable == 1;
-
-        print "$row_idx: $negate $enable\n";
 
         my $widget_entry = $self->{table}->get( $row_idx, 5 );
         my $value = $widget_entry->get;
@@ -364,7 +381,6 @@ sub table_entry_read {
         }
     }
 
-    print Dumper( $self->{_scrdata} );
     return;
 }
 
