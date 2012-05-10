@@ -38,6 +38,24 @@ our $VERSION = 0.50;
 
 =head1 METHODS
 
+=head2 _init
+
+
+
+=cut
+
+sub _init {
+    my ($self, ) = @_;
+
+    $self->{cfg} = Tpda3::Config->instance();
+    $self->{scr} = Tpda3::Config::Screen->new('firme');
+
+    $self->{columns} = {};
+    $self->{widgets} = [];
+
+    return;
+}
+
 =head2 run_screen
 
 The screen layout
@@ -91,52 +109,54 @@ sub run_screen {
 
     # Screen table columns metadata
     # TODO: sort field labels
-    my (@fields, @labels);
+    my @columns;
+    my $idx = 0;
     foreach my $field ( keys %{ $self->{columns} } ) {
-        push @fields, $field;
-        push @labels, $self->{columns}{$field}{label};
+        $columns[$idx] = [ $field, $self->{columns}{$field}{label} ];
+        $idx++;
     }
 
-    $self->{fields} = \@fields; # ??? !!!
-
-    my $rows_no = scalar @fields;
+    my $rows_idx = $#columns;
 
     $self->{table} = $frm_tl->Table(
-        -columns    => 5,
+        -columns    => 6,
         -rows       => 6,
-        -fixedrows  => 1,
+        #-fixedrows  => 1,
         -scrollbars => 'oe',
         -relief     => 'raised',
         -background => 'white'
     );
 
-    my $j = 0;
-    my $i = 0;
+    #-- Fill table
 
-    my @ents;
+    foreach my $r ( 0 .. $rows_idx ) {
 
-    foreach my $j ( 1 .. $rows_no ) {
+        my $no = $r + 1;
 
-        my $tmp_label = $self->{table}->Label(
-            -text   => $i,
+        # Label - row number
+        my $crt_label = $self->{table}->Label(
+            -text   => $no,
             -width  => 2,
             -relief => 'raised'
         );
 
-        my $tmp_label1 = $self->{table}->Label(
-            -text   => $labels[$i],
+        # Label - field label
+        my $fld_label = $self->{table}->Label(
+            -text   => $columns[$r][1],
             -width  => 15,
             -relief => 'sunken',
             -anchor => 'w',
             -bg     => 'white',
         );
 
-        my $var;
-        my $tmp_cbx = $self->{table}->Checkbox(
-            -variable => \$var,
-            -relief => 'raised',
+        # Negate - checkbox
+        my $v_negate = 0;
+        my $cbx_negate = $self->{table}->Checkbox(
+            -variable => \$v_negate,
+            -relief   => 'raised',
         );
 
+        #
         my $selected;
         my $searchopt = $self->{table}->JComboBox(
             -entrywidth   => 10,
@@ -153,7 +173,7 @@ sub run_screen {
             ],
         );
 
-        my $tmp_label2 = $self->{table}->Entry(
+        my $qry_entry = $self->{table}->Entry(
             -width    => 20,
             -relief   => 'sunken',
             -bg       => 'white',
@@ -163,15 +183,21 @@ sub run_screen {
             #-invalidcommand=>sub{$mw->bell}
         );
 
-        $self->{table}->put( $j, 1, $tmp_label );
-        $self->{table}->put( $j, 2, $tmp_label1 );
-        $self->{table}->put( $j, 3, $tmp_cbx );
-        $self->{table}->put( $j, 4, $searchopt );
-        $self->{table}->put( $j, 5, $tmp_label2 );
+        # Enable - checkbox (read only the enabled entries)
+        my $v_enable = 0;
+        my $cbx_enable = $self->{table}->Checkbox(
+            -variable => \$v_enable,
+            -relief => 'raised',
+        );
 
-        push @ents, $tmp_label2;
+        $self->{table}->put( $r, 1, $crt_label );
+        $self->{table}->put( $r, 2, $fld_label );
+        $self->{table}->put( $r, 3, $cbx_negate );
+        $self->{table}->put( $r, 4, $searchopt );
+        $self->{table}->put( $r, 5, $qry_entry );
+        $self->{table}->put( $r, 6, $cbx_enable );
 
-        $i++;
+        $self->{widgets}[$r] = [ $columns[$r][0], \$v_negate, \$v_enable ];
     }
 
     $self->{table}->pack(
@@ -244,12 +270,7 @@ sub run_screen {
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
-    $self->{controls} = {
-        # id_rep   => [ undef, $eid_rep ],
-        # repofile => [ undef, $erepofile ],
-        # title    => [ undef, $etitle ],
-        # descr    => [ undef, $tdescr ],
-    };
+    $self->{controls} = {};
 
     #- TableMatrix objects; just one for now :)
 
@@ -267,44 +288,10 @@ sub run_screen {
     return;
 }
 
-sub _init {
-    my ($self, ) = @_;
-
-    $self->{cfg} = Tpda3::Config->instance();
-    $self->{scr} = Tpda3::Config::Screen->new('firme');
-
-    return;
-}
-
-# # &defineOrder(@ents);
-
-# sub defineOrder {
-#     my $widget;
-#     for ( my $i = 0; defined( $_[ $i + 1 ] ); $i++ ) {
-#         $_[$i]->bind( '<Key-Return>', [ \&focus, $_[ $i + 1 ] ] );
-#         $_[$i]->bind( '<Tab>',        [ \&focus, $_[ $i + 1 ] ] );
-#     }
-
-#     # Uncomment this line if you want to wrap around
-#     $_[$#_]->bind( '<Key-Return>', [ \&focus, $_[0] ] );
-#     $_[$#_]->bind( '<Tab>',        [ \&focus, $_[0] ] );
-
-#     $_[0]->focus;
-# }
-
-# sub focus {
-#     my ( $tk, $self ) = @_;
-#     $self->focus;
-# }
-
 sub make_query {
     my ($self, $scrcfg) = @_;
 
-    print " build query...\n";
-
     my $para = $self->build_query($scrcfg);
-
-    print " query...\n";
 
     my ($ary_ref, $limit) = $self->{view}->tbl_find_query($para);
 
@@ -321,14 +308,13 @@ sub build_query {
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
-        chomp $value;
         my $findtype = $self->{columns}{$field}{findtype};
 
         # Create a where clause like this:
         #  field1 IS NOT NULL and field2 IS NULL
         # for entry values equal to '%' or '!'
-        $findtype = q{notnull} if $value eq q{%};
-        $findtype = q{isnull}  if $value eq q{!};
+        $findtype = q{notnull} if defined $value and $value eq q{%};
+        $findtype = q{isnull}  if !defined $value;
 
         $params->{where}{$field} = [ $value, $findtype ];
     }
@@ -343,28 +329,42 @@ sub build_query {
 sub table_entry_read {
     my $self = shift;
 
-    my $col_idx = 5;
+    # my $col_idx = 5;
     my $rows = $self->{table}->totalRows;
 
-    for (my $row_idx = 1; $row_idx < $rows; $row_idx++) {
+    print "Total rows = $rows\n";
 
-        my $row_pos = $row_idx - 1;
-        my $field   = $self->{fields}->[$row_pos];
-        my $widget  = $self->{table}->get($row_idx, $col_idx);
-        my $value   = $widget->get;
+    for ( my $row_idx = 0; $row_idx < $rows; $row_idx++ ) {
+        my $widgets = $self->{widgets}[$row_idx];
+
+        my $field  = $widgets->[0];
+        my $negate = ${ $widgets->[1] };
+        my $enable = ${ $widgets->[2] };
+
+        next unless $enable == 1;
+
+        print "$row_idx: $negate $enable\n";
+
+        my $widget_entry = $self->{table}->get( $row_idx, 5 );
+        my $value = $widget_entry->get;
 
         if ($value) {
             $self->{_scrdata}{$field} = $value;
         }
         else {
+
             # ctrl type is 'e'
             # Can't use numeric eq (==) here
             if ( $value =~ m{^0+$} ) {
                 $self->{_scrdata}{$field} = $value;
             }
+            else {
+                $self->{_scrdata}{$field} = undef; # IS NULL
+            }
         }
     }
 
+    print Dumper( $self->{_scrdata} );
     return;
 }
 
@@ -393,4 +393,3 @@ by the Free Software Foundation.
 =cut
 
 1; # End of Tpda3::App::Fpimm::QSelect
-
