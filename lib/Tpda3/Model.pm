@@ -426,7 +426,7 @@ sub query_records_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
-    print Dumper( $stmt, \@bind);
+
     my $search_limit = $self->_cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
     my $ary_ref;

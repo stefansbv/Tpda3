@@ -310,6 +310,14 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Query Select
+    $self->_view->event_handler_for_menu(
+        'mn_qs',
+        sub {
+            $self->screen_module_load('QSelect','tools');
+        }
+    );
+
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
