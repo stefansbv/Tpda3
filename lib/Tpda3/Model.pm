@@ -458,7 +458,7 @@ sub query_filter_find {
     return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-
+    print Dumper( $table, $cols, $where, $order );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
     return (undef, $stmt) if $debug;

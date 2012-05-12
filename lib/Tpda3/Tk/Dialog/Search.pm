@@ -2,9 +2,8 @@ package Tpda3::Tk::Dialog::Search;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
+
 use Ouch;
 
 use Tk::LabFrame;

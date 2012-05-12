@@ -8,6 +8,7 @@ use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel catfile);
 
 use Tk;
+use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
     LabFrame MListbox JComboBox MsgBox);
 
@@ -57,6 +58,14 @@ sub new {
     $self->{_cfg} = Tpda3::Config->instance();
 
     $self->title(" Tpda3 ");
+
+    # Make a smaller font for buttons
+    my $s_font = $self->fontCreate(
+        'small',
+        -family=>'arial',
+        -weight=>'bold',
+        -size => 8,
+    );
 
     # Load resource file, if found
     my $resource = catfile( $self->{_cfg}->cfetc, 'xresource.xrdb' );

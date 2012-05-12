@@ -2,12 +2,14 @@ package Tpda3::Tk::TM;
 
 use strict;
 use warnings;
+
+use Data::Dumper;
 use Carp;
 
 use Tpda3::Utils;
 
 use Tk;
-use base qw{Tk::Derived Tk::TableMatrix};
+use base qw{Tk::Derived Tk::TableMatrix Tk::Checkbutton};
 
 Tk::Widget->Construct('TM');
 
@@ -100,23 +102,40 @@ sub Populate {
 
 =head2 init
 
-Write header on row 0 of TableMatrix
+Write header on row 0 of TableMatrix.
 
 =cut
 
 sub init {
     my ( $self, $frame, $args ) = @_;
 
-    $self->{columns}     = $args->{columns};
-    $self->{selectorcol} = $args->{selectorcol};
-    $self->{colstretch}  = $args->{colstretch};
+    # Screen configs
+    foreach my $key (keys %{$args}) {
+        $self->{$key} = $args->{$key};
+    }
 
+    # Other
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
 
     $self->set_tags();
 
     return;
+}
+
+=head2 tmx_get_row_count
+
+Return number of rows in TM, without the header row.
+
+=cut
+
+sub get_row_count {
+    my $self = shift;
+
+    my $rows_no  = $self->cget( -rows );
+    my $rows_count = $rows_no - 1;
+
+    return $rows_count;
 }
 
 =head2 set_tags
@@ -576,18 +595,33 @@ sub tmatrix_make_selector {
 
 =head2 embeded_buttons
 
-Embeded windows
+Embeded windows.  Config option selector style can be radio (default)
+or checkbox.
 
 =cut
 
 sub embeded_buttons {
     my ( $self, $row, $col ) = @_;
 
-    $self->windowConfigure(
-        "$row,$col",
-        -sticky => 's',
-        -window => $self->build_rbbutton( $row, $col ),
-    );
+    my $selestyle = exists $self->{selectorstyle}
+        ? $self->{selectorstyle}
+        : q{}
+        ;
+
+    if ( $selestyle eq 'checkbox' ) {
+        $self->windowConfigure(
+            "$row,$col",
+            -sticky => 's',
+            -window => $self->build_ckbutton( $row, $col ),
+        );
+    }
+    else {
+        $self->windowConfigure(
+            "$row,$col",
+            -sticky => 's',
+            -window => $self->build_rbbutton( $row, $col ),
+        );
+    }
 
     return;
 }
@@ -659,6 +693,100 @@ sub get_selector {
     my $self = shift;
 
     return $self->{selectorcol};
+}
+
+=head2 build_ckbutton
+
+Build Checkbutton.
+
+=cut
+
+sub build_ckbutton {
+    my ( $self, $row, $col ) = @_;
+
+    my $button = $self->{frame}->Checkbutton(
+        -image       => 'actcross16',
+        -selectimage => 'actcheck16',
+        -indicatoron => 0,
+        -selectcolor => 'lightblue',
+        -state       => 'normal',
+    );
+
+    return $button;
+}
+
+=head2 toggle_ckbuttons
+
+Toggle Checkbutton or set state to L<state> if defined state.
+
+=cut
+
+sub toggle_ckbutton {
+    my ( $self, $r, $c, $state ) = @_;
+
+    my $ckb;
+    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    unless ($@) {
+        if ( $ckb =~ /Checkbutton/ ) {
+            if ( defined $state ) {
+                $state ? $ckb->select : $ckb->deselect;
+            }
+            else {
+                if ( $self->is_checked( $r, $c ) ) {
+                    $ckb->deselect;
+                }
+                else {
+                    $ckb->select;
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+=head2 is_checked
+
+Return true if embedded checkbutton is checked.
+
+=cut
+
+sub is_checked {
+    my ($self, $r, $c) = @_;
+
+    croak unless $r and $c;
+
+    my $ckb;
+    my $is_checked = 0;
+    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    unless ($@) {
+        if ( $ckb =~ /Checkbutton/ ) {
+            my $ckb_var = $ckb->cget('-variable');
+            $is_checked = $$ckb_var ? $$ckb_var : 0;
+        }
+    }
+
+    return $is_checked;
+}
+
+=head2 count_is_checked
+
+Return how many buttons are checked.
+
+=cut
+
+sub count_is_checked {
+    my ($self, $c) = @_;
+
+    my $rows_no  = $self->cget( -rows );
+    my $rows_idx = $rows_no - 1;
+
+    my $count = 0;
+    for my $r ( 1 .. $rows_idx ) {
+        $count++ if $self->is_checked($r, $c);
+    }
+
+    return $count;
 }
 
 =head1 AUTHOR

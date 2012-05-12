@@ -98,7 +98,7 @@ sub config_screen_load {
 
 =head2 config_screen_load_file
 
-Load a Screen configuration files at request.
+Load a screen configuration file.
 
 =cut
 
@@ -107,7 +107,21 @@ sub config_screen_load_file {
 
     my $cfg_file = $self->_cfg->config_scr_file_name($scrcls);
 
-    return $self->_cfg->config_file_load($cfg_file);
+    return $self->_cfg->config_load_file($cfg_file);
+}
+
+=head2 config_screen_load_yml
+
+TODO: Refactor this ;)
+
+=cut
+
+sub config_screen_load_yml {
+    my ( $self, $scrcls ) = @_;
+
+    my $cfg_file = $self->_cfg->config_scr_file_name($scrcls);
+
+    return $self->_cfg->config_load_file($cfg_file);
 }
 
 =head2 _cfg
@@ -499,6 +513,18 @@ sub dep_table_colstretch {
     return $self->dep_table($tm_ds)->{colstretch};
 }
 
+=head2 dep_table_selectorstyle
+
+Return the dependent table I<selectorstyle> attribute.
+
+=cut
+
+sub dep_table_selectorstyle {
+    my ( $self, $tm_ds ) = @_;
+
+    return $self->dep_table($tm_ds)->{selectorstyle};
+}
+
 sub dep_table_datasources {
     my ( $self, $tm_ds ) = @_;
 
@@ -681,9 +707,10 @@ sub dep_table_header_info {
     my ( $self, $tm_ds ) = @_;
 
     return {
-        columns     => $self->dep_table_columns($tm_ds),
-        selectorcol => $self->dep_table_selectorcol($tm_ds),
-        colstretch  => $self->dep_table_colstretch($tm_ds),
+        columns       => $self->dep_table_columns($tm_ds),
+        selectorcol   => $self->dep_table_selectorcol($tm_ds),
+        colstretch    => $self->dep_table_colstretch($tm_ds),
+        selectorstyle => $self->dep_table_selectorstyle($tm_ds),
     };
 }
 

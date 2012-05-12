@@ -34,7 +34,7 @@ our $VERSION = 0.50;
 
 =head1 METHODS
 
-# =head2 config_file_load
+# =head2 config_load_file
 
 # Load a config file and return the Perl data structure.  It loads a
 # file in Config::General format or in YAML::Tiny format, depending on
@@ -42,7 +42,7 @@ our $VERSION = 0.50;
 
 # =cut
 
-# sub config_file_load {
+# sub config_load_file {
 #     my ( $self, $conf_file, $not_fatal ) = @_;
 
 #     print " $conf_file ... ";

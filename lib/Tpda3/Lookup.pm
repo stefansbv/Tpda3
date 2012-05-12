@@ -2,8 +2,6 @@ package Tpda3::Lookup;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use utf8;
 
 =head1 NAME

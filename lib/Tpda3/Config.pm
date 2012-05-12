@@ -142,7 +142,7 @@ sub config_main_load {
     # $self->{_log}->info("Loading 'main' config");
     # $self->{_log}->info("file: $main_fqn");
 
-    my $maincfg = $self->config_file_load($main_fqn);
+    my $maincfg = $self->config_load_file($main_fqn);
 
     # FIXIT: Refactor
     my $main_hr = {
@@ -185,7 +185,7 @@ sub config_interfaces_load {
 
     foreach my $section ( keys %{ $self->cfiface } ) {
         my $cfg_file = $self->config_iface_file_name($section);
-        $self->config_load_file($cfg_file);
+        $self->config_load($cfg_file);
     }
 
     return;
@@ -211,7 +211,7 @@ sub config_application_load {
 
     foreach my $section ( keys %{ $self->cfapp } ) {
         my $cfg_file = $self->config_app_file_name($section);
-        $self->config_load_file($cfg_file);
+        $self->config_load($cfg_file);
     }
 
     return;
@@ -223,18 +223,19 @@ Load configuration file and make accessors.
 
 =cut
 
-sub config_load_file {
+sub config_load {
     my ($self, $cfg_file) = @_;
 
     $self->{_log}->info("Loading file: $cfg_file");
 
-    my $cfg_hr = $self->config_file_load($cfg_file);
+    my $cfg_hr = $self->config_load_file($cfg_file);
 
     my @accessor = keys %{$cfg_hr};
     $self->{_log}->info("Making accessors for: @accessor");
 
     $self->make_accessors($cfg_hr);
 
+    return;
 }
 
 =head2 config_iface_file_name
@@ -339,7 +340,7 @@ Print configuration details.
 sub list_configs_details {
     my ( $self, $cfg_file ) = @_;
 
-    my $cfg_hr = $self->config_file_load($cfg_file);
+    my $cfg_hr = $self->config_load_file($cfg_file);
 
     while ( my ( $key, $value ) = each( %{ $cfg_hr->{connection} } ) ) {
         print sprintf( "%*s", 10, $key ), ' = ';
@@ -382,7 +383,7 @@ sub config_load_instance {
 
     my $inst_fqn = catfile( $self->configdir, $inst );
 
-    my $cfg_hr = $self->config_file_load($inst_fqn, 'notfatal');
+    my $cfg_hr = $self->config_load_file($inst_fqn, 'notfatal');
 
     $self->make_accessors($cfg_hr);
 
@@ -399,7 +400,7 @@ sub toolbar_interface_reload {
     my $self = shift;
 
     my $cfg_file = $self->config_iface_file_name('toolbar');
-    $self->config_load_file($cfg_file);
+    $self->config_load($cfg_file);
 
     return;
 }
@@ -594,7 +595,7 @@ sub get_log_filename {
     return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
 
-=head2 config_file_load
+=head2 config_load_file
 
 Load a config file and return the Perl data structure.  It loads a
 file in Config::General format or in YAML::Tiny format, depending on
@@ -602,7 +603,7 @@ the extension of the file.
 
 =cut
 
-sub config_file_load {
+sub config_load_file {
     my ( $self, $conf_file, $not_fatal ) = @_;
 
     # my $log = get_logger();
@@ -621,7 +622,7 @@ sub config_file_load {
         print " $conf_file ... found\n" if $self->verbose;
     }
 
-    my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
+    my $suf = ( fileparse( $conf_file, qr/\.[^.]*/ ) )[2];
     if ( $suf =~ m{conf} ) {
         return Tpda3::Config::Utils->load_conf($conf_file);
     }
@@ -657,10 +658,8 @@ sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
     # Check if has extension and add it if not
-    my (undef, undef, $type) = fileparse($file_name, '\.conf' );
-    unless ($type eq '.conf') {
-        $file_name .= '.conf';
-    }
+    my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );
+    $file_name .= '.conf' unless $type; # defaults to .conf
 
     my $conf_fn = catfile( $self->config_scrdir, $file_name );
 
@@ -749,7 +748,7 @@ sub config_search_load_file {
 
     my $cfg_file = catfile( $self->configdir, 'etc/search.conf' );
 
-    return $self->config_file_load($cfg_file);
+    return $self->config_load_file($cfg_file);
 }
 
 =head1 AUTHOR
