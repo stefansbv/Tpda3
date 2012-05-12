@@ -9,7 +9,8 @@ use Carp;
 use Tpda3::Utils;
 
 use Tk;
-use base qw{Tk::Derived Tk::TableMatrix Tk::Checkbutton};
+use base qw<Tk::Derived Tk::TableMatrix>;
+use Tk::widgets qw<Checkbutton>;
 
 Tk::Widget->Construct('TM');
 
@@ -710,6 +711,7 @@ sub build_ckbutton {
         -indicatoron => 0,
         -selectcolor => 'lightblue',
         -state       => 'normal',
+        -command     => sub { $self->validate("$row,$col") }
     );
 
     return $button;
@@ -732,12 +734,7 @@ sub toggle_ckbutton {
                 $state ? $ckb->select : $ckb->deselect;
             }
             else {
-                if ( $self->is_checked( $r, $c ) ) {
-                    $ckb->deselect;
-                }
-                else {
-                    $ckb->select;
-                }
+                $self->is_checked( $r, $c ) ? $ckb->deselect : $ckb->select;
             }
         }
     }

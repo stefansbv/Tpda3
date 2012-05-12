@@ -1680,13 +1680,13 @@ sub lookup_description {
     return $descr_caen->[0];
 }
 
-=head2 tbl_find_query
+=head2 tbl_selection_query
 
 Call method in Model.
 
 =cut
 
-sub tbl_find_query {
+sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
 
     my ($ary_ref, $sql) = $self->_model->query_filter_find($para, $debug);
@@ -1694,13 +1694,13 @@ sub tbl_find_query {
     return ($ary_ref, $sql);
 }
 
-=head2 tbl_find_query
+=head2 tbl_selection_count
 
 Call method in Model.
 
 =cut
 
-sub tbl_count_query {
+sub tbl_selection_count {
     my ($self, $para) = @_;
 
     my $records_count = $self->_model->query_records_count($para);

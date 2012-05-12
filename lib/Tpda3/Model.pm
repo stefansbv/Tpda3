@@ -378,11 +378,11 @@ Count records in table. TODO.
 =cut
 
 sub query_records_count {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table = $rec->{table};
-    my $pkcol = $rec->{pkcol} ? $rec->{pkcol} : '*';
-    my $where = $self->build_where($rec);
+    my $table = $opts->{table};
+    my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
+    my $where = $self->build_where($opts);
 
     return if !ref $where;
 
@@ -414,12 +414,12 @@ I<columns> configuration.
 =cut
 
 sub query_records_find {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table = $rec->{table};
-    my $cols  = $rec->{columns};
-    my $pkcol = $rec->{pkcol};
-    my $where = $self->build_where($rec);
+    my $table = $opts->{table};
+    my $cols  = $opts->{columns};
+    my $pkcol = $opts->{pkcol};
+    my $where = $self->build_where($opts);
 
     return if !ref $where;
 
@@ -447,18 +447,21 @@ Same as L<query_records_find> but returns an AoH suitable for TM fill.
 =cut
 
 sub query_filter_find {
-    my ( $self, $rec, $debug ) = @_;
+    my ( $self, $opts, $debug ) = @_;
 
-    my $table = $rec->{table};
-    my $cols  = $rec->{columns};
-    my $order = $rec->{order} ? $rec->{order} : $rec->{pkcol};
+    my $table = $opts->{table};
+    my $cols  = $opts->{columns};
+    my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol};
 
-    my $where = $self->build_where($rec);
+    #my $where = $self->build_where($opts);
+    my $where = $opts->{where};
+
+    print "table, cols, where, order\n";
+    print Dumper( $table, $cols, $where, $order );
 
     return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-    print Dumper( $table, $cols, $where, $order );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
     return (undef, $stmt) if $debug;
@@ -491,10 +494,10 @@ Return a record as hash reference
 =cut
 
 sub query_record {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table = $rec->{table};
-    my $where = $rec->{where};
+    my $table = $opts->{table};
+    my $where = $opts->{where};
 
     my $sql = SQL::Abstract->new();
 
@@ -520,12 +523,12 @@ Option to add row count field to the returned data structure.
 =cut
 
 sub table_batch_query {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table    = $rec->{table};
-    my $colslist = $rec->{colslist};
-    my $where    = $rec->{where};
-    my $order    = $rec->{order};
+    my $table    = $opts->{table};
+    my $colslist = $opts->{colslist};
+    my $where    = $opts->{where};
+    my $order    = $opts->{order};
 
     my $sql = SQL::Abstract->new();
 
@@ -554,14 +557,14 @@ Query a dictionary table
 =cut
 
 sub query_dictionary {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table = $rec->{table};
-    my $opt   = $rec->{options};
-    my $order = $rec->{order};
-    my $cols  = $rec->{columns};
+    my $table   = $opts->{table};
+    my $options = $opts->{options};
+    my $order   = $opts->{order};
+    my $cols    = $opts->{columns};
 
-    my $where = $self->build_where( $rec, $opt );
+    my $where = $self->build_where($opts);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
@@ -610,11 +613,11 @@ NULL.
 =cut
 
 sub build_where {
-    my ( $self, $rec, $opt ) = @_;
+    my ( $self, $opts ) = @_;
 
     my $where = {};
 
-    while ( my ( $field, $attrib ) = each( %{ $rec->{where} } ) ) {
+    while ( my ( $field, $attrib ) = each( %{ $opts->{where} } ) ) {
 
         my $searchstr = $attrib->[0];
         my $find_type = $attrib->[1];
@@ -625,14 +628,17 @@ sub build_where {
 
         if ( $find_type eq 'contains' ) {
             my $cmp = $self->cmp_function($searchstr);
-            $where->{$field}
-                = { $cmp => Tpda3::Utils->quote4like( $attrib->[0], $opt ) };
+            $where->{$field} = {
+                $cmp => Tpda3::Utils->quote4like(
+                    $searchstr, $opts->{options}
+                )
+            };
         }
         elsif ( $find_type eq 'full' ) {
-            $where->{$field} = $attrib->[0];
+            $where->{$field} = $searchstr;
         }
         elsif ( $find_type eq 'date' ) {
-            my $ret = Tpda3::Utils->process_date_string( $attrib->[0] );
+            my $ret = Tpda3::Utils->process_date_string($searchstr);
             if ( $ret eq 'dataerr' ) {
                 $self->_print('warn#Wrong search parameter');
                 return;
@@ -1321,12 +1327,12 @@ Return an array reference of column values.
 =cut
 
 sub table_selectcol_as_array {
-    my ( $self, $rec ) = @_;
+    my ( $self, $opts ) = @_;
 
-    my $table  = $rec->{table};
-    my $pkcol  = $rec->{pkcol};
-    my $fields = $rec->{fkcol};
-    my $where  = $rec->{where};
+    my $table  = $opts->{table};
+    my $pkcol  = $opts->{pkcol};
+    my $fields = $opts->{fkcol};
+    my $where  = $opts->{where};
     my $order  = $fields;
 
     my $sql = SQL::Abstract->new();
