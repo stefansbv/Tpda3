@@ -685,7 +685,9 @@ sub update_value {
     my $resultfield = $rdd->{resultfield};
     my $searchfield = $rdd->{searchfield};
 
-    my $conf = $self->{cfg}->config_search_load_file();
+    # Info for the Search dialog table header from L<etc/search.conf>,
+    # in the application's L<etc> config dir.
+    my $conf = $self->{cfg}->config_misc_load('search.conf');
     my $attr = $conf->{columns};
 
     my $para = {

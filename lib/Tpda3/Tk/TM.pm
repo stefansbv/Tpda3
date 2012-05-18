@@ -9,8 +9,8 @@ use Carp;
 use Tpda3::Utils;
 
 use Tk;
-use base qw<Tk::Derived Tk::TableMatrix>;
-use Tk::widgets qw<Checkbutton>;
+use base qw< Tk::Derived Tk::TableMatrix >;
+use Tk::widgets qw< Checkbutton >;
 
 Tk::Widget->Construct('TM');
 
@@ -452,6 +452,40 @@ sub cell_read {
     my $cell_value = $self->get("$row,$col");
 
     return { $col_name => $cell_value };
+}
+
+
+=head2 cell_write
+
+Write to a cell from a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+The I<col> parameter can be a number - column index or a column name.
+
+=cut
+
+sub cell_write {
+    my ( $self, $row, $col, $value ) = @_;
+
+    my $is_col_name = 0;
+    $is_col_name = 1 if $col !~ m{\d+};
+
+    my $fields_cfg = $self->{columns};
+
+    my $col_name;
+    if ($is_col_name) {
+        $col_name = $col;
+        $col      = $fields_cfg->{$col_name}{id};
+    }
+    else {
+        my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+        $col_name = $cols_ref->[$col];
+    }
+
+    $self->set("$row,$col", $value);
+
+    return;
 }
 
 =head2 add_row

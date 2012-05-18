@@ -736,17 +736,16 @@ sub get_help_file {
     return catfile( dist_dir('Tpda3'), 'help', $help_file);
 }
 
-=head2 config_search_load_file
+=head2 config_misc_load
 
-Info for the Search dialog table header from L<etc/search.conf>, in
-the application's L<etc> config dir, used by the Repman.pm module.
+Load a config file from the etc dir of the application.
 
 =cut
 
-sub config_search_load_file {
-    my $self = shift;
+sub config_misc_load {
+    my ($self, $config_file) = @_;
 
-    my $cfg_file = catfile( $self->configdir, 'etc/search.conf' );
+    my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
     return $self->config_load_file($cfg_file);
 }

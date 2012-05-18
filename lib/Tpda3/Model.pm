@@ -452,22 +452,19 @@ sub query_filter_find {
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
     my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol};
-
-    #my $where = $self->build_where($opts);
     my $where = $opts->{where};
 
-    print "table, cols, where, order\n";
-    print Dumper( $table, $cols, $where, $order );
+    my @columns = grep { $_ ne 'id_art' } @{$cols};
+
+    # print "table, cols, where, order\n";
+    # print Dumper( $table, $cols, $where, $order );
 
     return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+    my ( $stmt, @bind ) = $sql->select( $table, \@columns, $where, $order );
 
     return (undef, $stmt) if $debug;
-
-    # my $search_limit = $self->_cfg->application->{limits}{search} || 100;
-    # my $args = { MaxRows => $search_limit };    # limit search result
 
     my @records;
     try {
@@ -476,7 +473,7 @@ sub query_filter_find {
         my $recnum = 0;
         while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
             $recnum++;
-            $record->{id_art} = $recnum;
+            $record->{id_art} = $recnum;     # add id_art column
             push( @records, $record );
         }
     }
