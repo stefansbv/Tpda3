@@ -454,15 +454,16 @@ sub query_filter_find {
     my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol};
     my $where = $opts->{where};
 
-    my @columns = grep { $_ ne 'id_art' } @{$cols};
-
-    # print "table, cols, where, order\n";
-    # print Dumper( $table, $cols, $where, $order );
+    # Remove 'id_art'; for 'SELECT *', $cols have to be undef
+    if (ref $cols) {
+        my @columns = grep { $_ ne 'id_art' } @{$cols};
+        $cols = \@columns;
+    }
 
     return if !ref $where;
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-    my ( $stmt, @bind ) = $sql->select( $table, \@columns, $where, $order );
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
     return (undef, $stmt) if $debug;
 
