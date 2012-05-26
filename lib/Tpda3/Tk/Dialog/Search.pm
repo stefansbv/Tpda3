@@ -201,7 +201,7 @@ sub search_dialog {
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
                 ->configure( -background => 'tan' );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
-                ->configure( -width => $rec->{$field}{width} );
+                ->configure( -width => $rec->{$field}{displ_width} );
 
             if ( defined $rec->{$field}{datatype} ) {
                 if (   $rec->{$field}{datatype} eq 'integer'

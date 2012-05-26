@@ -138,7 +138,7 @@ sub search_dialog {
             # Width config is in chars.  Using chars_number x char_width
             # to compute the with in pixels
             my $label_len = length $col->{$field}{label};
-            my $width     = $col->{$field}{width};
+            my $width     = $col->{$field}{displ_width};
             $width = $label_len >= $width ? $label_len + 2 : $width;
             $width = 30 if $width >= 30;
             my $char_width = $view->GetCharWidth();
@@ -345,7 +345,7 @@ sub make_list_header {
 
         $self->{_list}
             ->InsertColumn( $colcnt, $attr->{label}, wxLIST_FORMAT_LEFT,
-            $attr->{width}, );
+            $attr->{displ_width}, );
 
         $colcnt++;
     }

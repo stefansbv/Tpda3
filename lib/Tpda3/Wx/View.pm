@@ -854,7 +854,7 @@ sub header_width {
     my ( $self, $field ) = @_;
 
     my $label_len = length $field->{label};
-    my $width     = $field->{width};
+    my $width     = $field->{displ_width};
     $width = $label_len >= $width ? $label_len + 2 : $width;
     my $char_width = $self->GetCharWidth();
     my $field_attr = {
@@ -877,7 +877,7 @@ sub list_header {
 
     # Label and width
     $self->get_recordlist->InsertColumn( $colcnt, $col->{label},
-        wxLIST_FORMAT_LEFT, $col->{width} );
+        wxLIST_FORMAT_LEFT, $col->{displ_width} );
 
     if ( defined $col->{datatype} ) {
 

@@ -107,8 +107,8 @@ sub column_name_from_idx {
 
 =head2 maintable_attribs
 
-Return column attributes for I<type>, I<width> and I<place>, from the
-screen configuration, for the main table.
+Return column attributes for I<type>, I<valid_width> and I<place>,
+from the screen configuration, for the main table.
 
 =cut
 
@@ -117,13 +117,13 @@ sub maintable_attribs {
 
     my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
 
-    return @{$table_cfg}{qw(datatype width numscale)};    # hash slice
+    return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
 =head2 deptable_attribs
 
-Return column attributes for I<type>, I<width> and I<place>, from the
-screen configuration, for the dependent table(s).
+Return column attributes for I<type>, I<valid_width> and I<place>,
+from the screen configuration, for the dependent table(s).
 
 =cut
 
@@ -132,7 +132,7 @@ sub deptable_attribs {
 
     my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
 
-    return @{$table_cfg}{qw(datatype width numscale)};    # hash slice
+    return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
 =head2 validate_entry
@@ -148,16 +148,17 @@ interpreted as a 'column IS NULL' SQL WHERE clause.
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
 
-    my ( $type, $width, $numscale ) = $self->maintable_attribs($column);
+    my ( $type, $valid_width, $numscale ) = $self->maintable_attribs($column);
 
-    return $self->validate( $type, $p1, $width, $numscale, $column );
+    return $self->validate( $type, $p1, $valid_width, $numscale, $column );
 }
 
 =head2 validate_table_cell
 
 Entry validation for tables.
 
-Get I<type>, I<width> and I<numscale> from the table's configuration.
+Get I<type>, I<valid_width> and I<numscale> from the table's
+configuration.
 
 =cut
 
@@ -166,10 +167,10 @@ sub validate_table_cell {
 
     my $column = $self->column_name_from_idx( $tm_ds, $col );
 
-    my ( $type, $width, $numscale )
+    my ( $type, $valid_width, $numscale )
         = $self->deptable_attribs( $tm_ds, $column );
 
-    return $self->validate( $type, $new, $width, $numscale, $column );
+    return $self->validate( $type, $new, $valid_width, $numscale, $column );
 }
 
 =head2 validate

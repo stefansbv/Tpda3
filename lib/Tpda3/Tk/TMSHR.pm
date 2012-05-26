@@ -189,7 +189,7 @@ sub set_tags {
         # will be of variable width
         next if $self->{colstretch} and $col == $self->{colstretch};
 
-        my $width = $self->{columns}{$field}{width};
+        my $width = $self->{columns}{$field}{displ_width};
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }

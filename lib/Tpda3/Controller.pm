@@ -832,9 +832,9 @@ sub setup_lookup_bindings_entry {
         my @cols;
         my $rec = {};
         $rec->{$search} = {
-            width    => $field_cfg->{width},
-            label    => $field_cfg->{label},
-            datatype => $field_cfg->{datatype},
+            displ_width => $field_cfg->{displ_width},
+            label       => $field_cfg->{label},
+            datatype    => $field_cfg->{datatype},
         };
         $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1175,9 +1175,9 @@ sub get_lookup_setings {
     my @cols;
     my $rec = {};
     $rec->{$search} = {
-        width   => $field_cfg->{width},
-        label   => $field_cfg->{label},
-        datatype => $field_cfg->{datatype},
+        displ_width => $field_cfg->{displ_width},
+        label       => $field_cfg->{label},
+        datatype    => $field_cfg->{datatype},
     };
     $rec->{$search}{name} = $column if $column;    # add name attribute
 
@@ -1229,9 +1229,9 @@ sub fields_cfg_array {
         }
         my $rec = {};
         $rec->{$lookup_field} = {
-            width   => $field_cfg->{width},
-            label   => $field_cfg->{label},
-            datatype => $field_cfg->{datatype},
+            displ_width => $field_cfg->{displ_width},
+            label       => $field_cfg->{label},
+            datatype    => $field_cfg->{datatype},
         };
         push @cols, $rec;
     }
@@ -1264,10 +1264,10 @@ sub fields_cfg_hash {
 
         my $rec = {};
         $rec->{$lookup_field} = {
-            width   => $field_cfg->{width},
-            label   => $field_cfg->{label},
-            datatype => $field_cfg->{datatype},
-            name    => $scr_field,
+            displ_width => $field_cfg->{displ_width},
+            label       => $field_cfg->{label},
+            datatype    => $field_cfg->{datatype},
+            name        => $scr_field,
         };
         push @cols, $rec;
     }
@@ -1632,6 +1632,7 @@ sub screen_module_load {
     my $header_look = $self->scrcfg('rec')->list_header->{lookup};
     my $header_cols = $self->scrcfg('rec')->list_header->{column};
     my $fields      = $self->scrcfg('rec')->main_table_columns;
+
     if ($header_look and $header_cols) {
         $self->_view->make_list_header( $header_look, $header_cols, $fields );
     }

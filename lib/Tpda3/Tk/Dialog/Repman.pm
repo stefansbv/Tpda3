@@ -704,7 +704,7 @@ sub update_value {
     foreach my $field (@fields) {
         my $rec = {};
         $rec->{$field} = {
-            width    => $attr->{$field}{width},
+            width    => $attr->{$field}{displ_width},
             label    => $attr->{$field}{label},
             datatype => $attr->{$field}{datatype},
         };

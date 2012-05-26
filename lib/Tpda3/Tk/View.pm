@@ -1044,10 +1044,10 @@ Make header for the list in the List tab.
 =cut
 
 sub list_header {
-    my ( $self, $col, $colcnt ) = @_;
+    my ( $self, $colattr, $colcnt ) = @_;
 
     # Label
-    $self->get_recordlist->columnInsert( 'end', -text => $col->{label} );
+    $self->get_recordlist->columnInsert( 'end', -text => $colattr->{label} );
 
     # Background
     $self->get_recordlist->columnGet($colcnt)->Subwidget('heading')
@@ -1055,17 +1055,19 @@ sub list_header {
 
     # Width
     $self->get_recordlist->columnGet($colcnt)->Subwidget('heading')
-        ->configure( -width => $col->{width} );
+        ->configure( -width => $colattr->{displ_width} );
 
     # Sort order, (A)lpha is default
-    if ( defined $col->{datatype} ) {
-        if ( $col->{datatype} eq 'integer' or $col->{datatype} eq 'numeric' ) {
+    if ( defined $colattr->{datatype} ) {
+        if (   $colattr->{datatype} eq 'integer'
+            or $colattr->{datatype} eq 'numeric' )
+        {
             $self->get_recordlist->columnGet($colcnt)
                 ->configure( -comparecommand => sub { $_[0] <=> $_[1] } );
         }
     }
     else {
-        print "WW: No 'datatype' attribute for '$col->{label}'\n";
+        print "WW: No 'datatype' attribute for '$colattr->{label}'\n";
     }
 
     return;

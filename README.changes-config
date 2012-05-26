@@ -93,3 +93,28 @@
               | email
               | date
 <column_name>
+
+-- Version 3
+
+-- Changes (2012-05-26):
+
+Seperate width attribute for display (in list and tables) and for
+validation.
+
+- Section: maintable
+
+<column_name>
+    ...
+    displ_width = <smallint>          | rename 'width' to 'displ_width'
+    valid_width = <smallint>          | new attribute
+    ...
+</column_name>
+
+- Section: deptable
+
+<column_name>
+    ...
+    displ_width = <smallint>          | rename 'width' to 'displ_width'
+    valid_width = <smallint>          | new attribute
+    ...
+<column_name>
