@@ -1486,7 +1486,13 @@ sub scrcfg {
         ouch 'WrongPage', "Wrong page (scrcfg): $page!";
     }
 
-    return $self->scrobj($page)->{scrcfg};
+    my $scrobj = $self->scrobj($page);
+
+    if ( $scrobj and ( exists $scrobj->{scrcfg} ) ) {
+        return $scrobj->{scrcfg};
+    }
+
+    return;
 }
 
 =head2 scrobj
@@ -1501,11 +1507,20 @@ sub scrobj {
 
     $page ||= $self->_view->get_nb_current_page();
 
-    return $self->{_rscrobj} if $page eq 'rec';
+    return $self->{_rscrobj}
+        if ( $page eq 'rec' )
+        and ( exists $self->{_rscrobj} );
 
-    return $self->{_dscrobj} if $page eq 'det';
+    return $self->{_dscrobj}
+        if ( $page eq 'det' )
+        and ( exists $self->{_dscrobj} );
 
-    warn "Wrong page (scrobj): $page!\n";
+    if ($page eq 'det') {
+        warn "Wrong page (scrobj): $page!\n";
+    }
+    else {
+        ouch 404, 'No screen object!';
+    }
 
     return;
 }
@@ -1599,6 +1614,8 @@ sub screen_module_load {
     $self->{_rscrobj} = $class->new($rscrstr);
     $self->_log->trace("New screen instance: $module");
 
+    return unless $self->check_cfg_version;  # current version is 3
+
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_detail;
     if ($has_det) {
@@ -1668,6 +1685,34 @@ sub screen_module_load {
     $self->screen_load_lists();
 
     return 1;                       # to make ok from Test::More happy
+}
+
+=head2 check_cfg_version
+
+Return undef if screen config version doesn't check.
+
+=cut
+
+sub check_cfg_version {
+    my $self = shift;
+
+    my $cfg = $self->scrcfg()->screen;
+
+    my $req_ver = 3;            # current screen config version
+    my $cfg_ver = ( exists $cfg->{version} )
+                ? $cfg->{version}
+                : 1
+                ;
+
+    unless ( $cfg_ver == $req_ver ) {
+        print "Error:\n";
+        print "  screen config version is $cfg_ver\n";
+        print "       required version is $req_ver\n";
+        return;
+    }
+    else {
+        return 1;
+    }
 }
 
 =head2 set_event_handler_screen
@@ -1940,6 +1985,8 @@ sub toggle_interface_controls {
 
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
+
+        return unless $status;
 
         #- Corrections
 

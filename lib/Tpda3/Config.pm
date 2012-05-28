@@ -491,6 +491,8 @@ this:
 sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
 
+    print "Populating config dir.\n";
+
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname);
 

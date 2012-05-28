@@ -858,9 +858,9 @@ sub header_width {
     $width = $label_len >= $width ? $label_len + 2 : $width;
     my $char_width = $self->GetCharWidth();
     my $field_attr = {
-        label   => $field->{label},
-        width   => $width * $char_width,
-        datatype => $field->{datatype},
+        label       => $field->{label},
+        displ_width => $width * $char_width,
+        datatype    => $field->{datatype},
     };
 
     return $field_attr;
