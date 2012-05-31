@@ -749,7 +749,10 @@ sub config_misc_load {
 
     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
-    return $self->config_load_file($cfg_file);
+    my $config_hr = $self->config_load_file($cfg_file);
+    $self->make_accessors($config_hr);
+
+    return $config_hr;                       # do we need this?
 }
 
 =head1 AUTHOR

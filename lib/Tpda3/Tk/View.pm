@@ -1710,6 +1710,20 @@ sub tbl_selection_count {
     return $records_count;
 }
 
+=head2 query_proxy
+
+Access a database query method from the Model. ;)
+
+=cut
+
+sub query_proxy {
+    my ($self, $method, $para) = @_;
+
+    my $record = $self->_model->$method($para);
+
+    return $record;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>
