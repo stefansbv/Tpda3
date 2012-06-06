@@ -57,8 +57,11 @@ recommends 'Template'  => '0';
 
 #- and/or Wx - Experimental
 
-recommends 'Wx'                 => '0.970101';
-recommends 'Wx::Perl::ListCtrl' => '0.03';
+eval { require Wx; };
+unless ($@) {
+    requires 'Wx'                 => '0.970101';
+    requires 'Wx::Perl::ListCtrl' => '0.03';
+}
 
 #- Database
 
