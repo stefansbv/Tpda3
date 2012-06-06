@@ -40,7 +40,7 @@ ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
 
 #- Test the test screens :)
 
-$a->{gui}{_view}->after( $delay * 1000,
+$a->{gui}{_view}->after( $delay * 100,
     sub { ok( $a->{gui}->screen_module_load('Products'), 'Load Screen' ); } );
 
 #-- Test application states
@@ -49,7 +49,7 @@ $delay++;
 
 foreach my $state (qw{find idle add idle edit idle}) {
     $a->{gui}{_view}->after(
-        $delay * 1000,
+        $delay * 100,
         sub {
             ok( $a->{gui}->set_app_mode($state), "Set app mode '$state'" );
         }
@@ -63,7 +63,7 @@ foreach my $state (qw{find idle add idle edit idle}) {
 $delay++;
 
 $a->{gui}{_view}->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         $a->{gui}{_view}->on_quit;
     }

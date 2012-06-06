@@ -184,13 +184,13 @@ $tm->pack( -expand => 1, -fill => 'both');
 
 my $delay = 1;
 
-$mw->after( $delay * 1000,
+$mw->after( $delay * 100,
     sub { is( $tm->fill_main($record, 'nr_crt'), undef, 'fill TMSHR' ); } );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         is( $tm->fill_details($expdata), undef, 'fill TMSHR det 1' );
     }
@@ -199,7 +199,7 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         is_deeply($tm->get_main_data(), $record, 'compare main data');
         is_deeply($tm->get_expdata(), $expdata, 'compare expand data');
@@ -208,7 +208,7 @@ $mw->after(
 
 $delay++;
 
-$mw->after( $delay * 1000, sub { $mw->destroy } );
+$mw->after( $delay * 100, sub { $mw->destroy } );
 
 Tk::MainLoop;
 

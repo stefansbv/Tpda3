@@ -45,7 +45,7 @@ ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
 #- Test the test screens :)
 
 my $timer = Wx::Timer->new( $a->{gui}{_view}, 1 );
-$timer->Start( 1000, 1 );    # one shot
+$timer->Start( 100, 1 );    # one shot
 
 EVT_TIMER $a->{gui}{_view}, 1, sub {
     ok( $a->{gui}->screen_module_load('Customers'), 'Load Screen' );

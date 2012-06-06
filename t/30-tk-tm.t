@@ -151,13 +151,13 @@ $tm->pack( -expand => 1, -fill => 'both');
 
 my $delay = 1;
 
-$mw->after( $delay * 1000,
+$mw->after( $delay * 100,
     sub { is( $tm->fill($record), undef, 'fill TM' ); } );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         my ( $data, $scol ) = $tm->data_read();
         is_deeply( $data, $record, 'read data from TM' );
@@ -167,7 +167,7 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         my $cell_data = $tm->cell_read( 1, 1 );
         is_deeply(
@@ -181,7 +181,7 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         $tm->clear_all;
         my ( $data, $scol ) = $tm->data_read();
@@ -192,7 +192,7 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * 100,
     sub {
         $tm->add_row();
         $tm->write_row( 1, 0, $record->[0] );
@@ -203,7 +203,7 @@ $mw->after(
 
 $delay++;
 
-$mw->after( $delay * 1000, sub { $mw->destroy } );
+$mw->after( $delay * 100, sub { $mw->destroy } );
 
 Tk::MainLoop;
 
