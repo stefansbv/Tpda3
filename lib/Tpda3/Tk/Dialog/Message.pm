@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use utf8;
 
-#use List::Util qw(max);
 use Tk::DialogBox;
 
 =head1 NAME
@@ -36,11 +35,12 @@ Constructor method
 =cut
 
 sub new {
-    my ($class, $opts) = @_;
+    my ($class, $opts, $no_cancel) = @_;
 
-    my $self = {};
-
-    $self->{dialog} = $opts;
+    my $self = {
+        dialog    => $opts,
+        no_cancel => $no_cancel,
+    };
 
     bless( $self, $class );
 
@@ -71,9 +71,14 @@ sub message_dialog {
     # $padded = sprintf("%*s", $len_l, $text);
     # $padded = sprintf("%-*s", $len_r, $text);
 
+    my $buttons = $self->{no_cancel}
+                ? [ $b_yes, $b_no ]
+                : [ $b_yes, $b_cancel, $b_no ]
+                ;
+
     my $dlg = $view->DialogBox(
         -title   => 'Dialog',
-        -buttons => [ $b_yes, $b_cancel, $b_no ],
+        -buttons => $buttons,
     );
 
     #--- Frame top
