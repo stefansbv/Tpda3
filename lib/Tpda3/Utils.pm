@@ -144,8 +144,8 @@ sub dateentry_format_date {
 
 =head2 sort_hash_by_id
 
-Use ST to sort hash by value (Id), returns an array ref of the sorted
-items.
+Use ST to sort hash by value (Id), returns an array or an array
+reference of the sorted items.
 
 =cut
 
@@ -162,7 +162,7 @@ sub sort_hash_by_id {
         map { [ $_ => $temp{$_} ] }
         keys %temp;
 
-    return \@attribs;
+    return wantarray ? @attribs : \@attribs;
 }
 
 =head2 filter_hash_by_keyvalue
