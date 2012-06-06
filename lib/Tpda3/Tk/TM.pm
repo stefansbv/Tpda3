@@ -2,8 +2,6 @@ package Tpda3::Tk::TM;
 
 use strict;
 use warnings;
-
-use Data::Dumper;
 use Carp;
 
 use Tpda3::Utils;
@@ -220,16 +218,16 @@ sub set_tags {
 
     # TableMatrix header, Set Name, Align, Width
     foreach my $field ( keys %{ $self->{columns} } ) {
-        my $col = $self->{columns}->{$field}{id};
-        $self->tagCol( $self->{columns}->{$field}{tag}, $col );
-        $self->set( "0,$col", $self->{columns}->{$field}{label} );
+        my $col = $self->{columns}{$field}{id};
+        $self->tagCol( $self->{columns}{$field}{tag}, $col );
+        $self->set( "0,$col", $self->{columns}{$field}{label} );
 
         # If colstretch = 'n' in screen config file, don't set width,
         # because of the -colstretchmode => 'unset' setting, col 'n'
         # will be of variable width
         next if $self->{colstretch} and $col == $self->{colstretch};
 
-        my $width = $self->{columns}->{$field}{displ_width};
+        my $width = $self->{columns}{$field}{displ_width};
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }
@@ -476,7 +474,12 @@ sub cell_write {
     my $col_name;
     if ($is_col_name) {
         $col_name = $col;
-        $col      = $fields_cfg->{$col_name}{id};
+        if (exists $fields_cfg->{$col_name}{id}) {
+            $col = $fields_cfg->{$col_name}{id};
+        }
+        else {
+            croak "Can't establish column index for '$col'";
+        }
     }
     else {
         my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
