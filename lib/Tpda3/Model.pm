@@ -1242,7 +1242,7 @@ sub table_update_prepare {
         my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
 
         ### delete $record->{$fkcol}; # remove FK col from update data;
-        # does NOT work, it's like remmove
+        # does NOT work, it's like remove
         # from the original datastructure?!
 
         $self->table_record_update( $table, $record, $where );

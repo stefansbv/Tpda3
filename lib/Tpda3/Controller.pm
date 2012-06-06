@@ -1277,7 +1277,7 @@ sub fields_cfg_hash {
 
 =head2 set_app_mode
 
-Set application mode
+Set application mode to $mode.
 
 =cut
 
@@ -1986,11 +1986,10 @@ sub toggle_interface_controls {
     foreach my $name ( @{$toolbars} ) {
         my $status = $attribs->{$name}{state}{$page}{$mode};
 
-        return unless $status;
-
         #- Corrections
 
         unless ( ( $page eq 'lst' ) and $self->{_rscrcls} ) {
+            next unless $status;
 
             #-- Restore note
 
@@ -2016,9 +2015,11 @@ sub toggle_interface_controls {
                     !$self->scrcfg('rec')->get_defaultdocument_file;
             }
         }
+        else {
+            #-- List tab
 
-        #- List tab
-        $status = 'disabled' if $page eq 'lst';
+            $status = 'disabled';
+        }
 
         #- Set status for toolbar buttons
 
