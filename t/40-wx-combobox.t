@@ -1,15 +1,13 @@
 #
 # Tpda3 Wx GUI test script
 #
-# TODO: Change to properly skip if no Wx (use MyTest problem)
+# DONE: Change to properly skip if no Wx (use MyTest problem)
 #
 use strict;
 use warnings;
-
 use lib qw(t/lib);
 
 use Test::More skip_all => 'Not ready';
-use MyTest;
 
 my $ok_test;
 BEGIN {
@@ -18,7 +16,7 @@ BEGIN {
         exit 0;
     }
 
-    eval { require Wx; };
+    eval { require MyTest; };
     if ($@) {
         plan( skip_all => 'wxPerl is required for this test' );
     }
@@ -30,8 +28,7 @@ BEGIN {
 
 use if $ok_test, "Wx", q{:everything};
 use if $ok_test, "Wx::Event", q{EVT_TIMER};
-
-use_ok('Tpda3::Wx::ComboBox');
+use if $ok_test, "Tpda3::Wx::ComboBox";
 
 my $choices = [
     {   '-name'  => 'Cancelled',
@@ -54,7 +51,7 @@ my $choices = [
     }
 ];
 
-test {
+#main::test {
     my $frame = shift;
     my $cb = Tpda3::Wx::ComboBox->new(
         $frame,
@@ -67,11 +64,13 @@ test {
 
     is( $cb->add_choices($choices), undef, 'Add choices' );
 
-    foreach my $choice (@{$choices}) {
+    foreach my $choice ( @{$choices} ) {
+        my $name  = $choice->{-name};
         my $value = $choice->{-value};
-        is( $cb->set_selected($value), undef, "Set selected '$value'" );
-        is( $cb->get_selected(), $value, "Get selected '$value'");
+        diag("Testing with '$name' = '$value'");
+        is( $cb->set_selected($value), undef,  "Set selected '$value'" );
+        is( $cb->get_selected(),       $value, "Get selected '$value'" );
     }
-}
+#}
 
 #-- End test
