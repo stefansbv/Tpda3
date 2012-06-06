@@ -1714,7 +1714,7 @@ sub tbl_selection_count {
 
 =head2 query_proxy
 
-Access a database query method from the Model. ;)
+Call a database query method from the Model. ;)
 
 =cut
 
@@ -1724,6 +1724,20 @@ sub query_proxy {
     my $record = $self->_model->$method($para);
 
     return $record;
+}
+
+=head2 table_record_update
+
+Call the database update method from the Model.
+
+=cut
+
+sub table_record_update {
+    my ( $self, $table, $record, $where ) = @_;
+
+    $self->_model->table_record_update($table, $record, $where);
+
+    return;
 }
 
 =head1 AUTHOR
