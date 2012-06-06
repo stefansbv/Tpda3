@@ -835,7 +835,7 @@ Confirmation dialog.
 =cut
 
 sub dialog_confirm {
-    my ( $self, $message, $details ) = @_;
+    my ( $self, $message, $details, $no_cancell ) = @_;
 
     # Not localisable button labels
 
@@ -852,7 +852,7 @@ sub dialog_confirm {
     my $locale_data = $self->_cfg->localize->{dialog};
 
     require Tpda3::Tk::Dialog::Message;
-    my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
+    my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data, $no_cancell);
 
     return $dlg->message_dialog($self, $message, $details);
 }
@@ -864,11 +864,13 @@ Informations message dialog.
 =cut
 
 sub dialog_info {
-    my ( $self, $message, $details ) = @_;
+    my ( $self, $message, $details, $type ) = @_;
+
+    $type = 'ok' unless $type;               # default
 
     my $dialog_i = $self->MsgBox(
         -title   => 'Info',
-        -type    => 'ok',
+        -type    => $type,
         -icon    => 'info',
         -message => $message,
         -detail  => $details,
