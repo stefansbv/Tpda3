@@ -55,7 +55,7 @@ button labels.
 =cut
 
 sub message_dialog {
-    my ( $self, $view, $message, $details ) = @_;
+    my ( $self, $view, $message, $details, $icon ) = @_;
 
     my $title    = $self->{dialog}{title};
     my $b_yes    = $self->{dialog}{b_yes};
@@ -124,7 +124,7 @@ sub message_dialog {
         -background         => $bg,
     )->pack;
 
-    $self->make_icon($view, $w_bitmap, 'info');
+    $self->make_icon($view, $w_bitmap, $icon);
 
     #-- title (optional)
 
@@ -175,6 +175,8 @@ From:
 
 sub make_icon {
     my ( $self, $view, $w_bitmap, $icon ) = @_;
+
+    $icon = 'info' unless $icon;             # default icon
 
     my %image;
 

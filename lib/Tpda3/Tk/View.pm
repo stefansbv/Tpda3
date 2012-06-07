@@ -835,26 +835,14 @@ Confirmation dialog.
 =cut
 
 sub dialog_confirm {
-    my ( $self, $message, $details, $no_cancell ) = @_;
-
-    # Not localisable button labels
-
-    # my $dialog_q = $self->MsgBox(
-    #     -title   => 'Question',
-    #     -type    => 'yesnocancel',
-    #     -icon    => 'question',
-    #     -message => $message,
-    #     -detail  => $details,
-    # );
-
-    # return $dialog_q->Show();
+    my ( $self, $message, $details, $no_cancell, $icon ) = @_;
 
     my $locale_data = $self->_cfg->localize->{dialog};
 
     require Tpda3::Tk::Dialog::Message;
     my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data, $no_cancell);
 
-    return $dlg->message_dialog($self, $message, $details);
+    return $dlg->message_dialog($self, $message, $details, $icon);
 }
 
 =head2 dialog_info
