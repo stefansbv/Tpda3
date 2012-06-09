@@ -23,7 +23,7 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 9;
+    plan tests => 20;
 }
 
 use_ok('Tpda3::Tk::App::Test::Customers');
@@ -36,13 +36,41 @@ my $args = {
 
 my $delay = 1;
 
-ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
+ok( my $app = Tpda3->new($args), 'New Tpda3 app' );
+
+# Create controller
+my $ctrl = $app->{gui};
+ok( $ctrl->isa('Tpda3::Controller'), 'created Tpda3::Controller instance ' );
 
 #- Test the test screens :)
 
-$a->{gui}{_view}->after(
+$ctrl->{_view}->after(
     $delay * 100,
-    sub { ok( $a->{gui}->screen_module_load('Customers'), 'Load Screen' ); }
+    sub { ok( $ctrl->screen_module_load('Customers'), 'Load Screen' ); }
+);
+
+#-- Test screen configs
+
+$ctrl->{_view}->after(
+    $delay * 100,
+    sub {
+        my $obj_rec = $ctrl->scrobj('rec');
+        ok( $obj_rec->isa('Tpda3::Tk::App::Test::Customers'),
+            'created Customers instance ' );
+        ok( $ctrl->can('scrcfg'), 'scrcfg loaded' );
+        my $cfg_rec = $ctrl->scrcfg('rec');
+        ok( $cfg_rec->can('screen'),          'screen' );
+        ok( $cfg_rec->can('defaultreport'),   'defaultreport' );
+        ok( $cfg_rec->can('defaultdocument'), 'defaultdocument' );
+        ok( $cfg_rec->can('lists_ds'),        'lists_ds' );
+        ok( $cfg_rec->can('list_header'),     'list_header' );
+        ok( $cfg_rec->can('bindings'),        'bindings' );
+        #ok( $cfg_rec->can('tablebindings'),   'tablebindings' );
+        ok( $cfg_rec->can('maintable'),       'maintable' );
+        #ok( $cfg_rec->can('deptable'),        'deptable' );
+        #ok( $cfg_rec->can('scrtoolbar'),      'scrtoolbar' );
+        ok( $cfg_rec->can('toolbar'),         'toolbar' );
+    }
 );
 
 #-- Test application states
@@ -50,10 +78,10 @@ $a->{gui}{_view}->after(
 $delay++;
 
 foreach my $state (qw{find idle add idle edit idle}) {
-    $a->{gui}{_view}->after(
+    $ctrl->{_view}->after(
         $delay * 100,
         sub {
-            ok( $a->{gui}->set_app_mode($state), "Set app mode '$state'" );
+            ok( $ctrl->set_app_mode($state), "Set app mode '$state'" );
         }
     );
 
@@ -64,13 +92,13 @@ foreach my $state (qw{find idle add idle edit idle}) {
 
 $delay++;
 
-$a->{gui}{_view}->after(
+$ctrl->{_view}->after(
     $delay * 100,
     sub {
-        $a->{gui}{_view}->on_quit;
+        $ctrl->{_view}->on_quit;
     }
 );
 
-$a->run;
+$app->run;
 
 #-- End test
