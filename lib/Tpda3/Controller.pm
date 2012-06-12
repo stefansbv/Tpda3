@@ -1659,8 +1659,9 @@ sub screen_module_load {
 
     #- Event handlers
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->set_event_handler_screen($tm_ds);
+    my $group_labels = $self->scrcfg()->scr_toolbar_groups();
+    foreach my $label ( @{$group_labels} ) {
+        $self->set_event_handler_screen($label);
     }
 
     # Toggle find mode menus
@@ -1726,13 +1727,13 @@ TableMatrix widget.
 =cut
 
 sub set_event_handler_screen {
-    my ( $self, $tm_ds ) = @_;
-
+    my ( $self, $btn_group ) = @_;
+print " set event handler scr\n";
     # Get ToolBar button atributes
-    my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($tm_ds);
+    my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($btn_group);
     foreach my $tb_btn ( @{$toolbars} ) {
         my $method = $attribs->{$tb_btn};
-        $self->_log->info("Handler for $tb_btn: $method ($tm_ds)");
+        $self->_log->info("Handler for $tb_btn: $method ($btn_group)");
 
         # Check current screen for method for binding, or fallback to
         # methods in controlller
@@ -1741,14 +1742,14 @@ sub set_event_handler_screen {
             ? $self->scrobj('rec')
             : $self;
 
-        $self->scrobj('rec')->get_toolbar_btn( $tm_ds, $tb_btn )->bind(
+        $self->scrobj('rec')->get_toolbar_btn( $btn_group, $tb_btn )->bind(
             '<ButtonRelease-1>' => sub {
                 return
                     unless $self->_model->is_mode('add')
                         or $self->_model->is_mode('edit')
                         or $self->scrcfg()->screen_style() eq 'report';
 
-                $scrobj->$method( $tm_ds, $self );
+                $scrobj->$method( $btn_group, $self );
                 # TODO: what styles can be used?
                 if ($self->scrcfg()->screen_style() ne 'report') {
                     $self->_model->set_scrdata_rec(1);    # modified
@@ -2034,8 +2035,8 @@ sub toggle_interface_controls {
 Toggle screen controls (toolbar buttons) appropriate for different
 states of the application.
 
-Also used by the toolbar buttons attached to the TableMatrix widget in
-some screens.
+Also used by the toolbar buttons near the TableMatrix widget in some
+screens.
 
 =cut
 
@@ -2049,11 +2050,12 @@ sub toggle_screen_interface_controls {
 
     #- Toolbar (table)
 
-    foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
-        my ( $toolbars, $attribs ) = $self->scrobj()->app_toolbar_names($tm_ds);
+    my $group_labels = $self->scrcfg()->scr_toolbar_groups();
+    foreach my $label ( @{$group_labels} ) {
+        my ( $toolbars, $tb_attrs ) = $self->scrobj()->app_toolbar_names($label);
         foreach my $button_name ( @{$toolbars} ) {
-            my $status = $attribs->{$button_name}{state}{$page}{$mode};
-            $self->scrobj($page)->enable_tool( $tm_ds, $button_name, $status );
+            my $status = $tb_attrs->{$button_name}{state}{$page}{$mode};
+            $self->scrobj($page)->enable_tool( $label, $button_name, $status );
         }
     }
 

@@ -2,6 +2,7 @@ package Tpda3::Config::Screen;
 
 use strict;
 use warnings;
+use Ouch;
 
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
@@ -667,6 +668,8 @@ If there is only one toolbar button then return it as an array reference.
 sub _screen_toolbars {
     my ( $self, $name ) = @_;
 
+    ouch 404, "Screen toolbar name is required" unless $name;
+
     my $scrtb = $self->scrtoolbar->{$name};
     my @toolbars;
     if (ref($scrtb) eq 'ARRAY') {
@@ -694,6 +697,24 @@ sub scr_toolbar_names {
     my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
 
     return (\@tbnames, \%tbattrs);
+}
+
+=head2 scr_toolbar_groups
+
+The scrtoolbar are grouped with a label that used to be the same as
+the TM label, because each group was considered to be attached to a TM
+widget.  Now screen toolbars can be defined separately.
+
+This method returns the labels.
+
+=cut
+
+sub scr_toolbar_groups {
+    my $self = shift;
+
+    my @group_labels = keys %{$self->scrtoolbar};
+
+    return \@group_labels;
 }
 
 =head2 dep_table_header_info

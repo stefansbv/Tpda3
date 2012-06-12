@@ -28,10 +28,10 @@ records doesn't work.
 
 Tpda3 should work on any OS where Perl and the required dependencies
 can be installed, but currently it's only tested on GNU/Linux and
-Windows XP.  Feedback and patches for other OSs is welcome.
+Windows (XP and 7).  Feedback and patches for other OSs is welcome.
 
 Tpda3 is the successor of TPDA and, hopefully, has a much better API
-implementation, Tpda3 aims to follow the Model View Controller (MVC)
+implementation, Tpda3 follows the Model View Controller (MVC)
 architecture pattern.  The look and the user interface functionality
 of Tpda3 is almost the same as of TPDA, with some minor improvements.
 
