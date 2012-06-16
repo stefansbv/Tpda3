@@ -26,20 +26,12 @@ BEGIN {
 }
 
 sub test_screen {
-    my $screen_module_package = shift;
+    my ($args, $screen_module_package) = @_;
 
     my $screen_name = ( split /::/, $screen_module_package )[-1];
     #diag "screen_name is $screen_name";
 
     use_ok($screen_module_package);
-
-    my $args = {
-        cfname => 'test-tk',
-        user   => undef,
-        pass   => undef,
-    };
-
-    my $delay = 1;
 
     ok( my $app = Tpda3->new($args), 'New Tpda3 app' );
 
@@ -48,6 +40,8 @@ sub test_screen {
     ok( $ctrl->isa('Tpda3::Controller'),
         'created Tpda3::Controller instance '
     );
+
+    my $delay = 1;
 
     #- Test the test screens :)
 
