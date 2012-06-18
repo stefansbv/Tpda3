@@ -130,6 +130,49 @@ sub parse_db_error {
     return $message;
 }
 
+=head2 table_info_short
+
+Table info 'short'.
+
+=cut
+
+sub table_info_short {
+    my ( $self, $table ) = @_;
+    return;
+}
+
+=head2 table_exists
+
+Check if table exists in the database.
+
+=cut
+
+sub table_exists {
+    my ( $self, $table ) = @_;
+
+    my $log = get_logger();
+    $log->info("Checking if $table table exists");
+
+    my $sql = qq( SELECT COUNT(name)
+                FROM sqlite_master
+                WHERE type = 'table'
+                    AND name = '$table';
+    );
+
+    $log->trace("SQL= $sql");
+
+    my $val_ret;
+    try {
+        ($val_ret) = $self->{_dbh}->selectrow_array($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $val_ret;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>
