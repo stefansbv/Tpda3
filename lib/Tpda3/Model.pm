@@ -442,7 +442,7 @@ sub query_records_find {
 
 =head2 query_filter_find
 
-Same as L<query_records_find> but returns an AoH suitable for TM fill.
+Same as C<query_records_find> but returns an AoH suitable for TM fill.
 
 =cut
 
@@ -1369,7 +1369,7 @@ sub record_compare {
 =head2 user_message
 
 Parse the error string from the database and pass the relevant text to
-the L<status_message> method in the View class.
+the C<status_message> method in the View class.
 
 =cut
 

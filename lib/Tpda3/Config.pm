@@ -468,15 +468,15 @@ sub sharedir {
 Copy configuration files to the application configuration paths.
 
 The applications I<sharedir> is determined using the following
-algorithm: L<Tpda3-> + upper case of the I<configname> if the
+algorithm: I<Tpda3-> + upper case of the I<configname> if the
 I<configname> contains digits or upper case first letter from the
 I<configname> otherwise.
 
 This is an workaround of the fact that applications have different
-distribution names than the L<Tpda3> run time.
+distribution names than the I<Tpda3> run time.
 
 Ideally the share dirs for all the applications would be copied under
-L<Tpda3/>, but there is no option (yet?) to do that using
+I<Tpda3/>, but there is no option (yet?) to do that using
 L<Module::Install> or L<Module::Build>.
 
 As a consequence the application names must have the name made like

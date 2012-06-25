@@ -658,7 +658,7 @@ sub app_toolbar_attribs {
 
 =head2 screen_toolbars
 
-Return the L<scrtoolbar> configuration data structure defined for the
+Return the C<scrtoolbar> configuration data structure defined for the
 curren screen.
 
 If there is only one toolbar button then return it as an array reference.

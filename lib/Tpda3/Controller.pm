@@ -456,7 +456,7 @@ sub _set_event_handler_nb {
 
 =head2 toggle_detail_tab
 
-Toggle state of the 'I<Detail> tab.
+Toggle state of the I<Detail> tab.
 
 If TableMatrix with selector col configured and if there is a selected
 row and the data is saved, enable the I<Detail> tab, else disable.
@@ -480,13 +480,13 @@ sub toggle_detail_tab {
 
 =head2 on_page_rec_activate
 
-When the L<Record> page is activated, do:
+When the C<Record> page is activated, do:
 
-If the previous page is L<List>, then get the selected item from the
-L<List> widget and load the corresponding record from the database in
+If the previous page is C<List>, then get the selected item from the
+C<List> widget and load the corresponding record from the database in
 the I<rec> screen, but only if it is not already loaded.
 
-If the previous page is L<Details>, toggle toolbar buttons state for
+If the previous page is C<Details>, toggle toolbar buttons state for
 the current page.
 
 =cut
@@ -745,7 +745,7 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings_entry
 
-Creates widget bindings that use the L<Tpda3::??::Dialog::Search>
+Creates widget bindings that use the C<Tpda3::??::Dialog::Search>
 module to look-up value key translations from a table and put them in
 one or more widgets.
 
@@ -802,7 +802,7 @@ sub setup_lookup_bindings_entry {
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
     my $bindings = $self->scrcfg($page)->bindings;
-
+    print Dumper( $bindings );
     foreach my $bind_name ( keys %{$bindings} ) {
         next unless $bind_name;            # skip if just an empty tag
 
@@ -876,7 +876,7 @@ sub setup_lookup_bindings_entry {
 =head2 setup_bindings_table
 
 Creates column bindings for table widgets created with
-L<Tk::TableMatrix> using the information from the I<tablebindings>
+C<Tk::TableMatrix> using the information from the I<tablebindings>
 section of the screen configuration.
 
 First it creates a dispatch table:
@@ -892,7 +892,7 @@ table to execute the appropriate function when the return key is
 pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
-activates the L<Tpda3::??::Dialog::Search> module, to look-up value
+activates the C<Tpda3::??::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.  The second can call a method in the current screen.
 
@@ -1012,7 +1012,7 @@ sub method_for {
 
 =head2 lookup
 
-Activates the L<Tpda3::??::Dialog::Search> module, to look-up value
+Activates the C<Tpda3::??::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.
 
@@ -1071,11 +1071,11 @@ sub method {
 
 =head2 get_lookup_setings
 
-Return the data structure used by the L<Tpda3::??::Dialog::Search>
+Return the data structure used by the C<Tpda3::??::Dialog::Search>
 module.  Uses the I<tablebindings> section of the screen configuration
 and the related field attributes from the I<dep_table> section.
 
-This is a configuration example from the L<Orders> screen:
+This is a configuration example from the C<Orders> screen:
 
  <tablebindings tm1>
    <lookup>
@@ -1719,7 +1719,7 @@ sub check_cfg_version {
 =head2 set_event_handler_screen
 
 Setup event handlers for the toolbar buttons configured in the
-L<scrtoolbar> section of the current screen configuration.
+C<scrtoolbar> section of the current screen configuration.
 
 Default usage is for the I<add> and I<delete> buttons attached to the
 TableMatrix widget.
@@ -1728,7 +1728,7 @@ TableMatrix widget.
 
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
-print " set event handler scr\n";
+
     # Get ToolBar button atributes
     my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($btn_group);
     foreach my $tb_btn ( @{$toolbars} ) {
@@ -2509,7 +2509,7 @@ sub ctrl_read_from {
 
 =head2 clean_and_save_value
 
-Trim value and add it to the L<_scrdata> global data structure.
+Trim value and add it to the C<_scrdata> global data structure.
 
 =over
 
@@ -2517,7 +2517,7 @@ Trim value and add it to the L<_scrdata> global data structure.
 
 Add to the data structure the values that Perl recognise as true
 values.  Add value 0 when read from an Entry controll, but ignore it
-when read from a CheckBox control.  This allows searching for L<0> in
+when read from a CheckBox control.  This allows searching for C<0> in
 numeric fields.
 
 =item add mode
@@ -2528,7 +2528,7 @@ CheckBox control.
 
 =item edit mode
 
-When in L<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
+When in C<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
 because some of them may be empty, interpreted as a new NULL value.
 
 =back
@@ -3680,7 +3680,7 @@ sub report_table_metadata {
 
 =head2 get_table_sumup_cols
 
-Return table L<sumup> cols.
+Return table C<sumup> cols.
 
 =cut
 
@@ -3911,8 +3911,8 @@ Fill Table Matrix widget for I<report> style screens.
 The field with the attribute 'datasource == !count!' is used to number
 the rows and also as an index to the I<expand data>.
 
-Builds a tree with the L<Tpda::Tree> module, a subclass of
-L<Tree::DAG_Node>.
+Builds a tree with the C<Tpda::Tree> module, a subclass of
+C<Tree::DAG_Node>.
 
 =cut
 
