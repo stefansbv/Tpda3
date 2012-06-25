@@ -298,7 +298,7 @@ sub fill {
             $value =~ s/[\n\t]//g;                 # delete control chars
 
             my ( $col, $datatype, $width, $numscale )
-                = @$fld_cfg{ 'id', 'datatype', 'width',
+                = @$fld_cfg{ 'id', 'datatype', 'displ_width',
                 'numscale' };                        # hash slice
 
             if ( $datatype eq 'numeric' ) {
@@ -347,7 +347,8 @@ sub write_row {
         my $value   = $record_ref->{$field};
 
         my ( $col, $datatype, $width, $numscale )
-            = @$fld_cfg{ 'id', 'datatype', 'width', 'numscale' }; # hash slice
+            = @$fld_cfg{ 'id', 'datatype', 'displ_width',
+            'numscale' };    # hash slice
 
         if ( $datatype =~ /digit/ ) {
             $value = 0 unless $value;
