@@ -872,7 +872,7 @@ sub setup_lookup_bindings_entry {
         push @cols, @{$flds};
 
         $para->{columns} = [@cols];    # add columns info to parameters
-        print Dumper( $para );
+
         my $filter;
         $self->_view->make_binding_entry(
             $ctrl_ref->{$column}[1],
@@ -2072,7 +2072,10 @@ sub toggle_screen_interface_controls {
     foreach my $label ( @{$group_labels} ) {
         my ( $toolbars, $tb_attrs ) = $self->scrobj()->app_toolbar_names($label);
         foreach my $button_name ( @{$toolbars} ) {
-            my $status = $tb_attrs->{$button_name}{state}{$page}{$mode};
+            my $status
+                = $self->scrcfg()->screen_style() eq 'report'
+                ? 'normal'
+                : $tb_attrs->{$button_name}{state}{$page}{$mode};
             $self->scrobj($page)->enable_tool( $label, $button_name, $status );
         }
     }
