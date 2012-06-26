@@ -642,7 +642,7 @@ or checkbox.
 sub embeded_buttons {
     my ( $self, $row, $col ) = @_;
 
-    my $selestyle = exists $self->{selectorstyle}
+    my $selestyle = defined $self->{selectorstyle}
         ? $self->{selectorstyle}
         : q{}
         ;

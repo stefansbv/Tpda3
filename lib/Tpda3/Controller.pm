@@ -745,7 +745,7 @@ sub _check_app_menus {
 
 =head2 setup_lookup_bindings_entry
 
-Creates widget bindings that use the C<Tpda3::??::Dialog::Search>
+Creates widget bindings that use the C<Tpda3::XX::Dialog::Search>
 module to look-up value key translations from a table and put them in
 one or more widgets.
 
@@ -770,26 +770,40 @@ one value, and write its contents to the screen.
 
 When the field names are different than the control names we need to
 map the name of the fields with the name of the controls and the
-configuration will be a little more complicated:
+configuration will be a little more complicated.
 
- <bindings>
-   # Localitate domiciliu stabil
-   <loc_ds>
-     table               = localitati
-    <lookup localitate>
-      name               = loc_ds
-    </lookup>
-    <field id_judet>
-      name               = id_jud_ds
-    </field>
-    <field cod_p>
-      name               = cod_p_ds
-    </field>
-    <field id_loc>
-      name               = id_loc_ds
-    </field>
-   </loc_ds>
- </bindings>
+Here is an example from a I<real> application, with two configs with a
+complex field bindings and one with a simple one:
+
+  <bindings>
+      <loc_ds>
+          table           = fpimm.siruta
+          <search>
+              localitate  = loc_ds
+          </search>
+          <field>
+              mnemonic    = jud_ds
+              codp        = codp_ds
+              siruta      = siruta_ds
+          </field>
+      </loc_ds>
+      <loc_ln>
+          table           = fpimm.siruta
+          <search>
+              localitate  = loc_ln
+          </search>
+          <field>
+              mnemonic    = jud_ln
+              codp        = codp_ln
+              siruta      = siruta_ln
+          </field>
+      </loc_ln>
+      <tara>
+          table           = fpimm.tari
+          search          = tara
+          field           = [ tara_cod ]
+      </tara>
+  </bindings>
 
 =cut
 
@@ -802,7 +816,7 @@ sub setup_lookup_bindings_entry {
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
     my $bindings = $self->scrcfg($page)->bindings;
-    print Dumper( $bindings );
+
     foreach my $bind_name ( keys %{$bindings} ) {
         next unless $bind_name;            # skip if just an empty tag
 
@@ -812,20 +826,11 @@ sub setup_lookup_bindings_entry {
             ? ( keys %{ $bindings->{$bind_name}{search} } )[0]
             : $bindings->{$bind_name}{search};
 
-        # If 'search' is a hashref, get the first keys name attribute
+        # Field name (widget name in the Screen) to bind to
         my $column
             = ref $bindings->{$bind_name}{search}
-            ? $bindings->{$bind_name}{search}{$search}{name}
+            ? $bindings->{$bind_name}{search}{$search}
             : $search;
-
-        # Compose the parameter for the 'Search' dialog
-        my $para = {
-            table  => $bindings->{$bind_name}{table},
-            search => $search,
-        };
-
-        $self->_log->info("Setup binding for '$bind_name' with:");
-        $self->_log->info( sub { Dumper($para) } );
 
         # Add the search field to the columns list
         my $field_cfg = $self->scrcfg('rec')->main_table_column($column);
@@ -835,10 +840,19 @@ sub setup_lookup_bindings_entry {
             displ_width => $field_cfg->{displ_width},
             label       => $field_cfg->{label},
             datatype    => $field_cfg->{datatype},
+            name        => $column, # add a name attribute
         };
-        $rec->{$search}{name} = $column if $column;    # add name attribute
 
         push @cols, $rec;
+
+        # Compose the parameter for the 'Search' dialog
+        my $para = {
+            table  => $bindings->{$bind_name}{table},
+            search => $search,
+        };
+
+        $self->_log->info("Setup binding for '$bind_name' with:");
+        $self->_log->info( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -858,7 +872,7 @@ sub setup_lookup_bindings_entry {
         push @cols, @{$flds};
 
         $para->{columns} = [@cols];    # add columns info to parameters
-
+        print Dumper( $para );
         my $filter;
         $self->_view->make_binding_entry(
             $ctrl_ref->{$column}[1],
@@ -892,7 +906,7 @@ table to execute the appropriate function when the return key is
 pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
-activates the C<Tpda3::??::Dialog::Search> module, to look-up value
+activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.  The second can call a method in the current screen.
 
@@ -930,7 +944,10 @@ sub setup_bindings_table {
                 print "WW: Binding type '$bind_type' not implemented\n";
                 return;
             }
-       }
+
+            $self->_log->info("Setup binding '$bind_type' for '$tm_ds' with:");
+            $self->_log->info( sub { Dumper($bindings) } );
+        }
 
         # Bindings:
         my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
@@ -1012,7 +1029,7 @@ sub method_for {
 
 =head2 lookup
 
-Activates the C<Tpda3::??::Dialog::Search> module, to look-up value
+Activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
 with the results.
 
@@ -1034,8 +1051,9 @@ sub lookup {
         $filter = $tmx->cell_read( $r, $col );
     }
 
-    my $dict = Tpda3::Lookup->new;
-    my $record = $dict->lookup( $self->_view, $lk_para, $filter );
+    my $locale_data = $self->_cfg->localize->{search};
+    my $dict        = Tpda3::Lookup->new($locale_data);
+    my $record      = $dict->lookup( $self->_view, $lk_para, $filter );
 
     $tmx->write_row( $r, $c, $record, $tm_ds );
 
@@ -1071,7 +1089,7 @@ sub method {
 
 =head2 get_lookup_setings
 
-Return the data structure used by the C<Tpda3::??::Dialog::Search>
+Return the data structure used by the C<Tpda3::XX::Dialog::Search>
 module.  Uses the I<tablebindings> section of the screen configuration
 and the related field attributes from the I<dep_table> section.
 
@@ -1252,7 +1270,7 @@ sub fields_cfg_hash {
 
     # Multiple fields returned as array
     foreach my $lookup_field ( keys %{ $bindings->{field} } ) {
-        my $scr_field = $bindings->{field}{$lookup_field}{name};
+        my $scr_field = $bindings->{field}{$lookup_field};
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg('rec')
