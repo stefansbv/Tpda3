@@ -1717,7 +1717,7 @@ sub check_cfg_version {
 
     my $cfg = $self->scrcfg()->screen;
 
-    my $req_ver = 3;            # current screen config version
+    my $req_ver = 4;            # current screen config version
     my $cfg_ver = ( exists $cfg->{version} )
                 ? $cfg->{version}
                 : 1
