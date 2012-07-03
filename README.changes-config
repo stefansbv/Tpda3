@@ -118,3 +118,49 @@ validation.
     valid_width = <smallint>          | new attribute
     ...
 <column_name>
+
+-- Version 4
+
+-- Changes (2012-06-27):
+
+Simplified data structure.  Remove name key from bindings section for
+the case when the field names are different than the control names.
+Also replaced 'lookup' key name with 'search'.
+
+- Old config example:
+
+<bindings>
+  <loc_ds>
+    table               = localitati
+   <lookup localitate>
+     name               = loc_ds
+   </lookup>
+   <field id_judet>
+     name               = id_jud_ds
+   </field>
+   <field cod_p>
+     name               = cod_p_ds
+   </field>
+   <field id_loc>
+     name               = id_loc_ds
+   </field>
+  </loc_ds>
+</bindings>
+
+- New config example:
+
+<bindings>
+    <loc_ds>
+        table           = fpimm.siruta
+        <search>
+            localitate  = loc_ds
+        </search>
+        <field>
+            mnemonic    = jud_ds
+            codp        = codp_ds
+            siruta      = siruta_ds
+        </field>
+    </loc_ds>
+</bindings>
+
+-- End

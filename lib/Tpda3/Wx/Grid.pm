@@ -43,14 +43,14 @@ sub new {
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;
 
     my $self = $class->SUPER::new(
-        $parent,
-        $id || -1,
+        $parent, $id || -1,
         $pos  || [ -1, -1 ],
         $size || [ -1, -1 ],
         ( $style || 0 )
     );
 
-    my $datatable = Tpda3::Wx::GridTable->new({fields=>[qw(col1 col2 col3)]});
+    my $datatable
+        = Tpda3::Wx::GridTable->new( { fields => [qw(col1 col2 col3)] } );
 
     $self->SetTable($datatable);
 

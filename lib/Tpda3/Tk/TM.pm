@@ -634,8 +634,8 @@ sub tmatrix_make_selector {
 
 =head2 embeded_buttons
 
-Embeded windows.  Config option selector style can be radio (default)
-or checkbox.
+Embeded windows.  Config option L<selectorstyle> can be L<radio>
+(default) or L<checkbox>.
 
 =cut
 

@@ -6,6 +6,7 @@
 # at blib/lib/Tk/Frame.pm (autosplit into
 # blib/lib/auto/Tk/Frame/sbset.al) line 212,
 # from 'make test' but not from 'prove' :(
+# Solved, by removing 'o' from '-scrollbars' value. Weird :)
 
 use strict;
 use warnings;
@@ -177,7 +178,7 @@ eval {
         -colstretchmode => 'unset',
         -resizeborders  => 'none',
         -bg             => 'white',
-        -scrollbars     => 'osw',
+        -scrollbars     => 'sw',
         -expandData     => $expand_data,
     );
 };

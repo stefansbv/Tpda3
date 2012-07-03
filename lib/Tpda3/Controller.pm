@@ -1745,39 +1745,7 @@ TableMatrix widget.
 =cut
 
 sub set_event_handler_screen {
-    my ( $self, $btn_group ) = @_;
-
-    # Get ToolBar button atributes
-    my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($btn_group);
-    foreach my $tb_btn ( @{$toolbars} ) {
-        my $method = $attribs->{$tb_btn};
-        $self->_log->info("Handler for $tb_btn: $method ($btn_group)");
-
-        # Check current screen for method for binding, or fallback to
-        # methods in controlller
-        my $scrobj
-            = $self->scrobj('rec')->can($method)
-            ? $self->scrobj('rec')
-            : $self;
-
-        $self->scrobj('rec')->get_toolbar_btn( $btn_group, $tb_btn )->bind(
-            '<ButtonRelease-1>' => sub {
-                return
-                    unless $self->_model->is_mode('add')
-                        or $self->_model->is_mode('edit')
-                        or $self->scrcfg()->screen_style() eq 'report';
-
-                $scrobj->$method( $btn_group, $self );
-                # TODO: what styles can be used?
-                if ($self->scrcfg()->screen_style() ne 'report') {
-                    $self->_model->set_scrdata_rec(1);    # modified
-                    $self->toggle_detail_tab;
-                }
-            }
-        );
-    }
-
-    return;
+    print 'set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
 }
 
 =head2 screen_module_detail_load

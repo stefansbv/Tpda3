@@ -224,7 +224,7 @@ sub tmatrix_remove_row {
     return;
 }
 
-=head2 toolbar_names
+=head2 app_toolbar_names
 
 Configuration for toolbar buttons.
 

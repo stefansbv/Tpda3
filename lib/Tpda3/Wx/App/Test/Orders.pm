@@ -36,7 +36,7 @@ our $VERSION = 0.55;
 
 =head2 run_screen
 
-The screen layout
+The screen layout.
 
 =cut
 
@@ -247,6 +247,9 @@ sub run_screen {
     $top_sz->Add( $comment_sbs, 1, wxALL | wxEXPAND, 5 );
 
     #-- Middle
+
+    #-- Toolbar
+    $self->make_toolbar_for_table( 'tm1', '$frm_t' );
 
     my $table = Tpda3::Wx::Grid->new( $rec_page );
 

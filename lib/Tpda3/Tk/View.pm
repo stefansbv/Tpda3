@@ -1681,9 +1681,9 @@ Call method in Model.
 sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
 
-    my ($ary_ref, $sql) = $self->_model->query_filter_find($para, $debug);
+    my $ary_ref = $self->_model->query_filter_find($para, $debug);
 
-    return ($ary_ref, $sql);
+    return $ary_ref;
 }
 
 =head2 tbl_selection_count

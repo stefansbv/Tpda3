@@ -122,7 +122,7 @@ sub get_toolbar_btn {
 
 =head2 enable_tool
 
-Toggle tool bar button.  If state is defined then set to state do not
+Toggle toolbar button.  If state is defined then set to state do not
 toggle.  State can come as 0 | 1 and normal | disabled.
 
 =cut
@@ -153,7 +153,7 @@ sub get_bgcolor {
     return $self->{bg};
 }
 
-=head2 toolbar_names
+=head2 app_toolbar_names
 
 Configuration for toolbar buttons.
 
@@ -161,17 +161,33 @@ Get Toolbar names as array reference from screen config.
 
 =cut
 
-sub toolbar_names {
-    my $self = shift;
+sub app_toolbar_names {
+    my ($self, $name) = @_;
 
-    # Get ToolBar button atributes
-    my $attribs = $self->{scrcfg}->toolbar;
-
-    # TODO: Change the config file so we don't need this sorting anymore
-    # or better keep them sorted and ready to use in config
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
+    my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($name);
+    my $attribs    = $self->{scrcfg}->app_toolbar_attribs;
 
     return ( $toolbars, $attribs );
+}
+
+=head2 make_toolbar_for_table
+
+Make toolbar for Table control, usually with I<add> and I<remove>
+buttons.
+
+=cut
+
+sub make_toolbar_for_table {
+    my ( $self, $name, $tb_frame ) = @_;
+
+    # $self->{tb}{$name} = $tb_frame->TB();
+
+    # my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($name);
+    # my $attribs    = $self->{scrcfg}->app_toolbar_attribs($name);
+
+    # $self->{tb}{$name}->make_toolbar_buttons( $toolbars, $attribs );
+
+    return;
 }
 
 =head1 AUTHOR

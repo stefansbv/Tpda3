@@ -2,6 +2,7 @@ package Tpda3::Wx::GridTable;
 
 use strict;
 use warnings;
+use Carp;
 
 use Wx;
 use Wx::Grid;
@@ -50,8 +51,9 @@ sub new {
 
    my $self = $class->SUPER::new();
 
-   # $self->rowLabels = ["1", "2", "3", "4", "5"];
-   # $self->colLabels = ["A", "B", "C", "D", "E"];
+   $self->{cols}    = scalar @{ $args->{fields} };
+   $self->{coldata} = [];
+   $self->{rows}    = 0;
 
    return $self;
 }
@@ -65,7 +67,7 @@ Must be overridden to return the number of rows in the table.
 sub GetNumbeerRows {
     my $self = shift;
 
-    return;
+    return $self->{rows};
 }
 
 =head2 GetNumberCols
@@ -77,16 +79,19 @@ Must be overridden to return the number of columns in the table.
 sub GetNumberCols {
     my $self = shift;
 
-    return;
+    return $self->{cols};
 }
 
 =head2 IsEmptyCell
 
 May be overridden to implement testing for empty cells.
 
+=cut
+
 sub IsEmptyCell {
     my ($self, $row, $col) = @_;
-    return;
+
+    return defined $self->GetValue($row, $col) ? 1 : 0;
 }
 
 =head2 GetValue
@@ -96,9 +101,19 @@ Must be overridden to implement accessing the table values as text.
 =cut
 
 sub GetValue {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
-    return;
+    my $result = undef;
+    eval {
+        $result = $self->{array}->[$row][$col]->GetValue
+            if ( $row < $self->GetNumberRows
+            && $col < $self->GetNumberCols
+            && defined $self->{array}->[$row][$col] );
+        $result = '' unless defined $result;
+    };
+    carp "Exception in DBGridTable::GetValue: $@" if $@;
+
+    return $result;
 }
 
 =head2 SetValue
@@ -108,7 +123,11 @@ Must be overridden to implement setting the table values as text.
 =cut
 
 sub SetValue {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col, $value ) = @_;
+
+    croak "Array out of bounds"
+        unless $row < $self->GetNumberRows && $col < $self->GetNumberCols;
+    $self->{array}->[$row][$col]->SetValue($value);
 
     return;
 }

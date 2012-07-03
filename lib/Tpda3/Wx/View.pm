@@ -1155,6 +1155,8 @@ Polulate list with data from query result.
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
 
+    return 0 unless ( ref $ary_ref eq 'ARRAY' ) and scalar( @{$ary_ref} );
+
     my $row_count;
 
     if ( ref $self->get_recordlist ) {
