@@ -465,7 +465,9 @@ sub query_filter_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-    print Dumper( $stmt, \@bind ) if $debug;
+    # use Data::Printer;
+    # p $stmt;
+    # p @bind;
 
     my @records;
     try {

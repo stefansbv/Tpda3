@@ -2996,6 +2996,10 @@ sub record_load {
     # Save record as witness reference for comparison
     $self->save_screendata( $self->storable_file_name('orig') );
 
+    # Trigger on_load_record method from screen if defined
+    $self->scrobj($page)->on_load_record()
+        if $self->scrobj($page)->can('on_load_record');
+
     $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
 
