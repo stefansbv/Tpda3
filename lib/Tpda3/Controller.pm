@@ -7,6 +7,8 @@ use Ouch;
 
 use English;
 use Data::Dumper;
+use Data::Printer;
+
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed looks_like_number);
 use List::MoreUtils qw{uniq};
@@ -22,6 +24,7 @@ require Tpda3::Utils;
 require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
+require Tpda3::Selected;
 
 =head1 NAME
 
@@ -921,7 +924,7 @@ sub setup_bindings_table {
 
         my $dispatch = {};
         foreach my $bind_type ( keys %{$bindings} ) {
-            next unless $bind_type;    # skip if just an empty tag
+            next unless $bind_type;            # skip if just an empty tag
 
             my $bnd = $bindings->{$bind_type};
             if ( $bind_type eq 'lookup' ) {
@@ -980,6 +983,90 @@ sub setup_bindings_table {
     return;
 }
 
+sub setup_select_bindings_entry {
+    my ( $self, $page ) = @_;
+
+    my $locale_data = $self->_cfg->localize->{search};
+
+    my $dict     = Tpda3::Selected->new($locale_data);
+    my $ctrl_ref = $self->scrobj($page)->get_controls();
+
+    unless ($self->scrcfg($page)->can('bindings_select') ) {
+        print "Add bindings_select section in config\n";
+        return;
+    }
+
+    my $bindings = $self->scrcfg($page)->bindings_select;
+    p $bindings;
+
+    foreach my $bind_name ( keys %{$bindings} ) {
+        next unless $bind_name;            # skip if just an empty tag
+
+        # Where to insert the results
+        my $tm_ds    = $bindings->{$bind_name}{target_tm};
+        my $callback = $bindings->{$bind_name}{callback};
+        my $field    = $bindings->{$bind_name}{filter};
+
+        # Compose the parameter for the 'Search' dialog
+        my $para = {
+            table  => $bindings->{$bind_name}{table},
+        };
+
+        $self->_log->info("Setup select binding for '$bind_name' with:");
+        $self->_log->info( sub { Dumper($para) } );
+
+        # Detect the configuration style and add the 'fields' to the
+        # columns list
+        my $flds;
+      SWITCH: for ( ref $bindings->{$bind_name}{field} ) {
+            /array/i && do {
+                $flds
+                    = $self->fields_cfg_array( $bindings->{$bind_name}, $tm_ds );
+                last SWITCH;
+            };
+            print "WW: Wrong select bindings configuration!\n";
+            return;
+        }
+        push my @cols, @{$flds};
+
+        $para->{columns} = [@cols];    # add columns info to parameters
+
+        $self->_view->make_binding_entry(
+            $ctrl_ref->{$bind_name}[1],
+            '<Return>',
+            sub {
+                $self->_view->status_message("warn#"); # clear message
+                my $value = $self->ctrl_read_from($field);
+                if ($field and $value) {
+                    $para->{where} = { $field => $value };
+                    my $records = $dict->selected( $self->_view, $para );
+
+                    # Insert into TM
+                    my $xtable  = $self->scrobj('rec')->get_tm_controls($tm_ds);
+                    $xtable->clear_all();
+                    $xtable->fill($records);     # insert records in table
+
+                    # Execute callback
+                    if ( $callback
+                             and $self->scrobj($page)->can($callback) ) {
+                        $self->scrobj($page)->$callback();
+                    }
+                }
+                else {
+                    my $textstr
+                        = $field
+                        ? "No value for '$field' column!"
+                        : "No 'filter' column in config!"
+                        ;
+                    $self->_view->status_message("warn#$textstr");
+                }
+            }
+        );
+    }
+
+    return;
+}
+
 =head2 add_dispatch_for_lookup
 
 Return an entry in the dispatch table for a I<lookup> type binding.
@@ -991,7 +1078,7 @@ sub add_dispatch_for_lookup {
 
     my $bindcol = 'colsub' . $bnd->{bindcol};
 
-    return { $bindcol => \&lookup };
+    return { $bindcol => \&lookup_call };
 }
 
 =head2 add_dispatch_for_method
@@ -1005,7 +1092,7 @@ sub add_dispatch_for_method {
 
     my $bindcol = 'colsub' . $bnd->{bindcol};
 
-    return { $bindcol => \&method };
+    return { $bindcol => \&method_call };
 }
 
 =head2 method_for
@@ -1027,7 +1114,7 @@ sub method_for {
     return $skip_cols;
 }
 
-=head2 lookup
+=head2 lookup_call
 
 Activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
 key translations from a database table and fill the configured cells
@@ -1035,7 +1122,7 @@ with the results.
 
 =cut
 
-sub lookup {
+sub lookup_call {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
@@ -1062,13 +1149,13 @@ sub lookup {
     return $skip_cols;
 }
 
-=head2 method
+=head2 method_call
 
 Call a method from the Screen module on I<Return> key.
 
 =cut
 
-sub method {
+sub method_call {
     my ( $self, $bnd, $r, $c ) = @_;
 
     # Filter on bindcol = $c
@@ -1076,7 +1163,7 @@ sub method {
         keys %{ $bnd->{method} };
     my $bindings = $bnd->{method}{ $names[0] };
 
-    my $method = $bindings->{subname};
+    my $method = $bindings->{subname};       # TODO: rename to method?
     if ( $self->scrobj('rec')->can($method) ) {
         $self->scrobj('rec')->$method($r);
     }
@@ -1654,6 +1741,7 @@ sub screen_module_load {
 
     #-- Lookup bindings for Entry widgets
     $self->setup_lookup_bindings_entry('rec');
+    $self->setup_select_bindings_entry('rec');
 
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
@@ -2473,8 +2561,9 @@ sub screen_read {
 
 =head2 ctrl_read_from
 
-Run the appropriate sub according to control (entry widget) type to
-read from the screen controls.
+Run the appropriate method according to the control (widget) type to
+read from the screen controls. The value is stored in a global data
+structure C<< $self->{_scrdata}{field-name} >> and also returned.
 
 =cut
 
@@ -2483,17 +2572,18 @@ sub ctrl_read_from {
 
     my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
 
+    my $value;
     my $sub_name = "control_read_$ctrltype";
     if ( $self->_view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        my $value = $self->_view->$sub_name( $control_ref, $date_format );
+        $value = $self->_view->$sub_name( $control_ref, $date_format );
         $self->clean_and_save_value( $field, $value, $ctrltype );
     }
     else {
         print "EE: No '$ctrltype' ctrl type for reading '$field'!\n";
     }
 
-    return;
+    return $value;
 }
 
 =head2 clean_and_save_value

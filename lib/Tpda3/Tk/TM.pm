@@ -139,7 +139,7 @@ sub get_row_count {
 
 =head2 set_tags
 
-Set tags for the table matrix.
+Define and set tags for the Table Matrix.
 
 =cut
 
@@ -172,14 +172,11 @@ sub set_tags {
     );
     $self->tagCol( 'expnd', 0 );
 
-    # Make enter do the same thing as return:
+    # Make enter do the same thing as return
     $self->bind( '<KP_Enter>', $self->bind('<Return>') );
 
-    if ($cols) {
-        $self->configure( -cols => $cols );
+    $self->configure( -cols => $cols ) if $cols;
 
-        # $self->configure( -rows => 1 ); # Keep table dim in grid
-    }
     $self->tagConfigure(
         'active',
         -bg     => 'lightyellow',
@@ -203,9 +200,24 @@ sub set_tags {
         -anchor => 'e',
         -bg     => 'lightgreen',
     );
-    $self->tagConfigure( 'ro_left',      -anchor => 'w', -bg => 'lightgrey' );
-    $self->tagConfigure( 'ro_center',    -anchor => 'n', -bg => 'lightgrey' );
-    $self->tagConfigure( 'ro_right',     -anchor => 'e', -bg => 'lightgrey' );
+    $self->tagConfigure(
+        'ro_left',
+        -state  => 'disabled',
+        -anchor => 'w',
+        -bg     => 'lightgrey',
+    );
+    $self->tagConfigure(
+        'ro_center',
+        -state  => 'disabled',
+        -anchor => 'n',
+        -bg     => 'lightgrey',
+    );
+    $self->tagConfigure(
+        'ro_right',
+        -state  => 'disabled',
+        -anchor => 'e',
+        -bg     => 'lightgrey',
+    );
     $self->tagConfigure( 'enter_left',   -anchor => 'w', -bg => 'white' );
     $self->tagConfigure( 'enter_center', -anchor => 'n', -bg => 'white' );
     $self->tagConfigure(
@@ -214,6 +226,7 @@ sub set_tags {
         -bg     => 'lightblue',
     );
     $self->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
+
     # $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
 
     # TableMatrix header, Set Name, Align, Width
