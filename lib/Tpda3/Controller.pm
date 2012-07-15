@@ -7,7 +7,6 @@ use Ouch;
 
 use English;
 use Data::Dumper;
-use Data::Printer;
 
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed looks_like_number);
@@ -32,11 +31,11 @@ Tpda3::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.55
+Version 0.56
 
 =cut
 
-our $VERSION = 0.55;
+our $VERSION = 0.56;
 
 =head1 SYNOPSIS
 
@@ -997,7 +996,6 @@ sub setup_select_bindings_entry {
     }
 
     my $bindings = $self->scrcfg($page)->bindings_select;
-    p $bindings;
 
     foreach my $bind_name ( keys %{$bindings} ) {
         next unless $bind_name;            # skip if just an empty tag
