@@ -55,7 +55,6 @@ sub trim {
     for (@text) {
         s/^\s+//;
         s/\s+$//;
-        s/\n$//mg;    # m=multiline
     }
 
     return wantarray ? @text : "@text";
