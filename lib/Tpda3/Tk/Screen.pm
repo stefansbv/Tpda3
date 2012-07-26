@@ -50,7 +50,7 @@ sub new {
 
 =head2 run_screen
 
-The screen layout
+The screen layout.
 
 =cut
 
@@ -195,11 +195,13 @@ Add new row to the Tk::TableMatrix widget.
 =cut
 
 sub tmatrix_add_row {
-    my ( $self, $tm_ds, $controller ) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
-    $tmx->add_row($controller);
+    $tmx->add_row();
+
+    $self->screen_update();
 
     return;
 }
@@ -211,15 +213,15 @@ Remove row to the Tk::TableMatrix widget.
 =cut
 
 sub tmatrix_remove_row {
-    my ( $self, $tm_ds, $controller ) = @_;
+    my ( $self, $tm_ds ) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
 
     my $row = $tmx->get_active_row();
 
-    if ($row) {
-        $tmx->remove_row( $row, $controller );
-    }
+    $tmx->remove_row($row) if $row;
+
+    $self->screen_update();
 
     return;
 }
@@ -239,6 +241,21 @@ sub app_toolbar_names {
     my $attribs    = $self->{scrcfg}->app_toolbar_attribs;
 
     return ( $toolbars, $attribs );
+}
+
+=head2 screen_update
+
+Update method. To be overridden in the screen module.
+
+Now called only by L<tmatrix_add_row> and L<tmatrix_remove_row>
+methods.
+
+=cut
+
+sub screen_update {
+    my $self = shift;
+
+    return;
 }
 
 =head1 AUTHOR

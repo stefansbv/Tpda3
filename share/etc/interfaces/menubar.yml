@@ -56,12 +56,6 @@ menubar:
         underline: 12
         sep: none
         key: Alt-g
-      3:
-        name: mn_qs
-        label: Query Select
-        underline: 6
-        sep: none
-        key: Alt-s
 
   menu_help:
     id:    5003

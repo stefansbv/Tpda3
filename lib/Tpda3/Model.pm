@@ -503,6 +503,10 @@ sub query_record {
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
+    # use Data::Printer;
+    # p $stmt;
+    # p @bind;
+
     my $hash_ref;
     try {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );

@@ -192,7 +192,7 @@ sub select_dialog {
             my @records;
             my $doccnt = 1;
             foreach my $idx (@indexes) {
-                my @selected_row = $self->{box}->getRow( $indexes[$idx] );
+                my @selected_row = $self->{box}->getRow($idx);
                 my $rec = {};
                 for (my $i = 0; $i < $#selected_row; $i++) {
                     $rec->{ $columns[$i] } = $selected_row[$i];

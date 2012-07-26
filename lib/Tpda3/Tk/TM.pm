@@ -512,7 +512,7 @@ Table matrix methods.  Add TableMatrix row.
 =cut
 
 sub add_row {
-    my ($self) = @_;    # , $controller
+    my $self = shift;
 
     my $updstyle = 'delete+add';
 
@@ -559,7 +559,7 @@ Delete TableMatrix row.
 =cut
 
 sub remove_row {
-    my ( $self, $row ) = @_;    # , $controller
+    my ( $self, $row ) = @_;
 
     my $updstyle = 'delete+add';
 
@@ -569,7 +569,8 @@ sub remove_row {
         $self->deleteRows( $row, 1 );
     }
     else {
-        print "Select a row!\n";
+        # print "Select a row!\n";
+        return;
     }
 
     my $sc = $self->{selectorcol};

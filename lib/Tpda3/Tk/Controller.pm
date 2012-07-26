@@ -391,6 +391,10 @@ C<scrtoolbar> section of the current screen configuration.
 Default usage is for the I<add> and I<delete> buttons attached to the
 TableMatrix widget.
 
+ tmatrix_add_row
+
+ tmatrix_remove_row
+
 =cut
 
 sub set_event_handler_screen {
@@ -402,8 +406,8 @@ sub set_event_handler_screen {
         my $method = $attribs->{$tb_btn};
         $self->_log->info("Handler for $tb_btn: $method ($btn_group)");
 
-        # Check current screen for method for binding, or fallback to
-        # methods in controlller
+        # Check current screen if 'can' method, or fallback to methods
+        # in controlller
         my $scrobj
             = $self->scrobj('rec')->can($method)
             ? $self->scrobj('rec')

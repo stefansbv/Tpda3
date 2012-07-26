@@ -312,14 +312,6 @@ sub _set_event_handlers {
         }
     );
 
-    #-- Query Select
-    $self->_view->event_handler_for_menu(
-        'mn_qs',
-        sub {
-            $self->screen_module_load('QSelect','tools');
-        }
-    );
-
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -990,10 +982,7 @@ sub setup_select_bindings_entry {
     my $dict     = Tpda3::Selected->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
-    unless ($self->scrcfg($page)->can('bindings_select') ) {
-        print "Add bindings_select section in config\n";
-        return;
-    }
+    return unless $self->scrcfg($page)->can('bindings_select');
 
     my $bindings = $self->scrcfg($page)->bindings_select;
 
@@ -1441,6 +1430,12 @@ sub on_screen_mode_idle {
     $self->_view->nb_set_page_state( 'det', 'disabled');
     $self->_view->nb_set_page_state( 'lst', 'normal');
 
+    # Trigger 'on_mode_idle' method in screen if defined
+    my $page = $self->_view->get_nb_current_page();
+    $self->scrobj($page)->on_mode_idle()
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_mode_idle');
+
     return;
 }
 
@@ -1456,7 +1451,7 @@ are defined for some fields, then fill in that value.
 =cut
 
 sub on_screen_mode_add {
-    my ( $self, ) = @_;
+    my $self = shift;
 
     $self->record_clear;              # empty the main controls and TM
     $self->tmatrix_set_selected();    # initialize selector
@@ -1467,12 +1462,20 @@ sub on_screen_mode_add {
 
     $self->controls_state_set('edit');
 
-    # Fill in the default values ???
-    # my $record = $self->get_screen_data_record('ins');
-    # $self->screen_write( $record->[0]{data} );
-
     $self->_view->nb_set_page_state( 'det', 'disabled' );
     $self->_view->nb_set_page_state( 'lst', 'disabled' );
+
+    # Default value for user in screen.  Add 'id_user' value if
+    # 'id_user' control exists in screen
+    my $user_field = 'id_user';              # hardwired user field name
+    my $control_ref = $self->scrobj()->get_controls($user_field);
+    $self->ctrl_write_to( $user_field, $self->_cfg->user ) if $control_ref;
+
+    # Trigger 'on_mode_add' method in screen if defined
+    my $page = $self->_view->get_nb_current_page();
+    $self->scrobj($page)->on_mode_add()
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_mode_add');
 
     return;
 }
@@ -1497,6 +1500,12 @@ sub on_screen_mode_find {
 
     $self->controls_state_set('find');
 
+    # Trigger 'on_mode_find' method in screen if defined
+    my $page = $self->_view->get_nb_current_page();
+    $self->scrobj($page)->on_mode_find()
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_mode_find');
+
     return;
 }
 
@@ -1513,6 +1522,12 @@ sub on_screen_mode_edit {
     $self->controls_state_set('edit');
     $self->_view->nb_set_page_state( 'det', 'normal');
     $self->_view->nb_set_page_state( 'lst', 'normal');
+
+    # Trigger 'on_mode_edit' method in screen if defined
+    my $page = $self->_view->get_nb_current_page();
+    $self->scrobj($page)->on_mode_edit()
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_mode_edit');
 
     return;
 }
@@ -1810,7 +1825,8 @@ sub check_cfg_version {
                 ;
 
     unless ( $cfg_ver == $req_ver ) {
-        print "Error:\n";
+        my $screen_name = $self->scrcfg->screen_name();
+        print "Error ($screen_name.conf):\n";
         print "  screen config version is $cfg_ver\n";
         print "       required version is $req_ver\n";
         return;
@@ -3603,11 +3619,6 @@ sub get_screen_data_record {
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         $record->{data}{$field} = $value;
     }
-
-    # Experimenting a default value
-    # if ($for_sql eq 'ins') {
-    #     $record->{data} = {id_user => 'stefan'};
-    # }
 
     push @record, $record;    # rec data at index 0
 

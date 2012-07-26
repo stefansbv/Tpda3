@@ -183,6 +183,8 @@ sub update_gui_components {
 
     my $mode = $self->_model->get_appmode();
 
+    return unless $mode;
+
     $self->set_status( $mode, 'md' );    # update statusbar
 
 SWITCH: {
