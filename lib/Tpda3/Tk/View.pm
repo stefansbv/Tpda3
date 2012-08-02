@@ -492,6 +492,8 @@ Return the status bar handler
 sub get_statusbar {
     my ( $self, $sb_id ) = @_;
 
+    $sb_id = 'ms' unless $sb_id; # default label: 'ms'
+
     return $self->{_sb}{$sb_id};
 }
 
@@ -541,22 +543,26 @@ the method in the message string separated by a # char.
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
 
-    my $sb = $self->get_statusbar($sb_id);
+    my $sb_label = $self->get_statusbar($sb_id);
+
+    return unless ( $sb_label and $sb_label->isa('Tk::Label') );
 
     if ( $sb_id eq 'cn' ) {
-        $sb->configure( -image => $text ) if defined $text;
+        $sb_label->configure( -image => $text ) if defined $text;
     }
     elsif ( $sb_id eq 'ss' ) {
         my $str
             = !defined $text ? ''
             : $text          ? 'M'
             :                  'S';
-        $sb->configure( -textvariable => \$str ) if defined $str;
+        $sb_label->configure( -text => $str ) if defined $str;
     }
     else {
-        $sb->configure( -textvariable => \$text ) if defined $text;
-        $sb->configure( -foreground   => $color ) if defined $color;
-        $self->temporized_clear($text) if $text and $sb_id eq 'ms';
+
+        # ms
+        $sb_label->configure( -text       => $text )  if defined $text;
+        $sb_label->configure( -foreground => $color ) if defined $color;
+        $self->temporized_clear($text) if $text; # in not a 'clear'
     }
 
     return;
