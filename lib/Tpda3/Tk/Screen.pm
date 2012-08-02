@@ -20,11 +20,11 @@ Tpda3::Tk::Screen - Tpda3 Screen base class.
 
 =head1 VERSION
 
-Version 0.56
+Version 0.57
 
 =cut
 
-our $VERSION = 0.56;
+our $VERSION = 0.57;
 
 =head1 SYNOPSIS
 

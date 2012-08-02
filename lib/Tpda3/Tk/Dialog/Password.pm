@@ -11,11 +11,11 @@ Tpda3::Tk::Dialog::Password - Dialog for user name and password
 
 =head1 VERSION
 
-Version 0.56
+Version 0.57
 
 =cut
 
-our $VERSION = 0.56;
+our $VERSION = 0.57;
 
 =head1 SYNOPSIS
 
