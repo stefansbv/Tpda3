@@ -1736,6 +1736,10 @@ sub table_record_update {
     return;
 }
 
+# sub Tk::Error {
+#     my ( $widget, $error, @locations ) = @_;
+# }
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

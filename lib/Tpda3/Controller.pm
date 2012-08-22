@@ -771,7 +771,7 @@ complex field bindings and one with a simple one:
 
   <bindings>
       <loc_ds>
-          table           = fpimm.siruta
+          table           = siruta
           <search>
               localitate  = loc_ds
           </search>
@@ -782,7 +782,7 @@ complex field bindings and one with a simple one:
           </field>
       </loc_ds>
       <loc_ln>
-          table           = fpimm.siruta
+          table           = siruta
           <search>
               localitate  = loc_ln
           </search>
@@ -793,7 +793,7 @@ complex field bindings and one with a simple one:
           </field>
       </loc_ln>
       <tara>
-          table           = fpimm.tari
+          table           = tari
           search          = tara
           field           = [ tara_cod ]
       </tara>

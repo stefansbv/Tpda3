@@ -151,7 +151,7 @@ Also replaced 'lookup' key name with 'search'.
 
 <bindings>
     <loc_ds>
-        table           = fpimm.siruta
+        table           = siruta
         <search>
             localitate  = loc_ds
         </search>

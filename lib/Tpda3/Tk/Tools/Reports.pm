@@ -15,7 +15,7 @@ use Tpda3::Utils;
 
 =head1 NAME
 
-Tpda3::Tk::App::Fpimm::Reports screen.
+Tpda3::Tk::Tools::Reports screen.
 
 =head1 VERSION
 
@@ -27,9 +27,9 @@ our $VERSION = 0.57;
 
 =head1 SYNOPSIS
 
-    require Tpda3::App::Fpimm::Reports;
+    require Tpda3::Tools::Reports;
 
-    my $scr = Tpda3::App::Fpimm::Reports->new;
+    my $scr = Tpda3::Tools::Reports->new;
 
     $scr->run_screen($args);
 
@@ -278,5 +278,4 @@ by the Free Software Foundation.
 
 =cut
 
-1; # End of Tpda3::App::Fpimm::Reports
-
+1; # End of Tpda3::Tools::Reports
