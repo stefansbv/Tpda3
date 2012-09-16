@@ -65,7 +65,7 @@ sub db_connect {
     $log->trace("Database driver is: $conf->{driver}");
     $log->trace("Parameters:");
     $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
-    $log->trace(" > Host     = ",$conf->{host} ? $conf->{hosst} : '?', "\n");
+    $log->trace(" > Host     = ",$conf->{host} ? $conf->{host} : '?', "\n");
     $log->trace(" > User     = ",$conf->{user} ? $conf->{user} : '?', "\n");
 
     try {
