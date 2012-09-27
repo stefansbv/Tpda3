@@ -1,4 +1,4 @@
-package TkScreenTest;
+package Tpda3::Tk::ScreenTest;
 
 use strict;
 use warnings;

@@ -5,9 +5,9 @@
 use strict;
 use warnings;
 
-use lib qw( lib ../lib t/lib );
+use lib qw( lib ../lib );
 
-use TkScreenTest q{test_screen};
+use Tpda3::Tk::ScreenTest q{test_screen};
 
 my $args = {
     cfname => 'test-tk',
