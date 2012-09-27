@@ -437,7 +437,9 @@ sub config_init {
 
 =head2 configdir
 
-Return application configuration directory.
+Return application configuration directory.  The config name is an
+optional parameter with default as the current application config
+name.
 
 =cut
 
@@ -452,6 +454,8 @@ sub configdir {
 =head2 sharedir
 
 Returns the share directory for the current application configuration.
+The config name is an optional parameter with default as the current
+application config name.
 
 =cut
 
@@ -491,7 +495,7 @@ this:
 sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
 
-    print "Populating config dir.\n";
+    print "Populating config...\n";
 
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname);
@@ -509,7 +513,7 @@ sub configdir_populate {
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
-        or ouch 'CfgInsErr', "Failed to copy user data to '$configdir'";
+        or ouch 'CfgInsErr', "Failed to copy app user data to '$configdir'";
 
     return;
 }
