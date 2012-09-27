@@ -1,0 +1,11 @@
+--- lib/File/UserConfig.pm.orig	2012-09-24 19:00:44.892467866 +0300
++++ lib/File/UserConfig.pm	2012-09-24 19:01:21.240313951 +0300
+@@ -162,7 +162,7 @@
+ 
+ 	# If we don't have a sharedir, get it
+ 	# from the dist.
+-	unless ( $self->sharedir ) {
++	unless ( $self->sharedir and -d $self->sharedir ) {
+ 		$self->{sharedir} = File::ShareDir::dist_dir($self->dist);
+ 	}
+ 
