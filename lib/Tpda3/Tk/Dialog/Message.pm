@@ -47,7 +47,7 @@ sub new {
     return $self;
 }
 
-=head2 search_dialog
+=head2 message_dialog
 
 Define and show message dialog.  MsgBox doesn't allow to change the
 button labels.

@@ -118,6 +118,12 @@ sub db_connect {
     return $self;
 }
 
+=head2 dbh
+
+Return dbh.
+
+=cut
+
 sub dbh {
     my $self = shift;
 
@@ -125,6 +131,12 @@ sub dbh {
 
     return $db->dbh;
 }
+
+=head2 dbc
+
+Return the Connection module handler.
+
+=cut
 
 sub dbc {
     my $self = shift;
@@ -793,6 +805,12 @@ sub tbl_dict_query {
 
     return \@dictrows;
 }
+
+=head2 tbl_lookup_query
+
+Lookup query.
+
+=cut
 
 sub tbl_lookup_query {
     my ( $self, $para ) = @_;

@@ -11,6 +11,28 @@ use Tpda3::Num2Words;
 use vars qw($FILTER_NAME);
 $FILTER_NAME = 'words';
 
+=head1 NAME
+
+Tpda3::Template::Plugin::Words  - A template plugin.
+
+=head1 VERSION
+
+Version 0.57
+
+=cut
+
+our $VERSION = 0.57;
+
+=head1 SYNOPSIS
+
+=head1 METHODS
+
+=head2 new
+
+Constructor method
+
+=cut
+
 sub new {
     my($self, $context, @args) = @_;
 
@@ -19,6 +41,12 @@ sub new {
 
     return $self;
 }
+
+=head2 words
+
+Transform number in words.
+
+=cut
 
 sub words {
     return num2words($_[0]);

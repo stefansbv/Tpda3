@@ -201,7 +201,7 @@ sub _log {
     return $self->{_log};
 }
 
-=head2 login_dialog
+=head2 dialog_login
 
 Login dialog.
 
@@ -973,6 +973,12 @@ sub setup_bindings_table {
 
     return;
 }
+
+=head2 setup_select_bindings_entry
+
+Setup select bindings entry.
+
+=cut
 
 sub setup_select_bindings_entry {
     my ( $self, $page ) = @_;
@@ -3332,7 +3338,7 @@ sub record_save {
     return;
 }
 
-=head2 required_data
+=head2 if_check_required_data
 
 Check if required data is present in the screen.
 
@@ -4078,7 +4084,7 @@ sub tmshr_fill_table {
     return;
 }
 
-=head2 process_level
+=head2 tmshr_process_level
 
 For each record of the upper level (meta) data, make new daughter
 nodes in the tree. The node names are created from the tables primary

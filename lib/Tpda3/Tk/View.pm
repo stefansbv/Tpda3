@@ -960,9 +960,9 @@ sub on_quit {
     return;
 }
 
-=head2 w_geometry
+=head2 get_geometry
 
-Return window geometry
+Return window geometry.
 
 =cut
 

@@ -58,7 +58,7 @@ sub new {
     return $self;
 }
 
-=head2 search_dialog
+=head2 run_screen
 
 Define and show search dialog.
 

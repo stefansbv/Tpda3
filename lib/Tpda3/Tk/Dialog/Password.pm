@@ -43,7 +43,7 @@ sub new {
     return $self;
 }
 
-=head2 login
+=head2 get_password
 
 Show dialog
 

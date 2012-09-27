@@ -33,7 +33,7 @@ our $VERSION = 0.57;
 
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -49,7 +49,7 @@ sub new {
     return bless( $self, $class );
 }
 
-=head2 search_dialog
+=head2 help_dialog
 
 Define and show search dialog.
 
@@ -163,6 +163,12 @@ sub help_dialog {
     return;
 }
 
+=head2 toggle_load
+
+Toggle load.
+
+=cut
+
 sub toggle_load {
     my ( $self, $doc ) = @_;
 
@@ -185,11 +191,23 @@ sub toggle_load {
     return;
 }
 
+=head2 get_toolbar_btn
+
+Return toolbar button.
+
+=cut
+
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
     return $self->{tb3}->get_toolbar_btn($name);
 }
+
+=head2 load_gpl_text
+
+Load GPL text.
+
+=cut
 
 sub load_gpl_text {
     my $self = shift;
@@ -208,6 +226,12 @@ sub load_gpl_text {
 
     return;
 }
+
+=head2 load_ugd_text
+
+Load user guide.
+
+=cut
 
 sub load_ugd_text {
 
@@ -242,6 +266,12 @@ sub load_ugd_text {
     return;
 }
 
+=head2 dlg_exit
+
+Exit dialog.
+
+=cut
+
 sub dlg_exit {
 
     my $self = shift;
@@ -250,6 +280,12 @@ sub dlg_exit {
 
     return;
 }
+
+=head2 get_help_ro
+
+Help text.
+
+=cut
 
 sub get_help_ro {
 

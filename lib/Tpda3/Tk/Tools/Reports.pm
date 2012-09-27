@@ -229,14 +229,16 @@ sub run_screen {
     return;
 }
 
+=head2 report_file
+
+Add report file.
+
+=cut
+
 sub report_file {
     my $self = shift;
 
     my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
-
-    # my $rep_path =  $conf->{CONFIG}{misc}{rep_path};
-    # $rep_path = File::Spec->canonpath($rep_path);
-
     my $path = $self->{view}->getOpenFile(
         -filetypes  => $types,
         -initialdir => '.',

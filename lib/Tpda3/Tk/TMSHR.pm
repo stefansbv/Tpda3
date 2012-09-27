@@ -81,9 +81,9 @@ sub Populate {
     return $self;
 }
 
-=head2 init
+=head2 make_header
 
-Write header on row 0 of TableMatrix
+Write header on row 0 of TableMatrix.
 
 =cut
 

@@ -53,7 +53,10 @@ our $VERSION = 0.57;
 
 =head2 ClassInit
 
+Class initializations.
 
+Changes the bindings for cursor movements in the cell and between
+cells.
 
 =cut
 
@@ -87,7 +90,7 @@ sub ClassInit {
 
 =head2 Populate
 
-Constructor method.
+Constructor method, calls SUPER Populate.
 
 =cut
 
@@ -122,7 +125,7 @@ sub init {
     return;
 }
 
-=head2 tmx_get_row_count
+=head2 get_row_count
 
 Return number of rows in TM, without the header row.
 
@@ -769,7 +772,7 @@ sub build_ckbutton {
     return $button;
 }
 
-=head2 toggle_ckbuttons
+=head2 toggle_ckbutton
 
 Toggle Checkbutton or set state to L<state> if defined state.
 

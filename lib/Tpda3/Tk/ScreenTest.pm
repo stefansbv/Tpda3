@@ -11,6 +11,38 @@ use Tpda3::Config;
 use Exporter 'import';
 our @EXPORT_OK = qw(test_screen);
 
+=head1 NAME
+
+Tpda3::Tk::ScreenTest - module for screen test.
+
+=head1 VERSION
+
+Version 0.57
+
+=cut
+
+our $VERSION = 0.57;
+
+=head1 SYNOPSIS
+
+use Tpda3::Tk::ScreenTest q{test_screen};
+
+my $args = {
+    cfname => 'test-tk',
+    user   => undef,
+    pass   => undef,
+};
+
+test_screen($args, 'Tpda3::Tk::App::<AppName>::<ScreenName>');
+
+=head1 METHODS
+
+=head2 new
+
+Constructor method.
+
+=cut
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -24,6 +56,12 @@ BEGIN {
 
     plan tests => 23;
 }
+
+=head2 test_screen
+
+Test method. Not exported by default.
+
+=cut
 
 sub test_screen {
     my ($args, $screen_module_package) = @_;

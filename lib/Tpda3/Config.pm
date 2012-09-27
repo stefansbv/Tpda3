@@ -542,7 +542,7 @@ sub config_rep_file {
     return catfile( $self->config_rep_path, $rep_file );
 }
 
-=head2 documents_path
+=head2 config_tex_path
 
 Return Tex template documents base path.
 
@@ -578,7 +578,7 @@ sub config_tex_output_path {
     return catdir( $self->config_tex_path, 'output' );
 }
 
-=head2 docspath
+=head2 docs_path
 
 Default documents output path.
 
@@ -700,9 +700,9 @@ sub list_config_files {
     return;
 }
 
-=head2 get_licence
+=head2 get_license
 
-Slurp licence file and return the text string.  Return only the title
+Slurp license file and return the text string.  Return only the title
 if the license file is not found, just to be on the save side.
 
 =cut

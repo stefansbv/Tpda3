@@ -526,6 +526,12 @@ sub dep_table_selectorstyle {
     return $self->dep_table($tm_ds)->{selectorstyle};
 }
 
+=head2 dep_table_datasources
+
+Return the datasources config from the dependent table section.
+
+=cut
+
 sub dep_table_datasources {
     my ( $self, $tm_ds ) = @_;
 
@@ -581,7 +587,7 @@ sub dep_table_columns {
     return $self->dep_table($tm_ds)->{columns};
 }
 
-=head2 dep_table_columns_by_ds
+=head2 dep_table_columns_by_level
 
 Return the dependent table columns configuration data structure bound
 to the related Tk::TableMatrix widget, filtered by the I<level>.
@@ -637,6 +643,12 @@ sub dep_table_column_attr {
     return $self->dep_table($tm_ds)->{columns}{$column}{$attr};
 }
 
+=head2 screen_alter_toolbar
+
+Return the toolbar config.
+
+=cut
+
 sub screen_alter_toolbar {
     my $self = shift;
 
@@ -682,7 +694,7 @@ sub _screen_toolbars {
     return \@toolbars;
 }
 
-=head2 app_toolbar_names
+=head2 scr_toolbar_names
 
 Return the toolbar names and their method names configured for the
 current screen.
