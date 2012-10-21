@@ -17,11 +17,11 @@ Tpda3::Tk::ScreenTest - module for screen test.
 
 =head1 VERSION
 
-Version 0.57
+Version 0.58
 
 =cut
 
-our $VERSION = 0.57;
+our $VERSION = 0.58;
 
 =head1 SYNOPSIS
 
