@@ -196,12 +196,17 @@ sub search_dialog {
                 push @columns, $field;
             }
 
+            my $displ_width = $rec->{$field}{displ_width};
+            unless ($displ_width) {
+                ouch 'BadConfig',"No 'displ_width' for '$field'\n";
+            }
+
             $self->{box}
                 ->columnInsert( 'end', -text => $rec->{$field}{label} );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
                 ->configure( -background => 'tan' );
             $self->{box}->columnGet($colcnt)->Subwidget("heading")
-                ->configure( -width => $rec->{$field}{displ_width} );
+                ->configure( -width => $displ_width );
 
             if ( defined $rec->{$field}{datatype} ) {
                 if (   $rec->{$field}{datatype} eq 'integer'
