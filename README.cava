@@ -1,0 +1,4 @@
+* Cava Packager questions
+
+Q: Missing module required: Encode::ConfigLocal: is not packaged
+A: Generate with enc2xs -C
