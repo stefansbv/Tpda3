@@ -6,9 +6,10 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 use lib qw( lib ../lib );
+use t::lib::Test qw/make_database/;
 
 use Tpda3::Config;
 
@@ -20,6 +21,11 @@ my $args = {
 
 my $c1 = Tpda3::Config->instance($args);
 ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
+
+# Make a test database for SQLite
+if ( $c1->connection->{driver} =~ m{sqlite}xi ) {
+    make_database();
+}
 
 use Tpda3::Db;
 
