@@ -1,14 +1,1081 @@
+2012-11-08
+
+	* Fix bug about test failing because of nonexistent tables in the
+	test DB.
+
+2012-10-21
+
+	* Release v0.58.  Make 'display_width' screen config absence a
+	fatal error.
+
+2012-09-27
+
+	* Update PODs.  Patch for File::UserConfig.  Move Tk test lib from
+	t/lib to lib.  Updated POD for subs.
+
+2012-09-16
+
+	* Fix (stupid) typo in Db modules.
+
+2012-08-22
+
+	* Code cleanup.
+
+2012-08-02
+
+	* Release v0.57.  Small fix in status messages method.
+
+2012-07-26
+
+	* New features and fixes.  Fix bug that prevented saving newline
+	chars in TEXT columns.
+
+2012-07-15
+
+	* Release v0.56.
+
+2012-07-13
+
+	* New feature: dialog for selecting records to be inserted in
+	table (Tk::TM).
+
+2012-07-11
+
+	* Implement 'on_load_record' trigger method for screens.
+
+2012-07-03
+
+	* Sync the Wx interface.
+
+2012-06-27
+
+	* Release v0.55 Current screen config version = 4.
+
+2012-06-26
+
+	* Screen toolbar buttons enabled by default in report style
+	screens.  Simplify screen configs for entry widget bindings and
+	fix search dialog in tables (Tk).
+
+2012-06-25
+
+	* Update PODs and Tk TM test.  Replace width attrib with
+	displ_width (screen config v3).
+
+2012-06-18
+
+	* Add table_exists sub.
+
+2012-06-16
+
+	* Move config argument to test (was hardwired in test lib).
+
+2012-06-14
+
+	* Release v0.54.  Fix Wx customers test.
+
+2012-06-12
+
+	* Create TM widgets in screen not handled by the controller and
+	toolbars handled by the controller.x
+
+2012-06-10
+
+	* Fix screen configs to contain all sections.  Refactor Tk screen
+	tests.
+
+2012-06-09
+
+	* Add tests for screen config sections in the screen tests.
+
+2012-06-07
+
+	* Release v0.53 Add param to set icon in Tk message dialog.
+
+2012-06-06
+
+	* Fix bug about setting state for toolbar buttons in lst mode.
+	Add table_record_update method.  Fix problem with MyTest lib load.
+	Experimental conditional require.  Return array or array ref in
+	sub.  Add param for Message dialog.  Configurable buttons in
+	Message dialog.  Add exception in TM.pm for unknown column index.
+	Speedup tests.
+
+2012-05-31
+
+	* Make accessors for misc config files. Generic method in View to
+	access a method from the Model.
+
+2012-05-28
+
+	* Implement check for screen config version.
+
+2012-05-26
+
+	* Release v0.52 Seperate width attribute config for display and
+	for validation.
+
+2012-05-20
+
+	* Fix for 'SELECT * '.  Add new dialog for Tk apps.
+
+2012-05-18
+
+	* Config and TM changes.
+
+2012-05-12
+
+	* Force validation on TM using callback for Checkbutton.  Release
+	v0.51 Feature for embedded check-button in TM and other
+	miscellaneous changes.
+
+2012-05-10
+
+	* Miscellaneous fixes.  QSelect screen fill TM QSelect screen read
+	widgets table Implement run query in QSelect screen Selection tool
+	screen
+
+2012-05-03
+
+	* Release v0.50
+
+2012-05-02
+
+	* Fix (the same) bug about zero as valid value.  Make a
+	generalized lookup method callable from the curent screen.
+
+2012-04-30
+
+	* Fix bug about not saving 0 as value in entry fields.  Add lookup
+	query method.  Allow sign for integers.  Translate check
+	constraints error message.
+
+2012-04-23
+
+	* Comment out website in about dialog.  Update TODO.
+
+2012-04-12
+
+	* Add translations for dialog (yes,no,cancel)
+
+2012-04-09
+
+	* Fix Error dialog call.
+
+2012-04-08
+
+	* Subclass Wx::PlGridTable.
+
+2012-04-07
+
+	* Small change in Products; early implementation of Table in
+	Orders. (Wx) Fix typo.  Move dialog call to Tk View to fix Wx
+	implemetation.  Experiment with Wx::Grid.  Fix section for
+	message.  Add custom Message Dialog.
+
+2012-04-06
+
+	* Fix typo and use localize method.  Add localisation for notebook
+	page labels.  Add localisation for Search dialog.  Update TODO and
+	Makefile.PL.  Fix Report manager interface.
+
+2012-04-04
+
+	* Update contact.  Add romanian translations for interfaces.
+	Update main config file.  Add simple localisation for messages.
+	Refactor dialogs.
+
+2012-04-03
+
+	* Add help dialog to Wx and test guide (in romanian).  Add license
+	file.  Load license from share dir text file.  Add Wx Products
+	screen; sync configs.  Add Wx window title.  Set all modules
+	version to Tpda3.pm version (v0.49)
+
+2012-03-22
+
+	* Re-enable screen description in titles. Release v0.48.
+
+2012-03-17
+
+	* Update docs; fix find = 'none'; fix message for count = 0.
+
+2012-03-15
+
+	* Add version to screen config files.  Disallow find mode from
+	menu or shortcut keys in reports.  Fix bug, other changes ...
+
+2012-03-13
+
+	* Rename screen config atribute label 'coltype' to 'datatype'.
+
+2012-03-12
+
+	* Fix double requires for some modules; Sync Wx configurations.
+
+2012-03-12
+
+	* Release v0.47
+
+2012-03-07
+
+	* Small fixes and POD changes.  Implement changing the toolbar
+	buttons status from screen config.  Print file name on 'ouch'.
+	Allow empty dates.  Tweak messages on loading config files.
+
+2012-03-06
+
+	* Fix bug: callback executed on click on disabled toolbar buttons.
+	Add method to list screen config files.
+
+2012-03-04
+
+	* Remove Clear button from toolbar.  Refactor exception handling
+	on loading config files.  Rename var names 'order' to 'ctrltype'.
+	Move toolbar definition from screen config to a specialized config
+	file.
+
+2012-03-02
+
+	* Release 0.46 Rename and delete some screen config attributes.
+	Strict check for widget set; Also replace 'exit'.  Replace call to
+	exit with ouch.  Refactor table name an pkcol retrieving.
+
+2012-03-01
+
+	* Fix section name.  Refactor 2 lines of code.  Remove minimum
+	version from 3 modules to make ppm stop complaining.
+
+2012-02-29
+
+	* Unstable release v0.45_02 Handle connection error from tests.
+	Undef user and pass in config params for tests.  Double check if
+	it's connected.  Workaround for a bug in the Tk interface.
+
+2012-02-28
+
+	* Fix UTF8 strings from Firebird.  Set test configs (user and
+	pass) to undef.
+
+2012-02-25
+
+	* Fix typo.  Erorr handling for sub parameter.  Add TAGS to ignored
+	files.
+
+2012-02-28
+
+	* Add UTF-8 settings for Firebird.
+
+2012-02-27
+
+	* Refactor Controllers.  Derive specific Wx and Tk Controllers
+	from Tpda3::Controller.pm.
+
+2012-02-26
+
+	* Custom Wx::ComboCtrl with Calendar popup.  Fix date handling.  Add
+	sensible defaults to ComboBox.
+
+2012-02-25
+
+	* Refactor screen_read.  Update POD.  Make method to save data
+	from controls.  Add TAGS to ignored files.  Implement
+	ComboBox. Fix DateEntry date format.  Order screen implementation
+	(without table).  Erorr handling for sub parameter.  Fix typo.
+	Test helper module for Wx.  Fix test.
+
+2012-02-24
+
+	* Implement ComboBox subclass and test.
+
+2012-02-22
+
+	* Fix search dialog.  Enable/disable menus; Fix Entry widget
+	bindings for Wx.  Add controls for dates.  One Controller for Tk
+	and Wx.
+
 2012-02-21
 
 	* Release v0.45. Documentation improvements. Add missing files.
+	Add Perl and Tk version info to the About dialog.
+
+2012-02-20
+
+	* Cleanups and fixes in docs and Makefile.PL.  Require instead of
+	'use' for the Tpda3 app modules.
 
 2012-02-19
 
-	* Release v0.44.
-	Minimum Perl version is officially v5.8.9.  Better error messages
-	for the user and new login dialog and DB connection policy (Tk).
-	Small fixes and improvements.
+	* Release v0.44.  Minimum Perl version is officially v5.8.9.
+	Better error messages for the user and new login dialog and DB
+	connection policy (Tk).  Add missing SQL script for classicmodels
+	DB - Firebird version.  Update ChangeLog. Add new error
+	translation: null value in column...
+
+2012-02-17
+
+	* All modules version update.  Minimum Perl version is v5.8.9.
+
+2012-02-16
+
+	* Sync DB helper modules. Update Makefile.PL.  Update TODO.
+	Update README.  Add TODO; remove Log::Dispatch::FileRotate usage
+	for now.  Use Ouch for exceptions.
+
+2012-02-15
+
+	* Better user messages (Tk).  Add method for connection to use
+	when there is an instance.
+
+2012-02-13
+
+	* Better about dialog for Wx.  Add missing icon.
+
+2012-02-12
+
+	* Fix test to be skipped if no Wx.  Add required module.  Update
+	README.  Add patch dir and README.patches file.
 
 2012-02-10
 
-	* First public release: v0.43
+	* First public release: v0.43. Sync configs between Tk and Wx.
+	Updated docs, prepare release.
+
+2012-02-08
+
+	* Fix Wx implementation (first step).  Optimize sub
+	(get_recordlist once)
+
+2012-02-02
+
+	* Level data is (again) a HoA data structure.
+
+2012-02-01
+
+	* First working version of report style screen.  Chenge to
+	DialogBox.  Move method to Controller.  Fix method call.  Fix node
+	nameing bug.
+
+2012-01-25
+
+	* Comment out debug Test for TMSHR module Report screen: add
+	another tree travelsal step for number formatting.  Report screen
+	defaults for column by validation type.
+
+2012-01-24
+
+	* Implement report screens based on Tk::TMSHR using tree
+	structures.
+
+2012-01-23
+
+	* Fix bug about nonexistent method.
+
+2012-01-22
+
+	* Implement report style screens.
+
+2012-01-16
+
+	* Exclude CHECH constraints.
+
+2012-01-01
+
+	* Test for TMSHR; refactor and rename make_function.
+
+2011-12-30
+
+	* Fix for undef args in anonimous function.  Computed fields in
+	TMSHR tables using Math::Symbolic module.
+
+2011-12-28
+
+	* Disable List tab if no header defined; refactor fill_table; Fill
+	TM in 'report' style screens.  Enable UTF-8 in screen configs.
+	Update requirements
+
+2011-11-11
+
+	* Release v0.41
+
+2011-11-10
+
+	* Clear status bar messages temporized.  Update Makefile.PL
+	Release v0.40 Fix error handling for the Generator module. Config
+	for log rotate.  Remove commify method.  Updated to use the new
+	module.  Removed, renamed and made it an independent Tpda3 Perl
+	module.
+
+2011-11-09
+
+	* Corections in num 2 words (almost functional).
+
+2011-11-08
+
+	* Implement coditional requirement for fields data. Refactor
+	Dialogs.  Refactor Nums2Words.
+
+2011-10-26
+
+	* Plugin for TT to transform number to words.  Cleanup debug.
+	Call the Generate module with alterate datasource (view).
+
+2011-10-19
+
+	* New derived TM::SpreedsheetHideRows module.  Implement report
+	style screens (start).  Improve database error loging and
+	messages.  Update Firebird support module.  New config value and
+	accessors for screen style.
+
+2011-10-13
+
+	* Shortcut keys for Search dialog.  Clear button in search dialog.
+	Support MatchingBE widgets
+
+2011-10-12
+
+	* Allow 'bg' as bgcolor config attribute value for controls Fix
+	report preview function Implement better error messages for users
+
+2011-10-11
+
+	* Quick hack for making the messages more user friendly.  Start
+	refactoring error messages Method to list constraints
+
+2011-10-10
+
+	* Code cleanup in Pg module.  Implement generation of LaTeX docs
+	from templates List sequences method for Pg
+
+2011-09-25
+
+	* Implement Tool-Screen module Interface to preview and print
+	RepMan reports with parameters Implement interface to RepMan
+	reports RepMan layout Implement RepMan report preview
+
+2011-09-24
+
+	* Add 'Report Manager' support
+
+2011-09-23
+
+	* Remove controls dependencies processing (experiment) Fix default
+	value only for add mode
+
+2011-09-22
+
+	* Miscellaneous changes
+
+2011-09-20
+
+	* Changes the configurations, refactor screen_write
+
+2011-09-17
+
+	* Miscellaneous changes
+
+2011-09-12
+
+	* Add new feature to generate LaTeX docs using templates
+
+2011-09-10
+
+	* Add date format configuration Update entry validation on screens
+	Message on status bar when not validating an entry
+
+2011-09-09
+
+	* Update PODs Fix bug for list CLI option
+
+2011-09-08
+
+	* Swap some bindings for TM; Callback for menus
+
+2011-09-07
+
+	* Refactor toggle_interface_controls method Refactored duplicated
+	code, cleanup data files on exit Add screen description to window
+	title.  Implement default report preview; Fix bug about on_quit.
+
+2011-09-04
+
+	* Add new options to screen configurations: screen name.
+
+2011-09-03
+
+	* Re enabled table cels validation in Orders screen.
+
+2011-09-03
+
+	* Add check for screen data, that is required, before save.
+
+2011-08-29
+
+	* Add MANIFEST.SKIP.  Perl tidy - v0.23.  Add help and license
+	screen (adapted from TPDA).  Make case (in)sensitive
+	searches. v0.21.
+
+2011-08-26
+
+	* Release v0.20.
+
+2011-08-26
+
+	* Fixed the config instalation for app modules and for dist name.
+
+2011-08-22
+
+	* Small changes; v0.19.  Updated PODs, new version is v0.18.
+	Fixed bug about unblessed references.
+
+2011-08-21
+
+	* Accessors for selected row in TM bug.  Updat POD.
+
+2011-08-19
+
+	* Create a copy with different name for a config with -init
+
+2011-08-18
+
+	* Create config dir for apps from share
+
+2011-08-03
+
+	* Updated POD, fixed selector accessors.  TM and TB, derived
+	widgets from TableMatrix and ToolBar
+
+2011-07-31
+
+	* Changed version to 0.15.  Using Tk::Derived for subclassing
+	Tk::ToolBar
+
+2011-07-28
+
+	* Changed config for tests to use Pg test database; updated the
+	tests.  Updated PODs.  Feature to add and remove row from list
+	when inserting or deleting records.  Small changes in POD, removed
+	obsolete code.  Changes in screen config files, new feature.
+
+2011-07-27
+
+	* Renamed found_cols to list_header in screen configs. Fixed
+	validation scr_cfg parameter. Add dummy module to record
+	application version. Feature to alter toolbar state for screens.
+
+2011-07-26
+
+	* Separated load test for Tk and Wx Temporary version for Tpda3
+	and fixes in the tests References to controller removed from TM
+	Toggle det tab on add/remove row in TM
+
+2011-07-23
+
+	* Swapped action for the search symbols '%' and '!'; Bug fixes for
+	About dialog and restore note Swapped action for the search
+	symbols '%' and '!'; Bug fixes for About dialog and restore note
+	Add support for queries like: field IS [NOT] NULL (cherry picked
+	from commit 49b298f2e40524eaaee31a480d6024138a780ee4) Add support
+	for queries like: field IS [NOT] NULL Using default width for
+	scrollbar
+
+2011-07-22
+
+	* Tweaking the layout
+
+2011-07-21
+
+	* Removed test script TM subclass implemented Removed obsolete
+	test, skiping Wx test
+
+2011-07-21
+
+	* Finished test for TM
+
+2011-07-20
+
+	* New test for TM Using TM subclass Fixed small bug related to
+	constructor args Fill and read the TM Experimenting with TM Small
+	fixes for ToolBar creation
+
+2011-07-19
+
+	* Add utility sub deaccent
+
+2011-07-18
+
+	* Configurable callback for screen toolbar buttons
+
+2011-07-10
+
+	* Add table list sub for Pg
+
+2011-07-07
+
+	* Warn user if wrong search parameter for dates; Deactivate detail
+	tab if record changed Updated test Add utility script to dump
+	saved data with Storable Add Orders screen, first look (Wx) Add
+	functionality to delete records. Toggle normal/disabled detail
+	tab.
+
+2011-07-04
+
+	* Add dialog for asking to save before mode changes.
+
+2011-07-03
+
+	* Interface functionality updates.  Fixed: loading detail screen
+	only if not already loaded Add comments Add state setting for
+	Detail page Generalized accessor subs for screen object and screen
+	config Changed some module names
+
+2011-07-02
+
+	* Fix parameter for insert. Take/restore note working again
+	Replaced Checkbutton with Radiobutton for TM selector (Tk) Attempt
+	to optimize data structures and db interaction
+
+2011-06-30
+
+	* Save detail data. Usability changes to the UI.
+
+2011-06-29
+
+	* Hunting a bug that makes read header row 0 instead of the
+	required row in TM (Tk). Add PODs in Model.pm
+
+2011-06-28
+
+	* Working update from TM (Tk) Add subs to toggle selector ckbutton
+	in TM widget (Tk)
+
+2011-06-27
+
+	* Add config option for alternate detail screen name
+
+2011-06-26
+
+	* Add accessors for Screen config parameters
+
+2011-06-25
+
+	* Disable keys if no screen loaded; Set pkcol on screen load Add
+	'order by' for 'found' records
+
+2011-06-24
+
+	* Loading detail record selected in TM
+
+2011-06-23
+
+	* Changed some var names, added new vars for det screen; methods
+	for scr configs
+
+2011-06-22
+
+	* Using Walk() function to clean detail page
+
+2011-06-21
+
+	* Code to read selector in TM (Tk) Detail screen loading; Selector
+	column added to TM (Tk)
+
+2011-06-19
+
+	* Fix for row number 1 - case when adding first row in TM (Tk)
+	Fixed row numbering when not delete+add update style in TM (Tk)
+
+2011-06-17
+
+	* Experimenting with detail style screens
+
+2011-06-16
+
+	* Alternative algorithm for saving TM data, for 'updatestyle'
+	config
+
+2011-06-15
+
+	* Record load simplified, using metadata subs Renumber TM rows
+	when updatestyle = delete+add (Tk) Fixed warning about redefining
+	Tk::Widget::Entry Updated pods, small changes Fixed validation
+	procedures after the config change for deptables Refactored the
+	save record procedure.
+
+2011-06-12
+
+	* Add sub to create toolbar for tables to screen; Fixed code for
+	clearing table matrix data
+
+2011-06-12
+
+	* Add support for multiple dependent tables (Tk) Add and modified
+	status bar messages. Code cleanup.  Simplified data structure read
+	from TableMatrix. Take/restore note saves/reads TM data.
+	Refactored take not functionality
+
+2011-06-11
+
+	* Using a derived Entry widget to signal that the data in screen
+	is modified (Tk) Updated the doc in the Validation module Focus on
+	list when in sele mode
+
+2011-06-10
+
+	* Track if record is modified and ask to save (Tk, started)
+
+2011-06-09
+
+	* Default limits for lists
+
+2011-06-08
+
+	* Config entry for limits Updated screen configs for Tk test app
+
+2011-06-02
+
+	* Add binding for method invocation on table row Fixed active col
+	setting after lookup in tables Add filter for lookup in table with
+	Search dialog
+
+2011-06-01
+
+	* Key binding for F5 - reloads record in edit mode Refactored
+	table column bindings
+
+2011-05-29
+
+	* Changed config for tables; Refactored validation code
+
+2011-05-28
+
+	* Validation for tables and entry widgets (v0.08)
+
+2011-05-27
+
+	* Moved entry validation subs to Validation module
+
+2011-05-26
+
+	* Validation for Entry widgets Use table bindings only on screens
+	with tables :) Removed debug print commands, added order attribute
+	to deptable config Updated load script to use import-csv script
+	Updated data files to use with the new import-csv script Saving
+	table data bug fixed
+
+2011-05-24
+
+	* Saving table data with new records - first look Search dialog
+	support for TableMatrix widgets Improved the comments in bindings
+	sub
+
+2011-05-23
+
+	* Bindings for search dialog implemented
+
+2011-05-22
+
+	* Add About dialog; v0.06 Add support for radiobuttongroup
+	widgets; v0.05 Controller docs updated but not finished; Test
+	screen: WidgetsAll
+
+2011-05-21
+
+	* Started extending the lookup bindings subs used Tk screens
+
+2011-05-15
+
+	* New layout in Orders screen, based on pack
+
+2011-05-08
+
+	* Add Invoke button programaticaly
+
+2011-03-28
+
+	* Add functionality for clear, take note and restore note toolbar
+	buttons (Tk)
+
+2011-03-26
+
+	* Add insert and update for the main table (Tk) Updated load
+	classicmodels script to work with Pg
+
+2011-03-25
+
+	* Move resource config file Using a Tk resource file for gui
+	configs Updated copyright
+
+2011-03-11
+
+	* Reload function and key shortcuts added also for the Tk version
+	Add code for the reload toolbar button Add shortcut keys for count
+	and load record
+
+2011-03-10
+
+	* Fix problem about no connection at start with options from cli
+	Finished the Login and Search dialogs Search dialog is functional
+	Add messages to Search dialog
+
+2011-03-09
+
+	* New Search dialog
+
+2011-03-08
+
+	* Final layout for Customers screen Layout: replaced the top
+	FlexGridSizer with a BoxSizer Layout change in Customers screen
+	Experimenting centered labels in the statusbar
+
+2011-02-24
+
+	* Simplified login dialog; more log messages Log experiments
+	Renamed Pwd to Login Login dialog not yet working ...
+
+2011-02-23
+
+	* New Login dialog - not yet functional Clear screen controls in
+	Wx when find or add mode starts Fixed search result in Wx Enable /
+	disable menus - screen module Remove test for Tk::Dialog::Config
+	Small cleanups; Log file goes to current dir How to optionaly
+	require Firebird and/or Pg, Tk and/or wxPerl?
+
+2011-02-22
+
+	* Renamed and fixed some tests Fixed and renamed Tk tests; New Wx
+	test for Customers screen Started creating test screens for the Wx
+	version Changed message on non existent config path New option in
+	the app config for the widget set
+
+2011-02-21
+
+	* Add config file for localitati screen
+
+2011-02-20
+
+	* Add README.usage, updated some docs Updated the namespace for
+	the Tk App modules Updated the scripts used to create the test
+	database
+
+2011-02-19
+
+	* Code cleanup Moved App's dir to Wx Deleted some old screens
+	Moved App's dir to Tk POD update and small fixes Updated README
+
+2011-02-18
+
+	* Sub name change Disable some menus at start, enable at screen
+	load Add key shortcuts for find mode and search; fixed bg color
+	problem
+
+2011-02-17
+
+	* Fixed the layout for the Localitati screen Add save geometry
+	Search and load record is implemeted Working on the first real
+	screen: Localitati Add some list ctrl methods Removed other
+	screens from config; activated Class::Unload Implemented column
+	change in record list at screen load Succesfuly loaded the first
+	screen in Wx! :)
+
+2011-02-16
+
+	* Add notebook and list Tool button toggle and statusbar messages
+	are working Model callbacks are working Sync Wx View with Tk View
+	model callbacks Toggle and enable toolbar buttons
+
+2011-02-15
+
+	* Working on toolbar button toggle More cleanup; Event handlers
+	Default Id for some menu items Code cleanup, removed subs used by
+	Tpda-Qrt Deleted unused icons from the repos Add popup menus Add
+	the icons to the repo, changed min geom Add event handler to quit
+	button Add toolbar and icons New experimental wxPerl interface,
+	adopted from TPDA-Qrt
+
+2011-02-12
+
+	* Small layout changes in Pwd dialog Connection names list layout
+	changes Application modules can be used with more than one
+	configuration Layout and comments changes Optionaly list config
+	details with the list option ;)
+
+2010-12-29
+
+	* Hopefully, the final form for the screen_write method
+	Experimental resource file
+
+2010-12-28
+
+	* Fixed bug that made emptying controls to not work anymore UTF
+	data for classicmodels, and helper scripts added Small bugs fixed
+	in quote4like and control_read_d methods
+
+2010-12-27
+
+	* Miscellaneous changes
+
+2010-12-26
+
+	* Renamed start script to tpda3 Renamed tpda-mvc to tpda3; updated
+	the pod Add config for other screens; Changed dict query to use
+	array refs
+
+2010-12-25
+
+	* Search dialog functional; return and update todo Search dialog
+	ui finished Layout change Order by for TM widget; cleanup and
+	small config changes Clear TM widget contents at mode change;
+	ignore if not such widget
+
+2010-12-24
+
+	* Working on lookup First version of search dialog Working on
+	search dialog New password dialog Firebird support
+
+2010-12-23
+
+	* POD updates First version for searching for date pieces. Made a
+	sub for the where clause
+
+2010-12-03
+
+	* Log if instance file not found
+
+2010-11-28
+
+	* Updated ACKNOWLEDGMENTS in README
+
+2010-11-28
+
+	* Add ACKNOWLEDGMENTS to README Updated README. Fix to prevent
+	execute search if not in find mode
+
+2010-11-23
+
+	* Updated module requirements Moved use_ok screen tests New
+	methods for table query and write to table matrix widget
+
+2010-11-21
+
+	* Allways init TableMatrix vriable with empty hash ref
+
+2010-11-19
+
+	* Inserted delay in gui test; Changed list to JComboBox Fixed
+	JComboBox emptying; Optimised control states change and write
+	Workarround for error in screen tests
+
+2010-11-17
+
+	* Small layout change Add methods for add remove table matrix rows
+	Moved function to Utils (sort_hash_by_id) Add event handler from
+	the add remove buttons from screen Header for table matrix Fix for
+	undef value from MatchingBE widget
+
+2010-11-13
+
+	* Removed the new config file :) added data to toolbar.yml New
+	config file for screen toolbar; Fixed layout for Orders Separated
+	ToolBar creation from View module finished Separated ToolBar
+	creation from View module (experimetal)
+
+2010-11-12
+
+	* Support for JComboBox added
+
+2010-11-10
+
+	* Fixed command line connection config listing
+
+2010-11-07
+
+	* New screens: Orders, Customers. Configs dialog
+	(still experimental) Load record to screen from list implemented;
+	experimental dialog for font change
+
+2010-11-04
+
+	* Renamed some vars and documented their purpose
+
+2010-11-03
+
+	* Experimenting with new mode: select Empty the result list before
+	search At start no mode yet Initial status disabled for toolbar
+	buttons Cleanup unused method Modified application states (modes)
+	Count and find implemented
+
+2010-11-02
+
+	* Query records is functional Add method for list header Count is
+	working Using first label on status bar for messages from model
+	Renamed some methods and added database name in status bar label
+	Add toggle mode subs for changing mode
+
+2010-11-02
+
+	* Now testing for control states in screens
+
+2010-11-01
+
+	* Experimental count records
+
+2010-10-31
+
+	* Toggle screen controls states changed
+
+2010-10-30
+
+	* Toggle screen states implemented (testing) Test write to screen
+	from record Started implementing writting to screen
+
+2010-10-29
+
+	* Add callback to notebook. Fixed typo Using inheritance for
+	screen modules.
+
+2010-10-26
+
+	* Rename cfgname to cfname Add destroy method just to check and
+	log ...  Add screen config module Load screen from menu
+
+2010-10-25
+
+	* Loading screen configuration and setting window geometry from it
+	Renamed some tests Updated GUI test New test for GUI
+
+2010-10-24
+
+	* Use 'main' for screen name if no screen loaded yet when saving
+	geometry New config file for instance vars; only for window
+	geometry for now Updated the docs Should create the third Panel
+	only if needed Modified toolbar config file to hold info about
+	status in different modes
+
+2010-10-23
+
+	* Testing grid geometry manager New test screen for experimenting
+	with other geometry managers Experimental log level changeing in
+	sub Logging added to Controller.pm Call Log4perl get_logger only
+	once in a module Unloading previous screen Add application menu
+	Modified main config file and Config module
+
+2010-10-22
+
+	* First time to load a screen; success :) Add addmode and findmode
+	to the interface Add connection icon and status label in status
+	bar Add loging to Db.pm Add database instance test Add database
+	connection Renamed TpdaMvc to Tpda3 Add menu callbacks
+
+2010-10-21
+
+	* Change config files. Refactor menu creation subs.
+
+2010-10-20
+
+	* Adapt Tk modules from Tpda and MVC from Tpda-Qrt Add config
+	methods.
+
+2010-10-20
+
+	* Initial commit.
