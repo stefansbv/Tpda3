@@ -651,8 +651,8 @@ sub tmatrix_make_selector {
 
 =head2 embeded_buttons
 
-Embeded windows.  Config option L<selectorstyle> can be L<radio>
-(default) or L<checkbox>.
+Embeded windows.  Config option L<selectorstyle> can be L<radio> the
+default, or L<checkbox>.
 
 =cut
 
@@ -662,6 +662,10 @@ sub embeded_buttons {
     my $selestyle = defined $self->{selectorstyle}
         ? $self->{selectorstyle}
         : q{}
+        ;
+    my $selecolor = defined $self->{selectorcolor}
+        ? $self->{selectorcolor}
+        : q{lightblue}
         ;
 
     if ( $selestyle eq 'checkbox' ) {
@@ -675,7 +679,7 @@ sub embeded_buttons {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
-            -window => $self->build_rbbutton( $row, $col ),
+            -window => $self->build_rbbutton( $row, $col, $selecolor ),
         );
     }
 
@@ -689,14 +693,14 @@ Build Radiobutton.
 =cut
 
 sub build_rbbutton {
-    my ( $self, $row, $col ) = @_;
+    my ( $self, $row, $col, $selecolor ) = @_;
 
     my $button = $self->{frame}->Radiobutton(
         -width       => 3,
         -variable    => \$self->{tm_sel},
         -value       => $row,
         -indicatoron => 0,
-        -selectcolor => 'lightblue',
+        -selectcolor => $selecolor,
         -state       => 'normal',
     );
 

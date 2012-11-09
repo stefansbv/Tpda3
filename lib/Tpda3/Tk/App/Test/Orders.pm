@@ -325,7 +325,6 @@ sub run_screen {
         -selectmode     => 'single',
         -colstretchmode => 'unset',
         -resizeborders  => 'none',
-        -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
         -validate       => 1,

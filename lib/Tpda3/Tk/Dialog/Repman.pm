@@ -7,11 +7,11 @@ use utf8;
 use Tk;
 use IO::File;
 
-use Tpda3::Config;
-use Tpda3::Tk::TB;
-use Tpda3::Tk::TM;
-use Tpda3::Utils;
-use Tpda3::Lookup;
+require Tpda3::Config;
+require Tpda3::Tk::TB;
+require Tpda3::Tk::TM;
+require Tpda3::Utils;
+require Tpda3::Lookup;
 
 use base q{Tpda3::Tk::Screen};
 
@@ -222,10 +222,13 @@ sub run_screen {
         sub {
             my $w = shift;
             $w->focus;
-            my ($rc) = @{ $w->curselection };
-            my ( $r, $c ) = split( ',', $rc );
-            $self->{_tm}->set_selected($r);
-            $self->load_report_details($view);
+            my $cs = $w->curselection;
+            if ( defined $cs ) {
+                my ($rc) = @{$cs};
+                my ( $r, $c ) = split( ',', $rc );
+                $self->{tmx}->set_selected($r);
+                print "$r selected\n";
+            }
         }
     );
 
@@ -462,6 +465,7 @@ sub run_screen {
     my $header = $self->{scrcfg}->dep_table_header_info('tm2');
 
     $self->{_tm}->init( $frm_top, $header );
+    $self->{_tm}->clear_all;
 
     $self->load_report_list($view, $header->{selectorcol} );
 

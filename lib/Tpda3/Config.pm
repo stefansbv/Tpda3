@@ -67,7 +67,7 @@ sub _new_instance {
         $self->config_interfaces_load();
 
         # Application configs
-        $self->config_application_load($args);
+        $self->config_application_load();
     }
 
     return $self;
@@ -199,12 +199,12 @@ because the path is only known at runtime.
 =cut
 
 sub config_application_load {
-    my ( $self, $args ) = @_;
+    my $self = shift;
 
     my $cf_name = $self->cfname;
 
     # Check early if the config dir for the application exists and
-    # populate with defaults if not.
+    # populate with defaults if doesn't.
     if ( !-d $self->configdir ) {
         $self->configdir_populate($cf_name);
     }

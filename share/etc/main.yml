@@ -17,6 +17,7 @@ application:
   conninfo: etc/connection.yml
   appmenu:  etc/menu.yml
   apptoolbar:  etc/toolbar.yml
+  default_app: test-tk
 runtime:
   instance: etc/instance.yml
   docspath: /tmp
