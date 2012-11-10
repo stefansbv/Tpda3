@@ -51,7 +51,7 @@ if ( defined $list xor $init ) {
     my $cfg = Tpda3::Config->instance();
 
     if ( defined $list ) {
-        $cfg->list_configs($list);
+        $cfg->print_mnemonics($list);
         exit 0;
     }
     if ( $init and $cfname ) {

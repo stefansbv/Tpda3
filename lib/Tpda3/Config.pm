@@ -276,79 +276,126 @@ sub config_file_name {
     return catfile( $self->configdir($cfg_name), $self->cfapp->{conninfo} );
 }
 
-=head2 list_configs
+=head2 print_mnemonics
 
 List all existing connection configurations or the one supplied on the
-command line, with details.
-
-TODO Simplify this!
+command line, with details if required.
 
 =cut
 
-sub list_configs {
-    my ( $self, $cfg_name_param ) = @_;
+sub print_mnemonics {
+    my ( $self, $mnemonic ) = @_;
 
-    $cfg_name_param ||= q{};    # default empty
+    $mnemonic ||= q{};    # default empty
 
-    my $cfpath = $self->cfapps;
-    my $conlst = Tpda3::Config::Utils->find_subdirs($cfpath);
+    my $mnemonics = $self->get_mnemonics();
 
-    my $cc_no = scalar @{$conlst};
+    my $cc_no = scalar @{$mnemonics};
     if ( $cc_no == 0 ) {
-        print "Configurations: none\n";
-        print " in '$cfpath':\n";
+        print "Configurations (mnemonics): none\n";
+        print ' in ', $self->cfapps, ":\n";
         return;
     }
 
-    # Detailed list for config name
-    if ($cfg_name_param) {
-        if ( grep { $cfg_name_param eq $_ } @{$conlst} ) {
-            my $cfg_file = $self->config_file_name($cfg_name_param);
-            print "Configuration:\n";
-            print " > $cfg_name_param\n";
-            $self->list_configs_details( $cfg_file, $cfpath );
-            print " in '$cfpath':\n";
-            return;
-        }
-        else {
-            print "Unknown configuration name: $cfg_name_param\n";
-            return;
-        }
-    }
-    else {
-
-        # List all if connection file exists
-        print "Configurations:\n";
-        foreach my $cfg_name ( @{$conlst} ) {
-            my $cfg_file = $self->config_file_name($cfg_name);
-            if ( -f $cfg_file ) {
-                print " > $cfg_name\n";
-            }
-        }
-        print " in '$cfpath':\n";
-    }
+    # Print
+    $mnemonic
+        ? $self->list_mnemonic_details_for($mnemonic)
+        : $self->list_mnemonics($mnemonics);
 
     return;
 }
 
-=head2 list_configs_details
+=head2 list_mnemonics
 
-Print configuration details.
+List all the configured mnemonics.
 
 =cut
 
-sub list_configs_details {
-    my ( $self, $cfg_file ) = @_;
+sub list_mnemonics {
+    my ($self, $mnemonics) = @_;
 
-    my $cfg_hr = $self->config_load_file($cfg_file);
+    # List all if connection file exists
+    print "Configurations (mnemonics):\n";
+    foreach my $cfg_name ( @{$mnemonics} ) {
+        my $cfg_file = $self->config_file_name($cfg_name);
+        if ( -f $cfg_file ) {
+            print "  > $cfg_name\n";
+        }
+    }
+    print ' in ', $self->cfapps, ":\n";
 
-    while ( my ( $key, $value ) = each( %{ $cfg_hr->{connection} } ) ) {
-        print sprintf( "%*s", 10, $key ), ' = ';
+    return;
+}
+
+=head2 list_mnemonic_details_for
+
+List details about the configuration name (mnemonic).
+
+=cut
+
+sub list_mnemonic_details_for {
+    my ($self, $mnemonic) = @_;
+
+    my $conn_ref = $self->get_details_for($mnemonic);
+
+    print "Configuration:\n";
+    print "  > mnemonic: $mnemonic\n";
+    while ( my ( $key, $value ) = each( %{ $conn_ref->{connection} } ) ) {
+        print sprintf( "%*s", 11, $key ), ' = ';
         print $value if defined $value;
         print "\n";
     }
+    print ' in ', $self->cfapps, ":\n";
 
     return;
+}
+
+=head2 get_details_for
+
+Return the connection configuration details.  Check the name and
+return the reference only if the name matches.
+
+=cut
+
+sub get_details_for {
+    my ($self, $mnemonic) = @_;
+
+    my $conn_file = $self->config_file_name($mnemonic);
+    my $conlst    = $self->get_mnemonics();
+
+    my $conn_ref = {};
+    if ( grep { $mnemonic eq $_ } @{$conlst} ) {
+        my $cfg_file = $self->config_file_name($mnemonic);
+        $conn_ref = $self->get_connect_details($conn_file);
+    }
+
+    return $conn_ref;
+}
+
+=head2 get_mnemonics
+
+Return the list of mnemonics - the subdirectory names of the L<apps>
+path.
+
+=cut
+
+sub get_mnemonics {
+    my $self = shift;
+
+    return Tpda3::Config::Utils->find_subdirs($self->cfapps);
+}
+
+=head2 get_connect_details
+
+Return the connection configuration details directly from the YAML
+file.
+
+=cut
+
+sub get_connect_details {
+    my ( $self, $cfg_file ) = @_;
+
+    return $self->config_load_file($cfg_file);
 }
 
 =head2 config_save_instance

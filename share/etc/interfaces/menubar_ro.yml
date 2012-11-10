@@ -56,9 +56,19 @@ menubar:
         underline: 8
         sep: none
         key: Alt-g
-
-  menu_help:
+  menu_admin:
     id:    5003
+    label: Admin
+    underline: 1
+    popup:
+      1:
+        name: mn_mn
+        label: Aplicatia implicita
+        underline: 10
+        sep: none
+        key: Alt-i
+  menu_help:
+    id:    5004
     label: Ajutor
     underline: 1
     popup:

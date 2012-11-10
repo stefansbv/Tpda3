@@ -56,9 +56,19 @@ menubar:
         underline: 12
         sep: none
         key: Alt-g
-
-  menu_help:
+  menu_admin:
     id:    5003
+    label: Admin
+    underline: 1
+    popup:
+      1:
+        name: mn_mn
+        label: Set default application
+        underline: 4
+        sep: none
+        key: Alt-d
+  menu_help:
+    id:    5004
     label: Help
     underline: 0
     popup:

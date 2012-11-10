@@ -312,6 +312,14 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Admin - set default mnemonic
+    $self->_view->event_handler_for_menu(
+        'mn_mn',
+        sub {
+            $self->set_mnemonic();
+        }
+    );
+
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -1968,6 +1976,23 @@ sub save_geometry {
         $scr_name,
         $self->_view->get_geometry()
     );
+
+    return;
+}
+
+=head2 set_mnemonic
+
+Dialog to set the default mnemonic - application configuration to be
+used when none is specified.
+
+=cut
+
+sub set_mnemonic {
+    my $self = shift;
+
+    require Tpda3::Tk::Dialog::AppList;
+    my $dal = Tpda3::Tk::Dialog::AppList->new();
+    $dal->show_app_list($self->_view);
 
     return;
 }
