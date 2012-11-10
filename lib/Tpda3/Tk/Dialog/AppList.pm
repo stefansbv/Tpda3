@@ -2,7 +2,9 @@ package Tpda3::Tk::Dialog::AppList;
 
 use strict;
 use warnings;
+
 use Tk;
+use Tk::widgets qw(StatusBar LabFrame JComboBox);
 
 require Tpda3::Config;
 require Tpda3::Tk::TB;
@@ -130,27 +132,13 @@ sub show_app_list {
 
     my $sb = $self->{tlw}->StatusBar();
 
-    my ($label_l, $label_d, $label_r);
-
-    $sb->addLabel(
-        -relief       => 'flat',
-        -textvariable => \$label_l,
+    # Dummy label for left space
+    my $ldumy = $sb->addLabel(
+        -width  => 1,
+        -relief => 'flat',
     );
 
-    $sb->addLabel(
-        -width        => '10',
-        -anchor       => 'center',
-        -textvariable => \$label_d,
-        -side         => 'right'
-    );
-
-    $sb->addLabel(
-        -width        => '10',
-        -anchor       => 'center',
-        -textvariable => \$label_r,
-        -side         => 'right',
-        -foreground   => 'blue'
-    );
+    $self->{_sb}{ms} = $sb->addLabel( -relief => 'flat' );
 
     #-- end StatusBar
 
@@ -190,6 +178,8 @@ sub show_app_list {
         -resizeborders  => 'none',
         -bg             => 'white',
         -scrollbars     => 'osw',
+        -validate       => 1,
+        -vcmd           => sub { $self->select_idx(@_) },
     );
     $self->{tmx}->pack(
         -expand => 1,
@@ -485,7 +475,41 @@ sub load_mnemonic_details_for {
 sub save_as_default {
     my ($self, ) = @_;
     print " save_as_default\n";
+    $self->_set_status('save_as_default');
     return;
+}
+
+=head2 _set_status
+
+Display message in the status bar.  Colour name can also be passed to
+the method in the message string separated by a # char.
+
+=cut
+
+sub _set_status {
+    my ( $self, $text, $color ) = @_;
+
+    my $sb_label = $self->_get_statusbar();
+
+    return unless ( $sb_label and $sb_label->isa('Tk::Label') );
+
+    # ms
+    $sb_label->configure( -text       => $text )  if defined $text;
+    $sb_label->configure( -foreground => $color ) if defined $color;
+
+    return;
+}
+
+=head2 _get_statusbar
+
+Return the status bar handler
+
+=cut
+
+sub _get_statusbar {
+    my $self = shift;
+
+    return $self->{_sb}{'ms'};
 }
 
 =head2 dlg_exit

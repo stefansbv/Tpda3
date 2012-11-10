@@ -702,6 +702,7 @@ sub build_rbbutton {
         -indicatoron => 0,
         -selectcolor => $selecolor,
         -state       => 'normal',
+        -command     => sub { $self->validate("$row,$col") }
     );
 
     # Default selected row == 1
@@ -712,7 +713,7 @@ sub build_rbbutton {
 
 =head2 get_selected
 
-Return selected table row, Used for tables with embeded radion buttons
+Return selected table row, used for tables with embeded radion buttons
 as selectors.
 
 =cut
