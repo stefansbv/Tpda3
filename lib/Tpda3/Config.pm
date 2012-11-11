@@ -3,6 +3,7 @@ package Tpda3::Config;
 use strict;
 use warnings;
 use Ouch;
+use Data::Printer;
 
 use Log::Log4perl qw(get_logger :levels);
 use File::Basename;
@@ -56,14 +57,16 @@ sub _new_instance {
 
     my $self = bless {}, $class;
 
-    $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file name
+    $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file
+    $args->{default} = 'etc/default.yml'; # and app default config file
+
+    $self->init_configurations($args);
 
     # Load configuration and create accessors
     $self->config_main_load($args);
     if ( $args->{cfname} ) {
 
         # If no config name don't bother to load this
-        # Interface configs
         $self->config_interfaces_load();
 
         # Application configs
@@ -71,6 +74,87 @@ sub _new_instance {
     }
 
     return $self;
+}
+
+=head2 init_configurations
+
+Initialize basic configuration options.
+
+=cut
+
+sub init_configurations {
+    my ( $self, $args ) = @_;
+
+    my $configpath = File::UserConfig->new(
+        dist     => 'Tpda3',
+        sharedir => 'share',
+    )->configdir;
+
+    my $configpath_hr = {
+        cfpath  => $configpath,
+        cfapps  => catdir( $configpath, 'apps' ),
+        cfetc   => catdir( $configpath, 'etc' ),
+        user    => $args->{user}, # make accessors for user
+        pass    => $args->{pass}, # and pass
+        verbose => $args->{verbose},
+        default => catfile( $configpath, $args->{default} ),
+    };
+
+    $self->make_accessors($configpath_hr);
+
+    # Log init, can't do before we know the application config path
+    my $log_fqn = catfile( $self->cfpath, 'etc/log.conf' );
+    Log::Log4perl->init($log_fqn);
+    # Log::Log4perl::Appender->new(
+    #     "Log::Log4perl::Appender::File",
+    #     name      => "Logfile",
+    #     filename  => "/tmp/my.log");
+
+    # Fallback to the default cfname (mnemonic) from default.yml if exists
+    $self->get_default_mnemonic($args) unless $args->{cfname};
+
+    $self->{_log} = get_logger();
+    $self->{_log}->info('-------------------------');
+    $self->{_log}->info('*** NEW SESSION BEGIN ***');
+
+    return;
+}
+
+=head2 get_default_mnemonic
+
+Set cfname (mnemonic) to the value read from the optional
+L<default.yml> configuration file.
+
+=cut
+
+sub get_default_mnemonic {
+    my ($self, $args) = @_;
+
+    my $defaultapp_fqn = $self->default;
+    if (-f $defaultapp_fqn) {
+        my $cfg_hr = $self->get_config_data($defaultapp_fqn);
+        $args->{cfname} = $cfg_hr->{mnemonic};
+    }
+    else {
+        die "No valid default set, no arguments from CLI!";
+    }
+
+    return;
+}
+
+=head2 set_default_mnemonic
+
+Save the default mnemonic in the configs.
+
+=cut
+
+sub set_default_mnemonic {
+    my ($self, $arg) = @_;
+
+    Tpda3::Config::Utils->save_default_yaml(
+        $self->default, 'mnemonic', $arg );
+
+    return;
 }
 
 =head2 make_accessors
@@ -107,38 +191,10 @@ Make accessors.
 sub config_main_load {
     my ( $self, $args ) = @_;
 
-    my $configpath = File::UserConfig->new(
-        dist     => 'Tpda3',
-        sharedir => 'share',
-    )->configdir;
-
-    my $base_methods_hr = {
-        cfpath  => $configpath,
-        cfapps  => catdir( $configpath, 'apps' ),
-        cfetc   => catdir( $configpath, 'etc' ),
-        user    => $args->{user},                   # make accessors for user
-        pass    => $args->{pass},                   # and pass
-        verbose => $args->{verbose},
-    };
-    $self->make_accessors($base_methods_hr);
-
-    # Log init
-    # Can't do before we know the application config path
-    my $log_fqn = catfile( $configpath, 'etc/log.conf' );
-    Log::Log4perl->init($log_fqn);
-    # Log::Log4perl::Appender->new(
-    #     "Log::Log4perl::Appender::File",
-    #     name      => "Logfile",
-    #     filename  => "/tmp/my.log");
-
-    $self->{_log} = get_logger();
-    $self->{_log}->info('-------------------------');
-    $self->{_log}->info('*** NEW SESSION BEGIN ***');
-
     print "Loading configuration files ...\n" if $self->verbose;
 
     # Main config file name, load
-    my $main_fqn = catfile( $configpath, $args->{cfgmain} );
+    my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );
     # $self->{_log}->info("Loading 'main' config");
     # $self->{_log}->info("file: $main_fqn");
 
@@ -153,7 +209,7 @@ sub config_main_load {
         cfrun     => $maincfg->{runtime},
         widgetset => $maincfg->{widgetset},      # Wx or Tk
         cfextapps => $maincfg->{externalapps},
-        cfico     => catdir( $configpath, $maincfg->{resource}{icons} ),
+        cfico     => catdir( $self->cfpath, $maincfg->{resource}{icons} ),
     };
 
     # Setup when GUI runtime
@@ -271,9 +327,11 @@ Return full path to connection file.
 =cut
 
 sub config_file_name {
-    my ( $self, $cfg_name ) = @_;
+    my ( $self, $cfg_name, $cfg_file ) = @_;
 
-    return catfile( $self->configdir($cfg_name), $self->cfapp->{conninfo} );
+    $cfg_file ||= $self->cfapp->{conninfo};
+
+    return catfile( $self->configdir($cfg_name), $cfg_file);
 }
 
 =head2 print_mnemonics
@@ -366,7 +424,7 @@ sub get_details_for {
     my $conn_ref = {};
     if ( grep { $mnemonic eq $_ } @{$conlst} ) {
         my $cfg_file = $self->config_file_name($mnemonic);
-        $conn_ref = $self->get_connect_details($conn_file);
+        $conn_ref = $self->get_config_data($conn_file);
     }
 
     return $conn_ref;
@@ -385,14 +443,22 @@ sub get_mnemonics {
     return Tpda3::Config::Utils->find_subdirs($self->cfapps);
 }
 
-=head2 get_connect_details
+sub get_default_menmonic {
+    my $self = shift;
+
+    my $cfg_file = $self->config_file_name('default.yml');
+
+    return;
+}
+
+=head2 get_config_data
 
 Return the connection configuration details directly from the YAML
 file.
 
 =cut
 
-sub get_connect_details {
+sub get_config_data {
     my ( $self, $cfg_file ) = @_;
 
     return $self->config_load_file($cfg_file);
@@ -412,7 +478,7 @@ sub config_save_instance {
 
     my $inst_fqn = catfile( $self->configdir, $inst );
 
-    Tpda3::Config::Utils->save_yaml( $inst_fqn, $key, $value );
+    Tpda3::Config::Utils->save_instance_yaml( $inst_fqn, $key, $value );
 
     return;
 }

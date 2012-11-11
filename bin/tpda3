@@ -60,26 +60,18 @@ if ( defined $list xor $init ) {
     }
 }
 
-# Check connection configuration name option last
-if ( $cfname ) {
-
-    tpda3_version();
-
-    # Other options
-    $opts->{user} = $user;
-    $opts->{pass} = $pass;
-    $opts->{cfname}  = $cfname;
-    $opts->{verbose} = $verbose;
-    # Go and run the app
-    Tpda3->new( $opts )->run;
-
-    print "Normal exit.\n";
-    exit 0;
-}
-
-# If no other option, usage
 tpda3_version();
-pod2usage(1);
+
+# Other options
+$opts->{user} = $user;
+$opts->{pass} = $pass;
+$opts->{cfname}  = $cfname;
+$opts->{verbose} = $verbose;
+# Go and run the app
+Tpda3->new( $opts )->run;
+
+print "Normal exit.\n";
+exit 0;
 
 #- Print version
 

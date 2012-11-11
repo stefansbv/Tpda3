@@ -151,30 +151,37 @@ sub find_files {
     return \@justnames;
 }
 
-=head2 save_yaml
+=head2 save_instance_yaml
 
-Save a YAML config file
+Save the instance config file.
 
 =cut
 
-sub save_yaml {
+sub save_instance_yaml {
     my ( $self, $yaml_file, $key, $value ) = @_;
 
-    my $yaml;
-    if ( -f $yaml_file ) {
-
-        # Open file
-        $yaml = YAML::Tiny->read($yaml_file);
-    }
-    else {
-
-        # Create a new YAML file
-        $yaml = YAML::Tiny->new;
-    }
+    my $yaml
+        = ( -f $yaml_file )
+        ? YAML::Tiny->read($yaml_file)
+        : YAML::Tiny->new;
 
     $yaml->[0]->{geometry}{$key} = $value;    # add new key => value
 
-    # Save the file
+    $yaml->write($yaml_file);
+
+    return;
+}
+
+sub save_default_yaml {
+    my ( $self, $yaml_file, $key, $value ) = @_;
+
+    my $yaml
+        = ( -f $yaml_file )
+        ? YAML::Tiny->read($yaml_file)
+        : YAML::Tiny->new;
+
+    $yaml->[0]->{$key} = $value;    # add new key => value
+
     $yaml->write($yaml_file);
 
     return;

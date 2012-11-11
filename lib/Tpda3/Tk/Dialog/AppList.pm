@@ -42,8 +42,9 @@ sub new {
     my $class = shift;
 
     my $self = {
-        mnemonics    => [],
-        _cfg         => Tpda3::Config->instance(),
+        mnemonics => [],
+        selected  => undef,
+        _cfg      => Tpda3::Config->instance(),
     };
 
     bless $self, $class;
@@ -444,6 +445,7 @@ sub select_idx {
     my $rec = $self->{mnemonics}[$idx];
     $self->{tmx}->set_selected($sel);
     $self->load_mnemonic_details_for($rec);
+    $self->{selected} = $rec->{name};
 
     return;
 }
@@ -469,13 +471,25 @@ sub load_mnemonic_details_for {
         $self->{controls}{$field}[1]->insert( $start_idx, $value ) if $value;
     }
 
+    $self->_set_status(''); # clear
+
     return;
 }
 
+=head2 save_as_default
+
+Save the curent mnemonic as default.
+
+=cut
+
 sub save_as_default {
-    my ($self, ) = @_;
-    print " save_as_default\n";
-    $self->_set_status('save_as_default');
+    my $self = shift;
+
+    $self->_cfg->set_default_mnemonic( $self->{selected} );
+    $self->_set_status( '[' .$self->{selected} . '] '
+            . 'active after restart, if not overridden by CLI option.'
+    );
+
     return;
 }
 
