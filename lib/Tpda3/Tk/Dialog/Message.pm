@@ -12,11 +12,11 @@ Tpda3::Tk::Dialog::Message - Dialog for messages.
 
 =head1 VERSION
 
-Version 0.58
+Version 0.59
 
 =cut
 
-our $VERSION = 0.58;
+our $VERSION = 0.59;
 
 =head1 SYNOPSIS
 

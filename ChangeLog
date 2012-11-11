@@ -1,3 +1,19 @@
+2012-11-11
+
+	* Add feature to save an application mnemonic as default. Release
+	v0.59.
+
+2012-11-10
+
+	* Add calback for radiobutton for setting the current mnemonic.
+	Add admin dialog to set the default config (mnemonic).
+
+2012-11-09
+
+ Add new config options for TM radio selector: selectorcolor.
+
+	* Update ChangeLog and TODO.
+
 2012-11-08
 
 	* Fix bug about test failing because of nonexistent tables in the

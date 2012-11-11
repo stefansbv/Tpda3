@@ -14,11 +14,11 @@ Tpda3::Wx::App - Wx Perl application class
 
 =head1 VERSION
 
-Version 0.58
+Version 0.59
 
 =cut
 
-our $VERSION = 0.58;
+our $VERSION = 0.59;
 
 =head1 SYNOPSIS
 
