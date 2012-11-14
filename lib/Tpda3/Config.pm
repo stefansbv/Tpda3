@@ -3,7 +3,6 @@ package Tpda3::Config;
 use strict;
 use warnings;
 use Ouch;
-use Data::Printer;
 
 use Log::Log4perl qw(get_logger :levels);
 use File::Basename;
