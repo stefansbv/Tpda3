@@ -367,7 +367,7 @@ Create toolbar
 sub _create_toolbar {
     my $self = shift;
 
-    my $tb = Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE );
+    my $tb = Tpda3::Wx::ToolBar->new( $self ); # wxADJUST_MINSIZE
 
     my ( $toolbars, $attribs ) = $self->toolbar_names();
 
