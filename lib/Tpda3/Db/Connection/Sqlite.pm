@@ -5,6 +5,8 @@ use warnings;
 
 use Regexp::Common;
 use Log::Log4perl qw(get_logger);
+use File::HomeDir;
+use File::Spec::Functions;
 
 use Ouch;
 use Try::Tiny;
@@ -66,9 +68,12 @@ sub db_connect {
     $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
     $log->trace(" > Host     = ",$conf->{host} ? $conf->{host} : '?', "\n");
 
+    # Fixed path for SQLite databases
+    $conf->{dbfile} = get_testdb_filename( $conf->{dbname} );
+
     try {
         $self->{_dbh}
-            = DBI->connect( "dbi:SQLite:" . $conf->{dbname}, q{}, q{}, );
+            = DBI->connect( "dbi:SQLite:" . $conf->{dbfile}, q{}, q{}, );
     }
     catch {
         my $user_message = $self->parse_db_error($_);
@@ -171,6 +176,12 @@ sub table_exists {
     };
 
     return $val_ret;
+}
+
+sub get_testdb_filename {
+    my $dbname = shift;
+
+    return catfile(File::HomeDir->my_data, "$dbname.db");
 }
 
 =head1 AUTHOR

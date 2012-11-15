@@ -1,5 +1,5 @@
 #
-# Create a test database and load the SQL schema.  Much of the code
+# Create a test database and load the SQL schema.  The connect_ok code
 # is borrowed from Test module of the DBD::SQLite distribution.
 #
 
@@ -11,30 +11,20 @@ use warnings;
 use Exporter ();
 use Exporter qw(import);
 use File::Slurp qw(read_file);
+use File::HomeDir;
+use File::Spec::Functions;
 use DBI;
 
 our @EXPORT_OK = qw(make_database);
 
-my $parent;
-my $dbfile;
-
-BEGIN {
-    $dbfile = 'classicmodels';
-    $parent = $$;
-}
-
-# Delete temporary files
-sub clean {
-    return if $$ != $parent;
-    unlink $dbfile if -f $dbfile;
-}
-
-# Clean up temporary test files at the beginning of the test script.
-BEGIN { clean() }
+my $dbfile = get_testdb_filename('classicmodels');
 
 # A simplified connect function for the most common case
 sub connect_ok {
     my $attr = { @_ };
+
+    # Recreate database
+    unlink $dbfile if $dbfile and -f $dbfile;
 
     my @params = ( "dbi:SQLite:dbname=$dbfile", '', '' );
     if ( %{$attr} ) {
@@ -48,6 +38,7 @@ sub connect_ok {
 }
 
 # Make database and load the schema from an SQL file.
+
 sub make_database {
     my $dbh = connect_ok();
 
@@ -58,6 +49,12 @@ sub make_database {
     my $rv = $dbh->do($sql_text) or die $dbh->errstr;
 
     return $rv;
+}
+
+sub get_testdb_filename {
+    my $dbname = shift;
+
+    return catfile(File::HomeDir->my_data, "$dbname.db");
 }
 
 1;
