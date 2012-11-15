@@ -1,7 +1,7 @@
 #
 # Tpda3 Wx GUI test script
 #
-# DONE: Change to properly skip if no Wx (use MyTest problem)
+# DONE: Change to properly skip if no Wx (use WxTest problem)
 #
 use strict;
 use warnings;
@@ -16,7 +16,7 @@ BEGIN {
         exit 0;
     }
 
-    eval { require MyTest; };
+    eval { require WxTest; };
     if ($@) {
         plan( skip_all => 'wxPerl is required for this test' );
     }

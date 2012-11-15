@@ -9,7 +9,7 @@ use warnings;
 use Test::More tests => 8;
 
 use lib qw( lib ../lib );
-use t::lib::Test qw/make_database/;
+use t::lib::TkTest qw/make_database/;
 
 use Tpda3::Config;
 
@@ -24,7 +24,11 @@ ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
 
 # Make a test database for SQLite
 if ( $c1->connection->{driver} =~ m{sqlite}xi ) {
-    make_database();
+    my $rv = make_database();
+    if ($rv != -1) {
+        # -1 means return value (number of rows) is not applicable
+        BAIL_OUT("Dubious return value from 'make_database': $rv");
+    }
 }
 
 use Tpda3::Db;

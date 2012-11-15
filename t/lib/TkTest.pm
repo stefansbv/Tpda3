@@ -3,7 +3,7 @@
 # is borrowed from Test module of the DBD::SQLite distribution.
 #
 
-package t::lib::Test;
+package t::lib::TkTest;
 
 use strict;
 use warnings;
@@ -55,7 +55,9 @@ sub make_database {
 
     my $sql_text = read_file( 'sql/classicmodels-si.sql' );
 
-    my $rv = $dbh->do($sql_text);
+    my $rv = $dbh->do($sql_text) or die $dbh->errstr;
+
+    return $rv;
 }
 
 1;
