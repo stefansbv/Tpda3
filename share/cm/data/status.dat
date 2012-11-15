@@ -1,0 +1,8 @@
+status
+code;description
+C;Cancelled
+D;Disputed
+P;In Process
+H;On Hold
+R;Resolved
+S;Shipped

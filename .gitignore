@@ -10,7 +10,7 @@ inc/
 *~
 *.sqlite
 *.log
-classicmodels
+classicmodels.db
 .#*
 \#*#
 errors.txt

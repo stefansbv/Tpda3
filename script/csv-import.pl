@@ -1,8 +1,8 @@
-#!/home/stefan/perl5/perlbrew/perls/current/bin/perl
+#! perl
 #
 # Import CSV files into databases, using the Text::CSV_XS module.
 #
-# Copyright 2011-2012 Ștefan Suciu
+# Copyleft 2011-2012 Ștefan Suciu
 #
 
 use strict;

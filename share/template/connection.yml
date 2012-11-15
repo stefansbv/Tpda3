@@ -1,8 +1,0 @@
-# tpda3
-# Database connection configuration
----
-connection:
-  driver: postgresql
-  host:   localhost
-  dbname: testdb
-  port:   5432

@@ -1,0 +1,23 @@
+****************************************************************************
+* Copyright (c) 2005 Actuate Corporation.
+* All rights reserved. This file and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+*  Actuate Corporation  - initial implementation
+*
+* Classic Models Inc. sample database developed as part of the
+* Eclipse BIRT Project. For more information, see http:\\www.eclipse.org\birt
+*
+****************************************************************************
+*
+* BIRT Sample Database
+* From: http://www.eclipse.org/birt/phoenix/db/
+* The sample database is open source; you are free to use it for your own use
+* to experiment with other tools; to create samples for other tools, etc.
+* The sample database is provided under the terms Eclipse.org
+* Software User Agreement.
+*
+* Adapted for Firebird and TPDA by Stefan Suciu, 2009
