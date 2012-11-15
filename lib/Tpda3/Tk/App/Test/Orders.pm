@@ -260,7 +260,7 @@ sub run_screen {
     $bstatuscode->form(
         -top       => [ '&', $lstatuscode, 0 ],
         -left      => [ %0,  110 ],
-        -padbottom => 7,
+        -padbottom => 6,
     );
 
     # my $vstatuscode;
@@ -286,13 +286,15 @@ sub run_screen {
     my $tcomments = $frame2->Scrolled(
         'Text',
         -width      => 33,
-        -height     => 7,
+        -height     => 6,
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
         )->pack(
         -expand => 1,
-        -fill   => 'x'
+        -fill   => 'x',
+        -padx => 5,
+        -pady => 5,
         );
 
     # $tcomments->form(

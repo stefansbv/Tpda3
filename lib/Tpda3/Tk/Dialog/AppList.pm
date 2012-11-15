@@ -392,6 +392,8 @@ sub load_mnemonics {
     my $cnt = 1;
     my @mnemos;
     foreach my $mnemonic ( @{$mnemonics_ref} ) {
+        next if $mnemonic eq 'test-wx';      # skip Wx apps
+
         my $record = {
             id_rep => $cnt,
             title  => $mnemonic,
