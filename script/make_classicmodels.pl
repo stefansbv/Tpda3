@@ -21,9 +21,7 @@ use DBI;
 use Text::CSV_XS;
 use Try::Tiny;
 
-use Data::Printer;
-
-use Tpda3::Config;
+#--- Main
 
 create_classicmodels();
 

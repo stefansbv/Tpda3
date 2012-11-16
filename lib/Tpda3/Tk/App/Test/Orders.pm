@@ -49,7 +49,6 @@ sub run_screen {
         = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
     my $date_format = $self->{scrcfg}->app_dateformat();
-    print "Date format is $date_format\n";
 
     #- Top Frame
 
@@ -64,11 +63,11 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Order',
         -labelside  => 'acrosstop'
-        )->pack(
+    )->pack(
         -side   => 'left',
         -expand => 0,
-        -fill   => 'x'
-        );
+        -fill   => 'both'
+    );
 
     #- Top Right Frame
 
@@ -76,11 +75,11 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Comments',
         -labelside  => 'acrosstop'
-        )->pack(
+    )->pack(
         -side   => 'left',
         -expand => 1,
-        -fill   => 'x'
-        );
+        -fill   => 'both'
+    );
 
     #- Frame t => Tabel
 
@@ -88,10 +87,10 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Articles',
         -labelside  => 'acrosstop'
-        )->pack(
+    )->pack(
         -expand => 1,
         -fill   => 'both'
-        );
+    );
 
     #- Frame bottom
 
@@ -99,11 +98,11 @@ sub run_screen {
         -foreground => 'blue',
         -label      => 'Order total',
         -labelside  => 'acrosstop'
-        )->pack(
+    )->pack(
         -side   => 'bottom',
         -expand => 0,
         -fill   => 'x'
-        );
+    );
 
     #- Customers
 
@@ -290,18 +289,12 @@ sub run_screen {
         -wrap       => 'word',
         -scrollbars => 'e',
         -font       => $my_font,
-        )->pack(
+    )->pack(
         -expand => 1,
         -fill   => 'x',
         -padx => 5,
         -pady => 5,
-        );
-
-    # $tcomments->form(
-    #     -left => [ %0, 0 ],
-    #     -top  => [ %0, 0 ],
-    #     -padx => 5,
-    # );
+    );
 
     #--- Details
     #-
@@ -401,29 +394,35 @@ sub calculate_order_line {
 
     my $xt = ${ $self->{tm_controls}{rec}{tm1} };
 
-    my $cant = $xt->get("$row,3");    # print "Cant = $cant\n";
-    my $pret = $xt->get("$row,4");    # print "Pret = $pret\n";
+    $self->{view}->set_status( '', 'ms'); # clear status message
 
+    my $quantityordered = $xt->get("$row,3");
+    my $priceeach       = $xt->get("$row,4");
+
+    # Numeric validation would be appropriate here
     eval {
-        if ( $cant and $pret )
+        if ( defined($quantityordered) and defined($priceeach) )
         {
-            my $valoare = sprintf( "%.2f", ( $cant * $pret ) );
-            $xt->set( "$row,5", $valoare );
-
-            # print "Valoare = $valoare\n";
+            my $orderlinevalue
+                = sprintf( "%.2f", ( $quantityordered * $priceeach ) );
+            $xt->set( "$row,5", $orderlinevalue );
         }
         else {
-            warn "Nu am valori!\n";
+            $self->{view}->set_status( 'No valid data.', 'ms' );
         }
     };
 
     # In case of Error
     if ($@) {
-        warn "Wrong calculus!: $@";
+        $self->{view}->set_status( 'Calculus went wrong!', 'ms');
     }
 
     # Refreshing the table...
     $xt->configure( -padx => $xt->cget( -padx ) );
+
+    $self->calculate_order($xt);
+
+    return;
 }
 
 =head2 calculate_order
@@ -435,35 +434,89 @@ Calculate order values.
 sub calculate_order {
     my ( $self, $xt ) = @_;
 
+    $self->{view}->set_status( '', 'ms'); # clear status message
+
     my $rows_no  = $xt->cget( -rows );
     my $rows_idx = --$rows_no;
 
-    my $row   = 1;
-    my $value = 0;
+    my $row            = 1;
+    my $orderlinevalue = 0;
     for ( $row = 1; $row <= $rows_idx; $row++ ) {
 
-        my $val = $xt->get("$row,5");    # print "Val = $val\n";
+        my $val = $xt->get("$row,5");
 
-        if ( defined $val ) {
-            $value += $val;              # print "Value = $value\n";
+        if ( defined($val) ) {
+            $orderlinevalue += $val;
         }
         else {
-            print "No values!\n";
+            $self->{view}->set_status( 'No valid data.', 'ms');
         }
     }
 
     # Rounding to 2 decimals
-    $value = sprintf( "%.2f", $value );
+    $orderlinevalue = sprintf( "%.2f", $orderlinevalue );
 
     # Add more pairs if needed
-    my %fields = ( ordertotal => $value );
+    my %fields = (
+         ordertotal => $orderlinevalue,
+    );
 
     # Update controls
-    while ( my ( $c, $v ) = each(%fields) ) {
-        $self->{controls}->{$c}[3]->delete( 0, 'end' );
-        $self->{controls}->{$c}[3]->insert( 0, $v );
-        $self->{controls}->{$c}[3]->xview('end');
+    while ( my ( $c, $v ) = each %fields ) {
+        $self->{controls}{$c}[1]->delete( 0, 'end' );
+        $self->{controls}{$c}[1]->insert( 0, $v );
+        $self->{controls}{$c}[1]->xview('end');
     }
+
+    return;
+}
+
+=head2 on_load_record
+
+On load record event.
+
+=cut
+
+sub on_load_record {
+    my $self = shift;
+
+    $self->{view}->set_status( '', 'ms'); # clear status message
+
+    return;
+}
+
+=head2 on_mode_add
+
+On mode add event.
+
+=cut
+
+sub on_mode_add {
+    my $self = shift;
+
+    return;
+}
+
+=head2 on_mode_edit
+
+On mode edit event.
+
+=cut
+
+sub on_mode_edit {
+    my $self = shift;
+
+    return;
+}
+
+=head2 on_mode_idle
+
+On mode idle event.
+
+=cut
+
+sub on_mode_idle {
+    my $self = shift;
 
     return;
 }

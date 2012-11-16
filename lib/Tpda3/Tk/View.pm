@@ -669,7 +669,7 @@ sub create_notebook {
 
     $self->{_rc} = $frm_box->Scrolled(
         'MListbox',
-        -scrollbars         => 'osoe',
+        -scrollbars         => 'se',
         -background         => 'white',
         -textwidth          => 10,
         -highlightthickness => 2,
