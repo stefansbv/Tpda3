@@ -229,6 +229,33 @@ CREATE TABLE payments (
                         ON UPDATE NO ACTION
 );
 
+-- Tpda3 specific tables
+
+CREATE TABLE reports (
+   id_rep       SMALLINT
+ , id_user      INTEGER
+ , repofile     VARCHAR(150)
+ , title        VARCHAR(50)
+ , descr        TEXT
+ , CONSTRAINT pk_reports_id_rep PRIMARY KEY (id_rep)
+);
+
+
+CREATE TABLE reports_det (
+   id_rep       INTEGER      NOT NULL
+ , id_art       INTEGER      NOT NULL
+ , hint         VARCHAR(15)  NOT NULL
+ , tablename    VARCHAR(25)  NOT NULL
+ , searchfield  VARCHAR(25)  NOT NULL
+ , resultfield  VARCHAR(25)  NOT NULL
+ , headerlist   VARCHAR(50)  NOT NULL
+ , CONSTRAINT pk_reports_det_id_rep PRIMARY KEY (id_rep, id_art)
+ , CONSTRAINT fk_reports_det_id_rep FOREIGN KEY (id_rep)
+       REFERENCES reports (id_rep)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+);
+
 -- Views
 
 CREATE VIEW v_country
