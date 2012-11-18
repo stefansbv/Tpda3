@@ -44,7 +44,7 @@ sub make_database {
 
     $dbh->{sqlite_allow_multiple_statements} = 1; # cool!
 
-    my $sql_text = read_file( 'sql/classicmodels-si.sql' );
+    my $sql_text = read_file( 'share/cm/sql/classicmodels-si.sql' );
 
     my $rv = $dbh->do($sql_text) or die $dbh->errstr;
 

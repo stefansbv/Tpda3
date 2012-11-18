@@ -135,7 +135,7 @@ sub test_screen {
     $ctrl->{_view}->after(
         $delay * 100,
         sub {
-            $ctrl->{_view}->on_quit;
+            $ctrl->on_quit;
         }
     );
 

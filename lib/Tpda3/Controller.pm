@@ -126,7 +126,7 @@ sub start {
     }
 
     if ($return_string eq 'shutdown') {
-        $self->_view->on_quit;
+        $self->on_quit;
         return;
     }
 
@@ -270,7 +270,7 @@ sub _set_event_handlers {
         'mn_qt',
         sub {
             return if !defined $self->ask_to_save;
-            $self->_view->on_quit;
+            $self->on_quit;
         }
     );
 
@@ -435,7 +435,7 @@ sub _set_event_handlers {
         'tb_qt',
         sub {
             return if !defined $self->ask_to_save;
-            $self->_view->on_quit;
+            $self->on_quit;
         }
     );
 
@@ -4353,6 +4353,20 @@ sub DESTROY {
             }
         }
     }
+}
+
+=head2 on_quit
+
+Close application.
+
+=cut
+
+sub on_quit {
+    my $self = shift;
+
+    print "Shuting down...\n";
+
+    $self->_view->on_close_window(@_);
 }
 
 =head1 AUTHOR

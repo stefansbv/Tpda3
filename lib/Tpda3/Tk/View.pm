@@ -946,13 +946,13 @@ sub toggle_status_cn {
     return;
 }
 
-=head2 on_quit
+=head2 on_close_window
 
-Destroy window on quit
+Destroy window on quit.
 
 =cut
 
-sub on_quit {
+sub on_close_window {
     my $self = shift;
 
     $self->destroy();

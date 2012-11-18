@@ -21,7 +21,7 @@
 
 2012-10-21
 
-	* Release v0.58.  Make 'display_width' screen config absence a
+	* Release v0.58.  Make 'displ_width' screen config absence a
 	fatal error.
 
 2012-09-27

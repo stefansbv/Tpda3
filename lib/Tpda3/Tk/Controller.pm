@@ -150,7 +150,7 @@ sub _set_event_handlers_keys {
     $self->_view->bind(
         '<Control-q>' => sub {
             return if !defined $self->ask_to_save;
-            $self->_view->on_quit;
+            $self->_view->on_close_window;
         }
     );
 
