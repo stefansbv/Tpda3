@@ -54,7 +54,8 @@ sub create_classicmodels {
     my $dbfile = get_testdb_filename();
 
     if (-f $dbfile) {
-        die "Database exists, won't overwrite!";
+        unlink $dbfile;
+        print "Old classicmodels test database dropped.\n";
     }
 
     my $dbh = connect_to_db($dbfile);
