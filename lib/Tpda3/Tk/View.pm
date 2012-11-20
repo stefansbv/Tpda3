@@ -292,6 +292,13 @@ sub _create_menu {
     return;
 }
 
+=head2 _create_app_menu
+
+Application specific menu to be inserted at position 2 in the main
+menu.
+
+=cut
+
 sub _create_app_menu {
     my $self = shift;
 

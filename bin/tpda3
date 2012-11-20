@@ -15,7 +15,7 @@ my $help    = q{};
 my $man     = q{};
 my $verbose = 0;                             # be quiet
 my $list;
-my $init    = q{};
+my $init;
 my $user;
 my $pass;
 
@@ -28,7 +28,7 @@ if ( @ARGV > 0 ) {
         'list:s'    => \$list,
         'user=s'    => \$user,
         'password=s'=> \$pass,
-        'init:s'    => \$init,
+        'init=s'    => \$init,
         ),
         or pod2usage(2);
 }
@@ -42,31 +42,37 @@ my $cfname = shift;         # Run-time configuration name or database name
 #- Options
 my $opts = {};
 
-# Check 'list' and 'init' options first
-if ( defined $list xor $init ) {
-
-    tpda3_version();
-
-    # Initialize configurations
-    my $cfg = Tpda3::Config->instance();
-
-    if ( defined $list ) {
-        $cfg->print_mnemonics($list);
-        exit 0;
-    }
-    if ( $init and $cfname ) {
-        $cfg->config_init($cfname, $init);
-        exit 0;
-    }
-}
-
 tpda3_version();
 
-# Other options
+# Check for the 'list' option
+if ( defined $list ) {
+
+    # Initialize configurations
+    my $cfg = Tpda3::Config->instance( { list => $list } );
+
+    $cfg->list_mnemonics($list);
+    exit 0;
+}
+
+# Check for the 'init' option
+if ($init) {
+    if ($cfname) {
+        my $cfg = Tpda3::Config->instance( { cfname => $cfname } );
+        $cfg->config_init( $cfname, $init );
+    }
+    else {
+        print "Option -init requires a configuration mnemonic.\n\n";
+    }
+
+    exit 0;
+}
+
+# All option arguments
 $opts->{user} = $user;
 $opts->{pass} = $pass;
 $opts->{cfname}  = $cfname;
 $opts->{verbose} = $verbose;
+
 # Go and run the app
 Tpda3->new( $opts )->run;
 

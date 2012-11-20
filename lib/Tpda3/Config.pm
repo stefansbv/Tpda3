@@ -109,8 +109,12 @@ sub init_configurations {
     #     name      => "Logfile",
     #     filename  => "/tmp/my.log");
 
-    # Fallback to the default cfname (mnemonic) from default.yml if exists
-    $self->get_default_mnemonic($args) unless $args->{cfname};
+    # Fallback to the default cfname (mnemonic) from default.yml if
+    # exists unless list or init argument provied on the CLI
+    $self->get_default_mnemonic($args)
+        unless ( $args->{cfname}
+        or defined $args->{list}
+        or defined $args->{init} );
 
     $self->{_log} = get_logger();
     $self->{_log}->info('-------------------------');
@@ -135,7 +139,9 @@ sub get_default_mnemonic {
         $args->{cfname} = $cfg_hr->{mnemonic};
     }
     else {
-        die "No valid default set, no arguments from CLI!";
+        print "No valid default found, using 'test-tk'...\n\n"
+            if $self->verbose;
+        $args->{cfname} = 'test-tk';
     }
 
     return;
@@ -321,72 +327,72 @@ sub config_app_file_name {
 
 =head2 config_file_name
 
-Return full path to connection file.
+Return full path to a configuration file.  Default is the connection
+configuration file.
 
 =cut
 
 sub config_file_name {
     my ( $self, $cfg_name, $cfg_file ) = @_;
 
-    $cfg_file ||= $self->cfapp->{conninfo};
+    $cfg_file ||= catfile('etc', 'connection.yml');
 
     return catfile( $self->configdir($cfg_name), $cfg_file);
 }
 
-=head2 print_mnemonics
+=head2 list_mnemonics
 
 List all existing connection configurations or the one supplied on the
 command line, with details if required.
 
 =cut
 
-sub print_mnemonics {
+sub list_mnemonics {
     my ( $self, $mnemonic ) = @_;
 
     $mnemonic ||= q{};    # default empty
+
+    if ($mnemonic) {
+        $self->list_mnemonic_details_for($mnemonic);
+        return;
+    }
+
+    # Print
+    $self->list_mnemonics_all();
+
+    return;
+}
+
+=head2 list_mnemonics_all
+
+List all the configured mnemonics.
+
+=cut
+
+sub list_mnemonics_all {
+    my $self = shift;
 
     my $mnemonics = $self->get_mnemonics();
 
     my $cc_no = scalar @{$mnemonics};
     if ( $cc_no == 0 ) {
         print "Configurations (mnemonics): none\n";
-        print ' in ', $self->cfapps, ":\n";
+        print ' in ', $self->cfapps, "\n";
         return;
     }
 
-    # Print
-    $mnemonic
-        ? $self->list_mnemonic_details_for($mnemonic)
-        : $self->list_mnemonics($mnemonics);
-
-    return;
-}
-
-=head2 list_mnemonics
-
-List all the configured mnemonics.
-
-=cut
-
-sub list_mnemonics {
-    my ($self, $mnemonics) = @_;
-
-    # List all if connection file exists
     print "Configurations (mnemonics):\n";
     foreach my $cfg_name ( @{$mnemonics} ) {
-        my $cfg_file = $self->config_file_name($cfg_name);
-        if ( -f $cfg_file ) {
             print "  > $cfg_name\n";
-        }
     }
-    print ' in ', $self->cfapps, ":\n";
+    print ' in ', $self->cfapps, "\n";
 
     return;
 }
 
 =head2 list_mnemonic_details_for
 
-List details about the configuration name (mnemonic).
+List details about the configuration name (mnemonic) if exists.
 
 =cut
 
@@ -395,6 +401,11 @@ sub list_mnemonic_details_for {
 
     my $conn_ref = $self->get_details_for($mnemonic);
 
+    unless (scalar %{$conn_ref} ) {
+        print "Configuration mnemonic '$mnemonic' not found!\n";
+        return;
+    }
+
     print "Configuration:\n";
     print "  > mnemonic: $mnemonic\n";
     while ( my ( $key, $value ) = each( %{ $conn_ref->{connection} } ) ) {
@@ -402,7 +413,7 @@ sub list_mnemonic_details_for {
         print $value if defined $value;
         print "\n";
     }
-    print ' in ', $self->cfapps, ":\n";
+    print ' in ', $self->cfapps, "\n";
 
     return;
 }
@@ -439,10 +450,24 @@ path.
 sub get_mnemonics {
     my $self = shift;
 
-    return Tpda3::Config::Utils->find_subdirs($self->cfapps);
+    my $list = Tpda3::Config::Utils->find_subdirs($self->cfapps);
+
+    my @mnemonics;
+    foreach my $cfg_name ( @{$list} ) {
+        my $ccfn = $self->config_file_name($cfg_name);
+        push @mnemonics, $cfg_name if -f $ccfn;
+    }
+
+    return \@mnemonics;
 }
 
-sub get_default_menmonic {
+=head2 get_default_file
+
+Return the C<default.yml> configuration file
+
+=cut
+
+sub get_default_file {
     my $self = shift;
 
     my $cfg_file = $self->config_file_name('default.yml');
@@ -536,13 +561,10 @@ sub config_init {
         print " > $new_cfname\n";
         return;
     }
-    else {
-        print "Creating new configs '$new_cfname' .. ";
-    }
 
+    print "Creating new configuration '$new_cfname'...\r";
     $self->configdir_populate( $cfname, $new_cfname );
-
-    print "done.\n";
+    print "Creating new configuration '$new_cfname'... done\n\n";
 
     return;
 }
@@ -606,8 +628,6 @@ this:
 
 sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
-
-    print "Populating config...\n";
 
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname);

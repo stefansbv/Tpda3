@@ -16,7 +16,7 @@ application:
   appmain:  etc/application.yml
   conninfo: etc/connection.yml
   appmenu:  etc/menu.yml
-  apptoolbar:  etc/toolbar.yml
+  apptoolbar: etc/toolbar.yml
 runtime:
   instance: etc/instance.yml
   docspath: /tmp
