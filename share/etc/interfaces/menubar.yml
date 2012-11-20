@@ -32,8 +32,20 @@ menubar:
         label: Preview report
         underline: 0
         sep: before
-        key: Alt-p
+        key: Alt-P
       5:
+        name: mn_mn
+        label: Set default
+        underline: 4
+        sep: none
+        key: Alt-D
+      6:
+        name: mn_sg
+        label: Window geometry
+        underline: 0
+        sep: none
+        key: Alt-W
+      7:
         name: mn_qt
         label: Quit
         underline: 1
@@ -49,26 +61,9 @@ menubar:
         label: Edit reports data
         underline: 5
         sep: none
-        key: Alt-e
-      2:
-        name: mn_sg
-        label: Save window geometry
-        underline: 12
-        sep: none
-        key: Alt-g
-  menu_admin:
-    id:    5003
-    label: Admin
-    underline: 1
-    popup:
-      1:
-        name: mn_mn
-        label: Set default application
-        underline: 4
-        sep: none
-        key: Alt-d
+        key: Alt-E
   menu_help:
-    id:    5004
+    id:    5003
     label: Help
     underline: 0
     popup:
