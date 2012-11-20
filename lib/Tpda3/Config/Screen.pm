@@ -69,8 +69,9 @@ sub _make_accessors {
     __PACKAGE__->mk_accessors( keys %{$cfg_hr} );
 
     # Add data to object
-    foreach ( keys %{$cfg_hr} ) {
-        $self->$_( $cfg_hr->{$_} );
+    foreach my $name ( keys %{$cfg_hr} ) {
+        print "accessor for $name\n";
+        $self->$name( $cfg_hr->{$name} );
     }
 
     return;
@@ -283,7 +284,30 @@ sub screen_description {
 
 =head2 screen_detail
 
-Return details screen data structure.
+Return details screen data structure.  Used for loading a different
+screen modules in the B<Details> tab, based on a field value from the
+B<Record> tab.
+
+In the screen config example below C<cod_tip> can be B<CS> or B<CT>,
+and for each the corresponding screen module is loaded.  The C<filter>
+parametere is the foreign key of the database table.
+
+  <screen>
+      version             = 4
+      ...
+      <details>
+          match           = cod_tip
+          filter          = id_act
+          <detail>
+              value       = CS
+              name        = Cursuri
+          </detail>
+          <detail>
+              value       = CT
+              name        = Consult
+          </detail>
+      </details>
+  </screen>
 
 =cut
 
