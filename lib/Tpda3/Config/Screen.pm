@@ -70,7 +70,6 @@ sub _make_accessors {
 
     # Add data to object
     foreach my $name ( keys %{$cfg_hr} ) {
-        print "accessor for $name\n";
         $self->$name( $cfg_hr->{$name} );
     }
 

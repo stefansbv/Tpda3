@@ -807,6 +807,11 @@ complex field bindings and one with a simple one:
       </tara>
   </bindings>
 
+There is another (new) option for a field name from the screen to be
+used as a filter.
+
+  filter = field_name
+
 =cut
 
 sub setup_lookup_bindings_entry {
@@ -847,14 +852,21 @@ sub setup_lookup_bindings_entry {
 
         push @cols, $rec;
 
+        # Add filter field if defined in screen config
+        my $filter_field
+            = exists $bindings->{$bind_name}{filter}
+            ? $bindings->{$bind_name}{filter}
+            : undef;
+
         # Compose the parameter for the 'Search' dialog
         my $para = {
             table  => $bindings->{$bind_name}{table},
             search => $search,
+            filter => $filter_field,
         };
 
-        $self->_log->info("Setup binding for '$bind_name' with:");
-        $self->_log->info( sub { Dumper($para) } );
+        $self->_log->trace("Setup binding for '$bind_name' with:");
+        $self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -875,11 +887,14 @@ sub setup_lookup_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
-        my $filter;
         $self->_view->make_binding_entry(
             $ctrl_ref->{$column}[1],
             '<Return>',
             sub {
+                my $filter
+                    = defined $para->{filter}
+                    ? $self->filter_field( $para->{filter} )
+                    : undef;
                 my $record = $dict->lookup( $self->_view, $para, $filter );
                 $self->screen_write($record);
             }
@@ -887,6 +902,23 @@ sub setup_lookup_bindings_entry {
     }
 
     return;
+}
+
+=head2 filter_field
+
+Read the (filter) field value from the current screen and return a
+hash reference.
+
+=cut
+
+sub filter_field {
+    my ($self, $filter_field) = @_;
+
+    return unless $filter_field;
+
+    my $filter_value = $self->ctrl_read_from($filter_field);
+
+    return { $filter_field => $filter_value };
 }
 
 =head2 setup_bindings_table
@@ -947,8 +979,8 @@ sub setup_bindings_table {
                 return;
             }
 
-            $self->_log->info("Setup binding '$bind_type' for '$tm_ds' with:");
-            $self->_log->info( sub { Dumper($bindings) } );
+            $self->_log->trace("Setup binding '$bind_type' for '$tm_ds' with:");
+            $self->_log->trace( sub { Dumper($bindings) } );
         }
 
         # Bindings:
@@ -1013,8 +1045,8 @@ sub setup_select_bindings_entry {
             table  => $bindings->{$bind_name}{table},
         };
 
-        $self->_log->info("Setup select binding for '$bind_name' with:");
-        $self->_log->info( sub { Dumper($para) } );
+        $self->_log->trace("Setup select binding for '$bind_name' with:");
+        $self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -2413,8 +2445,8 @@ sub screen_report_print {
 
     my $options = qq{-preview -param$param};
 
-    $self->_log->info("Report tool: $report_exe");
-    $self->_log->info("Report file: $report_file");
+    $self->_log->trace("Report tool: $report_exe");
+    $self->_log->trace("Report file: $report_file");
 
     # Metaviewxp
     my $cmd;
@@ -4316,8 +4348,8 @@ sub record_merge_columns {
     my %hr;
     foreach my $field ( keys %{ $header->{columns} } ) {
         my $field_type = $header->{columns}{$field}{datatype};
-        my $default_value
         # column type          default
+        my $default_value
         = $field_type eq 'numeric' ? 0
         : $field_type eq 'integer' ? 0
         :                            undef # default

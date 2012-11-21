@@ -251,14 +251,14 @@ sub search_dialog {
 
     #- Label
 
-    my $fltlbl = $frm3->Label(
-        -text   =>  $self->{localize}{lbl_filter},
-    )->grid(
-        -row    => 0,
-        -column => 0,
-        -sticky => 'e',
-        -padx   => 5,
-    );
+    # my $fltlbl = $frm3->Label(
+    #     -text   =>  $self->{localize}{lbl_filter},
+    # )->grid(
+    #     -row    => 0,
+    #     -column => 0,
+    #     -sticky => 'e',
+    #     -padx   => 5,
+    # );
 
     #- Filter label
 
@@ -267,7 +267,7 @@ sub search_dialog {
         -width  => 50,
         )->grid(
         -row    => 0,
-        -column => 1,
+        -column => 0,
         -padx   => 5,
         -pady   => 5,
         );
@@ -300,13 +300,15 @@ sub search_dialog {
     if ( ref $filter ) {
         my $message;
         while ( my ( $key, $value ) = each( %{$filter} ) ) {
-            $message .= "$key = $value ";
-        }
-        if ($message) {
-            $self->refresh_filter_message( $message, 'darkgreen' );
-        }
-        else {
-            $self->refresh_filter_message('');
+            unless ($value) {
+                $message = "disabled == NO value for $key == disabled";
+                $self->refresh_filter_message( $message, 'darkred' );
+                $filter = undef;             # disable filter
+            }
+            else {
+                $message .= "filter == $key : $value == filter";
+                $self->refresh_filter_message( $message, 'darkgreen' );
+            }
         }
     }
 
