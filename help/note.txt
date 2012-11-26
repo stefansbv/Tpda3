@@ -1,0 +1,4 @@
+Add to docs:
+
+If the screen contains an entry field named id_user will be filled
+for new records with the user's name if provided at login.
