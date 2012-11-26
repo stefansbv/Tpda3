@@ -178,6 +178,52 @@ sub table_exists {
     return $val_ret;
 }
 
+sub table_keys {
+    my ( $self, $table ) = @_;
+
+    my $log = get_logger();
+
+    my $sql = qq( SELECT name
+                FROM sqlite_master
+                WHERE type = 'index'
+                    AND name = '$table'
+                    AND sql IS NULL;
+    );
+
+    my $val_ret;
+    try {
+        ($val_ret) = $self->{_dbh}->selectrow_array($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $val_ret;
+}
+
+sub table_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    my $sql = qq( SELECT name
+                FROM sqlite_master
+                WHERE type = 'table';
+    );
+
+    my $table_list;
+    try {
+        $table_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $table_list;
+}
+
 sub get_testdb_filename {
     my $dbname = shift;
 
