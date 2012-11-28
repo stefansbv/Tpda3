@@ -404,6 +404,8 @@ sub set_event_handler_screen {
     my ( $toolbars, $attribs ) = $self->scrcfg->scr_toolbar_names($btn_group);
     foreach my $tb_btn ( @{$toolbars} ) {
         my $method = $attribs->{$tb_btn};
+        next unless $method;                 # skip if no method
+
         $self->_log->info("Handler for $tb_btn: $method ($btn_group)");
 
         # Check current screen if 'can' method, or fallback to methods

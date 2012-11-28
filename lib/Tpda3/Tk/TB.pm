@@ -146,6 +146,30 @@ sub _item_check {
     return;
 }
 
+=head2 _item_legend
+
+Create a label toolbar button used as a color legend for a table.
+
+=cut
+
+sub _item_legend {
+    my ( $self, $name, $attribs ) = @_;
+
+    $self->separator if $attribs->{sep} =~ m{before};
+
+    my $label = $attribs->{label} || 'row';
+    my $color = $attribs->{color} || 'white';
+
+    $self->{$name} = $self->ToolLabel(
+        -text => $label,
+        -bg   => $color,
+    );
+
+    $self->separator if $attribs->{sep} =~ m{after};
+
+    return;
+}
+
 =head2 get_toolbar_btn
 
 Return a toolbar button when we know the its name
