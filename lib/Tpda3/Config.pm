@@ -111,7 +111,7 @@ sub init_configurations {
 
     # Fallback to the default cfname (mnemonic) from default.yml if
     # exists unless list or init argument provied on the CLI
-    $self->get_default_mnemonic($args)
+    $args->{cfname} = $self->get_default_mnemonic()
         unless ( $args->{cfname}
         or defined $args->{list}
         or defined $args->{init} );
@@ -131,20 +131,17 @@ L<default.yml> configuration file.
 =cut
 
 sub get_default_mnemonic {
-    my ($self, $args) = @_;
+    my $self = shift;
 
-    my $defaultapp_fqn = $self->default;
+    my $defaultapp_fqn = $self->default();
     if (-f $defaultapp_fqn) {
         my $cfg_hr = $self->get_config_data($defaultapp_fqn);
-        $args->{cfname} = $cfg_hr->{mnemonic};
+        return $cfg_hr->{mnemonic};
     }
     else {
-        print "No valid default found, using 'test-tk'...\n\n"
-            if $self->verbose;
-        $args->{cfname} = 'test-tk';
+        $self->{_log}->info("No valid default found, using 'test-tk'");
+        return 'test-tk';
     }
-
-    return;
 }
 
 =head2 set_default_mnemonic
@@ -383,7 +380,9 @@ sub list_mnemonics_all {
 
     print "Configurations (mnemonics):\n";
     foreach my $cfg_name ( @{$mnemonics} ) {
-            print "  > $cfg_name\n";
+        $self->get_default_mnemonic eq $cfg_name
+            ? ( print " *> $cfg_name\n" )
+            : ( print "  > $cfg_name\n" );
     }
     print ' in ', $self->cfapps, "\n";
 
