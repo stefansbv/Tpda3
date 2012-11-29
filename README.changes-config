@@ -39,7 +39,7 @@
               | rw
               | ro
     findtype  = full
-              | contents
+              | contains
               | date
     bgcolor   = <color_name>             background color in default state
     datatype  = alphanumplus
