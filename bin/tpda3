@@ -74,7 +74,7 @@ if ($init) {
 if ( $default ) {
 
     # Initialize configurations
-    my $cfg = Tpda3::Config->instance( { list => $list } );
+    my $cfg = Tpda3::Config->instance();
 
     $cfg->set_default_mnemonic($default);
 
