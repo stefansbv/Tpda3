@@ -2504,7 +2504,7 @@ sub screen_document_generate {
         return;
     }
 
-    my $output_path = $self->_cfg->config_tex_output_path();
+    my $output_path = $self->_cfg->config_tex_path('output');
     unless ( -d $output_path ) {
         $self->_view->set_status(
             $self->localize( ' status ', 'no-out-path' ),

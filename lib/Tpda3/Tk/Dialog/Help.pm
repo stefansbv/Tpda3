@@ -7,7 +7,8 @@ use utf8;
 use Tk;
 use IO::File;
 
-use Tpda3::Tk::TB;
+require Tpda3::Tk::TB;
+require Tpda3::Config::Utils;
 
 =head1 NAME
 
@@ -217,7 +218,7 @@ sub load_gpl_text {
     $self->{ttext}->configure( -state => 'normal' );
     $self->{ttext}->delete( '1.0', 'end' );
 
-    my $txt = $cfg->get_license();
+    my $txt = Tpda3::Config::Utils->get_license();
 
     $self->{ttext}->insert( 'end', $txt );
 

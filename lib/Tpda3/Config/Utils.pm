@@ -9,6 +9,9 @@ use File::Basename;
 use File::Copy;
 use File::Find::Rule;
 use File::Path qw( make_path );
+use File::ShareDir qw(dist_dir);
+use File::Slurp;
+use File::Spec::Functions;
 
 use Try::Tiny;
 use YAML::Tiny;
@@ -231,6 +234,49 @@ sub copy_files {
     }
 
     copy( $src_fqn, $dst_p ) or die $!;
+}
+
+
+=head2 get_license
+
+Slurp license file and return the text string.  Return only the title
+if the license file is not found, just to be on the save side.
+
+=cut
+
+sub get_license {
+    my $self = shift;
+
+    my $message = <<'END_LICENSE';
+
+                      GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+END_LICENSE
+
+    my $license = catfile( dist_dir('Tpda3'), 'license', 'gpl.txt' );
+
+    if (-f $license) {
+        return read_file($license);
+    }
+    else {
+        return $message;
+    }
+}
+
+=head2 get_help_file
+
+Return help file path.
+
+=cut
+
+sub get_help_file {
+    my ($self, $help_file) = @_;
+
+    return catfile( dist_dir('Tpda3'), 'help', $help_file);
 }
 
 =head1 AUTHOR

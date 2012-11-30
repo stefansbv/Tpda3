@@ -214,7 +214,7 @@ as the baloon label.
 sub get_defaultdocument_file {
     my $self = shift;
 
-    return catfile( $self->_cfg->config_tex_model_path,
+    return catfile( $self->_cfg->config_tex_path('model'),
         $self->defaultdocument->{file} )
         if $self->defaultdocument->{file};
 

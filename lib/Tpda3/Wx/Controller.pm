@@ -11,6 +11,7 @@ use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
     EVT_LIST_ITEM_ACTIVATED);
 
 require Tpda3::Wx::App;
+require Tpda3::Config::Utils;
 
 use base qw{Tpda3::Controller};
 
@@ -213,7 +214,7 @@ sub about {
     my $PROGRAM_NAME = ' Tpda3 ';
     my $PROGRAM_DESC = 'Tiny Perl Database Application 3';
     my $PROGRAM_VER  = $Tpda3::VERSION;
-    my $LICENSE = $self->_cfg->get_license;
+    my $LICENSE = Tpda3::Config::Utils->get_license();
 
     # Get application version
     my $app_class = $self->application_class;

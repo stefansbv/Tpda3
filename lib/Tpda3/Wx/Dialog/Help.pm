@@ -13,6 +13,8 @@ use Wx::Event qw(EVT_BUTTON);
 # very important for HTB to work
 Wx::FileSystem::AddHandler( new Wx::ZipFSHandler );
 
+require Tpda3::Config::Utils;
+
 sub new {
 
 =head2 new
@@ -36,7 +38,7 @@ sub show_html_help {
 
     my $cfg = Tpda3::Config->instance();
 
-    my $htb_file = $cfg->get_help_file('guide.htb');
+    my $htb_file = Tpda3::Config::Utils->get_help_file('guide.htb');
 
     $self->{help}->AddBook( $htb_file, 1 );
     $self->{help}->DisplayContents;

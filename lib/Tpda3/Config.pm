@@ -11,7 +11,6 @@ use File::ShareDir qw(dist_dir);
 use File::UserConfig;
 use File::Spec::Functions;
 use File::Copy::Recursive ();
-use File::Slurp;
 
 require Tpda3::Config::Utils;
 
@@ -443,20 +442,6 @@ sub get_mnemonics {
     return \@mnemonics;
 }
 
-=head2 get_default_file
-
-Return the C<default.yml> configuration file
-
-=cut
-
-sub get_default_file {
-    my $self = shift;
-
-    my $cfg_file = $self->config_file_name('default.yml');
-
-    return;
-}
-
 =head2 get_config_data
 
 Return the connection configuration details directly from the YAML
@@ -632,38 +617,18 @@ sub configdir_populate {
 
 =head2 config_tex_path
 
-Return Tex template documents base path.
+Return TeX documents model or output path.
 
 =cut
 
 sub config_tex_path {
-    my $self = shift;
+    my ($self, $what) = @_;
 
-    return catdir( $self->configdir, 'tex' );
-}
+    my $path = catdir( $self->configdir, 'tex', $what );
 
-=head2 config_tex_model_path
+    ouch 404, "Path not found: $path" unless -d $path;
 
-Return TeX documents model path.
-
-=cut
-
-sub config_tex_model_path {
-    my $self = shift;
-
-    return catdir( $self->config_tex_path, 'model' );
-}
-
-=head2 config_tex_output_path
-
-Return TeX documents output path.
-
-=cut
-
-sub config_tex_output_path {
-    my $self = shift;
-
-    return catdir( $self->config_tex_path, 'output' );
+    return $path;
 }
 
 =head2 docs_path
@@ -788,64 +753,22 @@ sub list_config_files {
     return;
 }
 
-=head2 get_license
+# =head2 config_misc_load
 
-Slurp license file and return the text string.  Return only the title
-if the license file is not found, just to be on the save side.
+# Load a config file from the etc dir of the application.
 
-=cut
+# =cut
 
-sub get_license {
-    my $self = shift;
+# sub config_misc_load {
+#     my ($self, $config_file) = @_;
 
-    my $message = <<'END_LICENSE';
+#     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
-                      GNU GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
+#     my $config_hr = $self->config_load_file($cfg_file);
+#     $self->make_accessors($config_hr);
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-END_LICENSE
-
-    my $license = catfile( dist_dir('Tpda3'), 'license', 'gpl.txt' );
-
-    if (-f $license) {
-        return read_file($license);
-    }
-    else {
-        return $message;
-    }
-}
-
-=head2 get_help_file
-
-Return help file path.
-
-=cut
-
-sub get_help_file {
-    my ($self, $help_file) = @_;
-
-    return catfile( dist_dir('Tpda3'), 'help', $help_file);
-}
-
-=head2 config_misc_load
-
-Load a config file from the etc dir of the application.
-
-=cut
-
-sub config_misc_load {
-    my ($self, $config_file) = @_;
-
-    my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
-
-    my $config_hr = $self->config_load_file($cfg_file);
-    $self->make_accessors($config_hr);
-
-    return $config_hr;                       # do we need this?
-}
+#     return $config_hr;                       # do we need this?
+# }
 
 =head1 AUTHOR
 
