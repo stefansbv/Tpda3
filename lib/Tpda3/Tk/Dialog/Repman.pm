@@ -4,8 +4,10 @@ use strict;
 use warnings;
 use utf8;
 
-use Tk;
 use IO::File;
+use File::Spec::Functions;
+
+use Tk;
 
 require Tpda3::Config;
 require Tpda3::Tk::TB;
@@ -50,7 +52,7 @@ sub new {
 
     $self->{tb4} = {};       # ToolBar
     $self->{tlw} = {};       # TopLevel
-    $self->{_tm} = undef;    # TableMatrix
+    $self->{tmx} = undef;    # TableMatrix
     $self->{_rl} = undef;    # report titles list
     $self->{_rd} = undef;    # report details
     $self->{cfg} = Tpda3::Config->instance();
@@ -70,6 +72,8 @@ sub run_screen {
     $self->{tlw} = $view->Toplevel();
     $self->{tlw}->title('Preview and print reports');
     $self->{tlw}->geometry('480x520');
+
+    $self->{model} = $view->{_model};
 
     my $f1d = 110;              # distance from left
 
@@ -168,7 +172,7 @@ sub run_screen {
     );
 
     my $xtvar1 = {};
-    $self->{_tm} = $frm_top->Scrolled(
+    $self->{tmx} = $frm_top->Scrolled(
         'TM',
         -rows           => 5,
         -cols           => 3,
@@ -181,19 +185,20 @@ sub run_screen {
         -selecttype     => 'row',
         -colstretchmode => 'unset',
         -resizeborders  => 'none',
-        -colstretchmode => 'unset',
         -bg             => 'white',
         -scrollbars     => 'osw',
+        -validate       => 1,
+        -vcmd           => sub { $self->select_idx(@_) },
     );
-    $self->{_tm}->pack(
+    $self->{tmx}->pack(
         -expand => 1,
-        -fill => 'both',
+        -fill   => 'both',
     );
 
     #-- Bindings for selection handling
 
     # Clean up if mouse leaves the widget
-    $self->{_tm}->bind(
+    $self->{tmx}->bind(
         '<FocusOut>',
         sub {
             my $w = shift;
@@ -202,7 +207,7 @@ sub run_screen {
     );
 
     # Highlight the cell under the mouse
-    $self->{_tm}->bind(
+    $self->{tmx}->bind(
         '<Motion>',
         sub {
             my $w  = shift;
@@ -217,7 +222,7 @@ sub run_screen {
     );
 
     # MouseButton 1 toggles the value of the cell
-    $self->{_tm}->bind(
+    $self->{tmx}->bind(
         '<1>',
         sub {
             my $w = shift;
@@ -226,8 +231,7 @@ sub run_screen {
             if ( defined $cs ) {
                 my ($rc) = @{$cs};
                 my ( $r, $c ) = split( ',', $rc );
-                $self->{tmx}->set_selected($r);
-                print "$r selected\n";
+                $self->select_idx($r); # load details
             }
         }
     );
@@ -462,16 +466,57 @@ sub run_screen {
 
     #-- TM header
 
-    my $header = $self->{scrcfg}->dep_table_header_info('tm2');
+    my $header = {
+        colstretch    => 1,
+        selectorcol   => 2,
+        selectorstyle => 'radio',
+        selectorcolor => 'darkgreen',
+        columns       => {
+            id_rep => {
+                id          => 0,
+                label       => '#',
+                tag         => 'ro_center',
+                displ_width => 3,
+                valid_width => 5,
+                numscale    => 0,
+                readwrite   => 'ro',
+                datatype    => 'integer',
+            },
+            title => {
+                id          => 1,
+                label       => 'Mnemonic',
+                tag         => 'ro_left',
+                displ_width => 10,
+                valid_width => 10,
+                numscale    => 0,
+                readwrite   => 'ro',
+                datatype    => 'alphanumplus',
+            },
+        },
+    };
 
-    $self->{_tm}->init( $frm_top, $header );
-    $self->{_tm}->clear_all;
+    $self->{tmx}->init( $frm_top, $header );
+    $self->{tmx}->clear_all;
+    $self->{tmx}->configure(-state => 'disabled');
 
-    $self->load_report_list($view, $header->{selectorcol} );
+    $self->load_report_list( $header->{selectorcol} );
+    $self->load_report_details();
 
-    $self->{_tm}->configure(-state => 'disabled');
+    return;
+}
 
-    $self->load_report_details($view);
+=head2 select_idx
+
+Select the index and load its details.
+
+=cut
+
+sub select_idx {
+    my ($self, $sel) = @_;
+
+    my $idx = $sel -1 ;
+    $self->{tmx}->set_selected($sel);
+    $self->load_report_details();
 
     return;
 }
@@ -497,7 +542,7 @@ Load report list from the L<reports> table.
 =cut
 
 sub load_report_list {
-    my ($self, $view, $sc) = @_;
+    my ($self, $sc) = @_;
 
     my $args = {};
     $args->{table}    = $self->{scrcfg}->maintable->{name}; # reports
@@ -505,7 +550,7 @@ sub load_report_list {
     $args->{where}    = undef;
     $args->{order}    = 'title';
 
-    my $reports_list = $view->{_model}->table_batch_query($args);
+    my $reports_list = $self->{model}->table_batch_query($args);
 
     my $recno = 0;
     foreach my $rec ( @{$reports_list} ) {
@@ -520,9 +565,9 @@ sub load_report_list {
     }
 
     # Clear and fill
-    $self->{_tm}->clear_all();
-    $self->{_tm}->fill( $self->{_rl} );
-    $self->{_tm}->tmatrix_make_selector($sc);
+    $self->{tmx}->clear_all();
+    $self->{tmx}->fill( $self->{_rl} );
+    $self->{tmx}->tmatrix_make_selector($sc);
 
     return;
 }
@@ -535,9 +580,9 @@ L<reports_det> table.
 =cut
 
 sub load_report_details {
-    my ($self, $view) = @_;
+    my $self = shift;
 
-    my $selected_row = $self->{_tm}->get_selected;
+    my $selected_row = $self->{tmx}->get_selected;
 
     return unless $selected_row;
 
@@ -552,7 +597,7 @@ sub load_report_details {
     $args->{where}    = {id_rep => $id_rep};
     $args->{order}    = 'title';
 
-    $self->{_rd} = $view->{_model}->table_batch_query($args);
+    $self->{_rd} = $self->{model}->table_batch_query($args);
 
     #- dependent table
 
@@ -563,7 +608,7 @@ sub load_report_details {
     $args->{where} = { id_rep => $id_rep };
     $args->{order} = 'id_art';
 
-    $self->{_rdd} = $view->{_model}->table_batch_query($args);
+    $self->{_rdd} = $self->{model}->table_batch_query($args);
 
     my $eobj = $self->get_controls();
 
