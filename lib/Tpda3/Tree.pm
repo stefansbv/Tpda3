@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use utf8;
 
-use Tree::DAG_Node;
 use base qw(Tree::DAG_Node);
 
 my @maindata;                  # TODO: find better way to collect data
@@ -148,8 +147,8 @@ sub process_node {
 
     my $depth = $options->{_depth};
     my $nodeidx = $node->get_attributes('idx');
-    print ' ' x ($depth * 3);
-    print $nodeidx ? $nodeidx : '', ' ', $node->name, "\n";
+    # print ' ' x ($depth * 3);
+    # print $nodeidx ? $nodeidx : '', ' ', $node->name, "\n";
 
     if ($depth == 1) {
         $node->collect_main_data();

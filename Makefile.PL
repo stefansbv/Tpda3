@@ -38,6 +38,7 @@ requires 'File::Spec::Functions' => '0';
 requires 'File::Slurp'           => '0';
 requires 'DBI'                   => '1.53';
 requires 'Math::Symbolic'        => '0';
+requires 'Tree::DAG_Node'        => '0';
 
 #- Tk
 
