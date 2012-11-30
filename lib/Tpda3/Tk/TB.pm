@@ -79,6 +79,8 @@ Create a normal toolbar button.
 A callback can be defined in the attribs data structure like a
 methodname string or a code reference.
 
+A text attribute takes precedence over an icon attribute.
+
 =cut
 
 sub _item_normal {
@@ -88,19 +90,16 @@ sub _item_normal {
 
     my $callback = ref $attribs->{method} eq 'CODE' ? $attribs->{method} : '';
 
-    if ($callback) {
-        $self->{$name} = $self->ToolButton(
-            -image   => $attribs->{icon},
-            -tip     => $attribs->{tooltip},
-            -command => $callback,
-        );
-    }
-    else {
-        $self->{$name} = $self->ToolButton(
-            -image => $attribs->{icon},
-            -tip   => $attribs->{tooltip},
-        );
-    }
+    $self->{$name} = $self->ToolButton(
+        -tip => $attribs->{tooltip},
+    );
+
+    $attribs->{text}
+        ? $self->{$name}->configure( -text  => $attribs->{text} )
+        : $self->{$name}->configure( -image => $attribs->{icon} )
+        ;
+
+    $self->{$name}->configure( -command => $callback) if $callback;
 
     $self->separator if $attribs->{sep} =~ m{after};
 
@@ -123,23 +122,14 @@ sub _item_check {
 
     my $callback = ref $attribs->{method} eq 'CODE' ? $attribs->{method} : '';
 
-    if ($callback) {
-        $self->{$name} = $self->ToolButton(
-            -image       => $attribs->{icon},
-            -type        => 'Checkbutton',
-            -indicatoron => 0,
-            -tip         => $attribs->{tooltip},
-            -command     => $callback,
-        );
-    }
-    else {
-        $self->{$name} = $self->ToolButton(
-            -image       => $attribs->{icon},
-            -type        => 'Checkbutton',
-            -indicatoron => 0,
-            -tip         => $attribs->{tooltip},
-        );
-    }
+    $self->{$name} = $self->ToolButton(
+        -image       => $attribs->{icon},
+        -type        => 'Checkbutton',
+        -tip         => $attribs->{tooltip},
+        -indicatoron => 0,
+    );
+
+    $self->{$name}->configure( -command => $callback) if $callback;
 
     $self->separator if $attribs->{sep} =~ m{after};
 
