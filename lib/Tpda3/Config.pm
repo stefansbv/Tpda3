@@ -104,10 +104,6 @@ sub init_configurations {
     # Log init, can't do before we know the application config path
     my $log_fqn = catfile( $self->cfpath, 'etc/log.conf' );
     Log::Log4perl->init($log_fqn);
-    # Log::Log4perl::Appender->new(
-    #     "Log::Log4perl::Appender::File",
-    #     name      => "Logfile",
-    #     filename  => "/tmp/my.log");
 
     # Fallback to the default cfname (mnemonic) from default.yml if
     # exists unless list or init argument provied on the CLI
@@ -197,19 +193,13 @@ sub config_main_load {
 
     # Main config file name, load
     my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );
-    # $self->{_log}->info("Loading 'main' config");
-    # $self->{_log}->info("file: $main_fqn");
 
     my $maincfg = $self->config_load_file($main_fqn);
 
-    # FIXIT: Refactor
     my $main_hr = {
         cfgeom    => $maincfg->{geometry},
         cfiface   => $maincfg->{interface},
-        cfapp     => $maincfg->{application},
-        cfgen     => $maincfg->{general},
         cfrun     => $maincfg->{runtime},
-        widgetset => $maincfg->{widgetset},      # Wx or Tk
         cfextapps => $maincfg->{externalapps},
         cfico     => catdir( $self->cfpath, $maincfg->{resource}{icons} ),
     };
@@ -251,8 +241,8 @@ sub config_interfaces_load {
 
 =head2 config_application_load
 
-Load the application configuration files.  This are treated separately
-because the path is only known at runtime.
+Load the application specific configuration files.  This are treated
+separately because the path is only known at runtime.
 
 =cut
 
@@ -267,8 +257,15 @@ sub config_application_load {
         $self->configdir_populate($cf_name);
     }
 
-    foreach my $section ( keys %{ $self->cfapp } ) {
-        my $cfg_file = $self->config_app_file_name($section);
+    my @cfg = (
+        'application.yml',
+        'connection.yml',
+        'menu.yml',
+        'toolbar.yml',
+    );
+
+    foreach my $section ( @cfg ) {
+        my $cfg_file = catfile( $self->configdir, 'etc', $section );
         $self->config_load($cfg_file);
     }
 
@@ -306,20 +303,6 @@ sub config_iface_file_name {
     my ( $self, $section ) = @_;
 
     return catfile( $self->cfpath, $self->cfiface->{$section} );
-}
-
-=head2 config_app_file_name
-
-Return fully qualified application configuration file name.
-
-=cut
-
-sub config_app_file_name {
-    my ( $self, $section ) = @_;
-
-    my $fl = catfile( $self->configdir, $self->cfapp->{$section} );
-
-    return $fl;
 }
 
 =head2 config_file_name
@@ -497,9 +480,7 @@ now.
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
 
-    my $inst = $self->cfrun->{instance};
-
-    my $inst_fqn = catfile( $self->configdir, $inst );
+    my $inst_fqn = catfile( $self->configdir, 'etc', 'instance.yml' );
 
     Tpda3::Config::Utils->save_instance_yaml( $inst_fqn, $key, $value );
 
@@ -647,30 +628,6 @@ sub configdir_populate {
         or ouch 'CfgInsErr', "Failed to copy app user data to '$configdir'";
 
     return;
-}
-
-=head2 config_rep_path
-
-Return reports path.
-
-=cut
-
-sub config_rep_path {
-    my $self = shift;
-
-    return catdir( $self->configdir, 'rep' );
-}
-
-=head2 config_rep_file
-
-Return default screen report file name and path.
-
-=cut
-
-sub config_rep_file {
-    my ($self, $rep_file) = @_;
-
-    return catfile( $self->config_rep_path, $rep_file );
 }
 
 =head2 config_tex_path

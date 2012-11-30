@@ -12,13 +12,7 @@ interface:
   #localize: etc/localisation/romanian.conf
   #toolbar: etc/interfaces/toolbar_ro.yml
   #menubar: etc/interfaces/menubar_ro.yml
-application:
-  appmain:  etc/application.yml
-  conninfo: etc/connection.yml
-  appmenu:  etc/menu.yml
-  apptoolbar: etc/toolbar.yml
 runtime:
-  instance: etc/instance.yml
   docspath: /tmp
 resource:
   icons: etc/interfaces/icons

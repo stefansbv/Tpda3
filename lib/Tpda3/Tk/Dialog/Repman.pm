@@ -608,8 +608,8 @@ sub preview_report {
     my $parameters = $self->get_parameters();
     print "Parameters: [ $parameters ]\n";
 
-    my $report_path = $self->{cfg}->config_rep_file($report_file);
-    unless (-f $report_path) {
+    my $report_path = catfile( $self->{cfg}->configdir, 'rep', $report_file );
+    unless ( -f $report_path ) {
         print "Report file not found: $report_path\n";
         return;
     }
