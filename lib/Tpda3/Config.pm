@@ -753,22 +753,22 @@ sub list_config_files {
     return;
 }
 
-# =head2 config_misc_load
+=head2 config_misc_load
 
-# Load a config file from the etc dir of the application.
+Load a config file from the etc dir of the application.
 
-# =cut
+=cut
 
-# sub config_misc_load {
-#     my ($self, $config_file) = @_;
+sub config_misc_load {
+    my ($self, $config_file) = @_;
 
-#     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
+    my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
-#     my $config_hr = $self->config_load_file($cfg_file);
-#     $self->make_accessors($config_hr);
+    my $config_hr = $self->config_load_file($cfg_file);
+    $self->make_accessors($config_hr);
 
-#     return $config_hr;                       # do we need this?
-# }
+    return $config_hr;                       # do we need this?
+}
 
 =head1 AUTHOR
 

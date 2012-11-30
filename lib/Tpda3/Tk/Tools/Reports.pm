@@ -9,9 +9,11 @@ use Tk::widgets qw(); # DateEntry JComboBox
 use base q{Tpda3::Tk::Screen};
 
 use POSIX qw (strftime);
-use File::Spec;
+use File::Spec::Functions;
+use File::ShareDir qw(dist_dir);
 
-use Tpda3::Utils;
+require Tpda3::Config;
+require Tpda3::Utils;
 
 =head1 NAME
 
@@ -226,6 +228,12 @@ sub run_screen {
         $validation->init_cfgdata( 'deptable', $tm_ds );
     }
 
+    # Required fields: fld_name => [#, Label]
+    $self->{rq_controls} = {
+        repofile => [ 0,  '  Report file' ],
+        title    => [ 1,  '  Title' ],
+    };
+
     return;
 }
 
@@ -238,10 +246,13 @@ Add report file.
 sub report_file {
     my $self = shift;
 
+    my $cfg = Tpda3::Config->instance();
+    my $initdir = catdir( $cfg->configdir, 'rep' );
+
     my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
     my $path = $self->{view}->getOpenFile(
         -filetypes  => $types,
-        -initialdir => '.',
+        -initialdir => $initdir,
     );
 
     return unless $path;

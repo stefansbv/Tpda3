@@ -320,7 +320,7 @@ sub run_screen {
 
     #-- hint
     my $eparahnt1 = $frm_middle->Entry(
-        -width => 30,
+        -width => 28,
     );
     $eparahnt1->form(
         -top  => [ '&', $lparameter1, 0 ],
@@ -328,7 +328,7 @@ sub run_screen {
     );
 
     #-- value
-    my $eparaval1 = $frm_middle->Entry( -width => 8, );
+    my $eparaval1 = $frm_middle->Entry( -width => 10, );
     $eparaval1->form(
         -top   => [ '&', $lparameter1, 0 ],
         -right => [ '&', $erepofile,   0 ],
@@ -356,7 +356,7 @@ sub run_screen {
 
     #-- hint
     my $eparahnt2 = $frm_middle->Entry(
-        -width => 30,
+        -width => 28,
     );
     $eparahnt2->form(
         -top  => [ '&', $lparameter2, 0 ],
@@ -364,9 +364,7 @@ sub run_screen {
     );
 
     #-- value
-    my $eparaval2 = $frm_middle->Entry(
-        -width => 8,
-    );
+    my $eparaval2 = $frm_middle->Entry( -width => 10, );
     $eparaval2->form(
         -top   => [ '&', $lparameter2, 0 ],
         -right => [ '&', $erepofile,   0 ],
@@ -394,7 +392,7 @@ sub run_screen {
 
     #-- hint
     my $eparahnt3 = $frm_middle->Entry(
-        -width => 30,
+        -width => 28,
     );
     $eparahnt3->form(
         -top  => [ '&', $lparameter3, 0 ],
@@ -402,9 +400,7 @@ sub run_screen {
     );
 
     #-- value
-    my $eparaval3 = $frm_middle->Entry(
-        -width => 8,
-    );
+    my $eparaval3 = $frm_middle->Entry( -width => 10, );
     $eparaval3->form(
         -top   => [ '&', $lparameter3, 0 ],
         -right => [ '&', $erepofile,   0 ],
@@ -467,12 +463,12 @@ sub run_screen {
     #-- TM header
 
     my $header = {
-        colstretch    => 1,
-        selectorcol   => 2,
+        colstretch    => 2,
+        selectorcol   => 3,
         selectorstyle => 'radio',
         selectorcolor => 'darkgreen',
         columns       => {
-            id_rep => {
+            repno => {
                 id          => 0,
                 label       => '#',
                 tag         => 'ro_center',
@@ -482,9 +478,19 @@ sub run_screen {
                 readwrite   => 'ro',
                 datatype    => 'integer',
             },
-            title => {
+            id_rep => {
                 id          => 1,
-                label       => 'Mnemonic',
+                label       => 'id',
+                tag         => 'ro_center',
+                displ_width => 3,
+                valid_width => 5,
+                numscale    => 0,
+                readwrite   => 'ro',
+                datatype    => 'integer',
+            },
+            title => {
+                id          => 2,
+                label       => 'Title',
                 tag         => 'ro_left',
                 displ_width => 10,
                 valid_width => 10,
