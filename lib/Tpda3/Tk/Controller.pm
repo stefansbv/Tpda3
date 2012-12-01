@@ -67,22 +67,19 @@ sub new {
     return $self;
 }
 
-=head2 start
+=head2 start_delay
 
 Show message, delay the database connection.
 
 =cut
 
-sub start {
+sub start_delay {
     my $self = shift;
-
-    $self->{_model}->_print('info#Connecting...');
-    $self->{_view}->toggle_status_cn(0);
 
     $self->{_view}->after(
         500,
         sub {
-            $self->connect_to_db();
+            $self->connect_dialog();
         }
     );
 

@@ -90,24 +90,40 @@ sub new {
     return $self;
 }
 
-=head2 connect_to_db
+=head2 start
 
 Show the login dialog, until connected or until a fatal error message
 is received from the RDBMS.
 
 =cut
 
-sub connect_to_db {
+sub start {
     my $self = shift;
 
     #-  Connect
 
-    if ($self->_cfg->user and $self->_cfg->pass) {
+    $self->{_model}->_print('info#Connecting...');
+    $self->{_view}->toggle_status_cn(0);
+
+    my $driver = $self->_cfg->connection->{driver};
+    if (   ( $self->_cfg->user and $self->_cfg->pass )
+        or ( $driver eq 'sqlite' ) )
+    {
         $self->_model->db_connect();
         return;
     }
 
     #-- Retry until connected or canceled
+
+    $self->start_delay()
+        unless ( $self->_model->is_connected
+        or $self->_cfg->connection->{driver} eq 'sqlite' );
+
+    return;
+}
+
+sub connect_dialog {
+    my $self = shift;
 
     while ( not $self->_model->is_connected ) {
 
