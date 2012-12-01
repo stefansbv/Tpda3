@@ -112,7 +112,12 @@ sub db_connect {
     }
     else {
         $self->get_connection_observable->set(0);    # no ;)
-        $self->_print('error#Connection failed');
+        my $exception = $self->get_exception;
+        my $message
+            = $exception
+            ? $exception
+            : 'error#Connection failed';
+        $self->_print($message);
     }
 
     return $self;
@@ -1399,8 +1404,6 @@ the C<status_message> method in the View class.
 
 sub user_message {
     my ($self, $error) = @_;
-
-    $self->_log->error($error);
 
     $error =~ s{[\n\r]}{ }gmix;
     my $user_message = $self->dbc->parse_db_error($error);

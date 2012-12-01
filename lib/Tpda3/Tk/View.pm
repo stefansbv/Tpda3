@@ -940,14 +940,15 @@ Toggle the icon in the status bar
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
 
+    my $dbname = $self->_cfg->connection->{dbname};
+
     if ($status) {
         $self->set_status( 'connectyes16', 'cn' );
-        $self->set_status( $self->_cfg->connection->{dbname},
-            'db', 'darkgreen' );
+        $self->set_status( $dbname, 'db', 'darkgreen' );
     }
     else {
         $self->set_status( 'connectno16', 'cn' );
-        $self->set_status( '',            'db' );
+        $self->set_status( $dbname, 'db', 'darkred' );
     }
 
     return;

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Regexp::Common;
-use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger :levels);
 
 use Ouch;
 use Try::Tiny;
@@ -62,56 +62,68 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->trace("Database driver is: $conf->{driver}");
+    $log->level($TRACE);                     # set log level
+
+    my ($dbname, $host, $port) = @{$conf}{qw(dbname host port)};
+    my ($driver, $user, $pass) = @{$conf}{qw(driver user pass)};
+
+    $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
-    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
-    $log->trace(" > Host     = ",$conf->{host} ? $conf->{host} : '?', "\n");
-    $log->trace(" > User     = ",$conf->{user} ? $conf->{user} : '?', "\n");
+    $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
+    $log->trace(" > Host     = ", $host   ? $host   : '?', "\n");
+    $log->trace(" > Port     = ", $port   ? $port   : '?', "\n");
+    $log->trace(" > User     = ", $user   ? $user   : '?', "\n");
+
+    my $dsn = qq{dbi:Pg:dbname=$dbname;host=$host;port=$port};
 
     try {
         $self->{_dbh} = DBI->connect(
-            "dbi:Pg:"
-                . "dbname="
-                . $conf->{dbname}
-                . ";host="
-                . $conf->{host}
-                . ";port="
-                . $conf->{port},
-            $conf->{user},
-            $conf->{pass},
+            $dsn, $user, $pass,
             {   FetchHashKeyName => 'NAME_lc',
                 AutoCommit       => 1,
                 RaiseError       => 1,
                 PrintError       => 0,
                 LongReadLen      => 524288,
+                HandleError      => sub { $self->handle_error(DBI->errstr) },
+                pg_enable_utf8   => 1,
             }
-        );
+        ) or $self->handle_error(DBI->errstr);
+
+        $log->info("Connected to '$conf->{dbname}'");
     }
     catch {
+        # Connection errors
         my $user_message = $self->parse_db_error($_);
-        if ( $self->{model} and $self->{model}->can('exception_log') ) {
-            $self->{model}->exception_log($user_message);
-        }
-        else {
-            ouch 'ConnError','Connection failed!';
-        }
+        $self->{model}->exception_log($user_message);
     };
 
     ## Date format
     # set: datestyle = 'iso' in postgresql.conf
     ##
-    $self->{_dbh}{pg_enable_utf8} = 1;
-
-    $log->info("Connected to '$conf->{dbname}'");
 
     return $self->{_dbh};
+}
+
+=head2 handle_error
+
+Log errors.
+
+=cut
+
+sub handle_error {
+    my ($self, $message) = @_;
+
+    my $log = get_logger();
+    $log->error("Db error: '$message'");
+
+    return;
 }
 
 =head2 parse_db_error
 
 Parse a database error message, and translate it for the user.
 
-TODO check if RDBMS specific and/or maybe version specific.
+Better way to do this?
 
 =cut
 
@@ -129,9 +141,10 @@ sub parse_db_error {
        : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
        : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
        : $pg =~ m/no password supplied/smi                   ? "password"
-       : $pg =~ m/role ($RE{quoted}) does not exist/smi      ? "username:$1"
+       : $pg =~ m/FATAL:  role ($RE{quoted}) does not exist/smi ? "username:$1"
        : $pg =~ m/no route to host/smi                       ? "network"
        : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
+       : $pg =~ m/permission denied for relation/smi         ? "relforbid"
        :                                                       "unknown";
 
     # Analize and translate
@@ -140,18 +153,19 @@ sub parse_db_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        nomessage   => "weird#Error without message!",
-        dbnotfound  => "fatal#Database $name not found!",
-        relnotfound => "fatal#Relation $name not found!",
+        nomessage   => "weird#Error without message",
+        dbnotfound  => "fatal#Database $name does not exists",
+        relnotfound => "fatal#Relation $name does not exists",
         password    => "info#Authentication failed for $name",
         password    => "info#Authentication failed, password?",
-        username    => "info#User name $name not found!",
+        username    => "error#Wrong user name: $name",
         network     => "fatal#Network problem",
         unknown     => "fatal#Database error",
         duplicate   => "error#Duplicate $name",
         colnotfound => "error#Column not found $name",
         checkconstr => "error#Check: $name",
         nullvalue   => "error#Null value for $name",
+        relforbid   => "error#Permission denied",
     };
 
     my $message;

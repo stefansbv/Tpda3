@@ -90,46 +90,44 @@ sub new {
     return $self;
 }
 
-=head2 start
+=head2 connect_to_db
 
-Try to connect first even if we have no user and pass. Retry and show
-login dialog, until connected unless fatal error message received from
-the RDBMS.
+Show the login dialog, until connected or until a fatal error message
+is received from the RDBMS.
 
 =cut
 
-sub start {
+sub connect_to_db {
     my $self = shift;
 
-    $self->_log->trace('starting ...');
+    #-  Connect
 
-    # Try until connected or canceled
-    my $return_string = '';
-    while ( !$self->_model->is_connected ) {
+    if ($self->_cfg->user and $self->_cfg->pass) {
         $self->_model->db_connect();
-        if ( my $message = $self->_model->get_exception ) {
-            my ($type, $mesg) = split /#/, $message, 2;
-            if ($type =~ m{fatal}imx) {
-                my $message = $self->localize('dialog','error-conn');
-                $self->_view->dialog_error($message, $mesg);
-                $return_string = 'shutdown';
-                last;
-            }
-        }
-
-        # Try with the login dialog if still not connected
-        if ( !$self->_model->is_connected ) {
-            $return_string = $self->dialog_login();
-            last if $return_string eq 'shutdown';
-        }
-    }
-
-    if ($return_string eq 'shutdown') {
-        $self->on_quit;
         return;
     }
 
-    $self->_log->trace('... started');
+    #-- Retry until connected or canceled
+
+    while ( not $self->_model->is_connected ) {
+
+        # Login dialog if still not connected
+        if ( !$self->_model->is_connected ) {
+            my $return_string = $self->dialog_login();
+            $self->_model->db_connect();
+            last if $return_string eq 'shutdown';
+        }
+
+        # Check errors
+        if ( my $message = $self->_model->get_exception ) {
+            my ( $type, $mesg ) = split /#/, $message, 2;
+            if ( $type =~ m{fatal}imx ) {
+                my $message = $self->localize( 'dialog', 'error-conn' );
+                $self->_view->dialog_error( $message, $mesg );
+                last;
+            }
+        }
+    }
 
     return;
 }

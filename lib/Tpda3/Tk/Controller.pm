@@ -9,6 +9,7 @@ use Ouch;
 use Tk;
 use Tk::Font;
 use Hash::Merge qw(merge);
+use Log::Log4perl qw(get_logger :levels);
 
 require Tpda3::Tk::View;
 
@@ -50,7 +51,7 @@ sub new {
 
     $self->_init;
 
-    my $loglevel_old = $self->_log->level();
+    #$self->_log->level($TRACE);                     # set log level
 
     $self->_log->trace('Controller new');
 
@@ -63,9 +64,29 @@ sub new {
 
     $self->_check_app_menus();               # disable if no screen
 
-    $self->_log->level($loglevel_old);     # restore default log level
-
     return $self;
+}
+
+=head2 start
+
+Show message, delay the database connection.
+
+=cut
+
+sub start {
+    my $self = shift;
+
+    $self->{_model}->_print('info#Connecting...');
+    $self->{_view}->toggle_status_cn(0);
+
+    $self->{_view}->after(
+        500,
+        sub {
+            $self->connect_to_db();
+        }
+    );
+
+    return;
 }
 
 =head2 _init
