@@ -62,7 +62,7 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->level($TRACE);                     # set log level
+    #$log->level($TRACE);                     # set log level
 
     my ($dbname, $host, $port) = @{$conf}{qw(dbname host port)};
     my ($driver, $user, $pass) = @{$conf}{qw(driver user pass)};
@@ -89,7 +89,7 @@ sub db_connect {
             }
         ) or $self->handle_error(DBI->errstr);
 
-        $log->info("Connected to '$conf->{dbname}'");
+        $log->info("Connected to '$dbname'");
     }
     catch {
         # Connection errors
@@ -130,6 +130,8 @@ Better way to do this?
 sub parse_db_error {
     my ($self, $pg) = @_;
 
+    my $log = get_logger();
+
     print "\nPG: $pg\n\n";
 
     my $message_type =
@@ -145,6 +147,7 @@ sub parse_db_error {
        : $pg =~ m/no route to host/smi                       ? "network"
        : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
        : $pg =~ m/permission denied for relation/smi         ? "relforbid"
+       : $pg =~ m/not connected/smi                          ? "notconn"
        :                                                       "unknown";
 
     # Analize and translate
@@ -166,6 +169,7 @@ sub parse_db_error {
         checkconstr => "error#Check: $name",
         nullvalue   => "error#Null value for $name",
         relforbid   => "error#Permission denied",
+        notconn     => "error#Not connected",
     };
 
     my $message;
@@ -173,7 +177,7 @@ sub parse_db_error {
         $message = $translations->{$type}
     }
     else {
-        print "EE: Translation error!\n";
+        $log->error('EE: Translation error for: $pg!');
     }
 
     return $message;

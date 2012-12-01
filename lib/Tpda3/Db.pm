@@ -102,7 +102,7 @@ sub DESTROY {
 
     if ( defined $self->{conn}{dbh} ) {
         $self->{conn}{dbh}->disconnect;
-        print "Disconnected\n";
+        print "Disconnected.\n";
     }
 
     return;

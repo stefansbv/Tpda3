@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Regexp::Common;
-use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger :levels);
 
 use Ouch;
 use Try::Tiny;
@@ -62,54 +62,62 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->trace("Database driver is: $conf->{driver}");
+    $log->level($TRACE);                     # set log level
+
+    my ($dbname, $host, $port) = @{$conf}{qw(dbname host port)};
+    my ($driver, $user, $pass) = @{$conf}{qw(driver user pass)};
+
+    $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
-    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
-    $log->trace(" > Host     = ",$conf->{host} ? $conf->{host} : '?', "\n");
-    $log->trace(" > User     = ",$conf->{user} ? $conf->{user} : '?', "\n");
+    $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
+    $log->trace(" > Host     = ", $host   ? $host   : '?', "\n");
+    $log->trace(" > Port     = ", $port   ? $port   : '?', "\n");
+    $log->trace(" > User     = ", $user   ? $user   : '?', "\n");
+
+    my $dsn = qq{dbi:Firebird:dbname=$dbname;host=$host;port=$port;ib_dialect=3;ib_charset=UTF8};
 
     try {
         $self->{_dbh} = DBI->connect(
-            "dbi:Firebird:"
-                . "dbname="
-                . $conf->{dbname}
-                . ";host="
-                . $conf->{host}
-                . ";port="
-                . $conf->{port}
-                . ";ib_dialect=3"
-                . ";ib_charset=UTF8",
-            $conf->{user},
-            $conf->{pass},
+            $dsn, $user, $pass,
             {   FetchHashKeyName => 'NAME_lc',
                 AutoCommit       => 1,
                 RaiseError       => 1,
                 PrintError       => 0,
                 LongReadLen      => 524288,
+                HandleError      => sub { $self->handle_error(DBI->errstr) },
+                ib_enable_utf8   => 1,
             }
-        );
+        ) or $self->handle_error(DBI->errstr);
+
+        $log->info("Connected to 'dbname'");
     }
     catch {
+        # Connection errors
         my $user_message = $self->parse_db_error($_);
-        if ( $self->{model} and $self->{model}->can('exception_log') ) {
-            $self->{model}->exception_log($user_message);
-        }
-        else {
-            ouch 'ConnError','Connection failed!';
-        }
+        $self->{model}->exception_log($user_message);
     };
 
-    ## Date format
-    ## Default format: ISO
+    # Default date format: ISO
     $self->{_dbh}{ib_timestampformat} = '%y-%m-%d %H:%M';
     $self->{_dbh}{ib_dateformat}      = '%Y-%m-%d';
     $self->{_dbh}{ib_timeformat}      = '%H:%M';
 
-    $self->{_dbh}{ib_enable_utf8} = 1;
-
-    $log->info("Connected to '$conf->{dbname}'");
-
     return $self->{_dbh};
+}
+
+=head2 handle_error
+
+Log errors.
+
+=cut
+
+sub handle_error {
+    my ($self, $message) = @_;
+
+    my $log = get_logger();
+    $log->error("Db error: '$message'");
+
+    return;
 }
 
 =head2 parse_db_error
@@ -123,6 +131,8 @@ RDBMS specific (and maybe version specific?).
 sub parse_db_error {
     my ($self, $fb) = @_;
 
+    my $log = get_logger();
+
     print "\nFB: $fb\n\n";
 
     my $message_type =
@@ -133,6 +143,7 @@ sub parse_db_error {
        : $fb =~ m/no route to host/smi                       ? "network"
        : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
        : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi ? "driver:$1"
+       : $fb =~ m/not connected/smi                          ? "notconn"
        :                                                       "unknown";
 
     # Analize and translate
@@ -145,10 +156,11 @@ sub parse_db_error {
         nomessage   => "weird#Error without message",
         dbnotfound  => "fatal#Database $name not found",
         relnotfound => "fatal#Relation $name not found",
-        userpass    => "info#Authentication failed, password?",
+        userpass    => "warn#Authentication failed",
         nethost     => "fatal#Network problem: host $name",
         network     => "fatal#Network problem",
         unknown     => "fatal#Database error",
+        notconn     => "error#Not connected",
     };
 
     my $message;
@@ -156,7 +168,7 @@ sub parse_db_error {
         $message = $translations->{$type}
     }
     else {
-        print "EE: Translation error!\n";
+        $log->error('EE: Translation error for: $fb!');
     }
 
     return $message;

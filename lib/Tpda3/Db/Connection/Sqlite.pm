@@ -4,11 +4,10 @@ use strict;
 use warnings;
 
 use Regexp::Common;
-use Log::Log4perl qw(get_logger);
+use Log::Log4perl qw(get_logger :levels);
 use File::HomeDir;
 use File::Spec::Functions;
 
-use Ouch;
 use Try::Tiny;
 use DBI;
 
@@ -63,36 +62,57 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->trace("Database driver is: $conf->{driver}");
+    #$log->level($TRACE);                     # set log level
+
+    my ($dbname, $host, $driver) = @{$conf}{qw(dbname host driver)};
+
+    $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
-    $log->trace(" > Database = ",$conf->{dbname} ? $conf->{dbname} : '?', "\n");
-    $log->trace(" > Host     = ",$conf->{host} ? $conf->{host} : '?', "\n");
+    $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
+    $log->trace(" > Host     = ", $host   ? $host   : '?', "\n");
 
     # Fixed path for SQLite databases
-    $conf->{dbfile} = get_testdb_filename( $conf->{dbname} );
+    my $dbfile = $conf->{dbfile} = get_testdb_filename($dbname);
+
+    my $dsn = qq{dbi:SQLite:dbname=$dbfile};
 
     try {
-        $self->{_dbh}
-            = DBI->connect( "dbi:SQLite:" . $conf->{dbfile}, q{}, q{}, );
+        $self->{_dbh} = DBI->connect(
+            $dsn, '', '',
+            {   FetchHashKeyName => 'NAME_lc',
+                AutoCommit       => 1,
+                RaiseError       => 1,
+                PrintError       => 0,
+                LongReadLen      => 524288,
+                HandleError      => sub { $self->handle_error(DBI->errstr) },
+                sqlite_unicode   => 1,
+            }
+        ) or $self->handle_error(DBI->errstr);
+
+        $log->info("Connected to '$dbname'");
     }
     catch {
+        # Connection errors
         my $user_message = $self->parse_db_error($_);
-        if ( $self->{model} and $self->{model}->can('exception_log') ) {
-            $self->{model}->exception_log($user_message);
-        }
-        else {
-            ouch 'ConnError','Connection failed!';
-        }
+        $self->{model}->exception_log($user_message);
     };
 
-    ## Date format ISO
-
-    # UTF-8 support
-    $self->{_dbh}{sqlite_unicode} = 1;
-
-    $log->info("Connected to '$conf->{dbname}'");
-
     return $self->{_dbh};
+}
+
+=head2 handle_error
+
+Log errors.
+
+=cut
+
+sub handle_error {
+    my ($self, $message) = @_;
+
+    my $log = get_logger();
+    $log->error("Db error: '$message'");
+
+    return;
 }
 
 =head2 parse_db_error
@@ -104,13 +124,16 @@ Parse a database error message, and translate it for the user.
 sub parse_db_error {
     my ($self, $si) = @_;
 
+    my $log = get_logger();
+
     # print "\nSI: $si\n\n";
 
     my $message_type =
          $si eq q{}                                        ? "nomessage"
        : $si =~ m/prepare failed: no such table: (\w+)/smi ? "relnotfound:$1"
        : $si =~ m/prepare failed: near ($RE{quoted}):/smi  ? "notsuported:$1"
-       :                                                      "unknown";
+       : $si =~ m/not connected/smi                        ? "notconn"
+       :                                                     "unknown";
 
     # Analize and translate
 
@@ -122,6 +145,7 @@ sub parse_db_error {
         notsuported => "fatal#Syntax not supported: $name!",
         relnotfound => "fatal#Relation $name not found",
         unknown     => "fatal#Database error",
+        notconn     => "error#Not connected",
     };
 
     my $message;
@@ -129,7 +153,7 @@ sub parse_db_error {
         $message = $translations->{$type}
     }
     else {
-        print "EE: Translation error!\n";
+        $log->error('EE: Translation error for: $si!');
     }
 
     return $message;

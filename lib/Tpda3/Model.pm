@@ -134,7 +134,14 @@ sub dbh {
 
     my $db = Tpda3::Db->instance;
 
-    return $db->dbh;
+    if ( $self->is_connected ) {
+        return $db->dbh;
+    }
+    else {
+        ouch 'NoC', "Not connected";
+    }
+
+    return;
 }
 
 =head2 dbc
