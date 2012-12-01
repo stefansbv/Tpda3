@@ -11,8 +11,8 @@ use Tpda3::Tk::ScreenTest q{test_screen};
 
 my $args = {
     cfname => 'test-tk',
-    user   => undef,
-    pass   => undef,
+    user   => 'user',
+    pass   => 'pass',
 };
 
 test_screen($args, 'Tpda3::Tk::App::Test::Products');

@@ -14,8 +14,8 @@ use Tpda3::Config;
 
 my $args = {
     cfname => 'test-tk',
-    user   => undef,
-    pass   => undef,
+    user   => 'user',
+    pass   => 'pass',
 };
 
 #-- Check the one instance functionality
