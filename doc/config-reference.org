@@ -27,7 +27,63 @@ a specific Tpda3 application is executed, the application
 configuration files are installed under the Tpda3 main configuration
 path.
 
-* Screen
+* Framework configurations
+** The main configuration file
+
+The main configuration file is, of course, main.yml and contains
+generic configurations used by all the Tpda3 applications.
+
+*** Sections
+**** geometry
+
+The default geometry of the main window of the application.
+
+#+begin_src conf
+  main: 520x80+20+20
+#+end_src
+
+**** interface
+
+Relative paths for the configuration files of various GUI interface elements.
+
+#+begin_src conf
+  localize: etc/localisation/english.conf
+  toolbar: etc/interfaces/toolbar.yml
+  menubar: etc/interfaces/menubar.yml
+#+end_src
+
+**** runtime
+
+Only one attribute, for now, the output path where the LaTeX files are
+generated - from the Tpda3::Generator.pm module.
+
+#+begin_src conf
+  docspath: /tmp
+#+end_src
+
+**** resource
+
+The icons path.
+
+#+begin_src conf
+  icons: etc/interfaces/icons
+#+end_src
+
+**** externalapps
+
+Absolute paths to the executable utilities of the Report Manager and
+LaTeX systems.
+
+#+begin_src conf
+  repman:
+    exe_path: ~/bin/repman/printrep.bin
+  pdflatex:
+    exe_path: /usr/share/texmf/bin/pdflatex
+    options: -halt-on-error                     # to be removed
+#+end_src
+
+* Application configurations
+** Screen configuration
 
 Every screen module has a coresponding configuration file in Apache
 format as defined by the Config::General module.
@@ -35,9 +91,9 @@ format as defined by the Config::General module.
 A screen configuration file name is lower case of the screen module
 name, but with a .conf extension.
 
-** Sections
+*** Sections
 
-*** screen
+**** screen
 
    |-------------+-----------+-----+-----------------------------------------------------|
    | Name        | Value     | R/O | Description                                         |
@@ -66,7 +122,7 @@ name, but with a .conf extension.
 </details>
 #+end_src
 
-*** defaultreport
+**** defaultreport
 
 Report Manager report file name bound to the print toolbar button.
 
@@ -77,7 +133,7 @@ Report Manager report file name bound to the print toolbar button.
 </defaultreport>
 #+end_src
 
-*** defaultdocument
+**** defaultdocument
 
 Document template file name bound to the edit toolbar button.
 
@@ -88,11 +144,11 @@ Document template file name bound to the edit toolbar button.
 </defaultdocument>
 #+end_src
 
-*** lists_ds
+**** lists_ds
 
 Data source for list widgets - Combobox (Tk::JComboBox).
 
-*** list_header
+**** list_header
 
 Column names in the 'List' tab table, chosen from the field names from
 the main table view. The order is preserved.
@@ -110,7 +166,7 @@ For the [[(lookup)][lookup]] attribute we have to surround the value aka the fie
 name, with [ and ].  If there are two or more lookup attributes then
 skip the [ and ], like for the [[(column)][column]] attributes.
 
-*** bindings
+**** bindings
 
 Define bindings for Entry widgets mapped to fields. Multiple fields
 are allowed.  Force array of single field attributes by surrounding
@@ -132,15 +188,17 @@ the value of the config entry with [].
      </bindings>
 #+end_src
 
-*** tablebindings
+**** tablebindings
 
-*** maintable
+**** maintable
 
 Main table attributes. Required PK and FK columns attributes: "rw
 = r", and "state = disabled" ???
 
     - column_name
 
+     |-------------+--------------+-----------------------------------------------|
+     | Attribute   | Value        | Description                                   |
      |-------------+--------------+-----------------------------------------------|
      | state       | disabled     | default widget state                          |
      |             | normal       |                                               |
@@ -182,6 +240,8 @@ Main table attributes. Required PK and FK columns attributes: "rw
 
    - column_name
 
+     |-------------+-------------------+-----------------------------------------------|
+     | Attribute   | Value             | Description                                   |
      |-------------+-------------------+-----------------------------------------------|
      | id          | <pos>             | Position in the TM table (from 0)             |
      |-------------+-------------------+-----------------------------------------------|
