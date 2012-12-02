@@ -1,3 +1,72 @@
+2012-12-02
+
+	* Update doc draft.  Fix instance config file path.  Add devel doc
+	draft.
+
+2012-12-01
+
+	* Fix bug: sqlite screen test failed because delayed connection.
+	Check connection in dbh method, sync all driver modules.  Change
+	behaviour, don't try to connect without user an pass.  Change user
+	and pass for tests.
+
+2012-11-30
+
+	* RepMan support related tweaks.  Fix Repman dialog TM header.
+	Move license and help related methods from Config to
+	Config::Utils.  Remove application section from main.yml.  Choice
+	to make TB buttons with text label.  Move TMSHR methods from
+	Controller to Tk::Controlller.
+
+2012-11-29
+
+	* Add default option to CLI, to set default app.  Show default app
+	in CLI list mode.
+
+2012-11-28
+
+	* Add labels to TB used as legend when attached to a TMSHR.
+
+2012-11-26
+
+	* Notes to be included in the docs.  Implement table_list and
+	table_keys for SQLite.
+
+2012-11-21
+
+	* Implement filter for the entry bindings search dialog.
+
+2012-11-20
+
+	* Add some info to POD for ::Config::Screen.  Make test-tk the
+	default app.  Skip Wx app tests.  Rearrange menu items.
+
+2012-11-18
+
+	* Small changes to on_quit method.  Add report table to test
+	database.  Overwrite test database.
+
+2012-11-18
+
+	* Update tools scr configs.
+
+2012-11-16
+
+	* Add post_install_script.pl for Cava packager.  Add temporary
+	Tpda3 icon.  Update Orders screen, fix calculus.
+
+2012-11-15
+
+	* Add default, fixed path for SQLite databases.  Add script to
+	create and fill the classicmodels test db.  Add erorr check in
+	test module and rename test modules.  Remove test-wx app from
+	AppList. Small tweaks in Orders screen layout.  Make test-tk as
+	default app.  Wx 2.9 does not like wxADJUST_MINSIZE.
+
+2012-11-14
+
+	* Fix header data in test.  Remove use Data::Printer.
+
 2012-11-11
 
 	* Add feature to save an application mnemonic as default. Release
