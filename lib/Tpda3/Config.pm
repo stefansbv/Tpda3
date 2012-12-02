@@ -455,19 +455,29 @@ sub get_config_data {
     return $self->config_load_file($cfg_file);
 }
 
+=head2 instance_file
+
+Return the absolute path to the instance.yaml configuration file.
+
+=cut
+
+sub instance_file {
+    my $self = shift;
+
+    return catfile( $self->configdir, 'etc', 'instance.yml' );
+}
+
 =head2 config_save_instance
 
-Save instance configurations.  Only window geometry configuration for
-now.
+Save instance configurations.  Only window geometry configuration.
 
 =cut
 
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
 
-    my $inst_fqn = catfile( $self->configdir, 'etc', 'instance.yml' );
-
-    Tpda3::Config::Utils->save_instance_yaml( $inst_fqn, $key, $value );
+    Tpda3::Config::Utils->save_instance_yaml( $self->instance_file, $key,
+        $value );
 
     return;
 }
@@ -481,11 +491,7 @@ Load instance configurations.  User window geometry configuration.
 sub config_load_instance {
     my $self = shift;
 
-    my $inst = $self->cfrun->{instance};
-
-    my $inst_fqn = catfile( $self->configdir, $inst );
-
-    my $cfg_hr = $self->config_load_file($inst_fqn, 'notfatal');
+    my $cfg_hr = $self->config_load_file( $self->instance_file, 'notfatal' );
 
     $self->make_accessors($cfg_hr);
 
