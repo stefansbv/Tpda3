@@ -31,3 +31,6 @@
 ^errors.txt$
 \.tar.gz$
 \.zip$
+
+# Skip docs untill ready
+doc\b
