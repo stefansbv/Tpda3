@@ -333,6 +333,14 @@ sub _set_event_handlers {
         }
     );
 
+    #-- Admin - configure
+    $self->_view->event_handler_for_menu(
+        'mn_cf',
+        sub {
+            $self->set_app_configs();
+        }
+    );
+
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->_view->get_app_menus_list();
@@ -962,67 +970,7 @@ with the results.  The second can call a method in the current screen.
 sub setup_bindings_table {
     my $self = shift;
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls } ) {
-
-        my $bindings = $self->scrcfg('rec')->tablebindings->{$tm_ds};
-
-        my $dispatch = {};
-        foreach my $bind_type ( keys %{$bindings} ) {
-            next unless $bind_type;            # skip if just an empty tag
-
-            my $bnd = $bindings->{$bind_type};
-            if ( $bind_type eq 'lookup' ) {
-                foreach my $bind_name ( keys %{$bnd} ) {
-                    next unless $bind_name;    # skip if just an empty tag
-                    my $lk_bind = $bnd->{$bind_name};
-                    my $lookups = $self->add_dispatch_for_lookup($lk_bind);
-                    @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
-                }
-            }
-            elsif ( $bind_type eq 'method' ) {
-                foreach my $bind_name ( keys %{$bnd} ) {
-                    next unless $bind_name;    # skip if just an empty tag
-                    my $mt_bind = $bnd->{$bind_name};
-                    my $methods = $self->add_dispatch_for_method($mt_bind);
-                    @{$dispatch}{ keys %{$methods} } = values %{$methods};
-                }
-            }
-            else {
-                print "WW: Binding type '$bind_type' not implemented\n";
-                return;
-            }
-
-            $self->_log->trace("Setup binding '$bind_type' for '$tm_ds' with:");
-            $self->_log->trace( sub { Dumper($bindings) } );
-        }
-
-        # Bindings:
-        my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
-
-        $tm->bind(
-            'Tpda3::Tk::TM',
-            '<Return>',
-            sub {
-                my $r = $tm->index( 'active', 'row' );
-                my $c = $tm->index( 'active', 'col' );
-
-                # Table refresh
-                $tm->activate('origin');
-                $tm->activate("$r,$c");
-                $tm->reread();
-
-                my $ci = $tm->cget( -cols ) - 1;    # max col index
-                my $sc = $self->method_for( $dispatch, $bindings, $r, $c,
-                    $tm_ds );
-                my $ac = $c;
-                $sc ||= 1;                          # skip cols
-                $ac += $sc;                         # new active col
-                $tm->activate("$r,$ac");
-                $tm->see('active');
-                Tk->break;
-            }
-        );
-    }
+    print 'setup_bindings_table not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -2035,9 +1983,7 @@ used when none is specified.
 sub set_mnemonic {
     my $self = shift;
 
-    require Tpda3::Tk::Dialog::AppList;
-    my $dal = Tpda3::Tk::Dialog::AppList->new();
-    $dal->show_app_list($self->_view);
+    print 'set_mnemonic not implemented in ', __PACKAGE__, "\n";
 
     return;
 }
@@ -2068,6 +2014,20 @@ sub set_geometry {
     }
 
     $self->_view->set_geometry($geom);
+
+    return;
+}
+
+=head2 set_app_configs
+
+Dialog to set runtime configurations for Tpda3.
+
+=cut
+
+sub set_app_configs {
+    my $self = shift;
+
+    print 'set_app_configs not implemented in ', __PACKAGE__, "\n";
 
     return;
 }

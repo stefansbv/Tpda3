@@ -2,9 +2,13 @@ package Tpda3::Tk::Dialog::Configs;
 
 use strict;
 use warnings;
+use utf8;
 
 use Tk;
-use Tk::FontDialog;
+use File::Spec;
+
+require Tpda3::Config;
+require Tpda3::Tk::TB;
 
 =head1 NAME
 
@@ -32,14 +36,172 @@ Set and save configuaration options.
 
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
 sub new {
     my $class = shift;
 
-    return bless {}, $class;
+    my $self = {};
+
+    $self->{tb4} = {};       # ToolBar
+    $self->{tlw} = {};       # TopLevel
+    $self->{cfg} = Tpda3::Config->instance();
+
+    bless $self, $class;
+
+    $self->_init();
+
+    return $self;
+}
+
+=head2 _cfg
+
+Return config instance variable
+
+=cut
+
+sub _cfg {
+    my $self = shift;
+
+    return $self->{cfg};
+}
+
+=head2 _init
+
+Executable files have diferent names on different platforms
+Report Manager print preview: 'printrep.bin' on GNU/linux
+                               'printrepxp.exe' on MSW
+TODO: Add other platforms
+
+=cut
+
+sub _init {
+    my $self = shift;
+
+    my $os = $^O;
+
+    $self->{repman} =
+       $os eq q{}       ? ''
+     : $os =~ /mswin/i  ? 'printrepxp.exe'
+     : $os =~ /linux/i  ? 'printrep.bin'
+     :                    '';
+
+    $self->{latex} =
+       $os eq q{}       ? ''
+     : $os =~ /mswin/i  ? 'pdflatex.exe'
+     : $os =~ /linux/i  ? 'pdflatex'
+     :                    '';
+
+    $self->{initial_dir} =
+       $os eq q{}       ? ''
+     : $os =~ /mswin/i  ? 'C:/'
+     : $os =~ /linux/i  ? '/'
+     :                    '';
+
+    return;
+}
+
+=head2 make_toolbar
+
+Create a tool bar.
+
+=cut
+
+sub make_toolbar {
+    my $self = shift;
+
+    #- Toolbar frame
+
+    my $tbf0 = $self->{tlw}->Frame();
+    $tbf0->pack(
+        -side   => 'top',
+        -anchor => 'nw',
+        -fill   => 'x',
+    );
+
+    my $bg = $self->{tlw}->cget('-background');
+
+    # Frame for main toolbar
+    my $tbf1 = $tbf0->Frame();
+    $tbf1->pack( -side => 'left', -anchor => 'w' );
+
+    #-- ToolBar
+
+    $self->{tb4} = $tbf1->TB();
+
+    my $attribs = {
+        'tb4pr' => {
+            'tooltip' => 'Preview and print report',
+            'icon'    => 'filesave16',
+            'sep'     => 'none',
+            'help'    => 'Preview and print report',
+            'method'  => sub { $self->save_as_default(); },
+            'type'    => '_item_normal',
+            'id'      => '20101',
+        },
+        'tb4qt' => {
+            'tooltip' => 'Close',
+            'icon'    => 'actexit16',
+            'sep'     => 'after',
+            'help'    => 'Quit',
+            'method'  => sub { $self->dlg_exit; },
+            'type'    => '_item_normal',
+            'id'      => '20102',
+        }
+    };
+
+    my $toolbars = [ 'tb4pr', 'tb4qt', ];
+
+    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
+
+    return;
+}
+
+=head2 make_statusbar
+
+Create a status bar.
+
+=cut
+
+sub make_statusbar {
+    my $self = shift;
+
+    #-- StatusBar
+
+    my $sb = $self->{tlw}->StatusBar();
+
+    # Dummy label for left space
+    my $ldumy = $sb->addLabel(
+        -width  => 1,
+        -relief => 'flat',
+    );
+
+    $self->{_sb}{ms} = $sb->addLabel( -relief => 'flat' );
+
+    return;
+}
+
+=head2 _set_status
+
+Display message in the status bar.  Colour name can also be passed to
+the method in the message string separated by a # char.
+
+=cut
+
+sub _set_status {
+    my ( $self, $text, $color ) = @_;
+
+    my $sb_label = $self->{_sb}{'ms'};
+
+    return unless ( $sb_label and $sb_label->isa('Tk::Label') );
+
+    # ms
+    $sb_label->configure( -text       => $text )  if defined $text;
+    $sb_label->configure( -foreground => $color ) if defined $color;
+
+    return;
 }
 
 =head2 run_dialog
@@ -48,149 +210,225 @@ Show dialog
 
 =cut
 
-sub run_dialog {
-    my ( $self, $mw ) = @_;
+sub show_cfg_dialog {
+    my ( $self, $view ) = @_;
 
-    $self->{tlw} = $mw->Toplevel();
+    $self->{tlw} = $view->Toplevel();
     $self->{tlw}->title('Configs');
-    $self->{bg} = $mw->cget('-background');
+    #$self->{tlw}->geometry('480x520');
 
-    # Frame
-    my $frame1 = $self->{tlw}->LabFrame(
+    $self->{bg} = $view->cget('-background');
+    my $f1d = 130;              # distance from left
+
+    #-- Key bindings
+
+    $self->{tlw}->bind( '<Escape>', sub { $self->dlg_exit } );
+
+    $self->make_toolbar();
+    $self->make_statusbar();
+
+    #- Main frame
+
+    my $mf = $self->{tlw}->Frame();
+    $mf->pack(
+        -side   => 'top',
+        -expand => 1,
+        -fill   => 'both',
+    );
+
+    #-  Frame top - Entries
+
+    my $frm_top = $mf->LabFrame(
         -foreground => 'blue',
-        -label      => 'Font',
-        -labelside  => 'acrosstop',
+        -label      => 'Report Manager',
+        -labelside  => 'acrosstop'
     );
-    $frame1->grid(
-        $frame1,
-        -row    => 0,
-        -column => 0,
+    $frm_top->pack(
+        -expand => 0,
+        -fill   => 'x',
         -ipadx  => 3,
         -ipady  => 3,
-        -sticky => 'nsew',
     );
 
-    #- Font
+    #-- repman
 
-    my $lfont = $frame1->Label( -text => 'Current font name' );
-    $lfont->form(
-        -left => [ %0, 0 ],
-        -top  => [ %0, 0 ],
-        -padx => 5,
-        -pady => 5,
+    my $repman_label = "File: $self->{repman}";
+    my $lrepman = $frm_top->Label( -text => $repman_label, );
+    $lrepman->form(
+        -top     => [ %0, 5 ],
+        -left    => [ %0, 0 ],
+        -padleft => 10,
     );
 
-    my $efont = $frame1->Entry(
-        -width              => 25,
-        -disabledbackground => $self->{bg},
-        -disabledforeground => 'black',
+    my $erepman = $frm_top->Entry(
+        -width => 36,
     );
-    $efont->form(
-        -top  => [ $lfont, 0 ],
-        -left => [ %0,     10 ],
+    $erepman->form(
+        -top  => [ '&', $lrepman, 0 ],
+        -left => [ %0, ($f1d + 1) ],
     );
 
-    #- Limit
-
-    my $llimit
-        = $frame1->Label( -text => 'Limit number of records in list to', );
-    $llimit->form(
-        -left => [ %0,     0 ],
-        -top  => [ $efont, 0 ],
-        -padx => 5,
-        -pady => 5,
+    #-- button
+    $frm_top->Button(
+        -image   => 'fileopen16',
+        -command => sub { $self->update_value($view, 'repman') },
+    )->form(
+        -top  => [ '&', $lrepman, 0 ],
+        -left => [ $erepman, 3 ],
     );
 
-    my $elimit = $frame1->Entry(
-        -width              => 8,
-        -justify            => 'right',
-        -disabledbackground => $self->{bg},
-        -disabledforeground => 'black',
+    my $frm_bott = $mf->LabFrame(
+        -foreground => 'blue',
+        -label      => 'LaTeX / MikTex',
+        -labelside  => 'acrosstop'
     );
-    $elimit->form(
-        -top  => [ $llimit, 0 ],
-        -left => [ %0,      10 ],
-    );
-
-    #- Font button
-    my $fontb1 = $frame1->Button(
-        -text    => 'Sele',
-        -width   => 4,
-        -command => sub {
-            $self->dialog_show($mw);
-        },
-    );
-
-    $fontb1->form(
-        -top  => [ '&',    $lfont, 0 ],
-        -left => [ $efont, 10 ],
-    );
-
-    #-- Quit button frame
-
-    # Frame
-    my $frame2 = $self->{tlw}->Frame();
-    $frame2->grid(
-        $frame2,
-        -row    => 1,
-        -column => 0,
+    $frm_bott->pack(
+        -expand => 0,
+        -fill   => 'x',
         -ipadx  => 3,
         -ipady  => 3,
-        -sticky => 'nsew',
     );
 
-    my $qb = $frame2->Button(
-        -text    => 'Close',
-        -width   => 8,
-        -command => sub {
-            $self->dialog_quit;
-        },
-    )->pack( -side => 'top' );
+    #-- latex
+
+    my $latex_label = "File: $self->{latex}";
+    my $llatex = $frm_bott->Label( -text => $latex_label, );
+    $llatex->form(
+        -top     => [ %0, 0 ],
+        -left    => [ %0, 0 ],
+        -padleft => 10,
+    );
+
+    my $elatex = $frm_bott->Entry(
+        -width => 36,
+    );
+    $elatex->form(
+        -top  => [ '&', $llatex, 0 ],
+        -left => [ %0, ($f1d + 1) ],
+    );
+
+    #-- button
+    $frm_bott->Button(
+        -image   => 'fileopen16',
+        -command => sub { $self->update_value($view, 'latex') },
+    )->form(
+        -top  => [ '&', $llatex, 0 ],
+        -left => [ $elatex, 3 ],
+    );
+
+    # Entry objects: var_asoc, var_obiect
+    # Other configurations in '.conf'
+    $self->{controls} = {
+        repman => [ undef, $erepman ],
+        latex  => [ undef, $elatex ],
+    };
+
+    $self->load_config();
 
     return;
 }
 
-=head2 dialog_show
+sub load_config {
+    my $self = shift;
 
-Show font dialog
-
-=cut
-
-sub dialog_show {
-    my ( $self, $mw ) = @_;
-
-    my $fd = $mw->FontDialog(
-        -nicefont => 0,
-
-        #-font => $b->cget(-font),
-        -title            => 'Font selection',
-        -fixedfontsbutton => 1,
-        -nicefontsbutton  => 0,
-
-        # -sampletext => $sampletext,
-    );
-
-    my $font = $fd->Show;
-    if ( defined $font ) {
-        my $font_descriptive = $mw->GetDescriptiveFontName($font);
-        print $font_descriptive, "\n";
-
-        $mw->RefontTree( -font => $font );
+    my $appscfg_ref = $self->_cfg->cfextapps;
+    foreach my $field ( keys %{$appscfg_ref} ) {
+        my $path = $appscfg_ref->{$field}{exe_path};
+        $self->update_path_field( $field, $path );
     }
 
     return;
 }
 
-=head2 dialog_quit
+=head2 update_value
 
-Close dialog
+Callback to update the value of the paramater, using the file search
+dialog.
 
 =cut
 
-sub dialog_quit {
+sub update_value {
+    my ($self, $view, $field) = @_;
+
+    $self->_set_status('');     # clear status
+
+    my $initialdir = $self->get_init_dir($field);
+
+    my $types = [ [ 'Executable', $self->{$field} ], [ 'All Files', '*', ], ];
+    my $path = $view->getOpenFile(
+        -filetypes  => $types,
+        -initialdir => $initialdir,
+    );
+
+    if ($path and -f $path) {
+        $self->update_path_field($field, $path);
+    }
+    else {
+        $self->_set_status('Error, path not found', 'red');
+    }
+
+    # Check file name
+    my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
+    unless ($self->{$field} eq $file) {
+        $self->_set_status("Error, wrong file '$file'", 'red');
+    }
+
+    return;
+}
+
+=head2 get_init_dir
+
+If there is a value in the filed, use the path as initial dir for the
+dialog, else use the default.
+
+TODO: check on MSW, what about vol?
+
+=cut
+
+sub get_init_dir {
+    my ($self, $field) = @_;
+
+    my $path = $self->{controls}{$field}[1]->get();
+
+    if ($path) {
+        return ( File::Spec->splitpath($path) )[1]; # dir
+    }
+    else {
+        return $self->{initial_dir};
+    }
+}
+
+sub update_path_field {
+    my ( $self, $field, $value ) = @_;
+
+    eval {
+        my $state = $self->{controls}{$field}[1]->cget( -state );
+        $self->{controls}{$field}[1]->configure( -state => 'normal' );
+        $self->{controls}{$field}[1]->delete( 0, 'end' );
+        $self->{controls}{$field}[1]->insert( 0, $value );
+        $self->{controls}{$field}[1]->xview('end');
+        $self->{controls}{$field}[1]->configure( -state => $state );
+        my $color = -f $value ? 'darkgreen' : 'darkred';
+        $self->{controls}{$field}[1]->configure( -fg => $color );
+    };
+    if ($@) {
+        warn "Error: $@";
+    }
+
+    return;
+
+}
+
+=head2 dlg_exit
+
+Quit Dialog.
+
+=cut
+
+sub dlg_exit {
     my $self = shift;
 
-    $self->{'tlw'}->destroy;
+    $self->{tlw}->destroy;
 
     return;
 }

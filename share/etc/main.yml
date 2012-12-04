@@ -19,6 +19,6 @@ resource:
 externalapps:
   repman:
     exe_path: ~/bin/repman/printrep.bin
-  pdflatex:
+  latex:
     exe_path: /usr/share/texmf/bin/pdflatex
     options: -halt-on-error

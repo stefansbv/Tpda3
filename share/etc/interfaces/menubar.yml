@@ -34,18 +34,24 @@ menubar:
         sep: before
         key: Alt-P
       5:
-        name: mn_mn
-        label: Set default
-        underline: 4
-        sep: none
-        key: Alt-D
-      6:
         name: mn_sg
         label: Window geometry
         underline: 0
         sep: none
         key: Alt-W
+      6:
+        name: mn_mn
+        label: Set default
+        underline: 4
+        sep: before
+        key: Alt-D
       7:
+        name: mn_cf
+        label: Configurations
+        underline: 0
+        sep: none
+        key: Alt-C
+      8:
         name: mn_qt
         label: Quit
         underline: 1

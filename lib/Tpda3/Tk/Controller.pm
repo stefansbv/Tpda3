@@ -328,6 +328,99 @@ sub set_event_handler_screen {
     return;
 }
 
+=head2 setup_bindings_table
+
+Creates column bindings for table widgets created with
+C<Tk::TableMatrix> using the information from the I<tablebindings>
+section of the screen configuration.
+
+First it creates a dispatch table:
+
+ my $dispatch = {
+     colsub1 => \&lookup,
+     colsub4 => \&method,
+ };
+
+Then creates a class binding for I<method_for> subroutine to override
+the default return binding.  I<method_for> than uses the dispatch
+table to execute the appropriate function when the return key is
+pressed inside a cell.
+
+There are two functions defined, I<lookup> and I<method>.  The first
+activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
+key translations from a database table and fill the configured cells
+with the results.  The second can call a method in the current screen.
+
+=cut
+
+sub setup_bindings_table {
+    my $self = shift;
+
+    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls } ) {
+
+        my $bindings = $self->scrcfg('rec')->tablebindings->{$tm_ds};
+
+        my $dispatch = {};
+        foreach my $bind_type ( keys %{$bindings} ) {
+            next unless $bind_type;            # skip if just an empty tag
+
+            my $bnd = $bindings->{$bind_type};
+            if ( $bind_type eq 'lookup' ) {
+                foreach my $bind_name ( keys %{$bnd} ) {
+                    next unless $bind_name;    # skip if just an empty tag
+                    my $lk_bind = $bnd->{$bind_name};
+                    my $lookups = $self->add_dispatch_for_lookup($lk_bind);
+                    @{$dispatch}{ keys %{$lookups} } = values %{$lookups};
+                }
+            }
+            elsif ( $bind_type eq 'method' ) {
+                foreach my $bind_name ( keys %{$bnd} ) {
+                    next unless $bind_name;    # skip if just an empty tag
+                    my $mt_bind = $bnd->{$bind_name};
+                    my $methods = $self->add_dispatch_for_method($mt_bind);
+                    @{$dispatch}{ keys %{$methods} } = values %{$methods};
+                }
+            }
+            else {
+                print "WW: Binding type '$bind_type' not implemented\n";
+                return;
+            }
+
+            $self->_log->trace("Setup binding '$bind_type' for '$tm_ds' with:");
+            $self->_log->trace( sub { Dumper($bindings) } );
+        }
+
+        # Bindings:
+        my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
+
+        $tm->bind(
+            'Tpda3::Tk::TM',
+            '<Return>',
+            sub {
+                my $r = $tm->index( 'active', 'row' );
+                my $c = $tm->index( 'active', 'col' );
+
+                # Table refresh
+                $tm->activate('origin');
+                $tm->activate("$r,$c");
+                $tm->reread();
+
+                my $ci = $tm->cget( -cols ) - 1;    # max col index
+                my $sc = $self->method_for( $dispatch, $bindings, $r, $c,
+                    $tm_ds );
+                my $ac = $c;
+                $sc ||= 1;                          # skip cols
+                $ac += $sc;                         # new active col
+                $tm->activate("$r,$ac");
+                $tm->see('active');
+                Tk->break;
+            }
+        );
+    }
+
+    return;
+}
+
 =head2 about
 
 About application dialog.
@@ -708,6 +801,39 @@ sub tmshr_check_varnames {
     }
 
     return $check;
+}
+
+=head2 set_mnemonic
+
+Dialog to set the default mnemonic - application configuration to be
+used when none is specified.
+
+=cut
+
+sub set_mnemonic {
+    my $self = shift;
+
+    require Tpda3::Tk::Dialog::AppList;
+    my $dal = Tpda3::Tk::Dialog::AppList->new();
+    $dal->show_app_list($self->_view);
+
+    return;
+}
+
+=head2 set_app_configs
+
+Dialog to set runtime configurations for Tpda3.
+
+=cut
+
+sub set_app_configs {
+    my $self = shift;
+
+    require Tpda3::Tk::Dialog::Configs;
+    my $dc = Tpda3::Tk::Dialog::Configs->new();
+    $dc->show_cfg_dialog($self->_view);
+
+    return;
 }
 
 =head1 AUTHOR

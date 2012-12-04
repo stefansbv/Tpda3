@@ -34,18 +34,24 @@ menubar:
         sep: before
         key: Alt-P
       5:
-        name: mn_mn
-        label: Implicită
-        underline: 10
-        sep: none
-        key: Alt-I
-      6:
         name: mn_sg
         label: Geometrie fereastră
         underline: 0
         sep: none
         key: Alt-G
+      6:
+        name: mn_mn
+        label: Implicită
+        underline: 10
+        sep: before
+        key: Alt-I
       7:
+        name: mn_cf
+        label: Configurări
+        underline: 0
+        sep: none
+        key: Alt-C
+      8:
         name: mn_qt
         label: Ieşire
         underline: 0

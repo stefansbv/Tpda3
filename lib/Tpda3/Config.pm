@@ -722,6 +722,8 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
+    ouch 404, "Screen config not found" unless $file_name;
+
     # Check if has extension and add it if not
     my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );
     $file_name .= '.conf' unless $type; # defaults to .conf
