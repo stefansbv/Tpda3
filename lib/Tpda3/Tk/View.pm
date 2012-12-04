@@ -62,9 +62,9 @@ sub new {
     # Make a smaller font for buttons
     my $s_font = $self->fontCreate(
         'small',
-        -family=>'arial',
-        -weight=>'bold',
-        -size => 8,
+        -family => 'arial',
+        -weight => 'bold',
+        -size   => 8,
     );
 
     # Load resource file, if found

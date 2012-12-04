@@ -3,7 +3,6 @@ package Tpda3::Tk::Dialog::Search;
 use strict;
 use warnings;
 use utf8;
-
 use Ouch;
 
 use Tk::LabFrame;
@@ -181,7 +180,7 @@ sub search_dialog {
         -ipady  => 3,
         );
 
-    # Box header
+    #--- List header
 
     my @columns;
     my $colcnt = 0;

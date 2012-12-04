@@ -1353,13 +1353,13 @@ sub set_geometry {
     return;
 }
 
-=head2 on_quit
+=head2 on_close_window
 
-Quit.
+Destroy window on quit.
 
 =cut
 
-sub on_quit {
+sub on_close_window {
     my $self = shift;
 
     $self->Close(1);

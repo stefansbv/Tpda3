@@ -2,6 +2,7 @@ package Tpda3::Wx::Dialog::Search;
 
 use strict;
 use warnings;
+use Ouch;
 
 use Wx qw{:everything};
 use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER
@@ -127,29 +128,40 @@ sub search_dialog {
 
     #--- List header
 
-    my @header_cols = @{ $para->{columns} };
-    my $header_attr = {};
     my @columns;
-    foreach my $col (@header_cols) {
-        foreach my $field ( keys %{$col} ) {
+    my $colcnt = 0;
+    my $header_attr = {};
+    foreach my $rec ( @{ $para->{columns} } ) {
+        foreach my $field ( keys %{$rec} ) {
 
-            push @columns, $field;
+            # Use maping of name instead of 'field' if exists
+            if ( exists $rec->{$field}{name} ) {
+                push @columns, $rec->{$field}{name};
+            }
+            else {
+                push @columns, $field;
+            }
+
+            my $displ_width = $rec->{$field}{displ_width};
+            unless ($displ_width) {
+                ouch 'BadConfig',"No 'displ_width' for '$field'\n";
+            }
 
             # Width config is in chars.  Using chars_number x char_width
             # to compute the with in pixels
-            my $label_len = length $col->{$field}{label};
-            my $width     = $col->{$field}{displ_width};
+            my $label_len = length $rec->{$field}{label};
+            my $width     = $rec->{$field}{displ_width};
             $width = $label_len >= $width ? $label_len + 2 : $width;
             $width = 30 if $width >= 30;
             my $char_width = $view->GetCharWidth();
-            $header_attr->{$col} = {
-                label => $col->{$field}{label},
+            $header_attr->{$field} = {
+                label => $rec->{$field}{label},
                 width => $width * $char_width,
-                order => $col->{$field}{order},
+                order => $rec->{$field}{order},
             };
         }
     }
-    $self->make_list_header( \@header_cols, $header_attr );
+    $self->make_list_header(\@columns, $header_attr);
 
     $self->{_cols} = \@columns;    # store column names
 
@@ -333,19 +345,18 @@ Make the header for the list control.
 =cut
 
 sub make_list_header {
-    my ( $self, $header_cols, $header_attr ) = @_;
+    my ( $self, $columns_aref, $header_attr ) = @_;
 
     # Delete all items and all columns
     $self->{_list}->ClearAll();
 
     # Header
     my $colcnt = 0;
-    foreach my $col ( @{$header_cols} ) {
+    foreach my $col ( @{$columns_aref} ) {
         my $attr = $header_attr->{$col};
-
         $self->{_list}
             ->InsertColumn( $colcnt, $attr->{label}, wxLIST_FORMAT_LEFT,
-            $attr->{displ_width}, );
+            $attr->{width}, );
 
         $colcnt++;
     }

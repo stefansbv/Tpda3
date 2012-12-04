@@ -201,6 +201,28 @@ sub _set_event_handler_nb {
     return;
 }
 
+=head2 set_event_handler_screen
+
+Setup event handlers for the toolbar buttons configured in the
+C<scrtoolbar> section of the current screen configuration.
+
+Default usage is for the I<add> and I<delete> buttons attached to the
+TableMatrix widget.
+
+ tmatrix_add_row
+
+ tmatrix_remove_row
+
+=cut
+
+sub set_event_handler_screen {
+    my ( $self, $btn_group ) = @_;
+
+    print ' set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
+
+    return;
+}
+
 =head2 about
 
 The About dialog
