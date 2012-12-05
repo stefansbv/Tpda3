@@ -227,8 +227,7 @@ sub set_geometry_main {
         }
     }
     unless ($geom) {
-        # Failed, set main geom from config
-        $geom = $self->_cfg->cfgeom->{main};
+        $geom = '520x80+20+20';              # default geom
     }
 
     $self->geometry($geom);

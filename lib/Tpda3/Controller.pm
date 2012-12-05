@@ -105,6 +105,7 @@ sub start {
     $self->{_model}->_print('info#Connecting...');
     $self->{_view}->toggle_status_cn(0);
 
+    # Connect if user and pass or if driver is SQLite
     my $driver = $self->_cfg->connection->{driver};
     if (   ( $self->_cfg->user and $self->_cfg->pass )
         or ( $driver eq 'sqlite' ) )
@@ -113,8 +114,7 @@ sub start {
         return;
     }
 
-    #-- Retry until connected or canceled
-
+    # Retry until connected or canceled
     $self->start_delay()
         unless ( $self->_model->is_connected
         or $self->_cfg->connection->{driver} eq 'sqlite' );
@@ -122,25 +122,38 @@ sub start {
     return;
 }
 
+=head2 connect_dialog
+
+Show login dialog until connected or canceled.  Called with delay from
+Tk::Controller.
+
+=cut
+
 sub connect_dialog {
     my $self = shift;
 
+  TRY:
     while ( not $self->_model->is_connected ) {
 
-        # Login dialog if still not connected
-        if ( !$self->_model->is_connected ) {
-            my $return_string = $self->dialog_login();
-            $self->_model->db_connect();
-            last if $return_string eq 'shutdown';
+        # Show login dialog if still not connected
+        my $return_string = $self->dialog_login();
+        if ($return_string eq 'cancel') {
+            $self->_view->set_status( 'Connection cancelled', 'ms' );
+            last TRY;
         }
 
-        # Check errors
+        # Try to connect only if user and pass are provided
+        if ($self->_cfg->user and $self->_cfg->pass ) {
+            $self->_model->db_connect();
+        }
+
+        # Check for errors
         if ( my $message = $self->_model->get_exception ) {
             my ( $type, $mesg ) = split /#/, $message, 2;
             if ( $type =~ m{fatal}imx ) {
                 my $message = $self->localize( 'dialog', 'error-conn' );
                 $self->_view->dialog_error( $message, $mesg );
-                last;
+                last TRY;
             }
         }
     }

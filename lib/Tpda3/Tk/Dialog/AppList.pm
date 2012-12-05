@@ -104,10 +104,10 @@ sub show_app_list {
 
     my $attribs = {
         'tb4pr' => {
-            'tooltip' => 'Preview and print report',
+            'tooltip' => 'Save as default',
             'icon'    => 'filesave16',
             'sep'     => 'none',
-            'help'    => 'Preview and print report',
+            'help'    => 'Save as default',
             'method'  => sub { $self->save_as_default(); },
             'type'    => '_item_normal',
             'id'      => '20101',

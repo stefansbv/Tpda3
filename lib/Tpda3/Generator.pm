@@ -153,7 +153,7 @@ sub pdf_from_latex {
     $self->_log->info("Generating PDF from '$tex_file'");
 
     my $pdflatex_exe = $self->_cfg->cfextapps->{pdflatex}{exe_path};
-    my $pdflatex_opt = $self->_cfg->cfextapps->{pdflatex}{options};
+    my $pdflatex_opt = q{-halt-on-error};
     my $docspath     = $self->_cfg->cfrun->{docspath};
 
     my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );

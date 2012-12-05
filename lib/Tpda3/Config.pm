@@ -196,7 +196,6 @@ sub config_main_load {
     my $maincfg = $self->config_load_file($main_fqn);
 
     my $main_hr = {
-        cfgeom    => $maincfg->{geometry},
         cfiface   => $maincfg->{interface},
         cfrun     => $maincfg->{runtime},
         cfextapps => $maincfg->{externalapps},

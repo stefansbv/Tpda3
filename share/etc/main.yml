@@ -2,8 +2,6 @@
 # Interface configuration
 # Plain an simple localisation support.
 ---
-geometry:
-  main: 520x80+20+20
 interface:
   localize: etc/localisation/english.conf
   toolbar: etc/interfaces/toolbar.yml
@@ -21,4 +19,3 @@ externalapps:
     exe_path: ~/bin/repman/printrep.bin
   latex:
     exe_path: /usr/share/texmf/bin/pdflatex
-    options: -halt-on-error

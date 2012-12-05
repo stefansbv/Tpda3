@@ -187,7 +187,6 @@ sub get_exception {
     my $self = shift;
 
     my $exception = $self->get_exception_observable->get;
-
     $self->get_exception_observable->set();  # clear
 
     return $exception;
@@ -213,12 +212,12 @@ sub _disconnect {
 
 Return true if connected
 
+TODO: What if the connection is lost?
+
 =cut
 
 sub is_connected {
     my $self = shift;
-
-    # TODO: What if the connection is lost?
 
     return $self->get_connection_observable->get;
 }

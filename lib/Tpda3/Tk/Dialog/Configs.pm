@@ -133,10 +133,10 @@ sub make_toolbar {
 
     my $attribs = {
         'tb4pr' => {
-            'tooltip' => 'Preview and print report',
+            'tooltip' => 'Save configration',
             'icon'    => 'filesave16',
             'sep'     => 'none',
-            'help'    => 'Preview and print report',
+            'help'    => 'Save configration',
             'method'  => sub { $self->save_as_default(); },
             'type'    => '_item_normal',
             'id'      => '20101',
@@ -155,6 +155,16 @@ sub make_toolbar {
     my $toolbars = [ 'tb4pr', 'tb4qt', ];
 
     $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
+
+    return;
+}
+
+sub save_as_default {
+    my $self = shift;
+
+    foreach my $field ( keys %{ $self->{controls} } ) {
+        print " $field\n";
+    }
 
     return;
 }
@@ -213,12 +223,13 @@ Show dialog
 sub show_cfg_dialog {
     my ( $self, $view ) = @_;
 
-    $self->{tlw} = $view->Toplevel();
+    $self->{view} = $view;
+    $self->{tlw}  = $view->Toplevel();
     $self->{tlw}->title('Configs');
     #$self->{tlw}->geometry('480x520');
 
     $self->{bg} = $view->cget('-background');
-    my $f1d = 130;              # distance from left
+    my $f1d = 135;              # distance from left
 
     #-- Key bindings
 
@@ -240,7 +251,7 @@ sub show_cfg_dialog {
 
     my $frm_top = $mf->LabFrame(
         -foreground => 'blue',
-        -label      => 'Report Manager',
+        -label      => 'External apps',
         -labelside  => 'acrosstop'
     );
     $frm_top->pack(
@@ -250,12 +261,21 @@ sub show_cfg_dialog {
         -ipady  => 3,
     );
 
+    #-- extapp1
+
+    my $lextapp1 = $frm_top->Label( -text => 'Report Manager', );
+    $lextapp1->form(
+        -top     => [ %0, 0 ],
+        -right   => [ %100, -35 ],
+        -padleft => 5,
+    );
+
     #-- repman
 
     my $repman_label = "File: $self->{repman}";
     my $lrepman = $frm_top->Label( -text => $repman_label, );
     $lrepman->form(
-        -top     => [ %0, 5 ],
+        -top     => [ $lextapp1, 8 ],
         -left    => [ %0, 0 ],
         -padleft => 10,
     );
@@ -269,58 +289,100 @@ sub show_cfg_dialog {
     );
 
     #-- button
+
     $frm_top->Button(
         -image   => 'fileopen16',
-        -command => sub { $self->update_value($view, 'repman') },
+        -command => sub { $self->update_value('repman', 'file') },
     )->form(
         -top  => [ '&', $lrepman, 0 ],
         -left => [ $erepman, 3 ],
     );
 
-    my $frm_bott = $mf->LabFrame(
-        -foreground => 'blue',
-        -label      => 'LaTeX / MikTex',
-        -labelside  => 'acrosstop'
+    #-- extapp2
+
+    my $lextapp2 = $frm_top->Label(
+        -text => 'LaTeX / MikTex',
     );
-    $frm_bott->pack(
-        -expand => 0,
-        -fill   => 'x',
-        -ipadx  => 3,
-        -ipady  => 3,
+    $lextapp2->form(
+        -top     => [ $lrepman, 8 ],
+        -right   => [ %100, -35 ],
+        -padleft => 5,
     );
 
     #-- latex
 
     my $latex_label = "File: $self->{latex}";
-    my $llatex = $frm_bott->Label( -text => $latex_label, );
+    my $llatex = $frm_top->Label( -text => $latex_label, );
     $llatex->form(
-        -top     => [ %0, 0 ],
+        -top     => [ $lextapp2, 8 ],
         -left    => [ %0, 0 ],
         -padleft => 10,
     );
 
-    my $elatex = $frm_bott->Entry(
+    my $elatex = $frm_top->Entry(
         -width => 36,
     );
     $elatex->form(
         -top  => [ '&', $llatex, 0 ],
-        -left => [ %0, ($f1d + 1) ],
+        -left => [ %0, $f1d ],
     );
 
     #-- button
-    $frm_bott->Button(
+    $frm_top->Button(
         -image   => 'fileopen16',
-        -command => sub { $self->update_value($view, 'latex') },
+        -command => sub { $self->update_value('latex', 'file') },
     )->form(
         -top  => [ '&', $llatex, 0 ],
         -left => [ $elatex, 3 ],
     );
 
+    #-  Frame bottom - Entries
+
+    my $frm_bottom = $mf->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Other paths',
+        -labelside  => 'acrosstop'
+    );
+    $frm_bottom->pack(
+        -side   => 'bottom',
+        -expand => 1,
+        -fill   => 'x',
+        -ipadx  => 3,
+        -ipady  => 3,
+    );
+
+    #-- docspath
+    my $ldocspath = $frm_bottom->Label( -text => 'Documents output' );
+    $ldocspath->form(
+        -top     => [ %0, 0 ],
+        -left    => [ %0, 0 ],
+        -padleft => 5,
+    );
+    my $edocspath = $frm_bottom->MEntry(
+        -width              => 36,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
+    $edocspath->form(
+        -top     => [ '&', $ldocspath, 0 ],
+        -left    => [ %0, $f1d ],
+    );
+
+    #-- button
+    $frm_bottom->Button(
+        -image   => 'folderopen16',
+        -command => sub { $self->update_value('docspath', 'path') },
+    )->form(
+        -top  => [ '&', $ldocspath, 0 ],
+        -left => [ $edocspath, 3 ],
+    );
+
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
     $self->{controls} = {
-        repman => [ undef, $erepman ],
-        latex  => [ undef, $elatex ],
+        repman   => [ undef, $erepman ],
+        latex    => [ undef, $elatex ],
+        docspath => [ undef, $edocspath ],
     };
 
     $self->load_config();
@@ -331,10 +393,18 @@ sub show_cfg_dialog {
 sub load_config {
     my $self = shift;
 
+    #- externalapps section in main.yml
     my $appscfg_ref = $self->_cfg->cfextapps;
     foreach my $field ( keys %{$appscfg_ref} ) {
         my $path = $appscfg_ref->{$field}{exe_path};
-        $self->update_path_field( $field, $path );
+        $self->update_path_field( $field, $path, 'file' );
+    }
+
+    #- runtime section in main.yml
+    my $runcfg_ref = $self->_cfg->cfrun;
+    foreach my $field ( keys %{$runcfg_ref} ) {
+        my $path = $runcfg_ref->{$field};
+        $self->update_path_field( $field, $path, 'path' );
     }
 
     return;
@@ -348,32 +418,71 @@ dialog.
 =cut
 
 sub update_value {
-    my ($self, $view, $field) = @_;
+    my ($self, $field, $type) = @_;
 
     $self->_set_status('');     # clear status
+
+    my $sub_name = "dialog_$type";
+    my $path = $self->$sub_name($field);
+
+    $self->update_path_field($field, $path, $type);
+
+    # Check if file name match the desired one
+    if ( $type eq 'file' ) {
+        my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
+        unless ( $self->{$field} eq $file ) {
+            $self->_set_status( "Error, wrong file '$file'", 'red' );
+        }
+    }
+
+    return;
+}
+
+=head2 dialog_file
+
+File dialog.
+
+=cut
+
+sub dialog_file {
+    my ($self, $field) = @_;
 
     my $initialdir = $self->get_init_dir($field);
 
     my $types = [ [ 'Executable', $self->{$field} ], [ 'All Files', '*', ], ];
-    my $path = $view->getOpenFile(
+    my $path = $self->{tlw}->getOpenFile(
         -filetypes  => $types,
         -initialdir => $initialdir,
     );
 
-    if ($path and -f $path) {
-        $self->update_path_field($field, $path);
+    unless ($path and -f $path) {
+        $self->_set_status('Error, file not found', 'red');
     }
-    else {
+
+    return $path;
+}
+
+=head2 dialog_path
+
+Path dialog.
+
+=cut
+
+sub dialog_path {
+    my ($self, $field) = @_;
+
+    my $initialdir = $self->get_init_dir($field);
+
+    my $path = $self->{tlw}->chooseDirectory(
+        -initialdir => '~',
+        -title      => 'Choose a folder',
+    );
+
+    unless ($path and -d $path) {
         $self->_set_status('Error, path not found', 'red');
     }
 
-    # Check file name
-    my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
-    unless ($self->{$field} eq $file) {
-        $self->_set_status("Error, wrong file '$file'", 'red');
-    }
-
-    return;
+    return $path;
 }
 
 =head2 get_init_dir
@@ -399,7 +508,9 @@ sub get_init_dir {
 }
 
 sub update_path_field {
-    my ( $self, $field, $value ) = @_;
+    my ($self, $field, $value, $type) = @_;
+
+    return unless $field and $value;
 
     eval {
         my $state = $self->{controls}{$field}[1]->cget( -state );
@@ -408,12 +519,19 @@ sub update_path_field {
         $self->{controls}{$field}[1]->insert( 0, $value );
         $self->{controls}{$field}[1]->xview('end');
         $self->{controls}{$field}[1]->configure( -state => $state );
-        my $color = -f $value ? 'darkgreen' : 'darkred';
-        $self->{controls}{$field}[1]->configure( -fg => $color );
     };
     if ($@) {
         warn "Error: $@";
     }
+
+    my $color;
+    if ($type eq 'path') {
+        $color = -d $value ? 'darkgreen' : 'darkred';
+    }
+    else {
+        $color = -f $value ? 'darkgreen' : 'darkred';
+    }
+    $self->{controls}{$field}[1]->configure( -fg => $color );
 
     return;
 
