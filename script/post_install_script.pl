@@ -13,7 +13,7 @@
 use strict;
 use warnings;
 
-use Cava::Packager; 
+use Cava::Packager;
 use File::HomeDir;
 use File::ShareDir qw(dist_dir);
 use File::Spec::Functions;
@@ -23,7 +23,7 @@ use Text::CSV_XS;
 use Try::Tiny;
 
 Cava::Packager::SetResourcePath('C:/dev/tpda3-src/share/cm');
-	
+
 create_classicmodels();
 
 load_classicmodels_data();
@@ -54,9 +54,7 @@ sub create_classicmodels {
 
     my $dbfile = get_testdb_filename();
 
-    if (-f $dbfile) {
-		exit 0; # Do nothing if DB exists
-    }
+    unlink $dbfile if -f $dbfile;            # replace test database
 
     my $dbh = connect_to_db($dbfile);
 
@@ -67,7 +65,7 @@ sub create_classicmodels {
     }
     else {
         print " SQL test database schema $sql_file not found!\n";
-		exit 0;
+        exit 0;
     }
 
     $dbh->{sqlite_allow_multiple_statements} = 1;    # cool!
@@ -159,11 +157,11 @@ sub get_testdb_filename {
 }
 
 sub get_sql_filename {
-	return RF('sql/classicmodels-si.sql'); 
+    return RF('sql/classicmodels-si.sql');
 }
 
 sub get_data_dir {
-	return RF('data'); 
+    return RF('data');
 }
 
 sub data_file_list {
@@ -175,5 +173,5 @@ sub data_file_list {
 }
 
 sub RF {
-	Cava::Packager::Resource( shift ); 
-} 
+    Cava::Packager::Resource( shift );
+}
