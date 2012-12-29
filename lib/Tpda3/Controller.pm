@@ -773,6 +773,7 @@ sub _check_app_menus {
         eval { require $module_file };
         if ($@) {
             $self->_view->set_menu_enable($menu_item, 'disabled');
+            print "$menu_item screen disabled ($module_file).\n";
         }
     }
 

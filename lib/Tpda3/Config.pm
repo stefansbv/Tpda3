@@ -8,6 +8,7 @@ use Log::Log4perl qw(get_logger :levels);
 use File::Basename;
 use File::HomeDir;
 use File::ShareDir qw(dist_dir);
+
 use File::UserConfig;
 use File::Spec::Functions;
 use File::Copy::Recursive ();
@@ -600,14 +601,19 @@ sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
 
     my $configdir = $self->configdir($new_cfname);
-    my $sharedir  = $self->sharedir($cfname);
+    my $sharedir  = $self->sharedir($cfname); # only for the Tpda3 Test app
 
-    # Alternate share directory
-    if ( !-d $sharedir ) {
+    # Alternate share directory for independet app modules
+    unless ( -d $sharedir ) {
         # Funny algorithm to get the distribution name :)
         my $distname = $cfname =~ m{\d} ? uc $cfname : ucfirst $cfname;
         $sharedir = dist_dir( 'Tpda3-' . $distname );
         $sharedir = catdir( $sharedir, 'apps', $cfname );
+    }
+
+    # Fallback to the module source dir in CWD
+    unless ( -d $sharedir ) {
+        $sharedir = catdir( 'share', 'apps', $cfname);
     }
 
     $self->{_log}->info("Config: $configdir");
@@ -615,7 +621,8 @@ sub configdir_populate {
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
-        or ouch 'CfgInsErr', "Failed to copy app user data to '$configdir'";
+        or ouch 'CfgInsErr',
+        "Failed to copy user data from '$sharedir' to '$configdir'";
 
     return;
 }
