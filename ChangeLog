@@ -1,3 +1,27 @@
+2012-12-29
+
+	* Release v0.61. For copying user data fallback to ./share dir
+	from the dist.
+
+2012-12-05
+
+	* Remove attributes form main.yml which are not real options and
+	move them into code. Overwrite test db in post install script.
+
+2012-12-04
+
+	* Add new config dialog for external apps.  Wx search dialog works
+	with new scr config version.
+
+2012-12-03
+
+	* Ignore doc sub for distributions
+
+2012-12-02
+
+	* Release v0.60
+
+
 2012-12-02
 
 	* Update doc draft.  Fix instance config file path.  Add devel doc
