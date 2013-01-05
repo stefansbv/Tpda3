@@ -232,47 +232,6 @@ sub show_app_list {
     $self->{tmx}->clear_all;
     $self->{tmx}->configure(-state => 'disabled');
 
-    #-- Bindings for selection handling
-
-    # Clean up if mouse leaves the widget
-    $self->{tmx}->bind(
-        '<FocusOut>',
-        sub {
-            my $w = shift;
-            $w->selectionClear('all');
-        }
-    );
-
-    # Highlight the cell under the mouse
-    $self->{tmx}->bind(
-        '<Motion>',
-        sub {
-            my $w  = shift;
-            my $Ev = $w->XEvent;
-            if ( $w->selectionIncludes( '@' . $Ev->x . "," . $Ev->y ) ) {
-                Tk->break;
-            }
-            $w->selectionClear('all');
-            $w->selectionSet( '@' . $Ev->x . "," . $Ev->y );
-            Tk->break;
-        }
-    );
-
-    # MouseButton 1 toggles the value of the cell
-    $self->{tmx}->bind(
-        '<1>',
-        sub {
-            my $w = shift;
-            $w->focus;
-            my $cs = $w->curselection;
-            if ( defined $cs ) {
-                my ($rc) = @{$cs};
-                my ( $r, $c ) = split( ',', $rc );
-                $self->select_idx($r); # load details
-            }
-        }
-    );
-
     #-  Frame middle - Entries
 
     my $frm_middle = $mf->LabFrame(
