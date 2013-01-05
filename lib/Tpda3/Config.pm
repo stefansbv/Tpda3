@@ -603,7 +603,7 @@ sub configdir_populate {
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname); # only for the Tpda3 Test app
 
-    # Alternate share directory for independet app modules
+    # Alternate share directory for independent app modules
     unless ( -d $sharedir ) {
         # Funny algorithm to get the distribution name :)
         my $distname = $cfname =~ m{\d} ? uc $cfname : ucfirst $cfname;

@@ -78,7 +78,7 @@ SWITCH: for ($driver) {
             $db = Tpda3::Db::Connection::Firebird->new($model);
             last SWITCH;
         };
-        /postgresql/xi && do {
+        /pg|postgresql/xi && do {
             require Tpda3::Db::Connection::Postgresql;
             $db = Tpda3::Db::Connection::Postgresql->new($model);
             last SWITCH;
@@ -96,34 +96,6 @@ SWITCH: for ($driver) {
 
     $self->{dbc} = $db;
     $self->{dbh} = $db->db_connect($conf);
-
-    return;
-}
-
-=head2 read_username
-
-Read and return user name from command line
-
-=cut
-
-sub read_username {
-    my $self = shift;
-
-    carp 'read_username not implemented';
-
-    return;
-}
-
-=head2 read_password
-
-Read and return password from command line
-
-=cut
-
-sub read_password {
-    my $self = shift;
-
-    carp 'read_password not implemented';
 
     return;
 }

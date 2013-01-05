@@ -1,6 +1,6 @@
 2012-12-29
 
-	* Release v0.61. For copying user data fallback to ./share dir
+	* Release v0.61. For copying user data, fallback to ./share dir
 	from the dist.
 
 2012-12-05
@@ -186,7 +186,7 @@
 2012-06-12
 
 	* Create TM widgets in screen not handled by the controller and
-	toolbars handled by the controller.x
+	toolbars handled by the controller.
 
 2012-06-10
 

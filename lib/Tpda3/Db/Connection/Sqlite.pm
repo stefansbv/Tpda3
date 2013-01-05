@@ -94,7 +94,9 @@ sub db_connect {
     catch {
         # Connection errors
         my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message);
+        $self->{model}->exception_log($user_message)
+            if defined $self->{model}
+            and $self->{model}->isa('Tpda3::Model');
     };
 
     return $self->{_dbh};

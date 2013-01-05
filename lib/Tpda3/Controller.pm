@@ -23,6 +23,7 @@ require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
 require Tpda3::Selected;
+require Tpda3::Generator;
 
 =head1 NAME
 
@@ -2501,7 +2502,6 @@ sub screen_document_generate {
         return;
     }
 
-    require Tpda3::Generator;
     my $gen = Tpda3::Generator->new();
 
     #-- Generate LaTeX document from template

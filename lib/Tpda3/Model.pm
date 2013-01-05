@@ -120,7 +120,7 @@ sub db_connect {
         $self->_print($message);
     }
 
-    return $self;
+    return;
 }
 
 =head2 dbh

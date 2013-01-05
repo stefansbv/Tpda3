@@ -89,12 +89,14 @@ sub db_connect {
             }
         ) or $self->handle_error(DBI->errstr);
 
-        $log->info("Connected to 'dbname'");
+        $log->info("Connected to '$dbname'");
     }
     catch {
         # Connection errors
         my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message);
+        $self->{model}->exception_log($user_message)
+            if defined $self->{model}
+            and $self->{model}->isa('Tpda3::Model');
     };
 
     # Default date format: ISO

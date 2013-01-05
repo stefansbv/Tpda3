@@ -3,7 +3,7 @@ package Tpda3::Db;
 use strict;
 use warnings;
 
-# use Log::Log4perl qw(get_logger);
+use Scalar::Util qw(blessed);
 
 require Tpda3::Db::Connection;
 
@@ -100,9 +100,8 @@ Destroy method.
 sub DESTROY {
     my $self = shift;
 
-    if ( defined $self->{conn}{dbh} ) {
+    if ( blessed $self->{conn}{dbh} and $self->{conn}{dbh}->isa('DBI::db') ) {
         $self->{conn}{dbh}->disconnect;
-        print "Disconnected.\n";
     }
 
     return;

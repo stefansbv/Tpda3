@@ -92,13 +92,13 @@ sub tex_from_template {
 
     my ($model, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
 
-    my $file_out = "$model.tex";
+    my $file_out = qq{$model.tex};
 
-    $self->_log->info("Generating '$model.tex' from '$model.tt'");
+    $self->_log->info(qq{Generating "$model.tex" from "$model.tt"});
 
     my $cnt = unlink $file_out;
     if ($cnt == 1) {
-        $self->_log->info("Removed temporary file: $file_out");
+        $self->_log->info(qq{Removed temporary file: "$file_out"});
     }
 
     my $tt = Template->new({
@@ -132,12 +132,11 @@ sub tex_from_template {
             || die $tt->error(), "\n";
     }
     catch {
-        $self->_log->error('TT Error: ' . $tt->error )
-            or print STDERR 'TT Error: ', $tt->error, "\n";
+        $self->_log->error('TT Error: ' . $tt->error );
         return;
     };
 
-    return catfile($output_path, "$model.tex");
+    return catfile($output_path, qq{$model.tex});
 }
 
 =head2 pdf_from_latex
@@ -150,17 +149,17 @@ L<pdflatex> returns 0.
 sub pdf_from_latex {
     my ($self, $tex_file) = @_;
 
-    $self->_log->info("Generating PDF from '$tex_file'");
+    $self->_log->info(qq{Generating PDF from "$tex_file"});
 
-    my $pdflatex_exe = $self->_cfg->cfextapps->{pdflatex}{exe_path};
+    my $pdflatex_exe = $self->_cfg->cfextapps->{latex}{exe_path};
     my $pdflatex_opt = q{-halt-on-error};
     my $docspath     = $self->_cfg->cfrun->{docspath};
 
     my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
-    my $output_pdf = catfile($docspath, "$name.pdf");
+    my $output_pdf = catfile($docspath, qq{$name.pdf});
     my $cnt = unlink $output_pdf;
     if ($cnt == 1) {
-        $self->_log->info("Removed temporary file: $output_pdf");
+        $self->_log->info(qq{Removed temporary file: "$output_pdf"});
     }
 
     $pdflatex_opt .= q{ -output-directory=} . qq{"$docspath"};
@@ -179,8 +178,8 @@ sub pdf_from_latex {
     }
 
     if ($error_str) {
-        $self->_log->debug("CMD: $cmd");
-        $self->_log->debug("EE: $error_str");
+        $self->_log->info("CMD: $cmd");
+        $self->_log->info("EE: $error_str");
         return;
     }
 
