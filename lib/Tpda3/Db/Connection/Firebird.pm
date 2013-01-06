@@ -16,11 +16,11 @@ Tpda3::Db::Connection::Firebird - Connect to a Firebird database.
 
 =head1 VERSION
 
-Version 0.61
+Version 0.62
 
 =cut
 
-our $VERSION = 0.61;
+our $VERSION = 0.62;
 
 =head1 SYNOPSIS
 

@@ -23,11 +23,11 @@ Tpda3::Config::Utils - Utility functions for config paths and files
 
 =head1 VERSION
 
-Version 0.61
+Version 0.62
 
 =cut
 
-our $VERSION = 0.61;
+our $VERSION = 0.62;
 
 =head1 SYNOPSIS
 
