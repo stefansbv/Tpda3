@@ -53,8 +53,8 @@ requires 'Tk::RadiobuttonGroup' => '0';
 
 #- For generating PDF from TeX
 
-recommends 'IPC::Run3' => '0';
-recommends 'Template'  => '0';
+requires 'IPC::Run3' => '0';
+requires 'Template'  => '0';
 
 #- and/or Wx - Experimental
 

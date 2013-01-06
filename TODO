@@ -4,14 +4,12 @@ Note: Main development focus is on the PerlTk interface, at least
       until I find (and learn to use) equivalent Wx controls for the
       screens, with the same functionality as the PerlTk widgets have.
 
-* To do [16%]
+* To do [20%]
   - [ ] Improve exception handling, error reporting and user messages;
-  - [ ] Enable/disable Logging from CLI and/or GUI;
   - [ ] Test Log::Dispatch::FileRotate;
   - [X] Implement language support (translations);
   - [ ] Date fields and date validation in TM;
   - [ ] Implement CUBRID support;
-  - [ ] Refactor (again) the config modules ::Config and ::Config::Screen
 
 * Someday, maybe [0%]
   - [ ] Custom search menu and tool (for queries like records inserted today);
