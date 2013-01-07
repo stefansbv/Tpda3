@@ -1,26 +1,29 @@
+Tpda3 (Tiny Perl Database Application 3)
+========================================
+Ștefan Suciu <stefan@s2i2.ro>
+01/07/13
+
 Version: 0.62
 
-Tpda3 (Tiny Perl Database Application 3)
 Copyright (C) 2010-2012  Stefan Suciu
 GNU General Public License v3
 
 Tpda3 is a classic desktop database application framework and
-run-time, written in Perl.  Has PerlTk and (experimental) wxPerl
-support for the GUI part and Firebird and PostgreSQL support for the
-RDBMS.
+run-time, written in Perl.  The graphical user interface is based on
+PerlTk. It supports the Firebird and PostgreSQL RDBMS.
+
+There is also an early, experimental, graphical user interface based
+on wxPerl.
 
 
-REQUIREMENTS
+Requirements
+------------
 
 - Perl v5.8.9 or newer.
 
-- RDBMS:
-
-Because it's based on the "INSERT ... RETURNING" SQL statement,
-requires:
-
- PostgreSQL version 8.2 or greater or
- Firebird version 2.1 or greater
+- PostgreSQL version 8.2 or greater or
+- Firebird version 2.1 or greater
+  (Because of the "INSERT ... RETURNING" SQL statement, feature).
 
 Also it has limited SQLite support (used only for testing). Inserting
 records doesn't work.
@@ -40,18 +43,22 @@ The configuration files formats are new and are in YAML (YAML::Tiny)
 and Apache format (Config::General).
 
 
-TROUBLESHOOTING
+Troubleshooting
+---------------
 
 See README.trouble. There is a new dir on SF with some patched modules.
 
 
-DEVELOPMENT
+Development
+-----------
 
 Development takes place, currently, on GitHub:
-https://github.com/stefansbv/Tpda3
+
+    https://github.com/stefansbv/Tpda3
 
 
-LICENSE AND COPYRIGHT
+License And Copyright
+---------------------
 
 Copyright (C) 2010-2012 Stefan Suciu
 
