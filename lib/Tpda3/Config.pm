@@ -271,6 +271,31 @@ sub config_application_load {
     return;
 }
 
+=head2 validate_config
+
+Return I<true>, if the required Tpda3 application module is loadable
+and I<false> if not.
+
+=cut
+
+sub validate_config {
+    my ( $self, $cfname ) = @_;
+
+    my $cfg_file
+        = catfile( $self->configdir($cfname), 'etc', 'application.yml' );
+    my $cfg_href = $self->config_load_file($cfg_file);
+
+    my $widgetset   = $cfg_href->{application}{widgetset};
+    my $module_name = $cfg_href->{application}{module};
+
+    my $module_class = $self->application_class( $widgetset, $module_name );
+    ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
+
+    eval { require $module_file };
+
+    return $@ ? 0 : 1;
+}
+
 =head2 config_load
 
 Load configuration file and make accessors.
@@ -360,12 +385,15 @@ sub list_mnemonics_all {
         return;
     }
 
+    my $default = $self->get_default_mnemonic();
+
     print "Configurations (mnemonics):\n";
-    foreach my $cfg_name ( @{$mnemonics} ) {
-        $self->get_default_mnemonic eq $cfg_name
-            ? ( print " *> $cfg_name\n" )
-            : ( print "  > $cfg_name\n" );
+    foreach my $name ( @{$mnemonics} ) {
+        my $v = $self->validate_config($name) ? ' ' : '!';
+        my $d = $default eq $name             ? '*' : ' ';
+        print " ${d}>${v}$name\n";
     }
+
     print ' in ', $self->cfapps, "\n";
 
     return;
@@ -387,7 +415,9 @@ sub list_mnemonic_details_for {
         return;
     }
 
-    print "Configuration:\n";
+    my $v = $self->validate_config($mnemonic) ? 'v' : '!';
+
+    print "Configuration ($v):\n";
     print "  > mnemonic: $mnemonic\n";
     while ( my ( $key, $value ) = each( %{ $conn_ref->{connection} } ) ) {
         print sprintf( "%*s", 11, $key ), ' = ';
@@ -782,6 +812,21 @@ sub config_misc_load {
     $self->make_accessors($config_hr);
 
     return $config_hr;                       # do we need this?
+}
+
+=head2 application_class
+
+Main application class name.
+
+=cut
+
+sub application_class {
+    my ( $self, $widgetset, $module ) = @_;
+
+    $widgetset ||= $self->application->{widgetset};
+    $module    ||= $self->application->{module};
+
+    return qq{Tpda3::${widgetset}::App::${module}};
 }
 
 =head1 AUTHOR

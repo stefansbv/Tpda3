@@ -54,7 +54,7 @@ Development
 
 Development takes place, currently, on GitHub:
 
-    https://github.com/stefansbv/Tpda3
+https://github.com/stefansbv/Tpda3
 
 
 License And Copyright

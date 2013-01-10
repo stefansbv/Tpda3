@@ -117,22 +117,6 @@ sub dialog_login {
     return $pd->login( $self->_view );
 }
 
-=head2 application_class
-
-Main application class name.
-
-TODO: This should go to Config?
-
-=cut
-
-sub application_class {
-    my $self = shift;
-
-    my $app_name  = $self->_cfg->application->{module};
-
-    return "Tpda3::Tk::App::${app_name}";
-}
-
 =head2 screen_module_class
 
 Return screen module class and file name.
@@ -147,7 +131,7 @@ sub screen_module_class {
         $module_class = "Tpda3::Tk::Tools::${module}";
     }
     else {
-        $module_class = $self->application_class . "::${module}";
+        $module_class = $self->_cfg->application_class() . "::${module}";
     }
 
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
@@ -470,7 +454,7 @@ sub about {
     my $PROGRAM_VER  = $Tpda3::VERSION;
 
     # Get application version
-    my $app_class = $self->application_class;
+    my $app_class = $self->_cfg->application_class();
     ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
     my ( $APP_VER, $APP_NAME ) = ( '', '' );
     eval {

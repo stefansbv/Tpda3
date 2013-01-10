@@ -107,20 +107,6 @@ sub dialog_login {
     return $return_string;
 }
 
-=head2 application_class
-
-Main application class name.
-
-=cut
-
-sub application_class {
-    my $self = shift;
-
-    my $app_name  = $self->_cfg->application->{module};
-
-    return "Tpda3::Wx::App::${app_name}";
-}
-
 =head2 screen_module_class
 
 Return screen module class and file name.
@@ -135,7 +121,7 @@ sub screen_module_class {
         $module_class = "Tpda3::Wx::Tools::${module}";
     }
     else {
-        $module_class = $self->application_class . "::${module}";
+        $module_class = $self->_cfg->application_class() . "::${module}";
     }
 
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
@@ -218,8 +204,6 @@ TableMatrix widget.
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
 
-    print ' set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
@@ -239,7 +223,7 @@ sub about {
     my $LICENSE = Tpda3::Config::Utils->get_license();
 
     # Get application version
-    my $app_class = $self->application_class;
+    my $app_class = $self->fg->application_class();
     ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
     my ( $APP_VER, $APP_NAME ) = ( '', '' );
     eval {
