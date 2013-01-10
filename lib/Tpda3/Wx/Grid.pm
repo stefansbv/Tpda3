@@ -46,13 +46,14 @@ sub new {
         $parent, $id || -1,
         $pos  || [ -1, -1 ],
         $size || [ -1, -1 ],
-        ( $style || 0 )
+        ( $style || 0 ),
     );
 
-    my $datatable
-        = Tpda3::Wx::GridTable->new( { fields => [qw(col1 col2 col3)] } );
+    my $dt = Tpda3::Wx::GridTable->new( { fields => [qw(col1 col2)] } );
 
-    $self->SetTable($datatable);
+    # Use of uninitialized value in subroutine entry at lib/Tpda3.pm line 138
+    $self->SetTable($dt);
+    # !!! as many times as the number of cols ;)
 
     return $self;
 }
