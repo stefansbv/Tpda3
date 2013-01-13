@@ -13,6 +13,8 @@ use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 
+use Tpda3::Exceptions;
+
 require Tpda3::Config;
 require Tpda3::Codings;
 require Tpda3::Observable;
@@ -136,7 +138,13 @@ sub dbh {
 
     return $db->dbh if $self->is_connected;
 
-    ouch 'NoC', 'Not connected';
+    #ouch 'NoC', 'Not connected';
+    Toda3::Exception::Db::Connect->throw(
+        logmsg  => 'Not connected',
+        usermsg => 'Not connected',
+    );
+
+    return;
 }
 
 =head2 dbc
@@ -415,7 +423,11 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        ouch( 'CountError', $self->user_message($_) );
+        #ouch( 'CountError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     $record_count = 0 unless defined $record_count;
@@ -452,7 +464,11 @@ sub query_records_find {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        ouch( 'FindError', $self->user_message($_) );
+        #ouch( 'FindError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     return ($ary_ref, $search_limit);
@@ -499,7 +515,11 @@ sub query_filter_find {
         }
     }
     catch {
-        ouch( 'BatchQueryError', $self->user_message($_) );
+        #ouch( 'BatchQueryError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     return \@records;
@@ -530,7 +550,11 @@ sub query_record {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        ouch( 'QueryError', $self->user_message($_) );
+        #ouch( 'QueryError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     return $hash_ref;
@@ -566,7 +590,11 @@ sub table_batch_query {
         }
     }
     catch {
-        ouch( 'BatchQueryError', $self->user_message($_) );
+        #ouch( 'BatchQueryError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     return \@records;
@@ -599,7 +627,11 @@ sub query_dictionary {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        ouch( 'QueryError', $self->user_message($_) );
+        #ouch( 'QueryError', $self->user_message($_) );
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->dbh->errstr,
+            usermsg => 'SQL error',
+        );
     };
 
     return $ary_ref;

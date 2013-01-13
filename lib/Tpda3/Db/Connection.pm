@@ -8,6 +8,9 @@ use Log::Log4perl qw(get_logger);
 
 use DBI;
 
+use Try::Tiny;
+use Tpda3::Exceptions;
+
 require Tpda3::Config;
 
 =head1 NAME
@@ -95,7 +98,24 @@ SWITCH: for ($driver) {
     }
 
     $self->{dbc} = $db;
-    $self->{dbh} = $db->db_connect($conf);
+
+    try {
+        $self->{dbh} = $db->db_connect($conf);
+    }
+    catch {
+        if ( my $e = Exception::Base->catch($_) ) {
+            if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+                print "Db connect problem\n";
+                print $e->usermsg, "\n";
+                print $e->logmsg, "\n";
+            }
+            else {
+                print "*** caught UNKNOWN!";
+                print $e->usermsg, "\n";
+                print $e->logmsg, "\n";
+            }
+        }
+    };
 
     return;
 }

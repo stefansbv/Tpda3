@@ -6,7 +6,8 @@ use warnings;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 
-use Ouch;
+use Tpda3::Exception;
+
 use Try::Tiny;
 use DBI;
 
@@ -76,28 +77,17 @@ sub db_connect {
 
     my $dsn = qq{dbi:Firebird:dbname=$dbname;host=$host;port=$port;ib_dialect=3;ib_charset=UTF8};
 
-    try {
-        $self->{_dbh} = DBI->connect(
-            $dsn, $user, $pass,
-            {   FetchHashKeyName => 'NAME_lc',
-                AutoCommit       => 1,
-                RaiseError       => 1,
-                PrintError       => 0,
-                LongReadLen      => 524288,
-                HandleError      => sub { $self->handle_error(DBI->errstr) },
-                ib_enable_utf8   => 1,
-            }
-        ) or $self->handle_error(DBI->errstr);
-
-        $log->info("Connected to '$dbname'");
-    }
-    catch {
-        # Connection errors
-        my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message)
-            if defined $self->{model}
-            and $self->{model}->isa('Tpda3::Model');
-    };
+    $self->{_dbh} = DBI->connect(
+        $dsn, $user, $pass,
+        {   FetchHashKeyName => 'NAME_lc',
+            AutoCommit       => 1,
+            RaiseError       => 0,
+            PrintError       => 0,
+            LongReadLen      => 524288,
+            HandleError      => sub { $self->handle_error($DBI::lasth) },
+            ib_enable_utf8   => 1,
+        }
+    );
 
     # Default date format: ISO
     $self->{_dbh}{ib_timestampformat} = '%y-%m-%d %H:%M';
@@ -114,10 +104,23 @@ Log errors.
 =cut
 
 sub handle_error {
-    my ($self, $message) = @_;
+    my $dbh = shift;
 
-    my $log = get_logger();
-    $log->error("Db error: '$message'");
+    if ( defined $dbh and $dbh->isa('DBI::db') ) {
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $dbh->errstr,
+            usermsg => 'SQL error',
+        );
+    }
+    else {
+        Tpda3::Exception::Db::Connect->throw(
+            logmsg  => DBI->errstr,
+            usermsg => 'Connection error!',
+        );
+    }
+
+    # my $log = get_logger();
+    # $log->error("Db error: '$message'");
 
     return;
 }

@@ -139,7 +139,7 @@ sub connect_dialog {
         # Show login dialog if still not connected
         my $return_string = $self->dialog_login();
         if ($return_string eq 'cancel') {
-            $self->_view->set_status( 'Connection cancelled', 'ms' );
+            $self->_view->set_status( 'Login cancelled', 'ms' );
             last TRY;
         }
 

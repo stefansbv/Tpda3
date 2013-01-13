@@ -1743,9 +1743,11 @@ sub table_record_update {
     return;
 }
 
-# sub Tk::Error {
-#     my ( $widget, $error, @locations ) = @_;
-# }
+sub Tk::Error {
+    my ( $widget, $error, @locations ) = @_;
+
+    return;
+}
 
 =head1 AUTHOR
 
