@@ -2,7 +2,6 @@ package Tpda3::Config;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Log::Log4perl qw(get_logger :levels);
 use File::Basename;
@@ -651,8 +650,7 @@ sub configdir_populate {
 
     # Stolen from File::UserConfig ;)
     File::Copy::Recursive::dircopy( $sharedir, $configdir )
-        or ouch 'CfgInsErr',
-        "Failed to copy user data from '$sharedir' to '$configdir'";
+          or die "Failed to copy user data from '$sharedir' to '$configdir'";
 
     return;
 }
@@ -668,7 +666,7 @@ sub config_tex_path {
 
     my $path = catdir( $self->configdir, 'tex', $what );
 
-    ouch 404, "Path not found: $path" unless -d $path;
+    die "Path not found: $path" unless -d $path;
 
     return $path;
 }
@@ -716,7 +714,7 @@ sub config_load_file {
         else {
             my $msg = 'Configuration error!';
             $msg .= $self->verbose ? '' : ", file not found:\n$conf_file";
-            ouch 404, $msg;
+            die $msg;
         }
     }
     else {
@@ -731,7 +729,7 @@ sub config_load_file {
         return Tpda3::Config::Utils->load_yaml($conf_file);
     }
     else {
-        ouch 'BadSuffix', "Config file: $conf_file has wrong suffix ($suf)";
+        die "Config file: $conf_file has wrong suffix ($suf)";
     }
 
     return;
@@ -758,7 +756,7 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    ouch 404, "Screen config not found" unless $file_name;
+    die "Screen config not found" unless $file_name;
 
     # Check if has extension and add it if not
     my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );

@@ -4,7 +4,6 @@ use 5.008009;
 use strict;
 use warnings;
 
-use Ouch;
 use Log::Log4perl qw(get_logger);
 
 require Tpda3::Config;
@@ -106,7 +105,7 @@ sub _init {
     my $widgetset = $cfg->application->{widgetset};
 
     unless ($widgetset) {
-        ouch "ConfigError", "Required configuration not found: 'widgetset'";
+        die "The required configuration not found: 'widgetset'";
     }
 
     if ( uc $widgetset eq q{WX} ) {
@@ -118,7 +117,7 @@ sub _init {
         $self->{gui} = Tpda3::Tk::Controller->new();
     }
     else {
-        ouch "ConfigError", "Unknown widget set!: '$widgetset'";
+        die "Unknown widget set!: '$widgetset'";
     }
 
     $self->{gui}->start();    # stuff to run at start

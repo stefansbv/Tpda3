@@ -2,7 +2,6 @@ package Tpda3::Wx::Dialog::Search;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Wx qw{:everything};
 use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER
@@ -144,7 +143,7 @@ sub search_dialog {
 
             my $displ_width = $rec->{$field}{displ_width};
             unless ($displ_width) {
-                ouch 'BadConfig',"No 'displ_width' for '$field'\n";
+                die "No 'displ_width' for '$field'\n";
             }
 
             # Width config is in chars.  Using chars_number x char_width

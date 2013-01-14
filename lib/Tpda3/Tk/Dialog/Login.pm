@@ -52,7 +52,7 @@ Show dialog
 =cut
 
 sub login {
-    my ( $self, $mw ) = @_;
+    my ( $self, $mw, $error ) = @_;
 
     $self->{bg}  = $mw->cget('-background');
     $self->{dlg} = $mw->DialogBox(
@@ -76,7 +76,7 @@ sub login {
 
     #-- User
 
-    my $luser = $frame->Label( -text => 'User:', );
+    my $luser = $frame->Label( -text => 'User', );
     $luser->form(
         -top     => [ %0, 0 ],
         -left    => [ %0, 0 ],
@@ -95,7 +95,7 @@ sub login {
 
     #-- Pass
 
-    my $lpass = $frame->Label( -text => 'Password:', );
+    my $lpass = $frame->Label( -text => 'Password', );
     $lpass->form(
         -top     => [ $luser, 8 ],
         -left    => [ %0,     0 ],
@@ -111,6 +111,17 @@ sub login {
     $epass->form(
         -top  => [ '&', $lpass, 0 ],
         -left => [ %0,  90 ],
+    );
+
+    #-- message
+
+    my $lmessage = $self->{dlg}->Label(
+        -text  => $error,
+        -width => 40,
+        -relief => 'groove',
+    )->pack(
+        -padx  => 10,
+        -pady  => 0,
     );
 
     $euser->focus;

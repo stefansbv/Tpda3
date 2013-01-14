@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use utf8;
 use English;
-use Ouch;
 
 use Tk;
 use Tk::Font;
@@ -109,12 +108,12 @@ Login dialog.
 =cut
 
 sub dialog_login {
-    my $self = shift;
+    my ($self, $error) = @_;
 
     require Tpda3::Tk::Dialog::Login;
     my $pd = Tpda3::Tk::Dialog::Login->new;
 
-    return $pd->login( $self->_view );
+    return $pd->login( $self->_view, $error );
 }
 
 =head2 screen_module_class
@@ -677,7 +676,7 @@ TODO
 sub tmshr_compute_value {
     my ($self, $field, $record, $attribs) = @_;
 
-    ouch 'ConfigError', "$field field's config is EMPTY" unless %{$attribs};
+    die "$field field's config is EMPTY" unless %{$attribs};
 
     my ( $col, $validtype, $width, $numscale, $datasource )
         = @$attribs{ 'id', 'datatype', 'width', 'numscale', 'datasource' };
@@ -744,7 +743,7 @@ sub tmshr_get_function {
     return $self->{$field} if exists $self->{$field}; # don't recreate it
 
     unless ($field and $funcdef) {
-        ouch 'FuncDefError', "$field field's compute is EMPTY" unless $funcdef;
+        die "$field field's compute is EMPTY" unless $funcdef;
     }
 
     # warn "new function for: $field = ($funcdef)\n";
@@ -754,7 +753,7 @@ sub tmshr_get_function {
     my $tree = Math::Symbolic->parse_from_string($funcdef);
     my @vars = split /\s+/, $varsstr; # extract the names of the variables
     unless ($self->tmshr_check_varnames(\@vars) ) {
-        ouch 'CfgError', "Computed variable names don't match field names!";
+        die "Computed variable names don't match field names!";
     }
 
     my ($sub) = Math::Symbolic::Compiler->compile_to_sub( $tree, \@vars );

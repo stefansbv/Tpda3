@@ -3,7 +3,6 @@ package Tpda3::Tk::Dialog::Select;
 use strict;
 use warnings;
 use utf8;
-use Ouch;
 
 use Tk::LabFrame;
 use Tk::MListbox;
@@ -142,7 +141,7 @@ sub select_dialog {
                 }
             }
             else {
-                ouch 'BadConfig',"No data type for '$field'\n";
+                die "No data type for '$field'\n";
             }
 
             $colcnt++;

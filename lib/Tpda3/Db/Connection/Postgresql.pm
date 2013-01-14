@@ -6,7 +6,8 @@ use warnings;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 
-use Ouch;
+use Tpda3::Exception;
+
 use Try::Tiny;
 use DBI;
 
@@ -76,28 +77,17 @@ sub db_connect {
 
     my $dsn = qq{dbi:Pg:dbname=$dbname;host=$host;port=$port};
 
-    try {
-        $self->{_dbh} = DBI->connect(
-            $dsn, $user, $pass,
-            {   FetchHashKeyName => 'NAME_lc',
-                AutoCommit       => 1,
-                RaiseError       => 1,
-                PrintError       => 0,
-                LongReadLen      => 524288,
-                HandleError      => sub { $self->handle_error(DBI->errstr) },
-                pg_enable_utf8   => 1,
-            }
-        ) or $self->handle_error(DBI->errstr);
-
-        $log->info("Connected to '$dbname'");
-    }
-    catch {
-        # Connection errors
-        my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message)
-            if defined $self->{model}
-            and $self->{model}->isa('Tpda3::Model');
-    };
+    $self->{_dbh} = DBI->connect(
+        $dsn, $user, $pass,
+        {   FetchHashKeyName => 'NAME_lc',
+            AutoCommit       => 1,
+            RaiseError       => 1,
+            PrintError       => 0,
+            LongReadLen      => 524288,
+            HandleError      => sub { $self->handle_error() },
+            pg_enable_utf8   => 1,
+        }
+    );
 
     ## Date format
     # set: datestyle = 'iso' in postgresql.conf
@@ -113,10 +103,23 @@ Log errors.
 =cut
 
 sub handle_error {
-    my ($self, $message) = @_;
+    my $self = shift;
 
-    my $log = get_logger();
-    $log->error("Db error: '$message'");
+    if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $self->{_dbh}->errstr,
+            usermsg => 'SQL error',
+        );
+    }
+    else {
+        Tpda3::Exception::Db::Connect->throw(
+            logmsg  => DBI->errstr,
+            usermsg => 'Connection error!',
+        );
+    }
+
+    # my $log = get_logger();
+    # $log->error("Db error: '$message'");
 
     return;
 }
@@ -129,61 +132,61 @@ Better way to do this?
 
 =cut
 
-sub parse_db_error {
-    my ($self, $pg) = @_;
+# sub parse_db_error {
+#     my ($self, $pg) = @_;
 
-    my $log = get_logger();
+#     my $log = get_logger();
 
-    print "\nPG: $pg\n\n";
+#     print "\nPG: $pg\n\n";
 
-    my $message_type =
-         $pg eq q{}                                          ? "nomessage"
-       : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
-       : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi ? "colnotfound:$2.$1"
-       : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
-       : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
-       : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
-       : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
-       : $pg =~ m/no password supplied/smi                   ? "password"
-       : $pg =~ m/FATAL:  role ($RE{quoted}) does not exist/smi ? "username:$1"
-       : $pg =~ m/no route to host/smi                       ? "network"
-       : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
-       : $pg =~ m/permission denied for relation/smi         ? "relforbid"
-       : $pg =~ m/not connected/smi                          ? "notconn"
-       :                                                       "unknown";
+#     my $message_type =
+#          $pg eq q{}                                          ? "nomessage"
+#        : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
+#        : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi ? "colnotfound:$2.$1"
+#        : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
+#        : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
+#        : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
+#        : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
+#        : $pg =~ m/no password supplied/smi                   ? "password"
+#        : $pg =~ m/FATAL:  role ($RE{quoted}) does not exist/smi ? "username:$1"
+#        : $pg =~ m/no route to host/smi                       ? "network"
+#        : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
+#        : $pg =~ m/permission denied for relation/smi         ? "relforbid"
+#        : $pg =~ m/not connected/smi                          ? "notconn"
+#        :                                                       "unknown";
 
-    # Analize and translate
+#     # Analize and translate
 
-    my ( $type, $name ) = split /:/, $message_type, 2;
-    $name = $name ? $name : '';
+#     my ( $type, $name ) = split /:/, $message_type, 2;
+#     $name = $name ? $name : '';
 
-    my $translations = {
-        nomessage   => "weird#Error without message",
-        dbnotfound  => "fatal#Database $name does not exists",
-        relnotfound => "fatal#Relation $name does not exists",
-        password    => "info#Authentication failed for $name",
-        password    => "info#Authentication failed, password?",
-        username    => "error#Wrong user name: $name",
-        network     => "fatal#Network problem",
-        unknown     => "fatal#Database error",
-        duplicate   => "error#Duplicate $name",
-        colnotfound => "error#Column not found $name",
-        checkconstr => "error#Check: $name",
-        nullvalue   => "error#Null value for $name",
-        relforbid   => "error#Permission denied",
-        notconn     => "error#Not connected",
-    };
+#     my $translations = {
+#         nomessage   => "weird#Error without message",
+#         dbnotfound  => "fatal#Database $name does not exists",
+#         relnotfound => "fatal#Relation $name does not exists",
+#         password    => "info#Authentication failed for $name",
+#         password    => "info#Authentication failed, password?",
+#         username    => "error#Wrong user name: $name",
+#         network     => "fatal#Network problem",
+#         unknown     => "fatal#Database error",
+#         duplicate   => "error#Duplicate $name",
+#         colnotfound => "error#Column not found $name",
+#         checkconstr => "error#Check: $name",
+#         nullvalue   => "error#Null value for $name",
+#         relforbid   => "error#Permission denied",
+#         notconn     => "error#Not connected",
+#     };
 
-    my $message;
-    if (exists $translations->{$type} ) {
-        $message = $translations->{$type}
-    }
-    else {
-        $log->error('EE: Translation error for: $pg!');
-    }
+#     my $message;
+#     if (exists $translations->{$type} ) {
+#         $message = $translations->{$type}
+#     }
+#     else {
+#         $log->error('EE: Translation error for: $pg!');
+#     }
 
-    return $message;
-}
+#     return $message;
+# }
 
 =head2 table_info_short
 

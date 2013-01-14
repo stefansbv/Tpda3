@@ -2,7 +2,6 @@ package Tpda3::Config::Screen;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions;
@@ -704,7 +703,7 @@ If there is only one toolbar button then return it as an array reference.
 sub _screen_toolbars {
     my ( $self, $name ) = @_;
 
-    ouch 404, "Screen toolbar name is required" unless $name;
+    die "Screen toolbar name is required" unless $name;
 
     my $scrtb = $self->scrtoolbar->{$name};
     my @toolbars;

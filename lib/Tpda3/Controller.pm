@@ -3,7 +3,6 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
-use Ouch;
 
 use English;
 use Data::Dumper;
@@ -17,6 +16,9 @@ use Storable qw (store retrieve);
 use File::Basename;
 use File::Spec::Functions qw(catfile);
 use Math::Symbolic;
+
+use Try::Tiny;
+use Tpda3::Exceptions;
 
 require Tpda3::Utils;
 require Tpda3::Config;
@@ -133,11 +135,13 @@ Tk::Controller.
 sub connect_dialog {
     my $self = shift;
 
+    my $error;
+
   TRY:
     while ( not $self->_model->is_connected ) {
 
         # Show login dialog if still not connected
-        my $return_string = $self->dialog_login();
+        my $return_string = $self->dialog_login($error);
         if ($return_string eq 'cancel') {
             $self->_view->set_status( 'Login cancelled', 'ms' );
             last TRY;
@@ -145,18 +149,21 @@ sub connect_dialog {
 
         # Try to connect only if user and pass are provided
         if ($self->_cfg->user and $self->_cfg->pass ) {
-            $self->_model->db_connect();
+            try {
+                $self->_model->db_connect();
+            }
+            catch {
+                if ( my $e = Exception::Base->catch($_) ) {
+                    if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+                        $error = $e->usermsg;
+                    }
+                }
+            };
+        }
+        else {
+            $error = 'User and password required';
         }
 
-        # Check for errors
-        if ( my $message = $self->_model->get_exception ) {
-            my ( $type, $mesg ) = split /#/, $message, 2;
-            if ( $type =~ m{fatal}imx ) {
-                my $message = $self->localize( 'dialog', 'error-conn' );
-                $self->_view->dialog_error( $message, $mesg );
-                last TRY;
-            }
-        }
     }
 
     return;
@@ -1623,7 +1630,7 @@ sub scrcfg {
     return unless $page;
 
     if ( $page eq 'lst' ) {
-        ouch 'WrongPage', "Wrong page (scrcfg): $page!";
+        die "Wrong page (scrcfg): $page!";
     }
 
     my $scrobj = $self->scrobj($page);
@@ -1659,7 +1666,7 @@ sub scrobj {
         warn "Wrong page (scrobj): $page!\n";
     }
     else {
-        ouch 404, 'No screen object!';
+        die 'No screen object!';
     }
 
     return;
@@ -1898,7 +1905,7 @@ sub screen_module_detail_load {
     my ( $class, $module_file ) = $self->screen_module_class($module);
     eval { require $module_file };
     if ($@) {
-        ouch("EE: Can't load '$module_file'");
+        die "EE: Can't load '$module_file'";
     }
 
     unless ( $class->can('run_screen') ) {
@@ -2334,7 +2341,7 @@ sub record_find_execute {
 
     # return unless defined $ary_ref->[0];     # test if AoA ?
     unless (ref $ary_ref eq 'ARRAY') {
-        ouch 'queryerror', "Find failed!";
+        die "Find failed!";
     }
 
     my $record_count = scalar @{$ary_ref};
@@ -2351,7 +2358,7 @@ sub record_find_execute {
 
     # Double check
     if ($record_inlist != $record_count) {
-        ouch 'notequal', "Record count error?!";
+        die "Record count error?!";
     }
 
     # Set mode to sele if found
@@ -3568,8 +3575,7 @@ sub record_changed {
     unless ( -f $witness_file ) {
         $self->_view->set_status( $self->localize( 'status', 'err-chkchanged' ),
             'ms', 'orange' );
-        ouch 'CompareError', "Can't find saved data for comparison!";
-        return;
+        die "Can't find saved data for comparison!";
     }
 
     my $witness = retrieve($witness_file);
@@ -3767,7 +3773,7 @@ sub dep_table_metadata {
         $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
     }
     else {
-        ouch 'BadParam', "Bad parameter: $for_sql";
+        die "Bad parameter: $for_sql";
     }
 
     my $columns = $self->scrcfg->dep_table_columns($tm_ds);
@@ -3920,7 +3926,7 @@ sub screen_set_pk_col {
         $self->{_tblkeys}{$pk_col} = undef;
     }
     else {
-        ouch 'PK?', 'ERR: Unknown PK column name!';
+        die 'ERR: Unknown PK column name!';
     }
 
     return;
@@ -3941,7 +3947,7 @@ sub screen_set_pk_val {
         $self->{_tblkeys}{$pk_col} = $pk_val;
     }
     else {
-        ouch 'PK?', 'Unknown PK column name!';
+        die 'Unknown PK column name!';
     }
 
     return;

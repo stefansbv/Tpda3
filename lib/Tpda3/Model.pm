@@ -2,7 +2,6 @@ package Tpda3::Model;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Try::Tiny;
 use SQL::Abstract;
@@ -51,7 +50,7 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _exception   => Tpda3::Observable->new(),
+        #_exception   => Tpda3::Observable->new(),
         _connected   => Tpda3::Observable->new(),
         _stdout      => Tpda3::Observable->new(),
         _appmode     => Tpda3::Observable->new(),
@@ -107,20 +106,20 @@ sub db_connect {
         $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
     }
 
-    # Is realy connected ?
-    if ( blessed $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
-        $self->get_connection_observable->set(1);    # assuming yes
-        $self->_print('info#Connected');
-    }
-    else {
-        $self->get_connection_observable->set(0);    # no ;)
-        my $exception = $self->get_exception;
-        my $message
-            = $exception
-            ? $exception
-            : 'error#Connection failed';
-        $self->_print($message);
-    }
+    # # Is realy connected ?
+    # if ( blessed $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
+    #     $self->get_connection_observable->set(1);    # assuming yes
+    #     $self->_print('info#Connected');
+    # }
+    # else {
+    #     $self->get_connection_observable->set(0);    # no ;)
+    #     my $exception = $self->get_exception;
+    #     my $message
+    #         = $exception
+    #         ? $exception
+    #         : 'error#Connection failed';
+    #     $self->_print($message);
+    # }
 
     return;
 }
@@ -138,10 +137,11 @@ sub dbh {
 
     return $db->dbh if $self->is_connected;
 
-    #ouch 'NoC', 'Not connected';
-    Toda3::Exception::Db::Connect->throw(
-        logmsg  => 'Not connected',
-        usermsg => 'Not connected',
+    # TODO: Try to (re)connect?
+
+    Tpda3::Exception::Db::Connect->throw(
+        logmsg  => 'Not connected!',
+        usermsg => '',
     );
 
     return;
@@ -167,11 +167,11 @@ Get EXCEPTION observable status
 
 =cut
 
-sub get_exception_observable {
-    my $self = shift;
+# sub get_exception_observable {
+#     my $self = shift;
 
-    return $self->{_exception};
-}
+#     return $self->{_exception};
+# }
 
 =head2 exception_log
 
@@ -179,11 +179,11 @@ Log an exception.
 
 =cut
 
-sub exception_log {
-    my ( $self, $message ) = @_;
+# sub exception_log {
+#     my ( $self, $message ) = @_;
 
-    $self->get_exception_observable->set($message);
-}
+#     $self->get_exception_observable->set($message);
+# }
 
 =head2 get_exception
 
@@ -191,14 +191,14 @@ Get exception message and then clear it.
 
 =cut
 
-sub get_exception {
-    my $self = shift;
+# sub get_exception {
+#     my $self = shift;
 
-    my $exception = $self->get_exception_observable->get;
-    $self->get_exception_observable->set();  # clear
+#     my $exception = $self->get_exception_observable->get;
+#     $self->get_exception_observable->set();  # clear
 
-    return $exception;
-}
+#     return $exception;
+# }
 
 =head2 _disconnect
 
@@ -206,15 +206,15 @@ Disconnect from the database
 
 =cut
 
-sub _disconnect {
-    my $self = shift;
+# sub _disconnect {
+#     my $self = shift;
 
-    $self->dbh->disconnect;
-    $self->get_connection_observable->set(0);
-    $self->_print('info#Disconnected');
+#     $self->dbh->disconnect;
+#     $self->get_connection_observable->set(0);
+#     $self->_print('info#Disconnected');
 
-    return;
-}
+#     return;
+# }
 
 =head2 is_connected
 
@@ -423,11 +423,7 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        #ouch( 'CountError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     $record_count = 0 unless defined $record_count;
@@ -464,11 +460,7 @@ sub query_records_find {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        #ouch( 'FindError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     return ($ary_ref, $search_limit);
@@ -515,11 +507,7 @@ sub query_filter_find {
         }
     }
     catch {
-        #ouch( 'BatchQueryError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     return \@records;
@@ -550,11 +538,7 @@ sub query_record {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        #ouch( 'QueryError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     return $hash_ref;
@@ -590,11 +574,7 @@ sub table_batch_query {
         }
     }
     catch {
-        #ouch( 'BatchQueryError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     return \@records;
@@ -627,11 +607,7 @@ sub query_dictionary {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        #ouch( 'QueryError', $self->user_message($_) );
-        Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->dbh->errstr,
-            usermsg => 'SQL error',
-        );
+        $self->throw_exception_db($_);
     };
 
     return $ary_ref;
@@ -677,7 +653,7 @@ sub build_where {
         my $find_type = $attrib->[1];
 
         unless ($find_type) {
-            ouch 'CfgError', "Unknown 'find_type': $find_type for '$field'";
+            die "Unknown 'find_type': $find_type for '$field'";
         }
 
         if ( $find_type eq 'contains' ) {
@@ -714,7 +690,7 @@ sub build_where {
             # just skip
         }
         else {
-            ouch 'CfgError', "Unknown 'find_type': $find_type for '$field'";
+            die "Unknown 'find_type': $find_type for '$field'";
         }
     }
 
@@ -818,7 +794,7 @@ sub tbl_dict_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        ouch( 'DictQueryError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     my @dictrows;
@@ -838,7 +814,7 @@ sub tbl_dict_query {
         }
     }
     catch {
-        ouch( 'DictQueryError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return \@dictrows;
@@ -864,7 +840,7 @@ sub tbl_lookup_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        ouch( 'DictQueryError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     my $row_rf;
@@ -879,7 +855,7 @@ sub tbl_lookup_query {
         $row_rf = $sth->fetchrow_arrayref();
     }
     catch {
-        ouch( 'DictQueryError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return $row_rf;
@@ -933,7 +909,7 @@ sub table_record_insert {
         $pk_id = $sth->fetch()->[0];
     }
     catch {
-        ouch( 'InsertError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return $pk_id;
@@ -957,7 +933,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        ouch( 'UpdateError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return;
@@ -981,7 +957,7 @@ sub table_record_select {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        ouch( 'SelectError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return $hash_ref;
@@ -1013,7 +989,7 @@ sub table_batch_insert {
             $sth->execute(@bind);
         }
         catch {
-            ouch( 'InsertError', $self->user_message($_) );
+            $self->throw_exception_db($_);
         };
     }
 
@@ -1031,11 +1007,9 @@ sub table_record_delete {
 
     my $sql = SQL::Abstract->new();
 
-    ouch 'DBFatal', "Empty TABLE name in DELETE command!"
-        unless $table;
-
-    ouch 'DBFatal', "Empty SQL WHERE in DELETE command!"
-        unless ( %{$where} );    # safety net, is enough ???
+    # Safety net..., is enough ???
+    die "Empty TABLE name in DELETE command!" unless $table;
+    die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
     $self->_log->debug("Deleting from $table: ");
     $self->_log->debug( sub { Dumper($where) } );
@@ -1047,7 +1021,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        ouch( 'DeleteError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return;
@@ -1404,7 +1378,7 @@ sub table_selectcol_as_array {
         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        ouch( 'SelectError', $self->user_message($_) );
+        $self->throw_exception_db($_);
     };
 
     return $records;
@@ -1445,6 +1419,19 @@ sub user_message {
     $self->_print($user_message);
 
     return $user_message;
+}
+
+sub throw_exception_db {
+    my ($self, $msg) = @_;
+
+    print "Throw $msg\n";
+
+    Tpda3::Exception::Db::SQL->throw(
+        logmsg  => $msg,
+        usermsg => 'Database error',
+    );
+
+    return;
 }
 
 =head2 report_data

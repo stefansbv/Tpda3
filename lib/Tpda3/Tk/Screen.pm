@@ -2,7 +2,6 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Tpda3::Tk::Entry;
 
@@ -143,7 +142,7 @@ toggle.  State can come as 0 | 1 and normal | disabled.
 sub enable_tool {
     my ( $self, $tm_ds, $btn_name, $state ) = @_;
 
-    ouch 'NoTbButton', "No ToolBar '$tm_ds' ($btn_name)"
+    die "No ToolBar '$tm_ds' ($btn_name)"
         if not defined $self->{tb}{$tm_ds};
 
     $self->{tb}{$tm_ds}->enable_tool( $btn_name, $state );

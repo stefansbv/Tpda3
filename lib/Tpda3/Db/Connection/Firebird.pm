@@ -84,7 +84,7 @@ sub db_connect {
             RaiseError       => 0,
             PrintError       => 0,
             LongReadLen      => 524288,
-            HandleError      => sub { $self->handle_error($DBI::lasth) },
+            HandleError      => sub { $self->handle_error() },
             ib_enable_utf8   => 1,
         }
     );
@@ -104,11 +104,11 @@ Log errors.
 =cut
 
 sub handle_error {
-    my $dbh = shift;
+    my $self = shift;
 
-    if ( defined $dbh and $dbh->isa('DBI::db') ) {
+    if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
         Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $dbh->errstr,
+            logmsg  => $self->{_dbh}->errstr,
             usermsg => 'SQL error',
         );
     }
@@ -133,51 +133,51 @@ RDBMS specific (and maybe version specific?).
 
 =cut
 
-sub parse_db_error {
-    my ($self, $fb) = @_;
+# sub parse_db_error {
+#     my ($self, $fb) = @_;
 
-    my $log = get_logger();
+#     my $log = get_logger();
 
-    print "\nFB: $fb\n\n";
+#     print "\nFB: $fb\n\n";
 
-    my $message_type =
-         $fb eq q{}                                          ? "nomessage"
-       : $fb =~ m/operation for file ($RE{quoted})/smi       ? "dbnotfound:$1"
-       : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi             ? "relnotfound:$1"
-       : $fb =~ m/user name and password/smi                 ? "userpass"
-       : $fb =~ m/no route to host/smi                       ? "network"
-       : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
-       : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi ? "driver:$1"
-       : $fb =~ m/not connected/smi                          ? "notconn"
-       :                                                       "unknown";
+#     my $message_type =
+#          $fb eq q{}                                          ? "nomessage"
+#        : $fb =~ m/operation for file ($RE{quoted})/smi       ? "dbnotfound:$1"
+#        : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi             ? "relnotfound:$1"
+#        : $fb =~ m/user name and password/smi                 ? "userpass"
+#        : $fb =~ m/no route to host/smi                       ? "network"
+#        : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
+#        : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi ? "driver:$1"
+#        : $fb =~ m/not connected/smi                          ? "notconn"
+#        :                                                       "unknown";
 
-    # Analize and translate
+#     # Analize and translate
 
-    my ( $type, $name ) = split /:/, $message_type, 2;
-    $name = $name ? $name : '';
+#     my ( $type, $name ) = split /:/, $message_type, 2;
+#     $name = $name ? $name : '';
 
-    my $translations = {
-        driver      => "fatal#Database driver $name not found",
-        nomessage   => "weird#Error without message",
-        dbnotfound  => "fatal#Database $name not found",
-        relnotfound => "fatal#Relation $name not found",
-        userpass    => "warn#Authentication failed",
-        nethost     => "fatal#Network problem: host $name",
-        network     => "fatal#Network problem",
-        unknown     => "fatal#Database error",
-        notconn     => "error#Not connected",
-    };
+#     my $translations = {
+#         driver      => "fatal#Database driver $name not found",
+#         nomessage   => "weird#Error without message",
+#         dbnotfound  => "fatal#Database $name not found",
+#         relnotfound => "fatal#Relation $name not found",
+#         userpass    => "warn#Authentication failed",
+#         nethost     => "fatal#Network problem: host $name",
+#         network     => "fatal#Network problem",
+#         unknown     => "fatal#Database error",
+#         notconn     => "error#Not connected",
+#     };
 
-    my $message;
-    if (exists $translations->{$type} ) {
-        $message = $translations->{$type}
-    }
-    else {
-        $log->error('EE: Translation error for: $fb!');
-    }
+#     my $message;
+#     if (exists $translations->{$type} ) {
+#         $message = $translations->{$type}
+#     }
+#     else {
+#         $log->error('EE: Translation error for: $fb!');
+#     }
 
-    return $message;
-}
+#     return $message;
+# }
 
 =head2 table_list
 

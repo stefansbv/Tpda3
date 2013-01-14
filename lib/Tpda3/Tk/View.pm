@@ -1743,8 +1743,23 @@ sub table_record_update {
     return;
 }
 
+=head2 Tk::Error
+
+Override Tk::Error.
+
+=cut
+
 sub Tk::Error {
-    my ( $widget, $error, @locations ) = @_;
+    my ( $self, $error, @locations ) = @_;
+
+    $self->log_msg("EE: '$error'");
+
+    my $msg = qq{An error ocurred! Please, restart Tpda3...\n\n$error};
+
+    $self->Dialog(
+        -title => 'Error!',
+        -text  => $msg,
+    )->Show();
 
     return;
 }

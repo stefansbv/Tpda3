@@ -3,7 +3,6 @@ package Tpda3::Tk::Dialog::Search;
 use strict;
 use warnings;
 use utf8;
-use Ouch;
 
 use Tk::LabFrame;
 use Tk::MListbox;
@@ -197,7 +196,7 @@ sub search_dialog {
 
             my $displ_width = $rec->{$field}{displ_width};
             unless ($displ_width) {
-                ouch 'BadConfig',"No 'displ_width' for '$field'\n";
+                die "No 'displ_width' for '$field'\n";
             }
 
             $self->{box}
@@ -217,7 +216,7 @@ sub search_dialog {
                 }
             }
             else {
-                ouch 'BadConfig',"No data type for '$field'\n";
+                die "No data type for '$field'\n";
             }
 
             $colcnt++;

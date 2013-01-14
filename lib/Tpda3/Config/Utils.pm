@@ -2,7 +2,6 @@ package Tpda3::Config::Utils;
 
 use strict;
 use warnings;
-use Ouch;
 
 use Log::Log4perl qw(get_logger);
 use File::Basename;
@@ -36,40 +35,6 @@ our $VERSION = 0.62;
     my $cu = Tpda3::Config::Utils->new();
 
 =head1 METHODS
-
-# =head2 config_load_file
-
-# Load a config file and return the Perl data structure.  It loads a
-# file in Config::General format or in YAML::Tiny format, depending on
-# the extension of the file.
-
-# =cut
-
-# sub config_load_file {
-#     my ( $self, $conf_file, $not_fatal ) = @_;
-
-#     print " $conf_file ... ";
-#     my $log = get_logger();
-
-#     if ( !-f $conf_file ) {
-#         print "\r $conf_file ... not found\n";
-#         ouch 'FileNotFound', ' Configuration error!' unless $not_fatal;
-#     }
-#     print "\r $conf_file ... found\n";
-
-#     my $suf = ( fileparse( $conf_file, qr/\.[^.]*/x ) )[2];
-#     if ( $suf =~ m{conf} ) {
-#         return Tpda3::Config::Utils->load_conf($conf_file);
-#     }
-#     elsif ( $suf =~ m{yml} ) {
-#         return Tpda3::Config::Utils->load_yaml($conf_file);
-#     }
-#     else {
-#         ouch 'BadSuffix', "Config file: $conf_file has wrong suffix ($suf)";
-#     }
-
-#     return;
-# }
 
 =head2 load_conf
 
@@ -108,7 +73,7 @@ sub load_yaml {
     }
     catch {
         my $msg = YAML::Tiny->errstr;
-        ouch 'LoadFailed', " but failed to load because:\n $msg\n";
+        die " but failed to load because:\n $msg\n";
     };
 
     return $conf;
@@ -204,7 +169,7 @@ sub create_path {
         for my $diag (@$err) {
             my ( $file_err, $message ) = %{$diag};
             if ( $file_err eq '' ) {
-                ouch 'MkdirError', "Error: $message\n";
+                die "Error: $message\n";
             }
         }
     }
