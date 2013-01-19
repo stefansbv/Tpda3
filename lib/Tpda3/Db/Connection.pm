@@ -8,7 +8,6 @@ use Log::Log4perl qw(get_logger);
 use Scalar::Util qw(blessed);
 
 use DBI;
-
 use Try::Tiny;
 use Tpda3::Exceptions;
 

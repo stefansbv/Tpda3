@@ -162,7 +162,7 @@ sub get_login {
         $cfg->pass($pass);
     }
     else {
-        $return_string = 'else';
+        $return_string = 'cancel';
     }
 
     return $return_string;

@@ -6,7 +6,7 @@ use warnings;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 
-use Tpda3::Exception;
+use Tpda3::Exceptions;
 
 use Try::Tiny;
 use DBI;

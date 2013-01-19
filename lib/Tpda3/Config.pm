@@ -192,7 +192,6 @@ sub config_main_load {
 
     # Main config file name, load
     my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );
-
     my $maincfg = $self->config_load_file($main_fqn);
 
     my $main_hr = {

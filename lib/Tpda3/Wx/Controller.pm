@@ -83,6 +83,21 @@ sub _init {
     return;
 }
 
+=head2 start_delay
+
+Show message, delay the database connection. Delay not yet
+implemented.
+
+=cut
+
+sub start_delay {
+    my $self = shift;
+
+    $self->connect_dialog();
+
+    return;
+}
+
 =head2 dialog_login
 
 Login dialog.

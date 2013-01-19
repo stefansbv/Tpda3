@@ -163,7 +163,6 @@ sub connect_dialog {
         else {
             $error = 'User and password required';
         }
-
     }
 
     return;
