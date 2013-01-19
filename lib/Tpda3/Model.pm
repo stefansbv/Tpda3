@@ -10,7 +10,6 @@ use Data::Compare;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
-use Scalar::Util qw(blessed);
 
 use Tpda3::Exceptions;
 
@@ -106,21 +105,6 @@ sub db_connect {
         $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
     }
 
-    # # Is realy connected ?
-    # if ( blessed $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
-    #     $self->get_connection_observable->set(1);    # assuming yes
-    #     $self->_print('info#Connected');
-    # }
-    # else {
-    #     $self->get_connection_observable->set(0);    # no ;)
-    #     my $exception = $self->get_exception;
-    #     my $message
-    #         = $exception
-    #         ? $exception
-    #         : 'error#Connection failed';
-    #     $self->_print($message);
-    # }
-
     return;
 }
 
@@ -160,61 +144,6 @@ sub dbc {
 
     return $db->dbc;
 }
-
-=head2 get_exception_observable
-
-Get EXCEPTION observable status
-
-=cut
-
-# sub get_exception_observable {
-#     my $self = shift;
-
-#     return $self->{_exception};
-# }
-
-=head2 exception_log
-
-Log an exception.
-
-=cut
-
-# sub exception_log {
-#     my ( $self, $message ) = @_;
-
-#     $self->get_exception_observable->set($message);
-# }
-
-=head2 get_exception
-
-Get exception message and then clear it.
-
-=cut
-
-# sub get_exception {
-#     my $self = shift;
-
-#     my $exception = $self->get_exception_observable->get;
-#     $self->get_exception_observable->set();  # clear
-
-#     return $exception;
-# }
-
-=head2 _disconnect
-
-Disconnect from the database
-
-=cut
-
-# sub _disconnect {
-#     my $self = shift;
-
-#     $self->dbh->disconnect;
-#     $self->get_connection_observable->set(0);
-#     $self->_print('info#Disconnected');
-
-#     return;
-# }
 
 =head2 is_connected
 

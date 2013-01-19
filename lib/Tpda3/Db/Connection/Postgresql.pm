@@ -63,8 +63,6 @@ sub db_connect {
 
     my $log = get_logger();
 
-    #$log->level($TRACE);                     # set log level
-
     my ($dbname, $host, $port) = @{$conf}{qw(dbname host port)};
     my ($driver, $user, $pass) = @{$conf}{qw(driver user pass)};
 
@@ -105,26 +103,27 @@ Log errors.
 sub handle_error {
     my $self = shift;
 
+    my $errorstr;
+
     if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
+        $errorstr = $self->{_dbh}->errstr;
         Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->{_dbh}->errstr,
-            usermsg => 'SQL error',
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
         );
     }
     else {
+        $errorstr = DBI->errstr;
         Tpda3::Exception::Db::Connect->throw(
-            logmsg  => DBI->errstr,
-            usermsg => 'Connection error!',
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
         );
     }
-
-    # my $log = get_logger();
-    # $log->error("Db error: '$message'");
 
     return;
 }
 
-=head2 parse_db_error
+=head2 parse_error
 
 Parse a database error message, and translate it for the user.
 
@@ -132,61 +131,64 @@ Better way to do this?
 
 =cut
 
-# sub parse_db_error {
-#     my ($self, $pg) = @_;
+sub parse_error {
+    my ($self, $pg) = @_;
 
-#     my $log = get_logger();
+    my $log = get_logger();
 
-#     print "\nPG: $pg\n\n";
+    print "\nPG: $pg\n\n";
 
-#     my $message_type =
-#          $pg eq q{}                                          ? "nomessage"
-#        : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
-#        : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi ? "colnotfound:$2.$1"
-#        : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
-#        : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
-#        : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
-#        : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
-#        : $pg =~ m/no password supplied/smi                   ? "password"
-#        : $pg =~ m/FATAL:  role ($RE{quoted}) does not exist/smi ? "username:$1"
-#        : $pg =~ m/no route to host/smi                       ? "network"
-#        : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
-#        : $pg =~ m/permission denied for relation/smi         ? "relforbid"
-#        : $pg =~ m/not connected/smi                          ? "notconn"
-#        :                                                       "unknown";
+    my $message_type =
+         $pg eq q{}                                          ? "nomessage"
+       : $pg =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
+       : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi
+                                                            ? "colnotfound:$2.$1"
+       : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
+       : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
+       : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
+       : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
+       : $pg =~ m/no password supplied/smi                   ? "password"
+       : $pg =~ m/FATAL:  role ($RE{quoted}) does not exist/smi ? "username:$1"
+       : $pg =~ m/no route to host/smi                       ? "network"
+       : $pg =~ m/DETAIL:  Key ($RE{balanced}{-parens=>'()'})=/smi ? "duplicate:$1"
+       : $pg =~ m/permission denied for relation/smi         ? "relforbid"
+       : $pg =~ m/could not connect to server/smi            ? "servererror"
+       : $pg =~ m/not connected/smi                          ? "notconn"
+       :                                                       "unknown";
 
-#     # Analize and translate
+    # Analize and translate
 
-#     my ( $type, $name ) = split /:/, $message_type, 2;
-#     $name = $name ? $name : '';
+    my ( $type, $name ) = split /:/, $message_type, 2;
+    $name = $name ? $name : '';
 
-#     my $translations = {
-#         nomessage   => "weird#Error without message",
-#         dbnotfound  => "fatal#Database $name does not exists",
-#         relnotfound => "fatal#Relation $name does not exists",
-#         password    => "info#Authentication failed for $name",
-#         password    => "info#Authentication failed, password?",
-#         username    => "error#Wrong user name: $name",
-#         network     => "fatal#Network problem",
-#         unknown     => "fatal#Database error",
-#         duplicate   => "error#Duplicate $name",
-#         colnotfound => "error#Column not found $name",
-#         checkconstr => "error#Check: $name",
-#         nullvalue   => "error#Null value for $name",
-#         relforbid   => "error#Permission denied",
-#         notconn     => "error#Not connected",
-#     };
+    my $translations = {
+        nomessage   => "weird#Error without message",
+        dbnotfound  => "fatal#Database $name does not exists",
+        relnotfound => "fatal#Relation $name does not exists",
+        password    => "info#Authentication failed for $name",
+        password    => "info#Authentication failed, password?",
+        username    => "error#Wrong user name: $name",
+        network     => "fatal#Network problem",
+        unknown     => "fatal#Database error",
+        servererror => "fatal#Server not available",
+        duplicate   => "error#Duplicate $name",
+        colnotfound => "error#Column not found $name",
+        checkconstr => "error#Check: $name",
+        nullvalue   => "error#Null value for $name",
+        relforbid   => "error#Permission denied",
+        notconn     => "error#Not connected",
+    };
 
-#     my $message;
-#     if (exists $translations->{$type} ) {
-#         $message = $translations->{$type}
-#     }
-#     else {
-#         $log->error('EE: Translation error for: $pg!');
-#     }
+    my $message;
+    if (exists $translations->{$type} ) {
+        $message = $translations->{$type}
+    }
+    else {
+        $log->error('EE: Translation error for: $pg!');
+    }
 
-#     return $message;
-# }
+    return $message;
+}
 
 =head2 table_info_short
 

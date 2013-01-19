@@ -135,9 +135,12 @@ sub parse_error {
 
     my $message_type
         = $cb eq q{} ? "nomessage"
-        : $cb =~ m/Cannot communicate with server/smi   ? "servererror"
-        : $cb =~ m/User ($RE{quoted}) is invalid/smi    ? "username:$1"
-        :                                                 "unknown";
+        : $cb =~ m/Failed to connect to database server, ($RE{quoted})/smi
+                                                             ? "serverdb:$1"
+        : $cb =~ m/Cannot communicate with server/smi        ? "servererr"
+        : $cb =~ m/User ($RE{quoted}) is invalid/smi         ? "username:$1"
+        : $cb =~ m/Incorrect or missing password/smi         ? "password"
+        :                                                      "unknown";
 
     # Analize and translate
 
@@ -145,9 +148,11 @@ sub parse_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        driver      => "fatal#Database driver $name not found",
-        servererror => "fatal#Server not available",
-        username    => "warn#User $name is invalid",
+        driver     => "fatal#Database driver $name not found",
+        serverdb   => "fatal#Database not available $name",
+        servererr  => "fatal#Server not available",
+        username   => "warn#User $name is invalid",
+        password   => "warn#Incorrect or missing password",
     };
 
     my $message;
@@ -169,7 +174,28 @@ Return list of tables from the database.
 
 sub table_list {
     my $self = shift;
-    return;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of tables');
+
+    my $sql = q{SELECT class_name
+                    FROM db_class WHERE is_system_class = 'NO';
+    };
+
+    $self->{_dbh}{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}{RaiseError} = 0;
+
+    my $table_list;
+    try {
+        $table_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $table_list;
 }
 
 =head2 table_info_short
@@ -181,6 +207,11 @@ doesn't seem to be reliable.
 
 sub table_info_short {
     my ( $self, $table ) = @_;
+
+    # SELECT * FROM db_attribute
+    #     WHERE class_name = 'game'
+    #     ORDER BY def_order
+
     return;
 }
 

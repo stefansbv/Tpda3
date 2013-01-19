@@ -8,6 +8,8 @@ use Log::Log4perl qw(get_logger :levels);
 use File::HomeDir;
 use File::Spec::Functions;
 
+use Tpda3::Exceptions;
+
 use Try::Tiny;
 use DBI;
 
@@ -62,42 +64,28 @@ sub db_connect {
 
     my $log = get_logger();
 
-    #$log->level($TRACE);                     # set log level
-
-    my ($dbname, $host, $driver) = @{$conf}{qw(dbname host driver)};
+    my ($dbname, $driver) = @{$conf}{qw(dbname driver)};
 
     $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
     $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
-    $log->trace(" > Host     = ", $host   ? $host   : '?', "\n");
 
     # Fixed path for SQLite databases
     my $dbfile = $conf->{dbfile} = get_testdb_filename($dbname);
 
     my $dsn = qq{dbi:SQLite:dbname=$dbfile};
 
-    try {
-        $self->{_dbh} = DBI->connect(
-            $dsn, '', '',
-            {   FetchHashKeyName => 'NAME_lc',
-                AutoCommit       => 1,
-                RaiseError       => 1,
-                PrintError       => 0,
-                LongReadLen      => 524288,
-                HandleError      => sub { $self->handle_error(DBI->errstr) },
-                sqlite_unicode   => 1,
-            }
-        ) or $self->handle_error(DBI->errstr);
-
-        $log->info("Connected to '$dbname'");
-    }
-    catch {
-        # Connection errors
-        my $user_message = $self->parse_db_error($_);
-        $self->{model}->exception_log($user_message)
-            if defined $self->{model}
-            and $self->{model}->isa('Tpda3::Model');
-    };
+    $self->{_dbh} = DBI->connect(
+        $dsn, undef, undef,
+        {   FetchHashKeyName => 'NAME_lc',
+            AutoCommit       => 1,
+            RaiseError       => 1,
+            PrintError       => 0,
+            LongReadLen      => 524288,
+            HandleError      => sub { $self->handle_error() },
+            pg_enable_utf8   => 1,
+        }
+    );
 
     return $self->{_dbh};
 }
@@ -109,21 +97,35 @@ Log errors.
 =cut
 
 sub handle_error {
-    my ($self, $message) = @_;
+    my $self = shift;
 
-    my $log = get_logger();
-    $log->error("Db error: '$message'");
+    my $errorstr;
+
+    if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
+        $errorstr = $self->{_dbh}->errstr;
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
+        );
+    }
+    else {
+        $errorstr = DBI->errstr;
+        Tpda3::Exception::Db::Connect->throw(
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
+        );
+    }
 
     return;
 }
 
-=head2 parse_db_error
+=head2 parse_error
 
 Parse a database error message, and translate it for the user.
 
 =cut
 
-sub parse_db_error {
+sub parse_error {
     my ($self, $si) = @_;
 
     my $log = get_logger();

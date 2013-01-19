@@ -76,6 +76,11 @@ sub _connect {
 
 SWITCH: for ($driver) {
         /^$/x && do warn "No driver name?\n";
+        /cubrid/xi && do {
+            require Tpda3::Db::Connection::Cubrid;
+            $db = Tpda3::Db::Connection::Cubrid->new($model);
+            last SWITCH;
+        };
         /firebird/xi && do {
             require Tpda3::Db::Connection::Firebird;
             $db = Tpda3::Db::Connection::Firebird->new($model);

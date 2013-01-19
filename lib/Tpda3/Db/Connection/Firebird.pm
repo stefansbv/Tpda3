@@ -41,7 +41,7 @@ Constructor
 =cut
 
 sub new {
-    my ($class, $model) = @_;
+    my ( $class, $model ) = @_;
 
     my $self = {};
 
@@ -63,19 +63,18 @@ sub db_connect {
 
     my $log = get_logger();
 
-    $log->level($TRACE);                     # set log level
-
-    my ($dbname, $host, $port) = @{$conf}{qw(dbname host port)};
-    my ($driver, $user, $pass) = @{$conf}{qw(driver user pass)};
+    my ( $dbname, $host, $port ) = @{$conf}{qw(dbname host port)};
+    my ( $driver, $user, $pass ) = @{$conf}{qw(driver user pass)};
 
     $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
-    $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
-    $log->trace(" > Host     = ", $host   ? $host   : '?', "\n");
-    $log->trace(" > Port     = ", $port   ? $port   : '?', "\n");
-    $log->trace(" > User     = ", $user   ? $user   : '?', "\n");
+    $log->trace( " > Database = ", $dbname ? $dbname : '?', "\n" );
+    $log->trace( " > Host     = ", $host   ? $host   : '?', "\n" );
+    $log->trace( " > Port     = ", $port   ? $port   : '?', "\n" );
+    $log->trace( " > User     = ", $user   ? $user   : '?', "\n" );
 
-    my $dsn = qq{dbi:Firebird:dbname=$dbname;host=$host;port=$port;ib_dialect=3;ib_charset=UTF8};
+    my $dsn = qq{dbi:Firebird:dbname=$dbname;host=$host;port=$port};
+    $dsn .= q{;ib_dialect=3;ib_charset=UTF8};
 
     $self->{_dbh} = DBI->connect(
         $dsn, $user, $pass,
@@ -106,26 +105,27 @@ Log errors.
 sub handle_error {
     my $self = shift;
 
+    my $errorstr;
+
     if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
+        $errorstr = $self->{_dbh}->errstr;
         Tpda3::Exception::Db::SQL->throw(
-            logmsg  => $self->{_dbh}->errstr,
-            usermsg => 'SQL error',
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
         );
     }
     else {
+        $errorstr = DBI->errstr;
         Tpda3::Exception::Db::Connect->throw(
-            logmsg  => DBI->errstr,
-            usermsg => 'Connection error!',
+            logmsg  => $errorstr,
+            usermsg => $self->parse_error($errorstr),
         );
     }
-
-    # my $log = get_logger();
-    # $log->error("Db error: '$message'");
 
     return;
 }
 
-=head2 parse_db_error
+=head2 parse_error
 
 Parse a database error message, and translate it for the user.
 
@@ -133,51 +133,52 @@ RDBMS specific (and maybe version specific?).
 
 =cut
 
-# sub parse_db_error {
-#     my ($self, $fb) = @_;
+sub parse_error {
+    my ( $self, $fb ) = @_;
 
-#     my $log = get_logger();
+    my $log = get_logger();
 
-#     print "\nFB: $fb\n\n";
+    print "\nFB: $fb\n\n";
 
-#     my $message_type =
-#          $fb eq q{}                                          ? "nomessage"
-#        : $fb =~ m/operation for file ($RE{quoted})/smi       ? "dbnotfound:$1"
-#        : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi             ? "relnotfound:$1"
-#        : $fb =~ m/user name and password/smi                 ? "userpass"
-#        : $fb =~ m/no route to host/smi                       ? "network"
-#        : $fb =~ m/network request to host ($RE{quoted})/smi  ? "nethost:$1"
-#        : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi ? "driver:$1"
-#        : $fb =~ m/not connected/smi                          ? "notconn"
-#        :                                                       "unknown";
+    my $message_type
+        = $fb eq q{} ? "nomessage"
+        : $fb =~ m/operation for file ($RE{quoted})/smi ? "dbnotfound:$1"
+        : $fb =~ m/\-Table unknown\s*\-(.*)\-/smi       ? "relnotfound:$1"
+        : $fb =~ m/Your user name and password/smi      ? "userpass"
+        : $fb =~ m/no route to host/smi                 ? "network"
+        : $fb =~ m/network request to host ($RE{quoted})/smi ? "nethost:$1"
+        : $fb =~ m/install_driver($RE{balanced}{-parens=>'()'})/smi
+                                                        ? "driver:$1"
+        : $fb =~ m/not connected/smi                    ? "notconn"
+        :                                                 "unknown";
 
-#     # Analize and translate
+    # Analize and translate
 
-#     my ( $type, $name ) = split /:/, $message_type, 2;
-#     $name = $name ? $name : '';
+    my ( $type, $name ) = split /:/, $message_type, 2;
+    $name = $name ? $name : '';
 
-#     my $translations = {
-#         driver      => "fatal#Database driver $name not found",
-#         nomessage   => "weird#Error without message",
-#         dbnotfound  => "fatal#Database $name not found",
-#         relnotfound => "fatal#Relation $name not found",
-#         userpass    => "warn#Authentication failed",
-#         nethost     => "fatal#Network problem: host $name",
-#         network     => "fatal#Network problem",
-#         unknown     => "fatal#Database error",
-#         notconn     => "error#Not connected",
-#     };
+    my $translations = {
+        driver      => "fatal#Database driver $name not found",
+        nomessage   => "weird#Error without message",
+        dbnotfound  => "fatal#Database $name not found",
+        relnotfound => "fatal#Relation $name not found",
+        userpass    => "warn#Authentication failed",
+        nethost     => "fatal#Network problem: host $name",
+        network     => "fatal#Network problem",
+        unknown     => "fatal#Database error",
+        notconn     => "error#Not connected",
+    };
 
-#     my $message;
-#     if (exists $translations->{$type} ) {
-#         $message = $translations->{$type}
-#     }
-#     else {
-#         $log->error('EE: Translation error for: $fb!');
-#     }
+    my $message;
+    if ( exists $translations->{$type} ) {
+        $message = $translations->{$type};
+    }
+    else {
+        $log->error('EE: Translation error for: $fb!');
+    }
 
-#     return $message;
-# }
+    return $message;
+}
 
 =head2 table_list
 
@@ -351,7 +352,7 @@ Check if table exists in the database.
 =cut
 
 sub table_exists {
-    my ($self, $table) = @_;
+    my ( $self, $table ) = @_;
 
     my $log = get_logger();
     $log->info("Checking if $table table exists");
