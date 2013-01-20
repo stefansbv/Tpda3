@@ -77,12 +77,13 @@ sub db_connect {
 
     $self->{_dbh} = DBI->connect(
         $dsn, $user, $pass,
-        {   FetchHashKeyName => 'NAME_lc',
-            AutoCommit       => 1,
-            RaiseError       => 0,
-            PrintError       => 0,
-            LongReadLen      => 524288,
-            HandleError      => sub { $self->handle_error() },
+        {   FetchHashKeyName  => 'NAME_lc',
+            AutoCommit        => 1,
+            RaiseError        => 0,
+            PrintError        => 0,
+            LongReadLen       => 524288,
+            HandleError       => sub { $self->handle_error() },
+            #mysql_enable_utf8 => 1,
         }
     );
 
@@ -208,11 +209,35 @@ doesn't seem to be reliable.
 sub table_info_short {
     my ( $self, $table ) = @_;
 
-    # SELECT * FROM db_attribute
-    #     WHERE class_name = 'game'
-    #     ORDER BY def_order
+    my $log = get_logger();
 
-    return;
+    my $sth = $self->{_dbh}->column_info(undef, undef, $table, undef);
+
+    my $flds_ref;
+    try {
+        while ( my $rec = $sth->fetchrow_hashref() ) {
+            my ( $type, $length )
+                = $self->type_and_length( $rec->{TYPE_NAME} );
+            my $pos = $rec->{ORDINAL_POSITION};
+
+            $flds_ref->{$pos} = {
+                pos         => $pos,
+                name        => $rec->{COLUMN_NAME},
+                type        => $type,
+                defa        => undef,
+                is_nullable => $rec->{NULLABLE},
+                length      => $rec->{COLUMN_SIZE},      # $length?
+                prec        => $rec->{COLUMN_SIZE},
+                scale       => $rec->{DECIMAL_DIGITS},
+            };
+        }
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $flds_ref;
 }
 
 =head2 table_keys
@@ -223,7 +248,29 @@ Get the primary key field name of the table.
 
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
-    return;
+
+    # $self->{_dbh}{AutoCommit} = 1;    # disable transactions
+    # $self->{_dbh}{RaiseError} = 0;
+
+    my $log = get_logger();
+
+    #my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY'; ???
+
+    $log->info("Geting '$table' table primary key(s) names");
+
+    my $pkf;
+    try {
+        my $sth = $self->{_dbh}->primary_key_info( undef, undef, $table );
+        # table_cat table_schem table_name COLUMN_NAME key_seq pk_name
+        # 0         1           2          3           4       5
+        $pkf = [ ( $sth->fetchall_arrayref() )->[0][3] ];
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $pkf;
 }
 
 =head2 table_exists
@@ -234,7 +281,54 @@ Check if table exists in the database.
 
 sub table_exists {
     my ( $self, $table ) = @_;
-    return;
+
+    my $log = get_logger();
+    $log->info("Checking if $table table exists");
+
+    my $sql = qq(SELECT class_name
+                    FROM db_class
+                    WHERE is_system_class = 'NO'
+                           AND class_name = '$table';
+    );
+
+    $log->trace("SQL= $sql");
+
+    my $val_ret;
+    try {
+        ($val_ret) = $self->{_dbh}->selectrow_array($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $val_ret;
+}
+
+=head2 type_and_length
+
+Parse the TYPE_NAME attribute and return SQL type and a length.  The
+TYPE_NAME can be something like VARCHAR(30) or INTEGER.  If there is
+no length, return 10.
+
+=cut
+
+sub type_and_length {
+    my $type_name = shift;
+
+    my ($type, $length);
+    if ( $type_name =~ /^(\w+)($RE{balanced}{-parens=>'()'})/ ) {
+        $type   = $1;
+        $length = $2;
+        ( $length = $2 ) =~ s/[()]//g;
+    }
+    else {
+        $type_name =~ /^(\w+)/;
+        $type   = $1;
+        $length = 10;
+    }
+
+    return ($type, $length);
 }
 
 =head1 AUTHOR
