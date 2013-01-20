@@ -206,6 +206,12 @@ sub table_exists {
     return $val_ret;
 }
 
+=head2 table_keys
+
+Get the primary key field name of the table.
+
+=cut
+
 sub table_keys {
     my ( $self, $table ) = @_;
 
@@ -230,6 +236,12 @@ sub table_keys {
     return $val_ret;
 }
 
+=head2 table_list
+
+Return list of tables from the database.
+
+=cut
+
 sub table_list {
     my $self = shift;
 
@@ -252,11 +264,26 @@ sub table_list {
     return $table_list;
 }
 
+=head2 get_testdb_filename
+
+Returns the full path to the test database file.
+
+=cut
+
 sub get_testdb_filename {
     my $dbname = shift;
 
     return catfile(File::HomeDir->my_data, "$dbname.db");
 }
+
+=head2 has_feature_returning
+
+Returns no for SQlite, meaning that is has not the INSERT... RETURNING
+feature.
+
+=cut
+
+sub has_feature_returning { 0 }
 
 =head1 AUTHOR
 

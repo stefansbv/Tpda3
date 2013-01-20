@@ -440,6 +440,17 @@ sub constraints_list {
     return $flds_ref;
 }
 
+=head2 has_feature_returning
+
+Returns yes for PostgreSQL, meaning that is has the
+INSERT... RETURNING feature.
+
+Should check for the PostgreSQL version?
+
+=cut
+
+sub has_feature_returning { 1 }
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

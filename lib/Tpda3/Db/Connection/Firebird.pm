@@ -380,6 +380,17 @@ sub table_exists {
     return $val_ret;
 }
 
+=head2 has_feature_returning
+
+Returns yes for Firebird, meaning that is has the
+INSERT... RETURNING feature.
+
+Should check for the Firebird version?
+
+=cut
+
+sub has_feature_returning { 1 }
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

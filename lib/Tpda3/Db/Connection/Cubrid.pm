@@ -331,6 +331,15 @@ sub type_and_length {
     return ($type, $length);
 }
 
+=head2 has_feature_returning
+
+Returns no for CUBRID, meaning that is has not the INSERT... RETURNING
+feature.
+
+=cut
+
+sub has_feature_returning { 0 }
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

@@ -10,6 +10,7 @@ use Data::Compare;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
+use Data::Printer;
 
 use Tpda3::Exceptions;
 
@@ -420,7 +421,7 @@ sub query_filter_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-    # use Data::Printer;
+
     # p $stmt;
     # p @bind;
 
@@ -458,7 +459,6 @@ sub query_record {
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
-    # use Data::Printer;
     # p $stmt;
     # p @bind;
 
@@ -809,7 +809,7 @@ sub get_codes {
 
 Insert new record in the DB.
 
-Using the RETURNING ...
+Using the RETURNING feature...
 
  Postgres version 8.2 or greater
  Firebird version 2.1 or greater
@@ -821,21 +821,38 @@ reports the last, but the relevant one is the first:
 
 DBD::SQLite::db prepare failed: near "RETURNING": syntax error ...
 
+Uses the B<last_insert_id> function if the database doesn't support the
+INSERT... RETURNING feature.
+
 =cut
 
 sub table_record_insert {
     my ( $self, $table, $pkcol, $record ) = @_;
 
+    my $has_feature = $self->dbc->has_feature_returning();
+
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind )
-        = $sql->insert( $table, $record, { returning => $pkcol } );
+    my ( $stmt, @bind );
+    if ($has_feature) {
+        ( $stmt, @bind )
+            = $sql->insert( $table, $record, { returning => $pkcol } );
+    }
+    else {
+        ( $stmt, @bind ) = $sql->insert( $table, $record );
+    }
 
     my $pk_id;
     try {
         my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
-        $pk_id = $sth->fetch()->[0];
+        if ($has_feature) {
+            $pk_id = $sth->fetch()->[0];
+        }
+        else {
+            # The parameters are required, $table is ignord for CUBRID
+            $pk_id = $self->dbh->last_insert_id(undef, undef, $table, undef);
+        }
     }
     catch {
         $self->throw_exception_db($_);

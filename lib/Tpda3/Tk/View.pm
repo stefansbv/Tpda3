@@ -1754,7 +1754,7 @@ sub Tk::Error {
 
     $self->log_msg("EE: '$error'");
 
-    my $msg = qq{An error ocurred! Please, restart Tpda3...\n\n$error};
+    my $msg = qq{An error ocurred!...\n\n$error};
 
     $self->Dialog(
         -title => 'Error!',
