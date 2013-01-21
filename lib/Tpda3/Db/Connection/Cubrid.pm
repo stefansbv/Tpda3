@@ -225,7 +225,7 @@ sub table_info_short {
                 pos         => $pos,
                 name        => $rec->{COLUMN_NAME},
                 type        => $type,
-                defa        => undef,
+                defa        => undef,                    # how to get?
                 is_nullable => $rec->{NULLABLE},
                 length      => $rec->{COLUMN_SIZE},      # $length?
                 prec        => $rec->{COLUMN_SIZE},
@@ -315,7 +315,7 @@ no length, return 10.
 =cut
 
 sub type_and_length {
-    my $type_name = shift;
+    my ($self, $type_name) = @_;
 
     my ($type, $length);
     if ( $type_name =~ /^(\w+)($RE{balanced}{-parens=>'()'})/ ) {
@@ -329,7 +329,7 @@ sub type_and_length {
         $length = 10;
     }
 
-    return ($type, $length);
+    return (lc($type), $length);
 }
 
 =head2 has_feature_returning
