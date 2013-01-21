@@ -651,12 +651,16 @@ sub cmp_function {
     my $cmp;
 SWITCH: for ($driver) {
         /^$/ && warn "EE: Unknown database driver name!\n";
-        /postgresql/i && do {
-            $cmp = $ignore_case ? '-ILIKE' : '-LIKE';
+        /cubrid/i && do {
+            $cmp = $ignore_case ? '-LIKE' : '-LIKE';
             last SWITCH;
         };
         /firebird/i && do {
             $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
+            last SWITCH;
+        };
+        /postgresql/i && do {
+            $cmp = $ignore_case ? '-ILIKE' : '-LIKE';
             last SWITCH;
         };
         /sqlite/i && do {
@@ -665,7 +669,7 @@ SWITCH: for ($driver) {
         };
 
         # Default
-        warn "EE: Unknown database driver name: $driver!\n";
+        warn "WW: Unknown database driver name: $driver!\n";
         $cmp = '-LIKE';
     }
 

@@ -2,6 +2,7 @@ package Tpda3::Db::Connection::Cubrid;
 
 use strict;
 use warnings;
+use Data::Printer;
 
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
@@ -236,6 +237,8 @@ sub table_info_short {
         $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
+
+    p $flds_ref;
 
     return $flds_ref;
 }
