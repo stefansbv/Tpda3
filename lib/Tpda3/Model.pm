@@ -111,22 +111,21 @@ sub db_connect {
 
 =head2 dbh
 
-Return dbh.
+Return the database handler.
 
 =cut
 
 sub dbh {
     my $self = shift;
 
-    my $db = Tpda3::Db->instance;
-
-    return $db->dbh if $self->is_connected;
-
-    # TODO: Try to (re)connect?
+    if ( Tpda3::Db->has_instance ) {
+        my $db = Tpda3::Db->instance;
+        return $db->dbh if $self->is_connected;
+    }
 
     Tpda3::Exception::Db::Connect->throw(
-        logmsg  => 'Not connected!',
-        usermsg => '',
+        logmsg  => 'not connected to the database',
+        usermsg => 'Please restart and login',
     );
 
     return;
@@ -1371,15 +1370,36 @@ sub user_message {
     return $user_message;
 }
 
+=head2 throw_exception_db
+
+Try to catch existing exceptions.  (Re)Throw an exception on SQL or
+Connection errors.
+
+=cut
+
 sub throw_exception_db {
     my ($self, $msg) = @_;
 
-    print "Throw $msg\n";
+    print "(RE)Throw: '$msg'\n";
 
-    Tpda3::Exception::Db::SQL->throw(
-        logmsg  => $msg,
-        usermsg => 'Database error',
-    );
+    if ( my $e = Exception::Base->catch($_) ) {
+        if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+            print "M: Not connected!\n";
+            $e->throw;      # rethrow the exception
+        }
+        elsif ( $e->isa('Tpda3::Exception::Db::SQL')) {
+            print "M: SQL exception!\n";
+            $e->throw;      # rethrow the exception
+        } {
+            print 'Error!: ', $e->logmsg, "\n";
+        }
+    }
+    else {
+        Tpda3::Exception::Db::SQL->throw(
+            logmsg  => $msg,
+            usermsg => 'Database - SQL Error',
+        );
+    }
 
     return;
 }

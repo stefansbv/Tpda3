@@ -2340,7 +2340,8 @@ sub record_find_execute {
 
     # return unless defined $ary_ref->[0];     # test if AoA ?
     unless (ref $ary_ref eq 'ARRAY') {
-        die "Find failed!";
+        # die "Find failed!";
+        return;
     }
 
     my $record_count = scalar @{$ary_ref};

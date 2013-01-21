@@ -14,6 +14,7 @@ use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
 
 use base 'Tk::MainWindow';
 
+use Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
@@ -1752,13 +1753,22 @@ Override Tk::Error.
 sub Tk::Error {
     my ( $self, $error, @locations ) = @_;
 
-    $self->log_msg("EE: '$error'");
+    # This is probably superfluous
+    my ($usermsg, $logmsg);
+    if ( my $e = Exception::Base->catch() ) {
+        print "WW: Exception in View (not superfluous!)\n";
+        $usermsg = $e->usermsg;
+        $logmsg  = $e->logmsg;
+    }
 
-    my $msg = qq{An error ocurred!...\n\n$error};
+    my $dlg_message = $usermsg ? $usermsg : $error;
+    my $log_messsge = $logmsg  ? $logmsg  : $error;
+
+    $self->log_msg("EE: '$log_messsge'");
 
     $self->Dialog(
-        -title => 'Error!',
-        -text  => $msg,
+        -title => 'Error',
+        -text  => $dlg_message,
     )->Show();
 
     return;

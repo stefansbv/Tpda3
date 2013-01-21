@@ -2,7 +2,6 @@ package Tpda3::Db::Connection::Cubrid;
 
 use strict;
 use warnings;
-use Data::Printer;
 
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
@@ -133,16 +132,17 @@ sub parse_error {
 
     my $log = get_logger();
 
-    print "\nCB: $cb\n\n";
+    $log->error("EE: $cb");
 
     my $message_type
-        = $cb eq q{} ? "nomessage"
+        = $cb eq q{}                                         ? "nomessage"
         : $cb =~ m/Failed to connect to database server, ($RE{quoted})/smi
                                                              ? "serverdb:$1"
         : $cb =~ m/Cannot communicate with server/smi        ? "servererr"
         : $cb =~ m/User ($RE{quoted}) is invalid/smi         ? "username:$1"
         : $cb =~ m/Incorrect or missing password/smi         ? "password"
-        :                                                      "unknown";
+        :                                                      "unknown"
+        ;
 
     # Analize and translate
 
@@ -162,7 +162,7 @@ sub parse_error {
         $message = $translations->{$type};
     }
     else {
-        $log->error('EE: Translation error for: $cb!');
+        $log->error('EE: Translation error for: $type!');
     }
 
     return $message;
@@ -237,8 +237,6 @@ sub table_info_short {
         $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
-
-    p $flds_ref;
 
     return $flds_ref;
 }
