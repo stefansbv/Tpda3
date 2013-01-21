@@ -259,18 +259,24 @@ sub table_keys {
 
     $log->info("Geting '$table' table primary key(s) names");
 
+    #my @keys;
     my $pkf;
     try {
         my $sth = $self->{_dbh}->primary_key_info( undef, undef, $table );
         # table_cat table_schem table_name COLUMN_NAME key_seq pk_name
         # 0         1           2          3           4       5
         $pkf = [ ( $sth->fetchall_arrayref() )->[0][3] ];
+        # All keys
+        # while ( my $row_rf = $sth->fetchrow_arrayref() ) {
+        #     push @keys, $row_rf->[3];
+        # }
     }
     catch {
         $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
+    #return \@keys;
     return $pkf;
 }
 
