@@ -555,7 +555,7 @@ sub tmshr_fill_table {
     my $tree = Tpda3::Tree->new({});
     $tree->name('root');
 
-    my $columns  = $self->scrcfg->dep_table_columns($tm_ds);
+    my $columns  = $self->scrcfg()->deptable($tm_ds, 'columns');
     my $colnames = Tpda3::Utils->sort_hash_by_id($columns);
     $tree->set_header($colnames);
 
@@ -563,7 +563,7 @@ sub tmshr_fill_table {
 
     my $level = 0;                           # maintable level
 
-    my $levels     = $self->scrcfg->dep_table_datasources($tm_ds)->{level};
+    my $levels = $self->scrcfg()->deptable( $tm_ds, 'datasources', 'level' );
     my $last_level = $#{$levels};
 
     my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);

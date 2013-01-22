@@ -21,6 +21,8 @@ sub new {
 
     $self->{_scr} = $self->load_conf($args);
 
+    $self->alter_toolbar();
+
     return $self;
 }
 
@@ -292,6 +294,61 @@ sub dep_table_has_selectorcol {
     return if $sc eq 'none';
 
     return $sc;
+}
+
+=head2 dep_table_columns_by_level
+
+Return the dependent table columns configuration data structure bound
+to the related Tk::TableMatrix widget, filtered by the I<level>.
+
+Columns with no level ...
+
+=cut
+
+sub dep_table_columns_by_level {
+    my ( $self, $tm_ds, $level ) = @_;
+
+    my $cols = $self->deptable($tm_ds, 'columns');
+
+    $level = 'level' . $level;
+    my $dss;
+
+    foreach my $col ( keys %{$cols} ) {
+        my $ds = ref $cols->{$col}{datasource}
+               ? $cols->{$col}{datasource}{$level}
+               : $cols->{$col}{datasource};
+        next unless $ds;
+        $dss->{$ds} = [] unless exists $dss->{$ds};
+        push @{ $dss->{$ds} }, $col;
+    }
+
+    return $dss;
+}
+
+=head2 alter_toolbar
+
+Fine tune the configuration for screens, alter behavior of toolbar
+buttons per screen.
+
+=cut
+
+sub alter_toolbar {
+    my $self = shift;
+
+    my $tb_m = $self->cfg->toolbar();
+    my $tb_a = $self->toolbar();
+
+    foreach my $tb ( keys %{$tb_a} ) {
+        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
+            while ( my ( $k, $v ) = each( %{ $tb_a->{$tb}{state}{$pg} } ) ) {
+                $tb_m->{$tb}{state}{$pg}{$k} = $v;
+            }
+        }
+    }
+
+    $self->cfg->toolbar($tb_m);
+
+    return;
 }
 
 1;

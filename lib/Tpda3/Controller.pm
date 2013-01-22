@@ -3809,13 +3809,13 @@ sub report_table_metadata {
     my $metadata = {};
 
     # DataSourceS meta-data
-    my $dss    = $self->scrcfg->deptable($tm_ds, 'datasources');
-    my $cntcol = $self->scrcfg->deptable($tm_ds, 'rowcount');
+    my $dss    = $self->scrcfg()->deptable($tm_ds, 'datasources');
+    my $cntcol = $self->scrcfg()->deptable($tm_ds, 'rowcount');
     my $table  = $dss->{level}[$level]{table};
     my $pkcol  = $dss->{level}[$level]{pkcol};
 
     # DataSource meta-data by column
-    my $ds = $self->scrcfg->dep_table_columns_by_level($tm_ds, $level);
+    my $ds = $self->scrcfg()->dep_table_columns_by_level($tm_ds, $level);
 
     my @datasource = grep { m/^[^=]/ } keys %{$ds};
     my @tables = uniq @datasource;
@@ -3827,8 +3827,8 @@ sub report_table_metadata {
         return;
     }
 
-    $metadata->{pkcol}     = $pkcol;
-    $metadata->{colslist}  = $ds->{$tables[0]};
+    $metadata->{pkcol}    = $pkcol;
+    $metadata->{colslist} = $ds->{$tables[0]};
     $metadata->{rowcount} = $cntcol;
     push @{ $metadata->{colslist} }, $pkcol;  # add PK to cols list
 
