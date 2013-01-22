@@ -3,7 +3,6 @@ package Tpda3::Tk::TM;
 use strict;
 use warnings;
 use Carp;
-
 use Tpda3::Utils;
 
 use Tk;

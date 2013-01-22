@@ -6,7 +6,7 @@ use utf8;
 
 use English;
 use Data::Dumper;
-use Data::Printer;
+#use Data::Printer;
 
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed looks_like_number);
@@ -64,7 +64,7 @@ Constructor method.
 
 =item _dscrobj  - current I<detail> screen object
 
-=item _tblkeys  - primary and foreign keys and values record
+=item _tblkeys  - primary keys and values record
 
 =item _scrdata  - current screen data
 
@@ -83,7 +83,7 @@ sub new {
         _rscrobj => undef,
         _dscrcls => undef,
         _dscrobj => undef,
-        _tblkeys => undef,
+        _tblkeys => {},
         _scrdata => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
@@ -642,7 +642,7 @@ Detail screen module name from screen configuration.
 sub screen_detail_name {
     my $self = shift;
 
-    my $screen = $self->scrcfg('rec')->screen('detail');
+    my $screen = $self->scrcfg('rec')->screen('details');
 
     my $dsm;
     if ( ref $screen->{detail} eq 'ARRAY' ) {
@@ -675,7 +675,7 @@ sub get_selected_and_set_fk_val {
     return unless defined $row and $row > 0;
 
     # Detail screen module name from config
-    my $screen = $self->scrcfg('rec')->screen('detail');
+    my $screen = $self->scrcfg('rec')->screen('details');
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
     my $params = $tmx->cell_read( $row, $screen->{filter} );
@@ -699,8 +699,8 @@ sub screen_detail_load {
 
     my $dscrstr = $self->screen_string('det');
 
-    unless ( $dscrstr && ( $dscrstr eq lc $dsm ) ) {
-        #print "Loading detail screen ($dsm)\n";
+    unless ( $dscrstr && ( $dscrstr eq lc($dsm) ) ) {
+        print "Loading detail screen ($dsm)\n";
         $self->screen_module_detail_load($dsm);
     }
     return;
@@ -780,7 +780,7 @@ sub _check_app_menus {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
         eval { require $module_file };
         if ($@) {
-###            $self->_view->set_menu_enable($menu_item, 'disabled');
+            $self->_view->set_menu_enable($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
         }
     }
@@ -1150,8 +1150,8 @@ sub lookup_call {
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col = $self->scrcfg('rec')
-            ->deptable( $tm_ds, 'column', 'attr', $fld, 'id' );
+        my $col
+            = $self->scrcfg('rec')->deptable( $tm_ds, 'columns', $fld, 'id' );
         $filter = $tmx->cell_read( $r, $col );
     }
 
@@ -1292,7 +1292,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->scrcfg('rec')->deptable($tm_ds, 'column', $column);
+    my $field_cfg = $self->scrcfg('rec')->deptable($tm_ds, 'columns', $column);
 
     my @cols;
     my $rec = {};
@@ -1343,7 +1343,7 @@ sub fields_cfg_array {
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg('rec')
-                ->deptable( $tm_ds, 'column', $lookup_field );
+                ->deptable( $tm_ds, 'columns', $lookup_field );
         }
         else {
             $field_cfg
@@ -1766,7 +1766,7 @@ sub screen_module_load {
     return unless $self->check_cfg_version;  # current version is 3
 
     # Details page
-    my $has_det = $self->scrcfg('rec')->has_screen_detail;
+    my $has_det = $self->scrcfg('rec')->has_screen_details();
     if ($has_det) {
         my $lbl_details = $self->localize( 'notebook', 'lbl_details' );
         $self->_view->create_notebook_panel( 'det', $lbl_details );
@@ -3788,7 +3788,7 @@ sub dep_table_metadata {
     my $columns = $self->scrcfg->deptable($tm_ds, 'columns');
 
     $metadata->{pkcol}    = $pk_col;
-    $metadata->{fkcol}    = $self->scrcfg->deptable($tm_ds, 'fkcol');
+    $metadata->{fkcol}    = $self->scrcfg->deptable($tm_ds, 'fkcol', 'name');
     $metadata->{order}    = $self->scrcfg->deptable($tm_ds, 'orderby');
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
     $metadata->{updstyle} = $self->scrcfg->deptable($tm_ds, 'updatestyle');

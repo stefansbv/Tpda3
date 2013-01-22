@@ -10,7 +10,7 @@ use Data::Compare;
 use Regexp::Common;
 use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
-use Data::Printer;
+#use Data::Printer;
 
 use Tpda3::Exceptions;
 
@@ -337,7 +337,7 @@ sub query_records_count {
 
     my $table = $opts->{table};
     my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
-    my $where = $self->build_where($opts);
+    my $where = $self->build_sql_where($opts);
 
     return if !ref $where;
 
@@ -374,7 +374,7 @@ sub query_records_find {
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
     my $pkcol = $opts->{pkcol}{name};
-    my $where = $self->build_where($opts);
+    my $where = $self->build_sql_where($opts);
 
     return if !ref $where;
 
@@ -522,7 +522,7 @@ sub query_dictionary {
     my $order   = $opts->{order};
     my $cols    = $opts->{columns};
 
-    my $where = $self->build_where($opts);
+    my $where = $self->build_sql_where($opts);
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
@@ -541,7 +541,7 @@ sub query_dictionary {
     return $ary_ref;
 }
 
-=head2 build_where
+=head2 build_sql_where
 
 Return a hash reference containing where clause attributes.
 
@@ -570,7 +570,7 @@ NULL.
 
 =cut
 
-sub build_where {
+sub build_sql_where {
     my ( $self, $opts ) = @_;
 
     my $where = {};

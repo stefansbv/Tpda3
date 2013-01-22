@@ -113,16 +113,16 @@ sub maintable {
 
 ### other
 
-=head2 has_screen_detail
+=head2 has_screen_details
 
 Return true if the main screen has details screen.
 
 =cut
 
-sub has_screen_detail {
+sub has_screen_details {
     my $self = shift;
 
-    my $screen = $self->screen('detail');
+    my $screen = $self->screen('details');
     if ( ref $screen ) {
         return scalar keys %{$screen};
     }
