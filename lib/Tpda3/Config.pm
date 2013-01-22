@@ -796,7 +796,8 @@ sub list_config_files {
 
 =head2 config_misc_load
 
-Load a config file from the etc dir of the application.
+Load a config file from the etc dir of the application. Used by the
+Repman module.
 
 =cut
 

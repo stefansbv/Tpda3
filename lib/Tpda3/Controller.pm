@@ -6,6 +6,7 @@ use utf8;
 
 use English;
 use Data::Dumper;
+use Data::Printer;
 
 use Encode qw(is_utf8 encode decode);
 use Scalar::Util qw(blessed looks_like_number);
@@ -641,7 +642,7 @@ Detail screen module name from screen configuration.
 sub screen_detail_name {
     my $self = shift;
 
-    my $screen = $self->scrcfg('rec')->screen_detail;
+    my $screen = $self->scrcfg('rec')->screen('detail');
 
     my $dsm;
     if ( ref $screen->{detail} eq 'ARRAY' ) {
@@ -674,7 +675,7 @@ sub get_selected_and_set_fk_val {
     return unless defined $row and $row > 0;
 
     # Detail screen module name from config
-    my $screen = $self->scrcfg('rec')->screen_detail;
+    my $screen = $self->scrcfg('rec')->screen('detail');
 
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
     my $params = $tmx->cell_read( $row, $screen->{filter} );
@@ -779,7 +780,7 @@ sub _check_app_menus {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
         eval { require $module_file };
         if ($@) {
-            $self->_view->set_menu_enable($menu_item, 'disabled');
+###            $self->_view->set_menu_enable($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
         }
     }
@@ -882,7 +883,8 @@ sub setup_lookup_bindings_entry {
             : $search;
 
         # Add the search field to the columns list
-        my $field_cfg = $self->scrcfg('rec')->main_table_column($column);
+        my $field_cfg = $self->scrcfg('rec')->maintable('columns', $column);
+
         my @cols;
         my $rec = {};
         $rec->{$search} = {
@@ -1010,9 +1012,9 @@ sub setup_select_bindings_entry {
     my $dict     = Tpda3::Selected->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
-    return unless $self->scrcfg($page)->can('bindings_select');
+    return unless $self->scrcfg($page)->can('bindings');
 
-    my $bindings = $self->scrcfg($page)->bindings_select;
+    my $bindings = $self->scrcfg($page)->bindings('select');
 
     foreach my $bind_name ( keys %{$bindings} ) {
         next unless $bind_name;            # skip if just an empty tag
@@ -1149,7 +1151,7 @@ sub lookup_call {
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
         my $col = $self->scrcfg('rec')
-            ->dep_table_column_attr( $tm_ds, $fld, 'id' );
+            ->deptable( $tm_ds, 'column', 'attr', $fld, 'id' );
         $filter = $tmx->cell_read( $r, $col );
     }
 
@@ -1290,7 +1292,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->scrcfg('rec')->dep_table_column( $tm_ds, $column );
+    my $field_cfg = $self->scrcfg('rec')->deptable($tm_ds, 'column', $column);
 
     my @cols;
     my $rec = {};
@@ -1341,11 +1343,11 @@ sub fields_cfg_array {
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg('rec')
-                ->dep_table_column( $tm_ds, $lookup_field );
+                ->deptable( $tm_ds, 'column', $lookup_field );
         }
         else {
             $field_cfg
-                = $self->scrcfg('rec')->main_table_column($lookup_field);
+                = $self->scrcfg('rec')->maintable( 'columns', $lookup_field );
         }
         my $rec = {};
         $rec->{$lookup_field} = {
@@ -1376,10 +1378,11 @@ sub fields_cfg_hash {
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg('rec')
-                ->dep_table_columns( $tm_ds, $scr_field );
+                ->deptable( $tm_ds, 'columns', $scr_field );
         }
         else {
-            $field_cfg = $self->scrcfg('rec')->main_table_column($scr_field);
+            $field_cfg
+                = $self->scrcfg('rec')->maintable( 'columns', $scr_field );
         }
 
         my $rec = {};
@@ -1793,9 +1796,9 @@ sub screen_module_load {
     $self->set_app_mode('idle');
 
     # List header
-    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
-    my $header_cols = $self->scrcfg('rec')->list_header->{column};
-    my $fields      = $self->scrcfg('rec')->main_table_columns;
+    my $header_look = $self->scrcfg('rec')->list_header('lookup');
+    my $header_cols = $self->scrcfg('rec')->list_header('column');
+    my $fields      = $self->scrcfg('rec')->maintable('columns');
 
     if ($header_look and $header_cols) {
         $self->_view->make_list_header( $header_look, $header_cols, $fields );
@@ -1813,7 +1816,7 @@ sub screen_module_load {
 
     # Toggle find mode menus
     my $menus_state
-        = $self->scrcfg()->screen_style() eq 'report'
+        = $self->scrcfg()->screen('style') eq 'report'
         ? 'disabled'
         : 'normal';
     $self->_set_menus_enable($menus_state);
@@ -1823,7 +1826,7 @@ sub screen_module_load {
     $self->_model->unset_scrdata_rec();
 
     # Change application title
-    my $descr = $self->scrcfg('rec')->screen_description;
+    my $descr = $self->scrcfg('rec')->screen('description');
     $self->_view->title(' Tpda3 - ' . $descr) if $descr;
 
     # Update window geometry
@@ -1853,7 +1856,7 @@ sub check_cfg_version {
                 ;
 
     unless ( $cfg_ver == $req_ver ) {
-        my $screen_name = $self->scrcfg->screen_name();
+        my $screen_name = $self->scrcfg->screen('name');
         print "Error ($screen_name.conf):\n";
         print "  screen config version is $cfg_ver\n";
         print "       required version is $req_ver\n";
@@ -1983,7 +1986,7 @@ sub save_geometry {
     my $self = shift;
 
     my $scr_name = $self->scrcfg()
-        ? $self->scrcfg()->screen_name
+        ? $self->scrcfg()->screen('name')
         : 'main';
 
     $self->_cfg->config_save_instance(
@@ -2020,7 +2023,7 @@ sub set_geometry {
 
     my $scr_name
         = $self->scrcfg()
-        ? $self->scrcfg()->screen_name
+        ? $self->scrcfg()->screen('name')
         : return;
 
     my $geom;
@@ -2031,7 +2034,7 @@ sub set_geometry {
         }
     }
     unless ($geom) {
-        $geom = $self->scrcfg('rec')->screen->{geometry};
+        $geom = $self->scrcfg('rec')->screen('geometry');
     }
 
     $self->_view->set_geometry($geom);
@@ -2081,14 +2084,14 @@ sub screen_load_lists {
 
     return unless scalar keys %{$ctrl_ref};
 
-    foreach my $field ( keys %{ $self->scrcfg()->main_table_columns } ) {
+    foreach my $field ( keys %{ $self->scrcfg()->maintable('columns') } ) {
 
         # Control config attributes
-        my $fld_cfg  = $self->scrcfg()->main_table_column($field);
+        my $fld_cfg  = $self->scrcfg()->maintable('columns', $field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{readwrite};
 
-        my $para = $self->scrcfg()->{lists_ds}{$field};
+        my $para = $self->scrcfg()->lists_ds($field);
 
         next unless ref $para eq 'HASH';       # undefined, skip
 
@@ -2200,7 +2203,7 @@ sub toggle_screen_interface_controls {
         my ( $toolbars, $tb_attrs ) = $self->scrobj()->app_toolbar_names($label);
         foreach my $button_name ( @{$toolbars} ) {
             my $status
-                = $self->scrcfg()->screen_style() eq 'report'
+                = $self->scrcfg()->screen('style') eq 'report'
                 ? 'normal'
                 : $tb_attrs->{$button_name}{state}{$page}{$mode};
             $self->scrobj($page)->enable_tool( $label, $button_name, $status );
@@ -2316,7 +2319,7 @@ sub record_find_execute {
     $params->{columns} = $self->list_column_names();
 
     # Table configs
-    my $columns = $self->scrcfg('rec')->main_table_columns;
+    my $columns = $self->scrcfg('rec')->maintable('columns');
 
     # Add findtype info to screen data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
@@ -2333,8 +2336,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $self->scrcfg('rec')->main_table_view; # use view
-    $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
+    $params->{table} = $self->scrcfg('rec')->maintable('view'); # use view
+    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
     my ($ary_ref, $limit) = $self->_model->query_records_find($params);
 
@@ -2381,7 +2384,7 @@ sub record_find_count {
     $self->screen_read();
 
     # Table configs
-    my $columns = $self->scrcfg('rec')->main_table_columns;
+    my $columns = $self->scrcfg('rec')->maintable('columns');
 
     my $params = {};
 
@@ -2400,8 +2403,8 @@ sub record_find_count {
     }
 
     # Table data
-    $params->{table} = $self->scrcfg('rec')->main_table_view;
-    $params->{pkcol} = $self->scrcfg('rec')->main_table_pkcol;
+    $params->{table} = $self->scrcfg('rec')->maintable('view');
+    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
     my $record_count = $self->_model->query_records_count($params);
 
@@ -2611,8 +2614,8 @@ sub screen_read {
     # Get configured date style, default is ISO
     my $date_format = $self->_cfg->application->{dateformat} || 'iso';
 
-    foreach my $field ( keys %{ $scrcfg->main_table_columns() } ) {
-        my $fld_cfg = $scrcfg->main_table_column($field);
+    foreach my $field ( keys %{ $scrcfg->maintable('columns') } ) {
+        my $fld_cfg = $scrcfg->maintable('columns', $field);
 
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
@@ -2641,7 +2644,7 @@ structure C<< $self->{_scrdata}{field-name} >> and also returned.
 sub ctrl_read_from {
     my ($self, $field, $date_format) = @_;
 
-    my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
+    my $ctrltype = $self->scrcfg()->maintable('columns', $field, 'ctrltype');
 
     my $value;
     my $sub_name = "control_read_$ctrltype";
@@ -2751,7 +2754,7 @@ sub screen_write {
 
     # my $cfgdeps = $self->scrcfg($page)->dependencies;
 
-    foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
+    foreach my $field ( keys %{ $cfg_ref->maintable('columns') } ) {
 
         # Skip field if not in record or not dependent
         next
@@ -2759,7 +2762,7 @@ sub screen_write {
                          # or $self->is_dependent( $field, $cfgdeps )
                  );
 
-        my $fldcfg = $cfg_ref->main_table_column($field);
+        my $fldcfg = $cfg_ref->maintable('columns', $field);
 
         my $value = $record->{$field};
         # Defaults in columns config?
@@ -2801,7 +2804,7 @@ write to screen controls.
 sub ctrl_write_to {
     my ($self, $field, $value, $state, $date_format) = @_;
 
-    my $ctrltype = $self->scrcfg()->main_table_column($field)->{ctrltype};
+    my $ctrltype = $self->scrcfg()->maintable('columns', $field, 'ctrltype');
 
     my $sub_name = qq{control_write_$ctrltype};
     if ( $self->_view->can($sub_name) ) {
@@ -2828,7 +2831,7 @@ sub make_empty_record {
     my $cfg_ref = $self->scrcfg($page);
 
     my $record = {};
-    foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
+    foreach my $field ( keys %{ $cfg_ref->maintable('columns') } ) {
         $record->{$field} = undef;
     }
 
@@ -2985,8 +2988,8 @@ sub controls_state_set {
 
     return unless defined $self->scrcfg($page);
 
-    foreach my $field ( keys %{ $self->scrcfg($page)->main_table_columns } ) {
-        my $fld_cfg = $self->scrcfg($page)->main_table_column($field);
+    foreach my $field ( keys %{ $self->scrcfg($page)->maintable('columns') } ) {
+        my $fld_cfg = $self->scrcfg($page)->maintable('columns', $field);
 
         my $state = $control_states->{state};
         $state = $fld_cfg->{state}
@@ -3643,7 +3646,7 @@ sub storable_file_name {
     # Store record data to file
     my $data_file
         = catfile( $self->_cfg->configdir,
-        $self->scrcfg->screen_name . $suffix . q{.dat},
+        $self->scrcfg->screen('name') . $suffix . q{.dat},
         );
 
     return $data_file;
@@ -3709,33 +3712,39 @@ Retrieve main table meta-data from the screen configuration.
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
 
+# DEBUG
+    my ($package, $filename, $line, $subroutine) = caller(3);
+    print "main_table_metadata:\n $package, $line, $subroutine\n";
+
+
     my $metadata = {};
 
     #- Get PK field name and value and FK if exists
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
-    my ( $fk_col, $fk_val );
-
+    print "pk_col is $pk_col\n";
+    print "pk_val is $pk_val\n";
     # my $has_dep = 0;
     # if ($self->scrcfg->screen->{style} eq 'dependent') {
     #     $has_dep = 1;
-    $fk_col = $self->screen_get_fk_col;
-    $fk_val = $self->screen_get_fk_val;
-
+    my $fk_col = $self->screen_get_fk_col;
+    my $fk_val = $self->screen_get_fk_val;
     # }
+    print "fk_col is ", $fk_col ? $fk_col : 'UNDEF', "\n";
+    print "fk_val is ", $fk_val ? $fk_val : 'UNDEF', "\n";
 
     if ( $for_sql eq 'qry' ) {
-        $metadata->{table} = $self->scrcfg->main_table_view;
+        $metadata->{table} = $self->scrcfg()->maintable('view');
         $metadata->{where}{$pk_col} = $pk_val;    # pk
         $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
     elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
-        $metadata->{table} = $self->scrcfg->main_table_name;
+        $metadata->{table} = $self->scrcfg()->maintable('name');
         $metadata->{where}{$pk_col} = $pk_val;    # pk
         $metadata->{where}{$fk_col} = $fk_val if $fk_col and $fk_val;
     }
     elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->scrcfg->main_table_name;
+        $metadata->{table} = $self->scrcfg()->maintable('name');
         $metadata->{pkcol} = $pk_col;
     }
     else {
@@ -3762,27 +3771,27 @@ sub dep_table_metadata {
     my $pk_val = $self->screen_get_pk_val;
 
     if ( $for_sql eq 'qry' ) {
-        $metadata->{table} = $self->scrcfg->dep_table_view($tm_ds);
+        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'view');
         $metadata->{where}{$pk_col} = $pk_val;    # pk
     }
     elsif ( $for_sql eq 'upd' or $for_sql eq 'del' ) {
-        $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
+        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'name');
         $metadata->{where}{$pk_col} = $pk_val;    # pk
     }
     elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->scrcfg->dep_table_name($tm_ds);
+        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'name');
     }
     else {
         die "Bad parameter: $for_sql";
     }
 
-    my $columns = $self->scrcfg->dep_table_columns($tm_ds);
+    my $columns = $self->scrcfg->deptable($tm_ds, 'columns');
 
     $metadata->{pkcol}    = $pk_col;
-    $metadata->{fkcol}    = $self->scrcfg->dep_table_fkcol($tm_ds);
-    $metadata->{order}    = $self->scrcfg->dep_table_orderby($tm_ds);
+    $metadata->{fkcol}    = $self->scrcfg->deptable($tm_ds, 'fkcol');
+    $metadata->{order}    = $self->scrcfg->deptable($tm_ds, 'orderby');
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $metadata->{updstyle} = $self->scrcfg->dep_table_updatestyle($tm_ds);
+    $metadata->{updstyle} = $self->scrcfg->deptable($tm_ds, 'updatestyle');
 
     return $metadata;
 }
@@ -3800,8 +3809,8 @@ sub report_table_metadata {
     my $metadata = {};
 
     # DataSourceS meta-data
-    my $dss    = $self->scrcfg->dep_table_datasources($tm_ds);
-    my $cntcol = $self->scrcfg->dep_table_rowcount($tm_ds);
+    my $dss    = $self->scrcfg->deptable($tm_ds, 'datasources');
+    my $cntcol = $self->scrcfg->deptable($tm_ds, 'rowcount');
     my $table  = $dss->{level}[$level]{table};
     my $pkcol  = $dss->{level}[$level]{pkcol};
 
@@ -3908,7 +3917,7 @@ Return primary key column name for the current screen.
 sub screen_get_pk_col {
     my $self = shift;
 
-    return $self->scrcfg('rec')->main_table_pkcol();
+    return $self->scrcfg('rec')->maintable('pkcol', 'name');
 }
 
 =head2 screen_set_pk_col
@@ -3978,7 +3987,7 @@ sub screen_get_fk_col {
 
     $page ||= $self->_view->get_nb_current_page();
 
-    return $self->scrcfg($page)->main_table_fkcol();
+    return $self->scrcfg($page)->maintable('fkcol', 'name');
 }
 
 =head2 screen_set_fk_col
@@ -4042,8 +4051,8 @@ Return the list column names.
 sub list_column_names {
     my $self = shift;
 
-    my $header_look = $self->scrcfg('rec')->list_header->{lookup};
-    my $header_cols = $self->scrcfg('rec')->list_header->{column};
+    my $header_look = $self->scrcfg('rec')->list_header('lookup');
+    my $header_cols = $self->scrcfg('rec')->list_header('column');
 
     my $columns = [];
     push @{$columns}, @{$header_look};

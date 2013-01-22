@@ -176,7 +176,7 @@ sub _set_event_handlers_keys {
             $self->toggle_mode_find()
                 if $self->{_rscrcls}
                     and !$self->_model->is_mode('add')
-                    and $self->scrcfg()->screen_style() ne 'report';
+                    and $self->scrcfg()->screen('style') ne 'report';
         }
     );
 
@@ -296,11 +296,11 @@ sub set_event_handler_screen {
                 return
                     unless $self->_model->is_mode('add')
                         or $self->_model->is_mode('edit')
-                        or $self->scrcfg()->screen_style() eq 'report';
+                        or $self->scrcfg()->screen('style') eq 'report';
 
                 $scrobj->$method( $btn_group, $self );
                 # TODO: what styles can be used?
-                if ($self->scrcfg()->screen_style() ne 'report') {
+                if ($self->scrcfg()->screen('style') ne 'report') {
                     $self->_model->set_scrdata_rec(1);    # modified
                     $self->toggle_detail_tab;
                 }

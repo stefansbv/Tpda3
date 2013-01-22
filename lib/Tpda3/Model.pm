@@ -373,7 +373,7 @@ sub query_records_find {
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
-    my $pkcol = $opts->{pkcol};
+    my $pkcol = $opts->{pkcol}{name};
     my $where = $self->build_where($opts);
 
     return if !ref $where;

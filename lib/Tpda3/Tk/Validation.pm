@@ -67,7 +67,7 @@ sub new {
 
     bless $self, $class;
 
-    $self->{_cfg} = $scrcfg;
+    $self->{_scf} = $scrcfg;
     $self->{view} = $view;
 
     return $self;
@@ -81,9 +81,9 @@ is a hashref with column names as keys and column index as values.
 =cut
 
 sub init_cfgdata {
-    my ( $self, $table, $tm_ds ) = @_;
+    my ( $self, $tm_ds ) = @_;
 
-    my $table_cfg = $self->{_cfg}{$table}{$tm_ds}{columns};
+    my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns');
     my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
     my %cols      = map { $_ => $cols->[$_] } 0 .. $#{$cols};
 
@@ -115,7 +115,7 @@ from the screen configuration, for the main table.
 sub maintable_attribs {
     my ( $self, $column ) = @_;
 
-    my $table_cfg = $self->{_cfg}{maintable}{columns}{$column};
+    my $table_cfg = $self->{_scf}->maintable('columns', $column);
 
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
@@ -130,7 +130,7 @@ from the screen configuration, for the dependent table(s).
 sub deptable_attribs {
     my ( $self, $tm_ds, $column ) = @_;
 
-    my $table_cfg = $self->{_cfg}{deptable}{$tm_ds}{columns}{$column};
+    my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns', $column);
 
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
