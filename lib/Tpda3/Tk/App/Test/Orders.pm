@@ -377,7 +377,7 @@ sub run_screen {
 
     # Prepare screen configuration data for tables
     foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
-        $validation->init_cfgdata( 'deptable', $tm_ds );
+        $validation->init_cfgdata($tm_ds);
     }
 
     return;
