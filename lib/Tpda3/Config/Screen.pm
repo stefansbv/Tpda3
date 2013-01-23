@@ -3,12 +3,38 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
-use File::Spec::Functions;
-use Config::General;
 use Data::Diver qw( Dive );
-use Data::Printer;
 
 require Tpda3::Config;
+
+=head1 NAME
+
+Tpda3::Config::Screen - Configuration module for screen
+
+=head1 VERSION
+
+Version 0.62
+
+=cut
+
+our $VERSION = 0.62;
+
+=head1 SYNOPSIS
+
+Load the screen configuration.
+
+    use Tpda3::Config::Screen;
+
+    my $foo = Tpda3::Config::Screen->new();
+    ...
+
+=head1 METHODS
+
+=head2 new
+
+Constructor method.
+
+=cut
 
 sub new {
     my ( $class, $args ) = @_;

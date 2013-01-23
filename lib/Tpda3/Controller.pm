@@ -3,12 +3,9 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
-
 use English;
-use Data::Dumper;
-#use Data::Printer;
 
-use Encode qw(is_utf8 encode decode);
+use Encode qw(is_utf8 decode);
 use Scalar::Util qw(blessed looks_like_number);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
@@ -910,7 +907,7 @@ sub setup_lookup_bindings_entry {
         };
 
         $self->_log->trace("Setup binding for '$bind_name' with:");
-        $self->_log->trace( sub { Dumper($para) } );
+        #$self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -1030,7 +1027,7 @@ sub setup_select_bindings_entry {
         };
 
         $self->_log->trace("Setup select binding for '$bind_name' with:");
-        $self->_log->trace( sub { Dumper($para) } );
+        #$self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list

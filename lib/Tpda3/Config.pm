@@ -290,18 +290,6 @@ sub validate_config {
     return $@ ? 0 : 1;
 }
 
-=head2 config_iface_file_name
-
-Return fully qualified application interface configuration file name.
-
-=cut
-
-# sub config_iface_file_name {
-#     my ( $self, $section ) = @_;
-
-#     return catfile( $self->cfpath, $self->cfiface->{$section} );
-# }
-
 =head2 config_file_name
 
 Return full path to a configuration file.  Default is the connection
@@ -669,18 +657,6 @@ sub config_data_from {
     return;
 }
 
-=head2 config_scrdir
-
-Return the screen configuration directory.
-
-=cut
-
-# sub config_scrdir {
-#     my $self = shift;
-
-#     return catdir( $self->configdir, 'scr' );
-# }
-
 =head2 config_scr_file_name
 
 Return fully qualified screen configuration file name.
@@ -727,24 +703,6 @@ sub list_config_files {
 
     return;
 }
-
-=head2 config_misc_load
-
-Load a config file from the etc dir of the application. Used by the
-Repman module.
-
-=cut
-
-# sub config_misc_load {
-#     my ($self, $config_file) = @_;
-
-#     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
-
-#     my $config_hr = $self->config_data_from($cfg_file);
-#     $self->make_accessors($config_hr);
-
-#     return $config_hr;                       # do we need this?
-# }
 
 =head2 application_class
 
