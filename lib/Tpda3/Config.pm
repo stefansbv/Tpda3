@@ -130,7 +130,7 @@ sub get_default_mnemonic {
 
     my $defaultapp_fqn = $self->default();
     if (-f $defaultapp_fqn) {
-        my $cfg_hr = $self->get_config_data($defaultapp_fqn);
+        my $cfg_hr = $self->config_data_from($defaultapp_fqn);
         return $cfg_hr->{mnemonic};
     }
     else {
@@ -192,7 +192,7 @@ sub config_main_load {
 
     # Main config file name, load
     my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );
-    my $maincfg = $self->config_load_file($main_fqn);
+    my $maincfg = $self->config_data_from($main_fqn);
 
     my $main_hr = {
         cfiface   => $maincfg->{interface},
@@ -281,7 +281,7 @@ sub validate_config {
 
     my $cfg_file
         = catfile( $self->configdir($cfname), 'etc', 'application.yml' );
-    my $cfg_href = $self->config_load_file($cfg_file);
+    my $cfg_href = $self->config_data_from($cfg_file);
 
     my $widgetset   = $cfg_href->{application}{widgetset};
     my $module_name = $cfg_href->{application}{module};
@@ -305,7 +305,7 @@ sub config_load {
 
     $self->{_log}->info("Loading file: $cfg_file");
 
-    my $cfg_hr = $self->config_load_file($cfg_file);
+    my $cfg_hr = $self->config_data_from($cfg_file);
 
     my @accessor = keys %{$cfg_hr};
     $self->{_log}->info("Making accessors for: @accessor");
@@ -443,7 +443,7 @@ sub get_details_for {
     my $conn_ref = {};
     if ( grep { $mnemonic eq $_ } @{$conlst} ) {
         my $cfg_file = $self->config_file_name($mnemonic);
-        $conn_ref = $self->get_config_data($conn_file);
+        $conn_ref = $self->config_data_from($conn_file);
     }
 
     return $conn_ref;
@@ -468,19 +468,6 @@ sub get_mnemonics {
     }
 
     return \@mnemonics;
-}
-
-=head2 get_config_data
-
-Return the connection configuration details directly from the YAML
-file.
-
-=cut
-
-sub get_config_data {
-    my ( $self, $cfg_file ) = @_;
-
-    return $self->config_load_file($cfg_file);
 }
 
 =head2 instance_file
@@ -519,7 +506,7 @@ Load instance configurations.  User window geometry configuration.
 sub config_load_instance {
     my $self = shift;
 
-    my $cfg_hr = $self->config_load_file( $self->instance_file, 'notfatal' );
+    my $cfg_hr = $self->config_data_from( $self->instance_file, 'notfatal' );
 
     $self->make_accessors($cfg_hr);
 
@@ -654,22 +641,6 @@ sub configdir_populate {
     return;
 }
 
-=head2 config_tex_path
-
-Return TeX documents model or output path.
-
-=cut
-
-sub config_tex_path {
-    my ($self, $what) = @_;
-
-    my $path = catdir( $self->configdir, 'tex', $what );
-
-    die "Path not found: $path" unless -d $path;
-
-    return $path;
-}
-
 =head2 docs_path
 
 Default documents output path.
@@ -693,7 +664,7 @@ sub get_log_filename {
     return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
 
-=head2 config_load_file
+=head2 config_data_from
 
 Load a config file and return the Perl data structure.  It loads a
 file in Config::General format or in YAML::Tiny format, depending on
@@ -701,7 +672,7 @@ the extension of the file.
 
 =cut
 
-sub config_load_file {
+sub config_data_from {
     my ( $self, $conf_file, $not_fatal ) = @_;
 
     # my $log = get_logger();
@@ -755,7 +726,7 @@ Return fully qualified screen configuration file name.
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
-    die "Screen config not found" unless $file_name;
+    die "A Screen config name is required!" unless $file_name;
 
     # Check if has extension and add it if not
     my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );
@@ -806,7 +777,7 @@ sub config_misc_load {
 
     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
-    my $config_hr = $self->config_load_file($cfg_file);
+    my $config_hr = $self->config_data_from($cfg_file);
     $self->make_accessors($config_hr);
 
     return $config_hr;                       # do we need this?
@@ -825,6 +796,24 @@ sub application_class {
     $module    ||= $self->application->{module};
 
     return qq{Tpda3::${widgetset}::App::${module}};
+}
+
+=head2 abs_path_for
+
+Return the absolute path for a resource file or directory.  The
+parameters are: resource name and type. Where type is a list of dirs.
+
+=cut
+
+sub abs_path_for {
+    my ($self, $name, @type) = @_;
+
+    if ($name) {
+        return catfile( $self->configdir, @type, $name );
+    }
+    else {
+        return catdir( $self->configdir, @type );
+    }
 }
 
 =head1 AUTHOR

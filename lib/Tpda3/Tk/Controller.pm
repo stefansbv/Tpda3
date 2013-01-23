@@ -94,7 +94,7 @@ Init App.
 sub _init {
     my $self = shift;
 
-    my $view = Tpda3::Tk::View->new($self->_model);
+    my $view = Tpda3::Tk::View->new($self->model);
     $self->{_app}  = $view;                  # an alias as for Wx ...
     $self->{_view} = $view;
 
@@ -113,7 +113,7 @@ sub dialog_login {
     require Tpda3::Tk::Dialog::Login;
     my $pd = Tpda3::Tk::Dialog::Login->new;
 
-    return $pd->login( $self->_view, $error );
+    return $pd->login( $self->view, $error );
 }
 
 =head2 screen_module_class
@@ -130,7 +130,7 @@ sub screen_module_class {
         $module_class = "Tpda3::Tk::Tools::${module}";
     }
     else {
-        $module_class = $self->_cfg->application_class() . "::${module}";
+        $module_class = $self->cfg->application_class() . "::${module}";
     }
 
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
@@ -150,53 +150,53 @@ sub _set_event_handlers_keys {
     #-- Make some key bindings
 
     #-- Quit Ctrl-q
-    $self->_view->bind(
+    $self->view->bind(
         '<Control-q>' => sub {
             return if !defined $self->ask_to_save;
-            $self->_view->on_close_window;
+            $self->view->on_close_window;
         }
     );
 
     #-- Reload - F5
-    $self->_view->bind(
+    $self->view->bind(
         '<F5>' => sub {
-            $self->_model->is_mode('edit')
+            $self->model->is_mode('edit')
                 ? $self->record_reload()
-                : $self->_view->set_status(
+                : $self->view->set_status(
                     $self->localize( 'status', 'not-edit' ),
                     'ms', 'orange' );
         }
     );
 
     #-- Toggle find mode - F7
-    $self->_view->bind(
+    $self->view->bind(
         '<F7>' => sub {
 
             # From add mode forbid find mode
             $self->toggle_mode_find()
                 if $self->{_rscrcls}
-                    and !$self->_model->is_mode('add')
+                    and !$self->model->is_mode('add')
                     and $self->scrcfg()->screen('style') ne 'report';
         }
     );
 
     #-- Execute find - F8
-    $self->_view->bind(
+    $self->view->bind(
         '<F8>' => sub {
-            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
+            ( $self->{_rscrcls} and $self->model->is_mode('find') )
                 ? $self->record_find_execute
-                : $self->_view->set_status(
+                : $self->view->set_status(
                     $self->localize( 'status', 'not-find' ),
                     'ms', 'orange' );
         }
     );
 
     #-- Execute count - F9
-    $self->_view->bind(
+    $self->view->bind(
         '<F9>' => sub {
-            ( $self->{_rscrcls} and $self->_model->is_mode('find') )
+            ( $self->{_rscrcls} and $self->model->is_mode('find') )
                 ? $self->record_find_count
-                : $self->_view->set_status(
+                : $self->view->set_status(
                     $self->localize( 'status', 'not-find' ),
                     'ms', 'orange' );
         }
@@ -226,12 +226,12 @@ sub _set_event_handler_nb {
 
     #- NoteBook events
 
-    my $nb = $self->_view->get_notebook();
+    my $nb = $self->view->get_notebook();
 
     $nb->pageconfigure(
         $page,
         -raisecmd => sub {
-            $self->_view->set_nb_current($page);
+            $self->view->set_nb_current($page);
 
         #-- On page activate
 
@@ -248,10 +248,10 @@ sub _set_event_handler_nb {
     );
 
     #- Enter on list item activates record page
-    $self->_view->get_recordlist()->bind(
+    $self->view->get_recordlist()->bind(
         '<Return>',
         sub {
-            $self->_view->get_notebook->raise('rec');
+            $self->view->get_notebook->raise('rec');
             Tk->break;
         }
     );
@@ -294,14 +294,14 @@ sub set_event_handler_screen {
         $self->scrobj('rec')->get_toolbar_btn( $btn_group, $tb_btn )->bind(
             '<ButtonRelease-1>' => sub {
                 return
-                    unless $self->_model->is_mode('add')
-                        or $self->_model->is_mode('edit')
+                    unless $self->model->is_mode('add')
+                        or $self->model->is_mode('edit')
                         or $self->scrcfg()->screen('style') eq 'report';
 
                 $scrobj->$method( $btn_group, $self );
                 # TODO: what styles can be used?
                 if ($self->scrcfg()->screen('style') ne 'report') {
-                    $self->_model->set_scrdata_rec(1);    # modified
+                    $self->model->set_scrdata_rec(1);    # modified
                     $self->toggle_detail_tab;
                 }
             }
@@ -413,7 +413,7 @@ About application dialog.
 sub about {
     my $self = shift;
 
-    my $gui = $self->_view;
+    my $gui = $self->view;
 
     # Create a dialog.
     my $dbox = $gui->DialogBox(
@@ -453,7 +453,7 @@ sub about {
     my $PROGRAM_VER  = $Tpda3::VERSION;
 
     # Get application version
-    my $app_class = $self->_cfg->application_class();
+    my $app_class = $self->cfg->application_class();
     ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
     my ( $APP_VER, $APP_NAME ) = ( '', '' );
     eval {
@@ -502,7 +502,7 @@ Quick help dialog.
 sub guide {
     my $self = shift;
 
-    my $gui = $self->_view;
+    my $gui = $self->view;
 
     require Tpda3::Tk::Dialog::Help;
     my $gd = Tpda3::Tk::Dialog::Help->new;
@@ -521,7 +521,7 @@ Report Manager application dialog.
 sub repman {
     my $self = shift;
 
-    my $gui = $self->_view;
+    my $gui = $self->view;
 
     require Tpda3::Tk::Dialog::Repman;
     my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
@@ -573,7 +573,7 @@ sub tmshr_fill_table {
     my $countcol = $mainmeta->{rowcount};
     my $sum_up_cols = $self->get_table_sumup_cols( $tm_ds, $level );
 
-    my ($records, $levelmeta) = $self->_model->report_data($mainmeta);
+    my ($records, $levelmeta) = $self->model->report_data($mainmeta);
 
     #- Add main records to the tree
 
@@ -632,7 +632,7 @@ sub tmshr_process_level {
             while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
                 $metadata->{where} = $mdrec;
                 my ( $records, $leveldata )
-                    = $self->_model->report_data( $metadata, $row );
+                    = $self->model->report_data( $metadata, $row );
                 foreach my $rec ( @{$records} ) {
                     my $nodename0 = ( keys %{$mdrec} )[0] . ':' . $row;
                     my $record
@@ -798,7 +798,7 @@ sub set_mnemonic {
 
     require Tpda3::Tk::Dialog::AppList;
     my $dal = Tpda3::Tk::Dialog::AppList->new();
-    $dal->show_app_list($self->_view);
+    $dal->show_app_list($self->view);
 
     return;
 }
@@ -814,7 +814,7 @@ sub set_app_configs {
 
     require Tpda3::Tk::Dialog::Configs;
     my $dc = Tpda3::Tk::Dialog::Configs->new();
-    $dc->show_cfg_dialog($self->_view);
+    $dc->show_cfg_dialog($self->view);
 
     return;
 }

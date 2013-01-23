@@ -347,7 +347,7 @@ Load the mnemonics data.
 sub load_mnemonics {
     my $self = shift;
 
-    my $mnemonics_ref = $self->_cfg->get_mnemonics();
+    my $mnemonics_ref = $self->cfg->get_mnemonics();
     my $cnt = 1;
     my @mnemos;
     foreach my $mnemonic ( @{$mnemonics_ref} ) {
@@ -385,7 +385,7 @@ sub select_default {
     my $selected = 1;           # default
 
     foreach my $rec ( @{ $self->{mnemonics} } ) {
-        $selected = $rec->{idx} if $rec->{name} eq $self->_cfg->cfname;
+        $selected = $rec->{idx} if $rec->{name} eq $self->cfg->cfname;
     }
 
     $self->select_idx($selected);
@@ -420,7 +420,7 @@ Load the selected mnemonic details in the controls.
 sub load_mnemonic_details_for {
     my ($self, $rec) = @_;
 
-    my $conn_ref = $self->_cfg->get_details_for( $rec->{name} );
+    my $conn_ref = $self->cfg->get_details_for( $rec->{name} );
 
     return unless ref $conn_ref;
 
@@ -446,7 +446,7 @@ Save the curent mnemonic as default.
 sub save_as_default {
     my $self = shift;
 
-    $self->_cfg->set_default_mnemonic( $self->{selected} );
+    $self->cfg->set_default_mnemonic( $self->{selected} );
     $self->_set_status( '[' .$self->{selected} . '] '
             . 'active after restart, if not overridden by CLI option.'
     );

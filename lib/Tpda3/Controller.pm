@@ -110,18 +110,18 @@ sub start {
     $self->{_view}->toggle_status_cn(0);
 
     # Connect if user and pass or if driver is SQLite
-    my $driver = $self->_cfg->connection->{driver};
-    if (   ( $self->_cfg->user and $self->_cfg->pass )
+    my $driver = $self->cfg->connection->{driver};
+    if (   ( $self->cfg->user and $self->cfg->pass )
         or ( $driver eq 'sqlite' ) )
     {
-        $self->_model->db_connect();
+        $self->model->db_connect();
         return;
     }
 
     # Retry until connected or canceled
     $self->start_delay()
-        unless ( $self->_model->is_connected
-        or $self->_cfg->connection->{driver} eq 'sqlite' );
+        unless ( $self->model->is_connected
+        or $self->cfg->connection->{driver} eq 'sqlite' );
 
     return;
 }
@@ -139,19 +139,19 @@ sub connect_dialog {
     my $error;
 
   TRY:
-    while ( not $self->_model->is_connected ) {
+    while ( not $self->model->is_connected ) {
 
         # Show login dialog if still not connected
         my $return_string = $self->dialog_login($error);
         if ($return_string eq 'cancel') {
-            $self->_view->set_status( 'Login cancelled', 'ms' );
+            $self->view->set_status( 'Login cancelled', 'ms' );
             last TRY;
         }
 
         # Try to connect only if user and pass are provided
-        if ($self->_cfg->user and $self->_cfg->pass ) {
+        if ($self->cfg->user and $self->cfg->pass ) {
             try {
-                $self->_model->db_connect();
+                $self->model->db_connect();
             }
             catch {
                 if ( my $e = Exception::Base->catch($_) ) {
@@ -169,37 +169,37 @@ sub connect_dialog {
     return;
 }
 
-=head2 _model
+=head2 model
 
 Return model instance variable
 
 =cut
 
-sub _model {
+sub model {
     my $self = shift;
 
     return $self->{_model};
 }
 
-=head2 _view
+=head2 view
 
 Return view instance variable
 
 =cut
 
-sub _view {
+sub view {
     my $self = shift;
 
     return $self->{_view};
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
@@ -214,7 +214,7 @@ Simple localisation.
 sub localize {
     my ($self, $section, $string) = @_;
 
-    my $localized = $self->_cfg->localize->{$section}{$string};
+    my $localized = $self->cfg->localize->{$section}{$string};
     unless ($localized) {
         $localized = "'$string'";
         print "Localization error for '$string'\n";
@@ -263,44 +263,44 @@ sub _set_event_handlers {
     #- Base menu
 
     #-- Toggle find mode - Menu
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_fm',
         sub {
             return if !defined $self->ask_to_save;
 
             # From add or sele mode forbid find mode
             $self->toggle_mode_find()
-                unless ( $self->_model->is_mode('add')
-                    or $self->_model->is_mode('sele') );
+                unless ( $self->model->is_mode('add')
+                    or $self->model->is_mode('sele') );
         }
     );
 
     #-- Toggle execute find - Menu
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_fe',
         sub {
-            $self->_model->is_mode('find')
+            $self->model->is_mode('find')
                 ? $self->record_find_execute
-                : $self->_view->set_status(
+                : $self->view->set_status(
                     $self->localize( 'status', 'not-find' ),
                     'ms', 'orange' );
         }
     );
 
     #-- Toggle execute count - Menu
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_fc',
         sub {
-            $self->_model->is_mode('find')
+            $self->model->is_mode('find')
                 ? $self->record_find_count
-                : $self->_view->set_status(
+                : $self->view->set_status(
                     $self->localize( 'status', 'not-find' ),
                     'ms', 'orange' );
         }
     );
 
     #-- Exit
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_qt',
         sub {
             return if !defined $self->ask_to_save;
@@ -309,7 +309,7 @@ sub _set_event_handlers {
     );
 
     #-- Help
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_gd',
         sub {
             $self->guide;
@@ -317,7 +317,7 @@ sub _set_event_handlers {
     );
 
     #-- About
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_ab',
         sub {
             $self->about;
@@ -325,13 +325,13 @@ sub _set_event_handlers {
     );
 
     #-- Preview RepMan report
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_pr',
         sub { $self->repman; }
     );
 
     #-- Edit RepMan report metadata
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_er',
         sub {
             $self->screen_module_load('Reports','tools');
@@ -339,7 +339,7 @@ sub _set_event_handlers {
     );
 
     #-- Save geometry
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_sg',
         sub {
             $self->save_geometry();
@@ -347,7 +347,7 @@ sub _set_event_handlers {
     );
 
     #-- Admin - set default mnemonic
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_mn',
         sub {
             $self->set_mnemonic();
@@ -355,7 +355,7 @@ sub _set_event_handlers {
     );
 
     #-- Admin - configure
-    $self->_view->event_handler_for_menu(
+    $self->view->event_handler_for_menu(
         'mn_cf',
         sub {
             $self->set_app_configs();
@@ -364,9 +364,9 @@ sub _set_event_handlers {
 
     #- Custom application menu from menu.yml
 
-    my $appmenus = $self->_view->get_app_menus_list();
+    my $appmenus = $self->view->get_app_menus_list();
     foreach my $item ( @{$appmenus} ) {
-        $self->_view->event_handler_for_menu(
+        $self->view->event_handler_for_menu(
             $item,
             sub {
                 $self->screen_module_load($item);
@@ -377,7 +377,7 @@ sub _set_event_handlers {
     #- Toolbar
 
     #-- Find mode
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_fm',
         sub {
             $self->toggle_mode_find();
@@ -385,7 +385,7 @@ sub _set_event_handlers {
     );
 
     #-- Find execute
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_fe',
         sub {
             $self->record_find_execute();
@@ -393,7 +393,7 @@ sub _set_event_handlers {
     );
 
     #-- Find count
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_fc',
         sub {
             $self->record_find_count();
@@ -401,7 +401,7 @@ sub _set_event_handlers {
     );
 
     #-- Print (preview) default report button
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_pr',
         sub {
             $self->screen_report_print();
@@ -409,7 +409,7 @@ sub _set_event_handlers {
     );
 
     #-- Generate default document button
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_gr',
         sub {
             $self->screen_document_generate();
@@ -417,7 +417,7 @@ sub _set_event_handlers {
     );
 
     #-- Take note
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_tn',
         sub {
             $self->take_note();
@@ -425,7 +425,7 @@ sub _set_event_handlers {
     );
 
     #-- Restore note
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_tr',
         sub {
             $self->restore_note();
@@ -433,7 +433,7 @@ sub _set_event_handlers {
     );
 
     #-- Reload
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_rr',
         sub {
             $self->record_reload();
@@ -441,7 +441,7 @@ sub _set_event_handlers {
     );
 
     #-- Add mode; From sele mode forbid add mode
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_ad',
         sub {
             $self->toggle_mode_add();
@@ -449,7 +449,7 @@ sub _set_event_handlers {
     );
 
     #-- Delete
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_rm',
         sub {
             $self->event_record_delete();
@@ -457,7 +457,7 @@ sub _set_event_handlers {
     );
 
     #-- Save record
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_sv',
         sub {
             $self->record_save();
@@ -465,7 +465,7 @@ sub _set_event_handlers {
     );
 
     #-- Attach to desktop - pin (save geometry to config file)
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_at',
         sub {
             $self->save_geometry();
@@ -473,7 +473,7 @@ sub _set_event_handlers {
     );
 
     #-- Quit
-    $self->_view->event_handler_for_tb_button(
+    $self->view->event_handler_for_tb_button(
         'tb_qt',
         sub {
             return if !defined $self->ask_to_save;
@@ -512,11 +512,11 @@ sub toggle_detail_tab {
 
     my $sel = $self->tmatrix_get_selected;
 
-    if ( $sel and !$self->_model->is_modified ) {
-        $self->_view->nb_set_page_state( 'det', 'normal');
+    if ( $sel and !$self->model->is_modified ) {
+        $self->view->nb_set_page_state( 'det', 'normal');
     }
     else {
-        $self->_view->nb_set_page_state( 'det', 'disabled');
+        $self->view->nb_set_page_state( 'det', 'disabled');
     }
 
     return;
@@ -538,22 +538,22 @@ the current page.
 sub on_page_rec_activate {
     my $self = shift;
 
-    $self->_view->set_status( '', 'ms' );    # clear
+    $self->view->set_status( '', 'ms' );    # clear
 
-    if ( $self->_model->is_mode('sele') ) {
+    if ( $self->model->is_mode('sele') ) {
         $self->set_app_mode('edit');
     }
     else {
         $self->toggle_interface_controls;
     }
 
-    $self->_view->nb_set_page_state( 'lst', 'normal');
+    $self->view->nb_set_page_state( 'lst', 'normal');
 
-    return unless $self->_view->get_nb_previous_page eq 'lst';
+    return unless $self->view->get_nb_previous_page eq 'lst';
 
-    my $selected = $self->_view->list_read_selected();    # array reference
+    my $selected = $self->view->list_read_selected();    # array reference
     unless ($selected) {
-        $self->_view->set_status( $self->localize( 'status', 'not-selected' ),
+        $self->view->set_status( $self->localize( 'status', 'not-selected' ),
             'ms', 'orange' );
         $self->set_app_mode('idle');
 
@@ -614,7 +614,7 @@ sub on_page_det_activate {
         $self->screen_detail_load($dsm);
     }
     else {
-        $self->_view->get_notebook()->raise('rec');
+        $self->view->get_notebook()->raise('rec');
         return;
     }
 
@@ -622,13 +622,13 @@ sub on_page_det_activate {
 
     $self->record_load();                    # load detail record
 
-    $self->_view->set_status( $self->localize( 'status', 'info-rec-load-d' ),
+    $self->view->set_status( $self->localize( 'status', 'info-rec-load-d' ),
                               'ms', 'blue' );
     $self->set_app_mode('edit');
 
-    # $self->_model->set_scrdata_rec(q{});    # empty
+    # $self->model->set_scrdata_rec(q{});    # empty
 
-    $self->_view->nb_set_page_state( 'lst', 'disabled');
+    $self->view->nb_set_page_state( 'lst', 'disabled');
 
     return;
 }
@@ -759,7 +759,7 @@ sub _set_menus_enable {
     my ( $self, $state ) = @_;
 
     foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
-        $self->_view->set_menu_enable($menu, $state);
+        $self->view->set_menu_enable($menu, $state);
     }
 }
 
@@ -775,12 +775,12 @@ Only for I<menu_user> hardwired menu name for now!
 sub _check_app_menus {
     my $self = shift;
 
-    my $appmenus = $self->_view->get_app_menus_list();
+    my $appmenus = $self->view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
         eval { require $module_file };
         if ($@) {
-            $self->_view->set_menu_enable($menu_item, 'disabled');
+            $self->view->set_menu_enable($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
         }
     }
@@ -860,7 +860,7 @@ used as a filter.
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $locale_data = $self->_cfg->localize->{search};
+    my $locale_data = $self->cfg->localize->{search};
 
     my $dict     = Tpda3::Lookup->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
@@ -931,7 +931,7 @@ sub setup_lookup_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
-        $self->_view->make_binding_entry(
+        $self->view->make_binding_entry(
             $ctrl_ref->{$column}[1],
             '<Return>',
             sub {
@@ -939,7 +939,7 @@ sub setup_lookup_bindings_entry {
                     = defined $para->{filter}
                     ? $self->filter_field( $para->{filter} )
                     : undef;
-                my $record = $dict->lookup( $self->_view, $para, $filter );
+                my $record = $dict->lookup( $self->view, $para, $filter );
                 $self->screen_write($record);
             }
         );
@@ -1007,7 +1007,7 @@ Setup select bindings entry.
 sub setup_select_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $locale_data = $self->_cfg->localize->{search};
+    my $locale_data = $self->cfg->localize->{search};
 
     my $dict     = Tpda3::Selected->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
@@ -1048,15 +1048,15 @@ sub setup_select_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
-        $self->_view->make_binding_entry(
+        $self->view->make_binding_entry(
             $ctrl_ref->{$bind_name}[1],
             '<Return>',
             sub {
-                $self->_view->status_message("warn#"); # clear message
+                $self->view->status_message("warn#"); # clear message
                 my $value = $self->ctrl_read_from($field);
                 if ($field and $value) {
                     $para->{where} = { $field => $value };
-                    my $records = $dict->selected( $self->_view, $para );
+                    my $records = $dict->selected( $self->view, $para );
 
                     # Insert into TM
                     my $xtable  = $self->scrobj('rec')->get_tm_controls($tm_ds);
@@ -1075,7 +1075,7 @@ sub setup_select_bindings_entry {
                         ? "No value for '$field' column!"
                         : "No 'filter' column in config!"
                         ;
-                    $self->_view->status_message("warn#$textstr");
+                    $self->view->status_message("warn#$textstr");
                 }
             }
         );
@@ -1155,9 +1155,9 @@ sub lookup_call {
         $filter = $tmx->cell_read( $r, $col );
     }
 
-    my $locale_data = $self->_cfg->localize->{search};
+    my $locale_data = $self->cfg->localize->{search};
     my $dict        = Tpda3::Lookup->new($locale_data);
-    my $record      = $dict->lookup( $self->_view, $lk_para, $filter );
+    my $record      = $dict->lookup( $self->view, $lk_para, $filter );
 
     $tmx->write_row( $r, $c, $record, $tm_ds );
 
@@ -1407,7 +1407,7 @@ Set application mode to $mode.
 sub set_app_mode {
     my ( $self, $mode ) = @_;
 
-    $self->_model->set_mode($mode);
+    $self->model->set_mode($mode);
 
     $self->toggle_interface_controls;
 
@@ -1458,11 +1458,11 @@ sub on_screen_mode_idle {
 
     $self->controls_state_set('off');
 
-    $self->_view->nb_set_page_state( 'det', 'disabled');
-    $self->_view->nb_set_page_state( 'lst', 'normal');
+    $self->view->nb_set_page_state( 'det', 'disabled');
+    $self->view->nb_set_page_state( 'lst', 'normal');
 
     # Trigger 'on_mode_idle' method in screen if defined
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
     $self->scrobj($page)->on_mode_idle()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_idle');
@@ -1493,17 +1493,17 @@ sub on_screen_mode_add {
 
     $self->controls_state_set('edit');
 
-    $self->_view->nb_set_page_state( 'det', 'disabled' );
-    $self->_view->nb_set_page_state( 'lst', 'disabled' );
+    $self->view->nb_set_page_state( 'det', 'disabled' );
+    $self->view->nb_set_page_state( 'lst', 'disabled' );
 
     # Default value for user in screen.  Add 'id_user' value if
     # 'id_user' control exists in screen
     my $user_field = 'id_user';              # hardwired user field name
     my $control_ref = $self->scrobj()->get_controls($user_field);
-    $self->ctrl_write_to( $user_field, $self->_cfg->user ) if $control_ref;
+    $self->ctrl_write_to( $user_field, $self->cfg->user ) if $control_ref;
 
     # Trigger 'on_mode_add' method in screen if defined
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
     $self->scrobj($page)->on_mode_add()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_add');
@@ -1532,7 +1532,7 @@ sub on_screen_mode_find {
     $self->controls_state_set('find');
 
     # Trigger 'on_mode_find' method in screen if defined
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
     $self->scrobj($page)->on_mode_find()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_find');
@@ -1551,11 +1551,11 @@ sub on_screen_mode_edit {
     my $self = shift;
 
     $self->controls_state_set('edit');
-    $self->_view->nb_set_page_state( 'det', 'normal');
-    $self->_view->nb_set_page_state( 'lst', 'normal');
+    $self->view->nb_set_page_state( 'det', 'normal');
+    $self->view->nb_set_page_state( 'lst', 'normal');
 
     # Trigger 'on_mode_edit' method in screen if defined
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
     $self->scrobj($page)->on_mode_edit()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_edit');
@@ -1572,8 +1572,8 @@ Noting to do here.
 sub on_screen_mode_sele {
     my $self = shift;
 
-    my $nb = $self->_view->get_notebook();
-    $self->_view->nb_set_page_state( 'det', 'disabled');
+    my $nb = $self->view->get_notebook();
+    $self->view->nb_set_page_state( 'det', 'disabled');
 
     return;
 }
@@ -1627,7 +1627,7 @@ page.
 sub scrcfg {
     my ( $self, $page ) = @_;
 
-    $page ||= $self->_view->get_nb_current_page();
+    $page ||= $self->view->get_nb_current_page();
 
     return unless $page;
 
@@ -1654,7 +1654,7 @@ the required page.
 sub scrobj {
     my ( $self, $page ) = @_;
 
-    $page ||= $self->_view->get_nb_current_page();
+    $page ||= $self->view->get_nb_current_page();
 
     return $self->{_rscrobj}
         if ( $page eq 'rec' )
@@ -1714,7 +1714,7 @@ sub screen_module_load {
     my $rscrstr = lc $module;
 
     # Destroy existing NoteBook widget
-    $self->_view->destroy_notebook();
+    $self->view->destroy_notebook();
 
     # Unload current screen
     if ( $self->{_rscrcls} ) {
@@ -1734,10 +1734,10 @@ sub screen_module_load {
     }
 
     # reload toolbar - if? altered by prev screen
-    $self->_cfg->toolbar_interface_reload();
+    $self->cfg->toolbar_interface_reload();
 
     # Make new NoteBook widget and setup callback
-    $self->_view->create_notebook();
+    $self->view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
 
@@ -1769,19 +1769,19 @@ sub screen_module_load {
     my $has_det = $self->scrcfg('rec')->has_screen_details();
     if ($has_det) {
         my $lbl_details = $self->localize( 'notebook', 'lbl_details' );
-        $self->_view->create_notebook_panel( 'det', $lbl_details );
+        $self->view->create_notebook_panel( 'det', $lbl_details );
         $self->_set_event_handler_nb('det');
     }
 
     # Show screen
-    my $nb = $self->_view->get_notebook();
+    my $nb = $self->view->get_notebook();
     $self->{_rscrobj}->run_screen($nb);
 
     # Store currently loaded screen class
     $self->{_rscrcls} = $class;
 
     # Load instance config
-    $self->_cfg->config_load_instance();
+    $self->cfg->config_load_instance();
 
     #-- Lookup bindings for Entry widgets
     $self->setup_lookup_bindings_entry('rec');
@@ -1801,10 +1801,10 @@ sub screen_module_load {
     my $fields      = $self->scrcfg('rec')->maintable('columns');
 
     if ($header_look and $header_cols) {
-        $self->_view->make_list_header( $header_look, $header_cols, $fields );
+        $self->view->make_list_header( $header_look, $header_cols, $fields );
     }
     else {
-        $self->_view->nb_set_page_state( 'lst', 'disabled' );
+        $self->view->nb_set_page_state( 'lst', 'disabled' );
     }
 
     #- Event handlers
@@ -1821,13 +1821,13 @@ sub screen_module_load {
         : 'normal';
     $self->_set_menus_enable($menus_state);
 
-    $self->_view->set_status( '', 'ms' );
+    $self->view->set_status( '', 'ms' );
 
-    $self->_model->unset_scrdata_rec();
+    $self->model->unset_scrdata_rec();
 
     # Change application title
     my $descr = $self->scrcfg('rec')->screen('description');
-    $self->_view->title(' Tpda3 - ' . $descr) if $descr;
+    $self->view->title(' Tpda3 - ' . $descr) if $descr;
 
     # Update window geometry
     $self->set_geometry();
@@ -1892,7 +1892,7 @@ sub screen_module_detail_load {
 
     my $dscrstr = lc $module;
 
-    $self->_view->notebook_page_clean('det');
+    $self->view->notebook_page_clean('det');
 
     # Unload current screen
     if ( $self->{_dscrcls} ) {
@@ -1923,7 +1923,7 @@ sub screen_module_detail_load {
     $self->_log->trace("New screen instance: $module");
 
     # Show screen
-    my $nb = $self->_view->get_notebook();
+    my $nb = $self->view->get_notebook();
     $self->{_dscrobj}->run_screen( $nb, $self->{_dscrcfg} );
 
     # Store currently loaded screen class
@@ -1940,7 +1940,7 @@ sub screen_module_detail_load {
     # Load lists into ComboBox like widgets
     $self->screen_load_lists();
 
-    $self->_view->set_status( '', 'ms' );
+    $self->view->set_status( '', 'ms' );
 
     # Set FK column name
     $self->screen_set_fk_col();
@@ -1957,7 +1957,7 @@ Return a lower case string of the current screen module name.
 sub screen_string {
     my ( $self, $page ) = @_;
 
-    $page ||= $self->_view->get_nb_current_page();
+    $page ||= $self->view->get_nb_current_page();
 
     my $module;
     if ( $page eq 'rec' ) {
@@ -1989,9 +1989,9 @@ sub save_geometry {
         ? $self->scrcfg()->screen('name')
         : 'main';
 
-    $self->_cfg->config_save_instance(
+    $self->cfg->config_save_instance(
         $scr_name,
-        $self->_view->get_geometry()
+        $self->view->get_geometry()
     );
 
     return;
@@ -2027,8 +2027,8 @@ sub set_geometry {
         : return;
 
     my $geom;
-    if ( $self->_cfg->can('geometry') ) {
-        my $go = $self->_cfg->geometry();
+    if ( $self->cfg->can('geometry') ) {
+        my $go = $self->cfg->geometry();
         if (exists $go->{$scr_name}) {
             $geom = $go->{$scr_name};
         }
@@ -2037,7 +2037,7 @@ sub set_geometry {
         $geom = $self->scrcfg('rec')->screen('geometry');
     }
 
-    $self->_view->set_geometry($geom);
+    $self->view->set_geometry($geom);
 
     return;
 }
@@ -2096,12 +2096,12 @@ sub screen_load_lists {
         next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
-        my $choices = $self->{_model}->get_codes( $field, $para, $ctrltype );
+        my $choices = $self->model->get_codes( $field, $para, $ctrltype );
 
         if ( $ctrltype eq 'm' ) {
             if ( $ctrl_ref->{$field}[1] ) {
                 my $control = $ctrl_ref->{$field}[1];
-                $self->_view->list_control_choices($control, $choices);
+                $self->view->list_control_choices($control, $choices);
             }
             else {
                 print "EE: config error for '$field'\n";
@@ -2125,10 +2125,10 @@ the application, and different pages.
 sub toggle_interface_controls {
     my $self = shift;
 
-    my ( $toolbars, $attribs ) = $self->_view->toolbar_names();
+    my ( $toolbars, $attribs ) = $self->view->toolbar_names();
 
-    my $mode = $self->_model->get_appmode;
-    my $page = $self->_view->get_nb_current_page();
+    my $mode = $self->model->get_appmode;
+    my $page = $self->view->get_nb_current_page();
 
     my $is_rec = $self->is_record('rec');
 
@@ -2152,7 +2152,7 @@ sub toggle_interface_controls {
             # Activate only if default report configured for screen
             if ( ( $name eq 'tb_pr' ) and ( $status eq 'normal' ) ) {
                 $status = 'disabled' if
-                    !$self->scrcfg('rec')->get_defaultreport_file;
+                    !$self->scrcfg('rec')->defaultreport('file');
             }
 
             #-- Generate document
@@ -2161,7 +2161,7 @@ sub toggle_interface_controls {
             # for screen
             if ( ( $name eq 'tb_gr' ) and ( $status eq 'normal' ) ) {
                 $status = 'disabled' if
-                    !$self->scrcfg('rec')->get_defaultdocument_file;
+                    !$self->scrcfg('rec')->defaultdocument('file');
             }
         }
         else {
@@ -2172,7 +2172,7 @@ sub toggle_interface_controls {
 
         #- Set status for toolbar buttons
 
-        $self->_view->enable_tool( $name, $status );
+        $self->view->enable_tool( $name, $status );
     }
 
     return;
@@ -2191,8 +2191,8 @@ screens.
 sub toggle_screen_interface_controls {
     my $self = shift;
 
-    my $page = $self->_view->get_nb_current_page();
-    my $mode = $self->_model->get_appmode;
+    my $page = $self->view->get_nb_current_page();
+    my $mode = $self->model->get_appmode;
 
     return if $page eq 'lst';
 
@@ -2339,7 +2339,7 @@ sub record_find_execute {
     $params->{table} = $self->scrcfg('rec')->maintable('view'); # use view
     $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
-    my ($ary_ref, $limit) = $self->_model->query_records_find($params);
+    my ($ary_ref, $limit) = $self->model->query_records_find($params);
 
     # return unless defined $ary_ref->[0];     # test if AoA ?
     unless (ref $ary_ref eq 'ARRAY') {
@@ -2353,11 +2353,11 @@ sub record_find_execute {
              ? $self->localize( 'status', 'first' )
              : q{};
 
-    $self->_view->set_status( "$msg0 $record_count $msg1", 'ms', 'darkgreen' );
+    $self->view->set_status( "$msg0 $record_count $msg1", 'ms', 'darkgreen' );
 
-    $self->_view->list_init();
-    my $record_inlist = $self->_view->list_populate($ary_ref);
-    $self->_view->list_raise() if $record_inlist > 0;
+    $self->view->list_init();
+    my $record_inlist = $self->view->list_populate($ary_ref);
+    $self->view->list_raise() if $record_inlist > 0;
 
     # Double check
     if ($record_inlist != $record_count) {
@@ -2406,10 +2406,10 @@ sub record_find_count {
     $params->{table} = $self->scrcfg('rec')->maintable('view');
     $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
-    my $record_count = $self->_model->query_records_count($params);
+    my $record_count = $self->model->query_records_count($params);
 
     my $msg = $self->localize( 'status', 'count_record' );
-    $self->_view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
+    $self->view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
 
     return;
 }
@@ -2434,12 +2434,13 @@ sub screen_report_print {
     } else {
         # Atentie
         my $textstr = "Load a record first";
-        $self->_view->status_message("error#$textstr");
+        $self->view->status_message("error#$textstr");
         return;
     }
 
-    my $report_exe  = $self->_cfg->cfextapps->{repman}{exe_path};
-    my $report_file = $self->scrcfg('rec')->get_defaultreport_file;
+    my $report_exe  = $self->cfg->cfextapps->{repman}{exe_path};
+    my $report_name = $self->scrcfg('rec')->defaultreport('file');
+    my $report_file = $self->cfg->abs_path_for($report_name, 'rep');
 
     my $options = qq{-preview -param$param};
 
@@ -2459,7 +2460,7 @@ sub screen_report_print {
     $self->_log->debug("Report cmd: $cmd.");
 
     if ( system $cmd ) {
-        $self->_view->set_status( $self->localize( 'status', 'error-repo' ),
+        $self->view->set_status( $self->localize( 'status', 'error-repo' ),
             'ms' );
     }
 
@@ -2479,7 +2480,7 @@ sub screen_document_generate {
 
     my $record;
 
-    my $datasource = $self->scrcfg()->get_defaultdocument_datasource();
+    my $datasource = $self->scrcfg()->defaultdocument('datasource');
     if ($datasource) {
         $record = $self->get_alternate_data_record($datasource);
     }
@@ -2489,23 +2490,25 @@ sub screen_document_generate {
 
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
-        $self->_view->set_status( $self->localize( 'status', 'empty-record' ),
+        $self->view->set_status( $self->localize( 'status', 'empty-record' ),
             'ms', 'red' );
         $self->_log->error('Generator: No data!');
     }
 
-    my $model_file = $self->scrcfg()->get_defaultdocument_file();
+    my $model_name = $self->scrcfg()->defaultdocument('file');
+    my $model_file = $self->cfg->abs_path_for($model_name, 'tex', 'model');
+
     unless ( -f $model_file ) {
-        $self->_view->set_status(
+        $self->view->set_status(
             $self->localize( ' status ', ' error-repo ' ),
             'ms', 'red' );
         $self->_log->error('Generator: Template not found');
         return;
     }
 
-    my $output_path = $self->_cfg->config_tex_path('output');
+    my $output_path = $self->cfg->abs_path_for(undef, 'tex', 'output');
     unless ( -d $output_path ) {
-        $self->_view->set_status(
+        $self->view->set_status(
             $self->localize( ' status ', 'no-out-path' ),
             'ms', 'red' );
         $self->_log->error('Generator: Output path not found');
@@ -2519,7 +2522,7 @@ sub screen_document_generate {
     my $tex_file = $gen->tex_from_template($record, $model_file, $output_path);
     unless ( $tex_file and ( -f $tex_file ) ) {
         my $msg = $self->localize( 'status', 'error-gen-tex' );
-        $self->_view->set_status( $msg, 'ms', 'red' );
+        $self->view->set_status( $msg, 'ms', 'red' );
         $self->_log->error($msg);
         return;
     }
@@ -2529,12 +2532,12 @@ sub screen_document_generate {
     my $pdf_file = $gen->pdf_from_latex($tex_file);
     unless ( $pdf_file and ( -f $pdf_file ) ) {
         my $msg = $self->localize( 'status', 'error-gen-pdf' );
-        $self->_view->set_status( $msg, 'ms', 'red' );
+        $self->view->set_status( $msg, 'ms', 'red' );
         $self->_log->error($msg);
         return;
     }
 
-    $self->_view->set_status( "PDF: $pdf_file", 'ms', 'blue' );
+    $self->view->set_status( "PDF: $pdf_file", 'ms', 'blue' );
 
     return;
 }
@@ -2557,7 +2560,7 @@ sub get_alternate_data_record {
 
     #-- Data
 
-    $record->{data} = $self->_model->query_record( $record->{metadata} );
+    $record->{data} = $self->model->query_record( $record->{metadata} );
 
     my @rec;
     push @rec, $record;    # rec data at index 0
@@ -2612,7 +2615,7 @@ sub screen_read {
     return unless scalar keys %{$ctrl_ref};
 
     # Get configured date style, default is ISO
-    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
+    my $date_format = $self->cfg->application->{dateformat} || 'iso';
 
     foreach my $field ( keys %{ $scrcfg->maintable('columns') } ) {
         my $fld_cfg = $scrcfg->maintable('columns', $field);
@@ -2622,7 +2625,7 @@ sub screen_read {
         my $ctrlrw   = $fld_cfg->{readwrite};
 
         if ( !$all ) {
-            unless ( $self->_model->is_mode('find') ) {
+            unless ( $self->model->is_mode('find') ) {
                 next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
             }
         }
@@ -2648,9 +2651,9 @@ sub ctrl_read_from {
 
     my $value;
     my $sub_name = "control_read_$ctrltype";
-    if ( $self->_view->can($sub_name) ) {
+    if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        $value = $self->_view->$sub_name( $control_ref, $date_format );
+        $value = $self->view->$sub_name( $control_ref, $date_format );
         $self->clean_and_save_value( $field, $value, $ctrltype );
     }
     else {
@@ -2694,7 +2697,7 @@ sub clean_and_save_value {
     $value = Tpda3::Utils->trim($value);
 
     # Find mode
-    if ( $self->_model->is_mode('find') ) {
+    if ( $self->model->is_mode('find') ) {
         if ($value) {
             $self->{_scrdata}{$field} = $value;
         }
@@ -2708,13 +2711,13 @@ sub clean_and_save_value {
         }
     }
     # Add mode, non empty fields, 0 is allowed
-    elsif ( $self->_model->is_mode('add') ) {
+    elsif ( $self->model->is_mode('add') ) {
         if ( defined($value) and ( $value =~ m{\S+} ) ) {
             $self->{_scrdata}{$field} = $value;
         }
     }
     # Edit mode, non empty fields, 0 is allowed
-    elsif ( $self->_model->is_mode('edit') ) {
+    elsif ( $self->model->is_mode('edit') ) {
         if ( defined($value) and ( $value =~ m{\S+} ) ) {
             $self->{_scrdata}{$field} = $value;
         }
@@ -2740,7 +2743,7 @@ sub screen_write {
     my ( $self, $record ) = @_;
 
     #- Use current page
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
 
     return if $page eq 'lst';
 
@@ -2750,7 +2753,7 @@ sub screen_write {
     my $cfg_ref = $self->scrcfg($page);
 
     # Get configured date style, default is ISO
-    my $date_format = $self->_cfg->application->{dateformat} || 'iso';
+    my $date_format = $self->cfg->application->{dateformat} || 'iso';
 
     # my $cfgdeps = $self->scrcfg($page)->dependencies;
 
@@ -2766,7 +2769,7 @@ sub screen_write {
 
         my $value = $record->{$field};
         # Defaults in columns config?
-        # || ( $self->_model->is_mode('add') ? $fldcfg->{default} : undef );
+        # || ( $self->model->is_mode('add') ? $fldcfg->{default} : undef );
 
         # # Process dependencies
         my $state;
@@ -2807,9 +2810,9 @@ sub ctrl_write_to {
     my $ctrltype = $self->scrcfg()->maintable('columns', $field, 'ctrltype');
 
     my $sub_name = qq{control_write_$ctrltype};
-    if ( $self->_view->can($sub_name) ) {
+    if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        $self->_view->$sub_name($control_ref, $value, $state, $date_format);
+        $self->view->$sub_name($control_ref, $value, $state, $date_format);
     }
     else {
         print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
@@ -2827,7 +2830,7 @@ Make empty record, used for clearing the screen.
 sub make_empty_record {
     my $self = shift;
 
-    my $page    = $self->_view->get_nb_current_page();
+    my $page    = $self->view->get_nb_current_page();
     my $cfg_ref = $self->scrcfg($page);
 
     my $record = {};
@@ -2926,17 +2929,17 @@ Toggle find mode, ask to save record if modified.
 sub toggle_mode_find {
     my $self = shift;
 
-    my $answer = $self->ask_to_save;    # if $self->_model->is_modified;
+    my $answer = $self->ask_to_save;    # if $self->model->is_modified;
     if ( !defined $answer ) {
-        $self->_view->get_toolbar_btn('tb_fm')->deselect;
+        $self->view->get_toolbar_btn('tb_fm')->deselect;
         return;
     }
 
-    $self->_model->is_mode('find')
+    $self->model->is_mode('find')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('find');
 
-    $self->_view->set_status( '', 'ms' );    # clear messages
+    $self->view->set_status( '', 'ms' );    # clear messages
 
     return;
 }
@@ -2950,19 +2953,19 @@ Toggle add mode, ask to save record if modified.
 sub toggle_mode_add {
     my $self = shift;
 
-    if ( $self->_model->is_mode('edit') ) {
-        my $answer = $self->ask_to_save;    # if $self->_model->is_modified;
+    if ( $self->model->is_mode('edit') ) {
+        my $answer = $self->ask_to_save;    # if $self->model->is_modified;
         if ( !defined $answer ) {
-            $self->_view->get_toolbar_btn('tb_ad')->deselect;
+            $self->view->get_toolbar_btn('tb_ad')->deselect;
             return;
         }
     }
 
-    $self->_model->is_mode('add')
+    $self->model->is_mode('add')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('add');
 
-    $self->_view->set_status( '', 'ms' );    # clear messages
+    $self->view->set_status( '', 'ms' );    # clear messages
 
     return;
 }
@@ -2978,7 +2981,7 @@ sub controls_state_set {
 
     $self->_log->trace("Screen 'rec' controls state is '$set_state'");
 
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
     my $bg   = $self->scrobj($page)->get_bgcolor();
 
     my $ctrl_ref = $self->scrobj($page)->get_controls();
@@ -3015,7 +3018,7 @@ sub controls_state_set {
 
         # Configure controls
         my $control = $self->scrobj()->get_controls($field)->[1];
-        $self->_view->configure_controls($control, $state, $bg_color, $fld_cfg);
+        $self->view->configure_controls($control, $state, $bg_color, $fld_cfg);
     }
 
     return;
@@ -3070,8 +3073,8 @@ sub record_load_new {
 
     $self->record_load();
 
-    if ( $self->_model->is_loaded ) {
-        $self->_view->set_status(
+    if ( $self->model->is_loaded ) {
+        $self->view->set_status(
             $self->localize( 'status', 'info-rec-load-r' ),
             'ms', 'blue' );
     }
@@ -3091,7 +3094,7 @@ the database table and loads the record data in the controls.
 sub record_reload {
     my $self = shift;
 
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
 
     # Save PK-value
     my $pk_val = $self->screen_get_pk_val;    # get old pk-val
@@ -3108,10 +3111,10 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-    $self->_view->set_status( $self->localize( 'status', 'info-rec-reload' ),
+    $self->view->set_status( $self->localize( 'status', 'info-rec-reload' ),
         'ms', 'blue' );
 
-    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+    $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
 
     return;
@@ -3128,14 +3131,14 @@ the TableMatrix widget(s) if configured.
 sub record_load {
     my $self = shift;
 
-    my $page = $self->_view->get_nb_current_page();
+    my $page = $self->view->get_nb_current_page();
 
     #-  Main table
     my $params = $self->main_table_metadata('qry');
 
-    my $record = $self->_model->query_record($params);
+    my $record = $self->model->query_record($params);
     my $textstr = 'Empty record';
-    $self->_view->status_message("error#$textstr")
+    $self->view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
 
     $self->screen_write($record);
@@ -3145,7 +3148,7 @@ sub record_load {
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
         my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
 
-        my $records = $self->_model->table_batch_query($tm_params);
+        my $records = $self->model->table_batch_query($tm_params);
 
         my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
         $tmx->clear_all();
@@ -3164,7 +3167,7 @@ sub record_load {
     $self->scrobj($page)->on_load_record()
         if $self->scrobj($page)->can('on_load_record');
 
-    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+    $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
 
     return;
@@ -3187,7 +3190,7 @@ sub event_record_delete {
 
     $self->record_delete();
 
-    $self->_view->set_status( $self->localize( 'status', 'info-deleted' ),
+    $self->view->set_status( $self->localize( 'status', 'info-deleted' ),
         'ms', 'darkgreen' );    # removed
 
     return;
@@ -3222,11 +3225,11 @@ sub record_delete {
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
-    $self->_model->prepare_record_delete( \@record );
+    $self->model->prepare_record_delete( \@record );
 
     $self->set_app_mode('idle');
 
-    $self->_model->unset_scrdata_rec();    # false = loaded,  true = modified,
+    $self->model->unset_scrdata_rec();    # false = loaded,  true = modified,
                                            # undef = unloaded
 
     return;
@@ -3247,7 +3250,7 @@ sub record_clear {
 
     $self->screen_set_pk_val();
 
-    $self->_model->unset_scrdata_rec();    # false = loaded,  true = modified,
+    $self->model->unset_scrdata_rec();    # false = loaded,  true = modified,
                                            # undef = unloaded
     return;
 }
@@ -3266,8 +3269,8 @@ sub ask_to_save {
 
     return 0 if !$self->is_record;
 
-    if (   $self->_model->is_mode('edit')
-        or $self->_model->is_mode('add') )
+    if (   $self->model->is_mode('edit')
+        or $self->model->is_mode('add') )
     {
         if ( $self->record_changed ) {
             my $answer = $self->ask_to('save');
@@ -3276,12 +3279,12 @@ sub ask_to_save {
                 $self->record_save();
             }
             elsif ( $answer eq 'no' ) {
-                $self->_view->set_status(
+                $self->view->set_status(
                     $self->localize( 'status', 'not-saved' ),
                     'ms', 'blue' );
             }
             else {
-                $self->_view->set_status(
+                $self->view->set_status(
                     $self->localize( 'status', 'canceled' ),
                     , 'ms', 'blue' );
                 return;
@@ -3319,7 +3322,7 @@ sub ask_to {
     }
 
     # Message dialog
-    return $self->_view->dialog_confirm($message, $details);
+    return $self->view->dialog_confirm($message, $details);
 }
 
 =head2 record_save
@@ -3333,7 +3336,7 @@ First, check if required data present in screen.
 sub record_save {
     my $self = shift;
 
-    if ( $self->_model->is_mode('add') ) {
+    if ( $self->model->is_mode('add') ) {
 
         my $record = $self->get_screen_data_record('ins');
 
@@ -3348,20 +3351,20 @@ sub record_save {
             if ($pk_val) {
                 $self->record_reload();
                 $self->list_update_add(); # insert the new record in the list
-                $self->_view->set_status(
+                $self->view->set_status(
                     $self->localize( 'status', 'info-saved' ),
                     , 'ms', 'darkgreen' );
             }
         }
         else {
-            $self->_view->set_status(
+            $self->view->set_status(
                 $self->localize( 'status', 'canceled' ),
                 , 'ms', 'orange' );
         }
     }
-    elsif ( $self->_model->is_mode('edit') ) {
+    elsif ( $self->model->is_mode('edit') ) {
         if ( !$self->is_record ) {
-            $self->_view->set_status(
+            $self->view->set_status(
                 $self->localize( 'status', 'empty-record' ),
                 'ms', 'orange' );
             return;
@@ -3371,12 +3374,12 @@ sub record_save {
 
         return if !$self->if_check_required_data($record);
 
-        $self->_model->prepare_record_update($record);
-        $self->_view->set_status( $self->localize( 'status', 'info-saved' ),
+        $self->model->prepare_record_update($record);
+        $self->view->set_status( $self->localize( 'status', 'info-saved' ),
             'ms', 'darkgreen' );
     }
     else {
-        $self->_view->set_status( $self->localize( 'status', 'not-editadd' ),
+        $self->view->set_status( $self->localize( 'status', 'not-editadd' ),
             'ms', 'darkred' );
         return;
     }
@@ -3384,7 +3387,7 @@ sub record_save {
     # Save record as witness reference for comparison
     $self->save_screendata( $self->storable_file_name('orig') );
 
-    $self->_model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+    $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                           # undef = unloaded
 
     $self->toggle_detail_tab;
@@ -3423,7 +3426,7 @@ sub if_check_required_data {
     my ($self, $record) = @_;
 
     unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
-        $self->_view->set_status( $self->localize( 'status', 'empty-record' ),
+        $self->view->set_status( $self->localize( 'status', 'empty-record' ),
             'ms', 'darkred' );
         return 0;
     }
@@ -3476,7 +3479,7 @@ sub if_check_required_data {
         }
         else {
             # No data for condition field?
-            #$self->_view->set_status( "$cond_field field?", 'ms', 'darkred' );
+            #$self->view->set_status( "$cond_field field?", 'ms', 'darkred' );
             print "No data for condition field: $cond_field field?\n";
         }
     }
@@ -3493,7 +3496,7 @@ sub if_check_required_data {
     if ( !$ok_to_save ) {
         my $message = $self->localize( 'dialog', 'info-add' );
         my $details = join( "\n", @message );
-        $self->_view->dialog_info($message, $details);
+        $self->view->dialog_info($message, $details);
     }
 
     return $ok_to_save;
@@ -3508,7 +3511,7 @@ Insert record.
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
-    my $pk_val = $self->_model->prepare_record_insert($record);
+    my $pk_val = $self->model->prepare_record_insert($record);
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
@@ -3540,7 +3543,7 @@ sub list_update_add {
         push @list, $current->[0]->{data}{$field};
     }
 
-    $self->_view->list_populate( [ \@list ] );    # AoA
+    $self->view->list_populate( [ \@list ] );    # AoA
 
     return;
 }
@@ -3558,7 +3561,7 @@ sub list_update_remove {
     my $pk_val = $self->screen_get_pk_val();
     my $fk_val = $self->screen_get_fk_val();
 
-    $self->_view->list_remove_selected( $pk_val, $fk_val );
+    $self->view->list_remove_selected( $pk_val, $fk_val );
 
     return;
 }
@@ -3576,7 +3579,7 @@ sub record_changed {
     my $witness_file = $self->storable_file_name('orig');
 
     unless ( -f $witness_file ) {
-        $self->_view->set_status( $self->localize( 'status', 'err-chkchanged' ),
+        $self->view->set_status( $self->localize( 'status', 'err-chkchanged' ),
             'ms', 'orange' );
         die "Can't find saved data for comparison!";
     }
@@ -3585,7 +3588,7 @@ sub record_changed {
 
     my $record = $self->get_screen_data_record('upd');
 
-    return $self->_model->record_compare( $witness, $record );
+    return $self->model->record_compare( $witness, $record );
 }
 
 =head2 take_note
@@ -3603,7 +3606,7 @@ sub take_note {
         ? $self->localize( 'status', 'info-note-take' )
         : $self->localize( 'status', 'error-note-take' );
 
-    $self->_view->set_status( $msg, 'ms', 'blue' );
+    $self->view->set_status( $msg, 'ms', 'blue' );
 
     return;
 }
@@ -3623,7 +3626,7 @@ sub restore_note {
         ? $self->localize( 'status', 'info-note-rest' )
         : $self->localize( 'status', 'error-note-rest' );
 
-    $self->_view->set_status( $msg, 'ms', 'blue' );
+    $self->view->set_status( $msg, 'ms', 'blue' );
 
     return;
 }
@@ -3645,7 +3648,7 @@ sub storable_file_name {
 
     # Store record data to file
     my $data_file
-        = catfile( $self->_cfg->configdir,
+        = catfile( $self->cfg->configdir,
         $self->scrcfg->screen('name') . $suffix . q{.dat},
         );
 
@@ -3985,7 +3988,7 @@ Return foreign key column name for the current screen.
 sub screen_get_fk_col {
     my ( $self, $page ) = @_;
 
-    $page ||= $self->_view->get_nb_current_page();
+    $page ||= $self->view->get_nb_current_page();
 
     return $self->scrcfg($page)->maintable('fkcol', 'name');
 }
@@ -4118,7 +4121,7 @@ configuration directory.
 sub DESTROY {
     my $self = shift;
 
-    my $dir = $self->_cfg->configdir;
+    my $dir = $self->cfg->configdir;
     my @files = glob("$dir/*.dat");
 
     foreach my $file (@files) {
@@ -4145,7 +4148,7 @@ sub on_quit {
 
     print "Shuting down...\n";
 
-    $self->_view->on_close_window(@_);
+    $self->view->on_close_window(@_);
 }
 
 =head1 AUTHOR

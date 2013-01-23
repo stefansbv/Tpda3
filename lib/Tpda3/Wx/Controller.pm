@@ -76,7 +76,7 @@ Init App.
 sub _init {
     my $self = shift;
 
-    my $app = Tpda3::Wx::App->create($self->_model);
+    my $app = Tpda3::Wx::App->create($self->model);
     $self->{_app}  = $app;
     $self->{_view} = $app->{_view};
 
@@ -111,7 +111,7 @@ sub dialog_login {
     my $pd = Tpda3::Wx::Dialog::Login->new();
 
     my $return_string = '';
-    my $dialog = $pd->login( $self->_view );
+    my $dialog = $pd->login( $self->view );
     if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
         $return_string = $dialog->get_login();
     }
@@ -136,7 +136,7 @@ sub screen_module_class {
         $module_class = "Tpda3::Wx::Tools::${module}";
     }
     else {
-        $module_class = $self->_cfg->application_class() . "::${module}";
+        $module_class = $self->cfg->application_class() . "::${module}";
     }
 
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
@@ -175,10 +175,10 @@ sub _set_event_handler_nb {
 
     #- NoteBook events
 
-    $self->_view->on_notebook_page_changed(
+    $self->view->on_notebook_page_changed(
         sub {
-            my $page = $self->_view->get_nb_current_page;
-            $self->_view->set_nb_current($page);
+            my $page = $self->view->get_nb_current_page;
+            $self->view->set_nb_current($page);
 
           SWITCH: {
                 $page eq 'lst'
@@ -193,9 +193,9 @@ sub _set_event_handler_nb {
     );
 
     #-- Enter on list item activates record page
-    $self->_view->on_list_item_activated(
+    $self->view->on_list_item_activated(
         sub {
-            $self->_view->get_notebook->SetSelection(0);    # 'rec'
+            $self->view->get_notebook->SetSelection(0);    # 'rec'
         }
     );
 
@@ -278,7 +278,7 @@ Quick help dialog.
 sub guide {
     my $self = shift;
 
-    my $gui = $self->_view;
+    my $gui = $self->view;
 
     require Tpda3::Wx::Dialog::Help;
     my $gd = Tpda3::Wx::Dialog::Help->new;
@@ -301,36 +301,36 @@ sub guide {
 
 #     #- Frame
 
-#     # $self->{timer} = Wx::Timer->new( $self->_view, 1 );
+#     # $self->{timer} = Wx::Timer->new( $self->view, 1 );
 #     # $self->{timer}->Start(1000, 1); # one shot
 
-#     EVT_TIMER $self->_view, 1, sub { $self->start_delayed(); };
+#     EVT_TIMER $self->view, 1, sub { $self->start_delayed(); };
 
 #     # Deep recursion on subroutine "Tpda3::Wx::View::on_quit" ???
-#     # Wx::Event::EVT_CLOSE $self->_view, sub {
-#     #     $self->_view->on_quit;
+#     # Wx::Event::EVT_CLOSE $self->view, sub {
+#     #     $self->view->on_quit;
 #     # };
 
 #     #- Base menu
 
-#     EVT_MENU $self->_view, wxID_ABOUT, sub {
+#     EVT_MENU $self->view, wxID_ABOUT, sub {
 #         $self->about();
 #     };    # Change icons !!!
 
-#     EVT_MENU $self->_view, wxID_EXIT, sub {
-#         $self->_view->on_quit;
+#     EVT_MENU $self->view, wxID_EXIT, sub {
+#         $self->view->on_quit;
 #     };
 
 #     #-- Toggle mode find
-#     EVT_MENU $self->_view, 50011, sub {
-#         if ( !$self->_model->is_mode('add') ) {
+#     EVT_MENU $self->view, 50011, sub {
+#         if ( !$self->model->is_mode('add') ) {
 #             $self->toggle_mode_find();
 #         }
 #     };
 
 #     #-- Execute search
-#     EVT_MENU $self->_view, 50012, sub {
-#         if ( $self->_model->is_mode('find') ) {
+#     EVT_MENU $self->view, 50012, sub {
+#         if ( $self->model->is_mode('find') ) {
 #             $self->record_find_execute;
 #         }
 #         else {
@@ -339,8 +339,8 @@ sub guide {
 #     };
 
 #     #-- Execute count
-#     EVT_MENU $self->_view, 50013, sub {
-#         if ( $self->_model->is_mode('find') ) {
+#     EVT_MENU $self->view, 50013, sub {
+#         if ( $self->model->is_mode('find') ) {
 #             $self->record_find_count;
 #         }
 #         else {
@@ -350,10 +350,10 @@ sub guide {
 
 #     #- Custom application menu from menu.yml
 
-#     my $appmenus = $self->_view->get_app_menus_list();
+#     my $appmenus = $self->view->get_app_menus_list();
 #     foreach my $item ( @{$appmenus} ) {
-#         my $menu_id = $self->_view->get_menu_popup_item($item)->GetId;
-#         EVT_MENU $self->_view, $menu_id, sub {
+#         my $menu_id = $self->view->get_menu_popup_item($item)->GetId;
+#         EVT_MENU $self->view, $menu_id, sub {
 #             $self->screen_module_load($item);
 #             }
 #     }
@@ -361,27 +361,27 @@ sub guide {
 #     #- Toolbar
 
 #     #-- Attach to desktop - pin (save geometry to config file)
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_at')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_at')->GetId,
 #         sub {
 #         my $scr_name = $self->{_scrstr} || 'main';
-#         $self->_cfg->config_save_instance( $scr_name,
-#             $self->_view->w_geometry, );
+#         $self->cfg->config_save_instance( $scr_name,
+#             $self->view->w_geometry, );
 #         };
 
 #     #-- Find mode toggle
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fm')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_fm')->GetId,
 #         sub {
 
 #         # From add mode forbid find mode
-#         if ( !$self->_model->is_mode('add') ) {
+#         if ( !$self->model->is_mode('add') ) {
 #             $self->toggle_mode_find();
 #         }
 #         };
 
 #     #-- Find execute
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fe')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_fe')->GetId,
 #         sub {
-#         if ( $self->_model->is_mode('find') ) {
+#         if ( $self->model->is_mode('find') ) {
 #             $self->record_find_execute;
 #         }
 #         else {
@@ -390,9 +390,9 @@ sub guide {
 #         };
 
 #     #-- Find count
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_fc')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_fc')->GetId,
 #         sub {
-#         if ( $self->_model->is_mode('find') ) {
+#         if ( $self->model->is_mode('find') ) {
 #             $self->record_find_count;
 #         }
 #         else {
@@ -401,9 +401,9 @@ sub guide {
 #         };
 
 #     #-- Reload
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_rr')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_rr')->GetId,
 #         sub {
-#         if ( $self->_model->is_mode('edit') ) {
+#         if ( $self->model->is_mode('edit') ) {
 #             $self->record_reload();
 #         }
 #         else {
@@ -412,20 +412,20 @@ sub guide {
 #         };
 
 #     #-- Add mode
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_ad')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_ad')->GetId,
 #         sub {
 #         $self->toggle_mode_add();
 #         };
 
 #     #-- Quit
-#     EVT_TOOL $self->_view, $self->_view->get_toolbar_btn('tb_qt')->GetId,
+#     EVT_TOOL $self->view, $self->view->get_toolbar_btn('tb_qt')->GetId,
 #         sub {
-#         $self->_view->on_quit;
+#         $self->view->on_quit;
 #         };
 
 #     #-- Make more key bindings (alternative to the menu entries)
 
-#     # $self->_view->SetAcceleratorTable(
+#     # $self->view->SetAcceleratorTable(
 #     #     Wx::AcceleratorTable->new(
 #     #         [ wxACCEL_NORMAL, WXK_F7, 50011 ],
 #     #         [ wxACCEL_NORMAL, WXK_F8, 50012 ],

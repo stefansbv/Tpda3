@@ -42,10 +42,43 @@ sub load_conf {
     my ($self, $name) = @_;
 
     my $config_file = $self->cfg->config_scr_file_name($name);
-    my $config_href = $self->cfg->config_load_file($config_file);
+    my $config_href = $self->cfg->config_data_from($config_file);
 
     return $config_href;
 }
+
+=head2 screen
+
+Return the screen section data structure.
+
+The B<details> section is used for loading different screen modules
+in the B<Details> tab, based on a field value from the B<Record> tab.
+
+In the screen config example below C<cod_tip> can be B<CS> or B<CT>,
+and for each, the corresponding screen module is loaded.  The
+C<filter> parametere is the foreign key of the database table.
+
+    <screen>
+        version             = 4
+        name                = persoane
+        description         = Persoane si activitati
+        style               = default
+        geometry            = 710x728+20+20
+        <details>
+            match           = cod_tip
+            filter          = id_act
+            <detail>
+                value       = CS
+                name        = Cursuri
+            </detail>
+            <detail>
+                value       = CT
+                name        = Consult
+            </detail>
+        </details>
+    </screen>
+
+=cut
 
 sub screen {
     my ($self, @args) = @_;
@@ -64,6 +97,25 @@ sub defaultdocument {
 
     return Dive( $self->{_scr}, 'defaultdocument', @args );
 }
+
+=head2 lists_ds
+
+Return the B<lists_ds> section data structure.  Data source for list
+widgets (Combobox).
+
+An example:
+
+    <lists_ds>
+        <cod_stud>
+            orderby         = id_isced
+            name            = denumire
+            table           = isced
+            default         =
+            code            = id_isced
+        </cod_stud>
+    </lists_ds>
+
+=cut
 
 sub lists_ds {
     my ($self, @args) = @_;
@@ -142,7 +194,7 @@ If there is only one toolbar button then return it as an array reference.
 
 =cut
 
-sub _screen_toolbars {
+sub screen_toolbars {
     my ( $self, $name ) = @_;
 
     die "Screen toolbar name is required" unless $name;
@@ -169,7 +221,7 @@ current screen.
 sub scr_toolbar_names {
     my ($self, $name) = @_;
 
-    my $attribs = $self->_screen_toolbars($name);
+    my $attribs = $self->screen_toolbars($name);
     my @tbnames = map { $_->{name} } @{$attribs};
     my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
 
@@ -216,41 +268,41 @@ sub dep_table_header_info {
     return $href;
 }
 
-###TODO: refactor?
+# ###TODO: refactor?
 
-=head2 get_defaultreport_file
+# =head2 get_defaultreport_file
 
-Return default report path and file, used by the print tool button.
+# Return default report path and file, used by the print tool button.
 
-=cut
+# =cut
 
-sub get_defaultreport_file {
-    my $self = shift;
+# sub get_defaultreport_file {
+#     my $self = shift;
 
-    return catfile( $self->cfg->configdir, 'rep',
-        $self->defaultreport('file') )
-        if $self->defaultreport('file');
+#     return catfile( $self->cfg->configdir, 'rep',
+#         $self->defaultreport('file') )
+#         if $self->defaultreport('file');
 
-    return;
-}
+#     return;
+# }
 
-=head2 get_defaultdocument_file
+# =head2 get_defaultdocument_file
 
-Return default document description, used by the generate tool button,
-as the baloon label.
+# Return default document description, used by the generate tool button,
+# as the baloon label.
 
-=cut
+# =cut
 
-sub get_defaultdocument_file {
-    my $self = shift;
+# sub get_defaultdocument_file {
+#     my $self = shift;
 
-    return catfile(
-        $self->cfg->config_tex_path('model'),
-        $self->defaultdocument('file') )
-            if $self->defaultdocument('file');
+#     return catfile(
+#         $self->cfg->config_tex_path('model'),
+#         $self->defaultdocument('file') )
+#             if $self->defaultdocument('file');
 
-    return;
-}
+#     return;
+# }
 
 =head2 app_dateformat
 

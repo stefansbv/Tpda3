@@ -394,14 +394,14 @@ sub load_config {
     my $self = shift;
 
     #- externalapps section in main.yml
-    my $appscfg_ref = $self->_cfg->cfextapps;
+    my $appscfg_ref = $self->cfg->cfextapps;
     foreach my $field ( keys %{$appscfg_ref} ) {
         my $path = $appscfg_ref->{$field}{exe_path};
         $self->update_path_field( $field, $path, 'file' );
     }
 
     #- runtime section in main.yml
-    my $runcfg_ref = $self->_cfg->cfrun;
+    my $runcfg_ref = $self->cfg->cfrun;
     foreach my $field ( keys %{$runcfg_ref} ) {
         my $path = $runcfg_ref->{$field};
         $self->update_path_field( $field, $path, 'path' );

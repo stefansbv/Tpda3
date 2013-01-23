@@ -89,25 +89,25 @@ sub new {
     return $self;
 }
 
-=head2 _model
+=head2 model
 
 Return model instance
 
 =cut
 
-sub _model {
+sub model {
     my $self = shift;
 
     $self->{_model};
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
@@ -122,18 +122,18 @@ Define the model callbacks.
 sub _set_model_callbacks {
     my $self = shift;
 
-    my $co = $self->_model->get_connection_observable;
+    my $co = $self->model->get_connection_observable;
     $co->add_callback(
         sub {
             $self->toggle_status_cn( $_[0] );
         }
     );
 
-    my $so = $self->_model->get_stdout_observable;
+    my $so = $self->model->get_stdout_observable;
     $so->add_callback( sub { $self->set_status( $_[0], 'ms' ) } );
 
     # When the status changes, update gui components
-    my $apm = $self->_model->get_appmode_observable;
+    my $apm = $self->model->get_appmode_observable;
     $apm->add_callback( sub { $self->update_gui_components(); } );
 
     return;
@@ -164,7 +164,7 @@ module.
 sub update_gui_components {
     my $self = shift;
 
-    my $mode = $self->_model->get_appmode();
+    my $mode = $self->model->get_appmode();
 
     $self->set_status( $mode, 'md' );    # update statusbar
 
@@ -202,7 +202,7 @@ sub _create_menu {
 
     $self->{_menu} = $menu;
 
-    $self->make_menus( $self->_cfg->menubar );
+    $self->make_menus( $self->cfg->menubar );
 
     $self->SetMenuBar($menu);
 
@@ -219,7 +219,7 @@ item of the default menu.
 sub _create_app_menu {
     my $self = shift;
 
-    my $attribs = $self->_cfg->appmenubar;
+    my $attribs = $self->cfg->appmenubar;
 
     $self->make_menus( $attribs, 1 );    # insert starting with position 1
 
@@ -280,7 +280,7 @@ the screen (and also the name of the module).
 sub get_app_menus_list {
     my $self = shift;
 
-    my $attribs = $self->_cfg->appmenubar;
+    my $attribs = $self->cfg->appmenubar;
     my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my @menulist;
@@ -371,7 +371,7 @@ sub _create_toolbar {
 
     my ( $toolbars, $attribs ) = $self->toolbar_names();
 
-    my $ico_path = $self->_cfg->cfico;
+    my $ico_path = $self->cfg->cfico;
 
     $tb->make_toolbar_buttons( $toolbars, $attribs, $ico_path );
 
@@ -393,7 +393,7 @@ sub toolbar_names {
     my $self = shift;
 
     # Get ToolBar button atributes
-    my $attribs = $self->_cfg->toolbar;
+    my $attribs = $self->cfg->toolbar;
 
     # TODO: Change the config file so we don't need this sorting anymore
     # or better keep them sorted and ready to use in config
@@ -793,7 +793,7 @@ sub toggle_status_cn {
     my ( $self, $status ) = @_;
 
     if ($status) {
-        $self->set_status( $self->_cfg->connection->{dbname},
+        $self->set_status( $self->cfg->connection->{dbname},
             'db', 'darkgreen' );
     }
     else {
@@ -1348,7 +1348,7 @@ sub set_geometry {
 
     my ( $w, $h, $x, $y ) = $geom =~ m{(\d+)x(\d+)([+-]\d+)([+-]\d+)};
     $self->SetSize( $x, $y, $w, $h );    # wxSIZE_AUTO
-    # $self->_view->SetMinSize( Wx::Size->new( $w, -1 ) );
+    # $self->view->SetMinSize( Wx::Size->new( $w, -1 ) );
 
     return;
 }

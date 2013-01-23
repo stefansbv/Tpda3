@@ -172,7 +172,7 @@ sub select_dialog {
 
     $self->refresh_message( 'Aşteptaţi...', 'darkgreen' );
 
-    $dlg->after( 100, sub { $self->select_command( $view->_model, $para ) } );
+    $dlg->after( 100, sub { $self->select_command( $view->model, $para ) } );
 
     my $result = $dlg->Show;
 

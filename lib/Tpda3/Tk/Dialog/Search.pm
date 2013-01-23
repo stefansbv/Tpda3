@@ -139,7 +139,7 @@ sub search_dialog {
         -command => [
             sub {
                 my ($self) = @_;
-                $self->search_command( $view->_model, $search_ctrl->get,
+                $self->search_command( $view->model, $search_ctrl->get,
                     $para, $selected, $filter );
             },
             $self,

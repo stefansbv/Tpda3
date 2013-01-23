@@ -101,25 +101,25 @@ sub new {
     return $self;
 }
 
-=head2 _model
+=head2 model
 
 Return model instance
 
 =cut
 
-sub _model {
+sub model {
     my $self = shift;
 
     return $self->{_model};
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
@@ -134,19 +134,19 @@ Define the model callbacks
 sub _set_model_callbacks {
     my $self = shift;
 
-    my $co = $self->_model->get_connection_observable;
+    my $co = $self->model->get_connection_observable;
     $co->add_callback( sub { $self->toggle_status_cn( $_[0] ); } );
 
     # Show message in status bar
-    my $so = $self->_model->get_stdout_observable;
+    my $so = $self->model->get_stdout_observable;
     $so->add_callback( sub { $self->status_message( $_[0] ) } );
 
     # When the status changes, update gui components
-    my $apm = $self->_model->get_appmode_observable;
+    my $apm = $self->model->get_appmode_observable;
     $apm->add_callback( sub { $self->update_gui_components(); } );
 
     # When the modified status changes, update statusbar
-    my $svs = $self->_model->get_scrdata_rec_observable;
+    my $svs = $self->model->get_scrdata_rec_observable;
     $svs->add_callback( sub { $self->set_status( $_[0], 'ss' ) } );
 
     return;
@@ -162,10 +162,10 @@ mode.
 sub set_modified_record {
     my $self = shift;
 
-    if (   $self->_model->is_mode('edit')
-        or $self->_model->is_mode('add') )
+    if (   $self->model->is_mode('edit')
+        or $self->model->is_mode('add') )
     {
-        $self->_model->set_scrdata_rec(1) if !$self->_model->is_modified;
+        $self->model->set_scrdata_rec(1) if !$self->model->is_modified;
     }
 
     return;
@@ -182,7 +182,7 @@ module.
 sub update_gui_components {
     my $self = shift;
 
-    my $mode = $self->_model->get_appmode();
+    my $mode = $self->model->get_appmode();
 
     return unless $mode;
 
@@ -218,11 +218,11 @@ the window.  Fall back to default if no instance config yet.
 sub set_geometry_main {
     my $self = shift;
 
-    $self->_cfg->config_load_instance();
+    $self->cfg->config_load_instance();
 
     my $geom;
-    if ( $self->_cfg->can('geometry') ) {
-        my $go = $self->_cfg->geometry();
+    if ( $self->cfg->can('geometry') ) {
+        my $go = $self->cfg->geometry();
         if (exists $go->{main}) {
             $geom = $go->{main};
         }
@@ -283,7 +283,7 @@ sub _create_menu {
 
     # Get MenuBar atributes
 
-    my $attribs = $self->_cfg->menubar;
+    my $attribs = $self->cfg->menubar;
 
     $self->make_menus($attribs);
 
@@ -302,7 +302,7 @@ menu.
 sub _create_app_menu {
     my $self = shift;
 
-    my $attribs = $self->_cfg->appmenubar;
+    my $attribs = $self->cfg->appmenubar;
 
     $self->make_menus( $attribs, 2 );    # Add starting with position = 2
 
@@ -360,7 +360,7 @@ the screen (and also the name of the module).
 sub get_app_menus_list {
     my $self = shift;
 
-    my $attribs = $self->_cfg->appmenubar;
+    my $attribs = $self->cfg->appmenubar;
     my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
     my @menulist;
@@ -627,7 +627,7 @@ sub toolbar_names {
     my $self = shift;
 
     # Get ToolBar button atributes
-    my $attribs = $self->_cfg->toolbar;
+    my $attribs = $self->cfg->toolbar;
 
     # TODO: Change the config file so we don't need this sorting anymore
     # or better keep them sorted and ready to use in config
@@ -663,7 +663,7 @@ sub create_notebook {
 
     #- Panels
 
-    my $localized = $self->_cfg->localize->{notebook};
+    my $localized = $self->cfg->localize->{notebook};
     $self->create_notebook_panel( 'rec', $localized->{lbl_record} );
     $self->create_notebook_panel( 'lst', $localized->{lbl_list} );
 
@@ -852,7 +852,7 @@ Confirmation dialog.
 sub dialog_confirm {
     my ( $self, $message, $details, $no_cancell, $icon ) = @_;
 
-    my $locale_data = $self->_cfg->localize->{dialog};
+    my $locale_data = $self->cfg->localize->{dialog};
 
     require Tpda3::Tk::Dialog::Message;
     my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data, $no_cancell);
@@ -940,7 +940,7 @@ Toggle the icon in the status bar
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
 
-    my $dbname = $self->_cfg->connection->{dbname};
+    my $dbname = $self->cfg->connection->{dbname};
 
     if ($status) {
         $self->set_status( 'connectyes16', 'cn' );
@@ -1584,7 +1584,7 @@ sub control_read_d {
     if ($value) {
 
         # Skip date formatting for find mode
-        if ( !$self->_model->is_mode('find') ) {
+        if ( !$self->model->is_mode('find') ) {
             my ( $y, $m, $d )
                 = Tpda3::Utils->dateentry_parse_date( $date_format, $value );
             if ( $y and $m and $d ) {
@@ -1683,7 +1683,7 @@ Dictionary lookup.
 sub lookup_description {
     my ($self, $para) = @_;
 
-    my $descr_caen = $self->_model->tbl_lookup_query($para);
+    my $descr_caen = $self->model->tbl_lookup_query($para);
 
     return $descr_caen->[0];
 }
@@ -1697,7 +1697,7 @@ Call method in Model.
 sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
 
-    my $ary_ref = $self->_model->query_filter_find($para, $debug);
+    my $ary_ref = $self->model->query_filter_find($para, $debug);
 
     return $ary_ref;
 }
@@ -1711,7 +1711,7 @@ Call method in Model.
 sub tbl_selection_count {
     my ($self, $para) = @_;
 
-    my $records_count = $self->_model->query_records_count($para);
+    my $records_count = $self->model->query_records_count($para);
 
     return $records_count;
 }
@@ -1725,7 +1725,7 @@ Call a database query method from the Model. ;)
 sub query_proxy {
     my ($self, $method, $para) = @_;
 
-    my $record = $self->_model->$method($para);
+    my $record = $self->model->$method($para);
 
     return $record;
 }
@@ -1739,7 +1739,7 @@ Call the database update method from the Model.
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
 
-    $self->_model->table_record_update($table, $record, $where);
+    $self->model->table_record_update($table, $record, $where);
 
     return;
 }

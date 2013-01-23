@@ -65,13 +65,13 @@ sub new {
     return $self;
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
@@ -382,7 +382,7 @@ sub query_records_find {
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
 
-    my $search_limit = $self->_cfg->application->{limits}{search} || 100;
+    my $search_limit = $self->cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
     my $ary_ref;
     try {
@@ -528,7 +528,7 @@ sub query_dictionary {
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-    my $lookup_limit = $self->_cfg->application->{limits}{lookup} || 50;
+    my $lookup_limit = $self->cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit };    # limit search result
     my $ary_ref;
     try {
@@ -645,7 +645,7 @@ sub cmp_function {
         $ignore_case = 0;
     }
 
-    my $driver = $self->_cfg->connection->{driver};
+    my $driver = $self->cfg->connection->{driver};
 
     my $cmp;
 SWITCH: for ($driver) {

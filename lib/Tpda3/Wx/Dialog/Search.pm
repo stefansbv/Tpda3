@@ -89,7 +89,7 @@ sub search_dialog {
     $search_ctrl->SetFocus();
 
     EVT_TEXT_ENTER $dlg, $search_ctrl, sub {
-        $self->search_command( $view->_model, $search_ctrl->GetValue, $para,
+        $self->search_command( $view->model, $search_ctrl->GetValue, $para,
             $selected, $filter );
         $self->{_list}->SetFocus();
         $self->{_list}->Select( 0, 1 );
@@ -104,7 +104,7 @@ sub search_dialog {
     # search_command sub, is there something like 'Tk invoke'?
 
     EVT_BUTTON $dlg, $find_btn, sub {
-        $self->search_command( $view->_model, $search_ctrl->GetValue, $para,
+        $self->search_command( $view->model, $search_ctrl->GetValue, $para,
             $selected, $filter );
         $self->{_list}->SetFocus();
         $self->{_list}->Select( 0, 1 );

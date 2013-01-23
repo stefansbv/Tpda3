@@ -69,13 +69,13 @@ sub _log {
     return $self->{_log};
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable.
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
@@ -151,9 +151,9 @@ sub pdf_from_latex {
 
     $self->_log->info(qq{Generating PDF from "$tex_file"});
 
-    my $pdflatex_exe = $self->_cfg->cfextapps->{latex}{exe_path};
+    my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
     my $pdflatex_opt = q{-halt-on-error};
-    my $docspath     = $self->_cfg->cfrun->{docspath};
+    my $docspath     = $self->cfg->cfrun->{docspath};
 
     my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
     my $output_pdf = catfile($docspath, qq{$name.pdf});
