@@ -68,7 +68,7 @@ sub _new_instance {
         $self->config_interfaces_load();
 
         # Application configs
-        $self->config_application_load();
+        $self->config_runtime_load();
     }
 
     return $self;
@@ -202,16 +202,9 @@ sub config_main_load {
     };
 
     # Setup when GUI runtime
-    if ( $args->{cfname} ) {
-        $main_hr->{cfname} = $args->{cfname};
-    }
-
-    my @accessor = keys %{$main_hr};
-    $self->{_log}->trace("Making accessors for: @accessor");
+    $main_hr->{cfname} = $args->{cfname} if $args->{cfname};
 
     $self->make_accessors($main_hr);
-
-    $self->{_log}->info("Loading 'main' config ... done");
 
     return $maincfg;
 }
@@ -229,27 +222,29 @@ sub config_interfaces_load {
     my $self = shift;
 
     foreach my $section ( keys %{ $self->cfiface } ) {
-        my $cfg_file = $self->config_iface_file_name($section);
-        $self->config_load($cfg_file);
+        my $resource_file
+            = catfile( $self->cfpath, $self->cfiface->{$section} );
+        my $resource_data_hr = $self->config_data_from($resource_file);
+        $self->make_accessors($resource_data_hr);
     }
 
     return;
 }
 
-=head2 config_application_load
+=head2 config_runtime_load
 
-Load the application specific configuration files.  This are treated
-separately because the path is only known at runtime.
+Load the runtime specific configuration files. This are configurations
+specific to the current application.
 
 =cut
 
-sub config_application_load {
+sub config_runtime_load {
     my $self = shift;
 
     my $cf_name = $self->cfname;
 
-    # Check early if the config dir for the application exists and
-    # populate with defaults if doesn't.
+    # Check if the config dir for the application exists and populate
+    # with defaults if doesn't.
     if ( !-d $self->configdir ) {
         $self->configdir_populate($cf_name);
     }
@@ -262,8 +257,9 @@ sub config_application_load {
     );
 
     foreach my $section ( @cfg ) {
-        my $cfg_file = catfile( $self->configdir, 'etc', $section );
-        $self->config_load($cfg_file);
+        my $resource_file    = $self->resource_path_for($section, 'etc');
+        my $resource_data_hr = $self->config_data_from($resource_file);
+        $self->make_accessors($resource_data_hr);
     }
 
     return;
@@ -294,38 +290,17 @@ sub validate_config {
     return $@ ? 0 : 1;
 }
 
-=head2 config_load
-
-Load configuration file and make accessors.
-
-=cut
-
-sub config_load {
-    my ($self, $cfg_file) = @_;
-
-    $self->{_log}->info("Loading file: $cfg_file");
-
-    my $cfg_hr = $self->config_data_from($cfg_file);
-
-    my @accessor = keys %{$cfg_hr};
-    $self->{_log}->info("Making accessors for: @accessor");
-
-    $self->make_accessors($cfg_hr);
-
-    return;
-}
-
 =head2 config_iface_file_name
 
 Return fully qualified application interface configuration file name.
 
 =cut
 
-sub config_iface_file_name {
-    my ( $self, $section ) = @_;
+# sub config_iface_file_name {
+#     my ( $self, $section ) = @_;
 
-    return catfile( $self->cfpath, $self->cfiface->{$section} );
-}
+#     return catfile( $self->cfpath, $self->cfiface->{$section} );
+# }
 
 =head2 config_file_name
 
@@ -522,8 +497,9 @@ Reload toolbar.
 sub toolbar_interface_reload {
     my $self = shift;
 
-    my $cfg_file = $self->config_iface_file_name('toolbar');
-    $self->config_load($cfg_file);
+    my $resource_file = catfile( $self->cfpath, $self->cfiface->{'toolbar'} );
+    my $resource_data_hr = $self->config_data_from($resource_file);
+    $self->make_accessors($resource_data_hr);
 
     return;
 }
@@ -641,18 +617,6 @@ sub configdir_populate {
     return;
 }
 
-=head2 docs_path
-
-Default documents output path.
-
-=cut
-
-sub docs_path {
-    my $self = shift;
-
-    return $self->_cfrun->{docspath};
-}
-
 =head2 get_log_filename
 
 Return a file name and path for logging.
@@ -711,11 +675,11 @@ Return the screen configuration directory.
 
 =cut
 
-sub config_scrdir {
-    my $self = shift;
+# sub config_scrdir {
+#     my $self = shift;
 
-    return catdir( $self->configdir, 'scr' );
-}
+#     return catdir( $self->configdir, 'scr' );
+# }
 
 =head2 config_scr_file_name
 
@@ -732,10 +696,9 @@ sub config_scr_file_name {
     my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );
     $file_name .= '.conf' unless $type; # defaults to .conf
 
-    my $conf_fn = catfile( $self->config_scrdir, $file_name );
-
-    if (-f $conf_fn) {
-        return $conf_fn;
+    my $scr_file = $self->resource_path_for($file_name, 'scr');
+    if (-f $scr_file) {
+        return $scr_file;
     }
     else {
 
@@ -772,16 +735,16 @@ Repman module.
 
 =cut
 
-sub config_misc_load {
-    my ($self, $config_file) = @_;
+# sub config_misc_load {
+#     my ($self, $config_file) = @_;
 
-    my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
+#     my $cfg_file = catfile( $self->configdir, 'etc', $config_file );
 
-    my $config_hr = $self->config_data_from($cfg_file);
-    $self->make_accessors($config_hr);
+#     my $config_hr = $self->config_data_from($cfg_file);
+#     $self->make_accessors($config_hr);
 
-    return $config_hr;                       # do we need this?
-}
+#     return $config_hr;                       # do we need this?
+# }
 
 =head2 application_class
 
@@ -798,14 +761,14 @@ sub application_class {
     return qq{Tpda3::${widgetset}::App::${module}};
 }
 
-=head2 abs_path_for
+=head2 resource_path_for
 
 Return the absolute path for a resource file or directory.  The
 parameters are: resource name and type. Where type is a list of dirs.
 
 =cut
 
-sub abs_path_for {
+sub resource_path_for {
     my ($self, $name, @type) = @_;
 
     if ($name) {

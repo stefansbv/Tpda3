@@ -56,13 +56,13 @@ sub new {
     return $self;
 }
 
-=head2 _cfg
+=head2 cfg
 
 Return config instance variable
 
 =cut
 
-sub _cfg {
+sub cfg {
     my $self = shift;
 
     return $self->{cfg};

@@ -740,10 +740,11 @@ sub update_value {
     my $resultfield = $rdd->{resultfield};
     my $searchfield = $rdd->{searchfield};
 
-    # Info for the Search dialog table header from L<etc/search.conf>,
-    # in the application's L<etc> config dir.
-    my $conf = $self->{cfg}->config_misc_load('search.conf');
-    my $attr = $conf->{columns};
+    # Info for the Search dialog table header from L<res/search.conf>,
+    # in the application's L<res> config dir.
+    my $res_file    = $self->{cfg}->resource_path_for( 'search.conf', 'res' );
+    my $res_data_hr = $self->{cfg}->config_data_from($res_file);
+    my $attr        = $res_data_hr->{columns};
 
     my $para = {
         table   => $table,

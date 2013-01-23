@@ -165,8 +165,6 @@ sub maintable {
     return Dive( $self->{_scr}, 'maintable', @args );
 }
 
-### other
-
 =head2 has_screen_details
 
 Return true if the main screen has details screen.
@@ -268,42 +266,6 @@ sub dep_table_header_info {
     return $href;
 }
 
-# ###TODO: refactor?
-
-# =head2 get_defaultreport_file
-
-# Return default report path and file, used by the print tool button.
-
-# =cut
-
-# sub get_defaultreport_file {
-#     my $self = shift;
-
-#     return catfile( $self->cfg->configdir, 'rep',
-#         $self->defaultreport('file') )
-#         if $self->defaultreport('file');
-
-#     return;
-# }
-
-# =head2 get_defaultdocument_file
-
-# Return default document description, used by the generate tool button,
-# as the baloon label.
-
-# =cut
-
-# sub get_defaultdocument_file {
-#     my $self = shift;
-
-#     return catfile(
-#         $self->cfg->config_tex_path('model'),
-#         $self->defaultdocument('file') )
-#             if $self->defaultdocument('file');
-
-#     return;
-# }
-
 =head2 app_dateformat
 
 Date format configuration.
@@ -403,4 +365,38 @@ sub alter_toolbar {
     return;
 }
 
-1;
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to the author.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Tpda3::Config::Screen
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2010-2012 Stefan Suciu.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 dated June, 1991 or at your option
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the source tree;
+if not, write to the Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+=cut
+
+1;    # End of Tpda3::Config::Screen

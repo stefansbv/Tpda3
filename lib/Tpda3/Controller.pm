@@ -2440,7 +2440,7 @@ sub screen_report_print {
 
     my $report_exe  = $self->cfg->cfextapps->{repman}{exe_path};
     my $report_name = $self->scrcfg('rec')->defaultreport('file');
-    my $report_file = $self->cfg->abs_path_for($report_name, 'rep');
+    my $report_file = $self->cfg->resource_path_for($report_name, 'rep');
 
     my $options = qq{-preview -param$param};
 
@@ -2496,7 +2496,7 @@ sub screen_document_generate {
     }
 
     my $model_name = $self->scrcfg()->defaultdocument('file');
-    my $model_file = $self->cfg->abs_path_for($model_name, 'tex', 'model');
+    my $model_file = $self->cfg->resource_path_for($model_name, 'tex', 'model');
 
     unless ( -f $model_file ) {
         $self->view->set_status(
@@ -2506,7 +2506,7 @@ sub screen_document_generate {
         return;
     }
 
-    my $output_path = $self->cfg->abs_path_for(undef, 'tex', 'output');
+    my $output_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
     unless ( -d $output_path ) {
         $self->view->set_status(
             $self->localize( ' status ', 'no-out-path' ),

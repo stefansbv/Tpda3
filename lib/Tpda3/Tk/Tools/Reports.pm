@@ -44,14 +44,15 @@ The screen layout
 =cut
 
 sub run_screen {
-    my ( $self, $nb, $scr_cfg ) = @_;
+    my ( $self, $nb ) = @_;
 
     my $rec_page  = $nb->page_widget('rec');
     my $det_page  = $nb->page_widget('det');
     $self->{view} = $nb->toplevel;
     $self->{bg}   = $self->{view}->cget('-background');
 
-    my $validation = Tpda3::Tk::Validation->new($scr_cfg);
+    my $validation
+        = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
 
     # For DateEntry day names
     my @daynames = ();
