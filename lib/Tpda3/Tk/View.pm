@@ -850,14 +850,14 @@ Confirmation dialog.
 =cut
 
 sub dialog_confirm {
-    my ( $self, $message, $details, $no_cancell, $icon ) = @_;
+    my ( $self, $message, $details, $icon, $type ) = @_;
 
     my $locale_data = $self->cfg->localize->{dialog};
 
     require Tpda3::Tk::Dialog::Message;
-    my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data, $no_cancell);
+    my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
 
-    return $dlg->message_dialog($self, $message, $details, $icon);
+    return $dlg->message_dialog($self, $message, $details, $icon, $type);
 }
 
 =head2 dialog_info
