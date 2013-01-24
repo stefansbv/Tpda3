@@ -35,11 +35,10 @@ Constructor method
 =cut
 
 sub new {
-    my ($class, $opts, $no_cancel) = @_;
+    my ($class, $opts) = @_;
 
     my $self = {
-        dialog    => $opts,
-        no_cancel => $no_cancel,
+        dialog => $opts,
     };
 
     bless( $self, $class );
@@ -55,12 +54,13 @@ button labels.
 =cut
 
 sub message_dialog {
-    my ( $self, $view, $message, $details, $icon ) = @_;
+    my ( $self, $view, $message, $details, $icon, $type ) = @_;
 
     my $title    = $self->{dialog}{title};
     my $b_yes    = $self->{dialog}{b_yes};
     my $b_cancel = $self->{dialog}{b_cancel};
     my $b_no     = $self->{dialog}{b_no};
+    my $b_ok     = $self->{dialog}{b_ok};
 
     #--- Dialog Box
 
@@ -71,15 +71,21 @@ sub message_dialog {
     # $padded = sprintf("%*s", $len_l, $text);
     # $padded = sprintf("%-*s", $len_r, $text);
 
-    my $buttons = $self->{no_cancel}
-                ? [ $b_yes, $b_no ]
-                : [ $b_yes, $b_cancel, $b_no ]
+    my $default_buttons = [ $b_ok ];
+    my $buttons =
+                  $type eq q{}    ?  $default_buttons
+                : $type eq 'ok'   ?  [ $b_ok ]
+                : $type eq 'yn'   ?  [ $b_yes, $b_no ]
+                : $type eq 'ycn'  ?  [ $b_yes, $b_cancel, $b_no ]
+                :                  $default_buttons
                 ;
 
     my $dlg = $view->DialogBox(
         -title   => 'Dialog',
         -buttons => $buttons,
     );
+
+    $dlg->geometry('300x180');
 
     #--- Frame top
 
@@ -128,7 +134,7 @@ sub message_dialog {
 
     #-- title (optional)
 
-    my $ltitle = $frame_top_right->Label( -text => $title )
+    my $ltitle = $frame_top_right->Label( -text => "$title ", -fg => 'blue' )
         ->pack( -anchor => 'se', );
 
     #-- label
