@@ -3,7 +3,8 @@ package Tpda3::Utils;
 use strict;
 use warnings;
 use utf8;
-use Carp;
+#use Carp;
+use Tpda3::Exceptions;
 
 =head1 NAME
 
@@ -386,6 +387,32 @@ sub deaccent {
     $text =~ tr/ăĂãÃâÂîÎșȘşŞțȚţŢ/aAaAaAiIsSsStTtT/;
 
     return $text;
+}
+
+sub check_path {
+    my ($self, $path) = @_;
+
+    unless (-d $path) {
+        Exception::IO::PathNotFound->throw(
+            pathname => $path,
+            message  => 'Path not found',
+        );
+    }
+
+    return;
+}
+
+sub check_file {
+    my ($self, $file) = @_;
+
+    unless (-f $file) {
+        Exception::IO::FileNotFound->throw(
+            filename => $file,
+            message  => 'File not found',
+        );
+    }
+
+    return;
 }
 
 =head1 AUTHOR
