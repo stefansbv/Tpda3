@@ -113,7 +113,7 @@ SWITCH: for ($driver) {
     }
     catch {
         if ( my $e = Exception::Base->catch($_) ) {
-            if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+            if ( $e->isa('Exception::Db::Connect') ) {
                 # print "Not connected!\n";
                 # print $e->usermsg, "\n";
                 # print $e->logmsg, "\n";

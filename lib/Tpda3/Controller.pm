@@ -152,7 +152,7 @@ sub connect_dialog {
             }
             catch {
                 if ( my $e = Exception::Base->catch($_) ) {
-                    if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+                    if ( $e->isa('Exception::Db::Connect') ) {
                         $error = $e->usermsg;
                     }
                 }
@@ -2503,8 +2503,8 @@ sub screen_document_generate {
         return;
     }
 
-    my $output_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
-    unless ( -d $output_path ) {
+    my $out_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
+    unless ( -d $out_path ) {
         $self->view->set_status(
             $self->localize( ' status ', 'no-out-path' ),
             'ms', 'red' );
@@ -2515,8 +2515,14 @@ sub screen_document_generate {
     my $gen = Tpda3::Generator->new();
 
     #-- Generate LaTeX document from template
+    my $tex_file;
+    try {
+        $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
+    }
+    catch {
+        $self->catch_io_exceptions('Generate TeX document');
+    };
 
-    my $tex_file = $gen->tex_from_template($record, $model_file, $output_path);
     unless ( $tex_file and ( -f $tex_file ) ) {
         my $msg = $self->localize( 'status', 'error-gen-tex' );
         $self->view->set_status( $msg, 'ms', 'red' );
@@ -2526,7 +2532,15 @@ sub screen_document_generate {
 
     #-- Generate PDF from LaTeX
 
-    my $pdf_file = $gen->pdf_from_latex($tex_file);
+    my $pdf_file;
+    try {
+        $pdf_file = $gen->pdf_from_latex($tex_file);
+    }
+    catch {
+        $self->catch_io_exceptions('Generate PDF document');
+    };
+
+    # Tpda3::Utils->check_file($tex_file);
     unless ( $pdf_file and ( -f $pdf_file ) ) {
         my $msg = $self->localize( 'status', 'error-gen-pdf' );
         $self->view->set_status( $msg, 'ms', 'red' );
@@ -3319,7 +3333,7 @@ sub ask_to {
     }
 
     # Message dialog
-    return $self->view->dialog_confirm($message, $details);
+    return $self->view->dialog_confirm($message, $details, undef, 'ycn');
 }
 
 =head2 record_save
@@ -3712,26 +3726,25 @@ Retrieve main table meta-data from the screen configuration.
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
 
-# DEBUG
-    my ($package, $filename, $line, $subroutine) = caller(3);
-    print "main_table_metadata:\n $package, $line, $subroutine\n";
-
+# # DEBUG
+#     my ($package, $filename, $line, $subroutine) = caller(3);
+#     print "main_table_metadata:\n $package, $line, $subroutine\n";
 
     my $metadata = {};
 
     #- Get PK field name and value and FK if exists
     my $pk_col = $self->screen_get_pk_col;
     my $pk_val = $self->screen_get_pk_val;
-    print "pk_col is $pk_col\n";
-    print "pk_val is $pk_val\n";
+    # print "pk_col is $pk_col\n";
+    # print "pk_val is $pk_val\n";
     # my $has_dep = 0;
     # if ($self->scrcfg->screen->{style} eq 'dependent') {
     #     $has_dep = 1;
     my $fk_col = $self->screen_get_fk_col;
     my $fk_val = $self->screen_get_fk_val;
     # }
-    print "fk_col is ", $fk_col ? $fk_col : 'UNDEF', "\n";
-    print "fk_val is ", $fk_val ? $fk_val : 'UNDEF', "\n";
+    # print "fk_col is ", $fk_col ? $fk_col : 'UNDEF', "\n";
+    # print "fk_val is ", $fk_val ? $fk_val : 'UNDEF', "\n";
 
     if ( $for_sql eq 'qry' ) {
         $metadata->{table} = $self->scrcfg()->maintable('view');
@@ -4146,6 +4159,39 @@ sub on_quit {
     print "Shuting down...\n";
 
     $self->view->on_close_window(@_);
+}
+
+sub catch_io_exceptions {
+    my ($self, $context) = @_;
+
+    my $locale_data = $self->cfg->localize->{dialog};
+
+    my ($message, $details);
+
+    if ( my $e = Exception::Base->catch($_) ) {
+        if ( $e->isa('Exception::IO::PathNotFound') ) {
+            $message = $context;
+            $details = $e->message .' '. $e->pathname;
+        }
+        elsif ( $e->isa('Exception::IO::FileNotFound') ) {
+            $message = $context;
+            $details = $e->message .' '. $e->filename;
+        }
+        else {
+            $self->_log->error( $e->message );
+            $e->throw;    # rethrow the exception
+        }
+
+        $locale_data->{title} = 'Eroare!';
+
+        use Data::Printer; p $locale_data;
+        require Tpda3::Tk::Dialog::Message;
+        my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
+
+        $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
+    }
+
+    return;
 }
 
 =head1 AUTHOR

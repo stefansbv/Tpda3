@@ -121,7 +121,7 @@ sub dbh {
         return $db->dbh if $self->is_connected;
     }
 
-    Tpda3::Exception::Db::Connect->throw(
+    Exception::Db::Connect->throw(
         logmsg  => 'not connected to the database',
         usermsg => 'Please restart and login',
     );
@@ -1381,19 +1381,20 @@ sub throw_exception_db {
     print "(RE)Throw: '$msg'\n";
 
     if ( my $e = Exception::Base->catch($_) ) {
-        if ( $e->isa('Tpda3::Exception::Db::Connect') ) {
+        if ( $e->isa('Exception::Db::Connect') ) {
             print "M: Not connected!\n";
             $e->throw;      # rethrow the exception
         }
-        elsif ( $e->isa('Tpda3::Exception::Db::SQL')) {
+        elsif ( $e->isa('Exception::Db::SQL')) {
             print "M: SQL exception!\n";
             $e->throw;      # rethrow the exception
-        } {
+        }
+        else {
             print 'Error!: ', $e->logmsg, "\n";
         }
     }
     else {
-        Tpda3::Exception::Db::SQL->throw(
+        Exception::Db::SQL->throw(
             logmsg  => $msg,
             usermsg => 'Database - SQL Error',
         );

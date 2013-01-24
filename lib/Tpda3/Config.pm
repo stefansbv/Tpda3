@@ -58,6 +58,8 @@ sub _new_instance {
     $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file
     $args->{default} = 'etc/default.yml'; # and app default config file
 
+    print "Loading configuration files ...\n" if $args->{verbose};
+
     $self->init_configurations($args);
 
     # Load configuration and create accessors
@@ -187,8 +189,6 @@ Make accessors.
 
 sub config_main_load {
     my ( $self, $args ) = @_;
-
-    print "Loading configuration files ...\n" if $self->verbose;
 
     # Main config file name, load
     my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );

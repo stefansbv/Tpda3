@@ -11,6 +11,7 @@ use Template;
 use Log::Log4perl qw(get_logger :levels);
 use Try::Tiny;
 
+require Tpda3::Exceptions;
 require Tpda3::Config;
 
 =head1 NAME
@@ -90,6 +91,10 @@ Generate LaTeX source from TT template.
 sub tex_from_template {
     my ($self, $record, $model_file, $output_path) = @_;
 
+    #
+    Tpda3::Utils->check_file($model_file);
+    Tpda3::Utils->check_path($output_path);
+
     my ($model, $path, $ext) = fileparse( $model_file, qr/\Q.tt\E/ );
 
     my $file_out = qq{$model.tex};
@@ -149,11 +154,14 @@ L<pdflatex> returns 0.
 sub pdf_from_latex {
     my ($self, $tex_file) = @_;
 
+    Tpda3::Utils->check_file($tex_file);
+
     $self->_log->info(qq{Generating PDF from "$tex_file"});
 
     my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
     my $pdflatex_opt = q{-halt-on-error};
     my $docspath     = $self->cfg->cfrun->{docspath};
+    Tpda3::Utils->check_path($docspath);
 
     my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
     my $output_pdf = catfile($docspath, qq{$name.pdf});

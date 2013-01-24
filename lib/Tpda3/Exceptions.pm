@@ -4,17 +4,29 @@ use strict;
 use warnings;
 
 use Exception::Base
-    'Tpda3::Exception::Db',
-    'Tpda3::Exception::Db::Connect' => {
-        isa               => 'Tpda3::Exception::Db',
+    'Exception::Db',
+    'Exception::Db::Connect' => {
+        isa               => 'Exception::Db',
         has               => [qw( usermsg logmsg attrib )],
         string_attributes => [qw( usermsg logmsg )],
     },
-    'Tpda3::Exception::Db::SQL' => {
-        isa               => 'Tpda3::Exception::Db',
+    'Exception::Db::SQL' => {
+        isa               => 'Exception::Db',
         has               => [qw( usermsg logmsg attrib )],
         string_attributes => [qw( usermsg logmsg )],
+    },
+    'Exception::IO',
+    'Exception::IO::PathNotFound' => {
+        isa               => 'Exception::IO',
+        has               => [qw( pathname )],
+        string_attributes => [qw( message pathname )],
+    },
+    'Exception::IO::FileNotFound' => {
+        isa               => 'Exception::IO',
+        has               => [qw( filename )],
+        string_attributes => [qw( message filename )],
     };
+
 
 =head1 NAME
 

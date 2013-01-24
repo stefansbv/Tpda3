@@ -109,14 +109,14 @@ sub handle_error {
 
     if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
         $errorstr = $self->{_dbh}->errstr;
-        Tpda3::Exception::Db::SQL->throw(
+        Exception::Db::SQL->throw(
             logmsg  => $errorstr,
             usermsg => $self->parse_error($errorstr),
         );
     }
     else {
         $errorstr = DBI->errstr;
-        Tpda3::Exception::Db::Connect->throw(
+        Exception::Db::Connect->throw(
             logmsg  => $errorstr,
             usermsg => $self->parse_error($errorstr),
         );
