@@ -5,7 +5,6 @@ use warnings;
 use utf8;
 use English;
 
-use Encode qw(is_utf8 decode);
 use Scalar::Util qw(blessed looks_like_number);
 use List::MoreUtils qw{uniq};
 use Class::Unload;
@@ -2789,7 +2788,7 @@ sub screen_write {
         # }
 
         if (defined $value) {
-            $value = decode( 'utf8', $value ) unless is_utf8($value);
+            $value = Tpda3::Utils->decode_unless_utf($value);
 
             # Trim spaces and '\n' from the end
             $value = Tpda3::Utils->trim($value);

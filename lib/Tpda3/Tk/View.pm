@@ -1125,7 +1125,8 @@ sub list_populate {
 
     # Data
     foreach my $record ( @{$ary_ref} ) {
-        $list->insert( 'end', $record );
+        my @record = map { Tpda3::Utils->decode_unless_utf($_) } @$record;
+        $list->insert( 'end', \@record );
         $list->see('end');
         $row_count++;
         $list->update;

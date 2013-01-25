@@ -48,7 +48,6 @@ sub new {
     my $class = shift;
 
     my $self = {
-        #_exception   => Tpda3::Observable->new(),
         _connected   => Tpda3::Observable->new(),
         _stdout      => Tpda3::Observable->new(),
         _appmode     => Tpda3::Observable->new(),

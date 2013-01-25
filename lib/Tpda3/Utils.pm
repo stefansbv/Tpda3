@@ -3,7 +3,9 @@ package Tpda3::Utils;
 use strict;
 use warnings;
 use utf8;
-#use Carp;
+
+use Encode qw(is_utf8 decode);
+
 use Tpda3::Exceptions;
 
 =head1 NAME
@@ -413,6 +415,14 @@ sub check_file {
     }
 
     return;
+}
+
+sub decode_unless_utf {
+    my ($self, $value) = @_;
+
+    $value = decode( 'utf8', $value ) unless is_utf8($value);
+
+    return $value;
 }
 
 =head1 AUTHOR
