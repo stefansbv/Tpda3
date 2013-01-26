@@ -8,12 +8,12 @@ use Exception::Base
     'Exception::Db::Connect' => {
         isa               => 'Exception::Db',
         has               => [qw( usermsg logmsg attrib )],
-        string_attributes => [qw( usermsg logmsg )],
+        string_attributes => [qw( usermsg )],
     },
     'Exception::Db::SQL' => {
         isa               => 'Exception::Db',
         has               => [qw( usermsg logmsg attrib )],
-        string_attributes => [qw( usermsg logmsg )],
+        string_attributes => [qw( usermsg )],
     },
     'Exception::IO',
     'Exception::IO::PathNotFound' => {
