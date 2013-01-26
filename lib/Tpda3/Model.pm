@@ -822,34 +822,30 @@ DBD::SQLite::db prepare failed: near "RETURNING": syntax error ...
 Uses the B<last_insert_id> function if the database doesn't support the
 INSERT... RETURNING feature.
 
+The parameters for B{last_insert_id} are required. The $table
+parameter is ignord for CUBRID.
+
 =cut
 
 sub table_record_insert {
     my ( $self, $table, $pkcol, $record ) = @_;
 
-    my $has_feature = $self->dbc->has_feature_returning();
-
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind );
-    if ($has_feature) {
-        ( $stmt, @bind )
-            = $sql->insert( $table, $record, { returning => $pkcol } );
-    }
-    else {
-        ( $stmt, @bind ) = $sql->insert( $table, $record );
-    }
+    my $has_feature = $self->dbc->has_feature_returning();
+    my $attrib = $has_feature ? { returning => $pkcol } : {};
 
-    my $pk_id;
+    my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
+
+    my $pk_id = $record->{$pkcol};
     try {
         my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
-        if ($has_feature) {
-            $pk_id = $sth->fetch()->[0];
-        }
-        else {
-            # The parameters are required, $table is ignord for CUBRID
-            $pk_id = $self->dbh->last_insert_id(undef, undef, $table, undef);
+
+        unless (defined $pk_id) {
+            $pk_id = $has_feature
+            ? $sth->fetch()->[0]
+            : $self->dbh->last_insert_id(undef, undef, $table, undef);
         }
     }
     catch {
@@ -990,7 +986,7 @@ sub prepare_record_insert {
     my $maindata = $mainrec->{data};
 
     my $table = $mainmeta->{table};
-    my $pkcol = $mainmeta->{pkcol}{name};
+    my $pkcol = $mainmeta->{pkcol};
 
     #- Main record
 
@@ -1009,7 +1005,7 @@ sub prepare_record_insert {
 
         my $updstyle = $depmeta->{updstyle};
         my $table    = $depmeta->{table};
-        my $pkcol    = $depmeta->{pkcol}{name};
+        my $pkcol    = $depmeta->{pkcol};
 
         # Update params for where
         $depmeta->{where}{$pkcol} = [ $pk_id, 'full' ];

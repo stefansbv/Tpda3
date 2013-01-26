@@ -5,24 +5,24 @@ use warnings;
 use utf8;
 use English;
 
-use Scalar::Util qw(blessed looks_like_number);
-use List::MoreUtils qw{uniq};
 use Class::Unload;
-use Log::Log4perl qw(get_logger :levels);
-use Storable qw (store retrieve);
 use File::Basename;
 use File::Spec::Functions qw(catfile);
+use List::MoreUtils qw{uniq};
+use Log::Log4perl qw(get_logger :levels);
 use Math::Symbolic;
-
+use Scalar::Util qw(blessed looks_like_number);
+use Storable qw (store retrieve);
 use Try::Tiny;
-use Tpda3::Exceptions;
 
+require Tpda3::Exceptions;
 require Tpda3::Utils;
 require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
 require Tpda3::Selected;
 require Tpda3::Generator;
+require Tpda3::Tk::Dialog::Message;
 
 =head1 NAME
 
@@ -2092,6 +2092,7 @@ sub screen_load_lists {
         next unless ref $para eq 'HASH';       # undefined, skip
 
         # Query table and return data to fill the lists
+
         my $choices = $self->model->get_codes( $field, $para, $ctrltype );
 
         if ( $ctrltype eq 'm' ) {
@@ -2514,36 +2515,38 @@ sub screen_document_generate {
     my $gen = Tpda3::Generator->new();
 
     #-- Generate LaTeX document from template
+
     my $tex_file;
+    my $tex_context = $self->localize( 'status', 'error-gen-pdf' );
     try {
         $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
     }
     catch {
-        $self->catch_io_exceptions('Generate TeX document');
+        $self->io_exception($_, $tex_context);
     };
 
     unless ( $tex_file and ( -f $tex_file ) ) {
-        my $msg = $self->localize( 'status', 'error-gen-tex' );
-        $self->view->set_status( $msg, 'ms', 'red' );
-        $self->_log->error($msg);
+        #my $msg = $self->localize( 'status', 'error-gen-tex' );
+        $self->view->set_status( $tex_context, 'ms', 'red' );
+        $self->_log->error($tex_context);
         return;
     }
 
     #-- Generate PDF from LaTeX
 
     my $pdf_file;
+    my $pdf_context = $self->localize( 'status', 'error-gen-pdf' );
     try {
         $pdf_file = $gen->pdf_from_latex($tex_file);
     }
     catch {
-        $self->catch_io_exceptions('Generate PDF document');
+        $self->io_exception( $_, $pdf_context );
     };
 
-    # Tpda3::Utils->check_file($tex_file);
-    unless ( $pdf_file and ( -f $pdf_file ) ) {
-        my $msg = $self->localize( 'status', 'error-gen-pdf' );
-        $self->view->set_status( $msg, 'ms', 'red' );
-        $self->_log->error($msg);
+    # Check output
+    unless ( $pdf_file and Tpda3::Utils->check_file($pdf_file) ) {
+        $self->view->set_status( $pdf_context, 'ms', 'red' );
+        $self->_log->error($pdf_context);
         return;
     }
 
@@ -3521,7 +3524,13 @@ Insert record.
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
-    my $pk_val = $self->model->prepare_record_insert($record);
+    my $pk_val;
+    try {
+        $pk_val = $self->model->prepare_record_insert($record);
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
 
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
@@ -4130,20 +4139,20 @@ configuration directory.
 sub DESTROY {
     my $self = shift;
 
-    my $dir = $self->cfg->configdir;
-    my @files = glob("$dir/*.dat");
+    # my $dir = $self->cfg->configdir;
+    # my @files = glob("$dir/*.dat");
 
-    foreach my $file (@files) {
-        if ( -f $file ) {
-            my $cnt = unlink $file;
-            if ( $cnt == 1 ) {
-                # print "Cleanup: $file\n";
-            }
-            else {
-                $self->_log->error("EE, cleaning up: $file");
-            }
-        }
-    }
+    # foreach my $file (@files) {
+    #     if ( -f $file ) {
+    #         my $cnt = unlink $file;
+    #         if ( $cnt == 1 ) {
+    #             # print "Cleanup: $file\n";
+    #         }
+    #         else {
+    #             $self->_log->error("EE, cleaning up: $file");
+    #         }
+    #     }
+    # }
 }
 
 =head2 on_quit
@@ -4160,14 +4169,14 @@ sub on_quit {
     $self->view->on_close_window(@_);
 }
 
-sub catch_io_exceptions {
-    my ($self, $context) = @_;
+sub io_exception {
+    my ($self, $exc, $context) = @_;
 
     my $locale_data = $self->cfg->localize->{dialog};
 
     my ($message, $details);
 
-    if ( my $e = Exception::Base->catch($_) ) {
+    if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::IO::PathNotFound') ) {
             $message = $context;
             $details = $e->message .' '. $e->pathname;
@@ -4181,12 +4190,34 @@ sub catch_io_exceptions {
             $e->throw;    # rethrow the exception
         }
 
-        $locale_data->{title} = 'Eroare!';
+        $locale_data->{title} = 'Error!';
 
-        use Data::Printer; p $locale_data;
-        require Tpda3::Tk::Dialog::Message;
         my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
+        $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
+    }
 
+    return;
+}
+
+sub catch_db_exceptions {
+    my ($self, $exc) = @_;
+
+    my $locale_data = $self->cfg->localize->{dialog};
+
+    my ($message, $details);
+
+    if ( my $e = Exception::Base->catch($exc) ) {
+        if ( $e->isa('Exception::Db::SQL') ) {
+            $details = $e->usermsg .' '. $e->logmsg;
+        }
+        else {
+            $self->_log->error( $e->message );
+            $e->throw;    # rethrow the exception
+        }
+
+        $locale_data->{title} = 'DB Error!';
+
+        my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
         $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
     }
 
