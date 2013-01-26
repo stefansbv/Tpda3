@@ -3,13 +3,12 @@ package Tpda3::Db::Connection::Postgresql;
 use strict;
 use warnings;
 
-use Regexp::Common;
-use Log::Log4perl qw(get_logger :levels);
-
-use Tpda3::Exceptions;
-
-use Try::Tiny;
 use DBI;
+use Log::Log4perl qw(get_logger :levels);
+use Regexp::Common;
+use Try::Tiny;
+
+require Tpda3::Exceptions;
 
 =head1 NAME
 
@@ -144,6 +143,7 @@ sub parse_error {
        : $pg =~ m/ERROR:  column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi
                                                             ? "colnotfound:$2.$1"
        : $pg =~ m/ERROR:  null value in column ($RE{quoted})/smi ? "nullvalue:$1"
+       : $pg =~ m/ERROR:  syntax error at or near ($RE{quoted})/smi ? "syntax:$1"
        : $pg =~ m/violates check constraint ($RE{quoted})/smi ? "checkconstr:$1"
        : $pg =~ m/relation ($RE{quoted}) does not exist/smi  ? "relnotfound:$1"
        : $pg =~ m/authentication failed .* ($RE{quoted})/smi ? "password:$1"
@@ -177,6 +177,7 @@ sub parse_error {
         nullvalue   => "error#Null value for $name",
         relforbid   => "error#Permission denied",
         notconn     => "error#Not connected",
+        syntax      => "error#SQL syntax error",
     };
 
     my $message;
