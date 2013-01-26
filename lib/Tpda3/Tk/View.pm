@@ -3,10 +3,9 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use POSIX qw (floor);
-use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel catfile);
-
+use Log::Log4perl qw(get_logger);
+use POSIX qw (floor);
 use Tk;
 use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
@@ -14,7 +13,7 @@ use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
 
 use base 'Tk::MainWindow';
 
-use Tpda3::Exceptions;
+require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
@@ -1052,8 +1051,10 @@ Make header for the list in the List tab.
 sub list_header {
     my ( $self, $colattr, $colcnt ) = @_;
 
+    my $label = Tpda3::Utils->decode_unless_utf($colattr->{label});
+
     # Label
-    $self->get_recordlist->columnInsert( 'end', -text => $colattr->{label} );
+    $self->get_recordlist->columnInsert( 'end', -text => $label );
 
     # Background
     $self->get_recordlist->columnGet($colcnt)->Subwidget('heading')
@@ -1073,7 +1074,7 @@ sub list_header {
         }
     }
     else {
-        print "WW: No 'datatype' attribute for '$colattr->{label}'\n";
+        print "WW: No 'datatype' attribute for '$label'\n";
     }
 
     return;
@@ -1768,7 +1769,7 @@ sub Tk::Error {
     $self->log_msg("EE: '$log_messsge'");
 
     $self->Dialog(
-        -title => 'Error',
+        -title => 'Error!',
         -text  => $dlg_message,
     )->Show();
 
