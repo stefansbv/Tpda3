@@ -3,15 +3,14 @@ package Tpda3::Db::Connection::Sqlite;
 use strict;
 use warnings;
 
-use Regexp::Common;
-use Log::Log4perl qw(get_logger :levels);
+use DBI;
 use File::HomeDir;
 use File::Spec::Functions;
-
-use Tpda3::Exceptions;
-
+use Log::Log4perl qw(get_logger :levels);
+use Regexp::Common;
 use Try::Tiny;
-use DBI;
+
+require Tpda3::Exceptions;
 
 =head1 NAME
 
@@ -130,13 +129,14 @@ sub parse_error {
 
     my $log = get_logger();
 
-    # print "\nSI: $si\n\n";
+    print "\nSI: $si\n\n";
 
     my $message_type =
          $si eq q{}                                        ? "nomessage"
        : $si =~ m/prepare failed: no such table: (\w+)/smi ? "relnotfound:$1"
        : $si =~ m/prepare failed: near ($RE{quoted}):/smi  ? "notsuported:$1"
        : $si =~ m/not connected/smi                        ? "notconn"
+       : $si =~ m/(.*) may not be NULL/smi                 ? "errnull:$1"
        :                                                     "unknown";
 
     # Analize and translate
@@ -150,6 +150,7 @@ sub parse_error {
         relnotfound => "fatal#Relation $name not found",
         unknown     => "fatal#Database error",
         notconn     => "error#Not connected",
+        errnull     => "error#$name may not be NULL",
     };
 
     my $message;
