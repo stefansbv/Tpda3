@@ -107,7 +107,7 @@ CREATE TABLE offices (
 
 
 CREATE TABLE employees (
-    employeenumber SMALLINT NOT NULL,
+    employeenumber INTEGER PRIMARY KEY,
     lastname       VARCHAR(50) NOT NULL,
     firstname      VARCHAR(50) NOT NULL,
     extension      VARCHAR(10) NOT NULL,
@@ -115,8 +115,6 @@ CREATE TABLE employees (
     officecode     VARCHAR(10) NOT NULL,
     reportsto      SMALLINT,
     jobtitle       VARCHAR(50) NOT NULL,
-    CONSTRAINT pk_employees_employeenumber
-               PRIMARY KEY (employeenumber),
     CONSTRAINT fk_employees_offices_ocode
                FOREIGN KEY (officecode)
                     REFERENCES offices (officecode)
@@ -126,7 +124,7 @@ CREATE TABLE employees (
 
 
 CREATE TABLE customers (
-    customernumber         SMALLINT NOT NULL,
+    customernumber         INTEGER PRIMARY KEY,
     customername           VARCHAR(50) NOT NULL,
     contactlastname        VARCHAR(50) NOT NULL,
     contactfirstname       VARCHAR(50) NOT NULL,
@@ -138,20 +136,16 @@ CREATE TABLE customers (
     postalcode             VARCHAR(15),
     countrycode            CHAR(2) NOT NULL,
     employeenumber         SMALLINT DEFAULT NULL,
-    creditlimit            DECIMAL(10,2),
-    CONSTRAINT pk_customers_cust_emp
-               PRIMARY KEY (customernumber)
+    creditlimit            DECIMAL(10,2)
 );
 
 
 CREATE TABLE productlines (
-    productlinecode    SMALLINT NOT NULL,
+    productlinecode    INTEGER PRIMARY KEY,
     productline        VARCHAR(50) NOT NULL,
     textdescription    TEXT,
     htmldescription    TEXT,
-    image              TEXT,
-    CONSTRAINT pk_productlines_plinecode
-               PRIMARY KEY (productlinecode)
+    image              TEXT
 );
 
 
@@ -176,7 +170,7 @@ CREATE TABLE products (
 
 
 CREATE TABLE orders (
-    ordernumber    SMALLINT NOT NULL,
+    ordernumber    INTEGER PRIMARY KEY,
     orderdate      DATE NOT NULL,
     requireddate   DATE NOT NULL,
     shippeddate    DATE DEFAULT NULL,
@@ -184,8 +178,6 @@ CREATE TABLE orders (
     comments       TEXT,
     customernumber SMALLINT NOT NULL,
     ordertotal     DECIMAL(10,2) DEFAULT 0.00,
-    CONSTRAINT pk_orders_ordernumber
-               PRIMARY KEY (ordernumber),
     CONSTRAINT fk_orders_customers_cust_emp
                FOREIGN KEY (customernumber)
                     REFERENCES customers (customernumber)
@@ -232,12 +224,11 @@ CREATE TABLE payments (
 -- Tpda3 specific tables
 
 CREATE TABLE reports (
-   id_rep       SMALLINT
+   id_rep       INTEGER PRIMARY KEY
  , id_user      INTEGER
  , repofile     VARCHAR(150)
  , title        VARCHAR(50)
  , descr        TEXT
- , CONSTRAINT pk_reports_id_rep PRIMARY KEY (id_rep)
 );
 
 
