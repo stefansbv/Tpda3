@@ -3,15 +3,14 @@ package Tpda3::Model;
 use strict;
 use warnings;
 
-use Try::Tiny;
-use SQL::Abstract;
-use List::Compare;
 use Data::Compare;
-use Regexp::Common;
+use List::Compare;
 use Log::Log4perl qw(get_logger :levels);
+use Regexp::Common;
+use SQL::Abstract;
+use Try::Tiny;
 
-use Tpda3::Exceptions;
-
+require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Codings;
 require Tpda3::Observable;
@@ -121,7 +120,7 @@ sub dbh {
     }
 
     Exception::Db::Connect->throw(
-        logmsg  => 'not connected to the database',
+        logmsg  => 'Not connected.',
         usermsg => 'Please restart and login',
     );
 
@@ -333,7 +332,7 @@ sub query_records_count {
     my ( $self, $opts ) = @_;
 
     my $table = $opts->{table};
-    my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
+    my $pkcol = $opts->{pkcol}{name} ? $opts->{pkcol}{name} : '*';
     my $where = $self->build_sql_where($opts);
 
     return if !ref $where;
@@ -341,7 +340,6 @@ sub query_records_count {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
-
     my $record_count;
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -349,7 +347,7 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     $record_count = 0 unless defined $record_count;
@@ -386,7 +384,7 @@ sub query_records_find {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return ($ary_ref, $search_limit);
@@ -403,7 +401,7 @@ sub query_filter_find {
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
-    my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol};
+    my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol}{name};
     my $where = $opts->{where};
 
     # Remove 'id_art'; for 'SELECT *', $cols have to be undef
@@ -433,7 +431,7 @@ sub query_filter_find {
         }
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return \@records;
@@ -463,7 +461,7 @@ sub query_record {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $hash_ref;
@@ -499,7 +497,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return \@records;
@@ -532,7 +530,7 @@ sub query_dictionary {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $ary_ref;
@@ -723,7 +721,7 @@ sub tbl_dict_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     my @dictrows;
@@ -743,7 +741,7 @@ sub tbl_dict_query {
         }
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return \@dictrows;
@@ -769,7 +767,7 @@ sub tbl_lookup_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     my $row_rf;
@@ -784,7 +782,7 @@ sub tbl_lookup_query {
         $row_rf = $sth->fetchrow_arrayref();
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $row_rf;
@@ -855,7 +853,7 @@ sub table_record_insert {
         }
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $pk_id;
@@ -879,7 +877,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return;
@@ -903,7 +901,7 @@ sub table_record_select {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $hash_ref;
@@ -935,7 +933,7 @@ sub table_batch_insert {
             $sth->execute(@bind);
         }
         catch {
-            $self->throw_exception_db($_);
+            $self->db_exception($_);
         };
     }
 
@@ -967,7 +965,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return;
@@ -992,7 +990,7 @@ sub prepare_record_insert {
     my $maindata = $mainrec->{data};
 
     my $table = $mainmeta->{table};
-    my $pkcol = $mainmeta->{pkcol};
+    my $pkcol = $mainmeta->{pkcol}{name};
 
     #- Main record
 
@@ -1011,7 +1009,7 @@ sub prepare_record_insert {
 
         my $updstyle = $depmeta->{updstyle};
         my $table    = $depmeta->{table};
-        my $pkcol    = $depmeta->{pkcol};
+        my $pkcol    = $depmeta->{pkcol}{name};
 
         # Update params for where
         $depmeta->{where}{$pkcol} = [ $pk_id, 'full' ];
@@ -1310,7 +1308,7 @@ sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
 
     my $table  = $opts->{table};
-    my $pkcol  = $opts->{pkcol};
+    my $pkcol  = $opts->{pkcol}{name};
     my $fields = $opts->{fkcol};
     my $where  = $opts->{where};
     my $order  = $fields;
@@ -1324,7 +1322,7 @@ sub table_selectcol_as_array {
         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->throw_exception_db($_);
+        $self->db_exception($_);
     };
 
     return $records;
@@ -1367,34 +1365,31 @@ sub user_message {
     return $user_message;
 }
 
-=head2 throw_exception_db
+=head2 db_exception
 
 Try to catch existing exceptions.  (Re)Throw an exception on SQL or
 Connection errors.
 
 =cut
 
-sub throw_exception_db {
-    my ($self, $msg) = @_;
+sub db_exception {
+    my ( $self, $exc ) = @_;
 
-    print "(RE)Throw: '$msg'\n";
+    print "Exception: '$exc'\n";
 
-    if ( my $e = Exception::Base->catch($_) ) {
+    if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::Db::Connect') ) {
-            print "M: Not connected!\n";
-            $e->throw;      # rethrow the exception
+            my $logmsg  = $e->logmsg;
+            my $usermsg = $e->usermsg;
+            $self->_print("warn#$logmsg $usermsg");
         }
-        elsif ( $e->isa('Exception::Db::SQL')) {
-            print "M: SQL exception!\n";
-            $e->throw;      # rethrow the exception
-        }
-        else {
-            print 'Error!: ', $e->logmsg, "\n";
+        elsif ( $e->isa('Exception::Db::SQL') ) {
+            $e->throw;    # rethrow the exception
         }
     }
     else {
         Exception::Db::SQL->throw(
-            logmsg  => $msg,
+            logmsg  => $exc,
             usermsg => 'Database - SQL Error',
         );
     }
