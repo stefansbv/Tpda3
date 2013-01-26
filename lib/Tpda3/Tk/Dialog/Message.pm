@@ -62,6 +62,8 @@ sub message_dialog {
     my $b_no     = $self->{dialog}{b_no};
     my $b_ok     = $self->{dialog}{b_ok};
 
+    $title = $title ? $title . q{  } : q {}; # add space(s) at right
+
     #--- Dialog Box
 
     # # Make all buttons same width
@@ -134,7 +136,7 @@ sub message_dialog {
 
     #-- title (optional)
 
-    my $ltitle = $frame_top_right->Label( -text => "$title ", -fg => 'blue' )
+    my $ltitle = $frame_top_right->Label( -text => $title, -fg => 'blue' )
         ->pack( -anchor => 'se', );
 
     #-- label
