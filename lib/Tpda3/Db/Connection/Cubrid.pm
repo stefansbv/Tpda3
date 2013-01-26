@@ -3,13 +3,12 @@ package Tpda3::Db::Connection::Cubrid;
 use strict;
 use warnings;
 
-use Regexp::Common;
-use Log::Log4perl qw(get_logger :levels);
-
-use Tpda3::Exceptions;
-
-use Try::Tiny;
 use DBI;
+use Log::Log4perl qw(get_logger :levels);
+use Regexp::Common;
+use Try::Tiny;
+
+require Tpda3::Exceptions;
 
 =head1 NAME
 

@@ -6,7 +6,7 @@ use utf8;
 
 use Encode qw(is_utf8 decode);
 
-use Tpda3::Exceptions;
+require Tpda3::Exceptions;
 
 =head1 NAME
 

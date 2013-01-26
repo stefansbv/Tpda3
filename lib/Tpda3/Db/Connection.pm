@@ -1,16 +1,14 @@
 package Tpda3::Db::Connection;
 
-use strict;
-use warnings;
 use Carp;
-
+use DBI;
 use Log::Log4perl qw(get_logger);
 use Scalar::Util qw(blessed);
-
-use DBI;
 use Try::Tiny;
-use Tpda3::Exceptions;
+use strict;
+use warnings;
 
+require Tpda3::Exceptions;
 require Tpda3::Config;
 
 =head1 NAME
