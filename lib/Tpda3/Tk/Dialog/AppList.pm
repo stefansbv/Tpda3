@@ -252,7 +252,7 @@ sub show_app_list {
     my $choices = [
         { -name => 'PostgreSQL', -value => 'pg', -selected => 1 },
         { -name => 'Firebird',   -value => 'fb', },
-        { -name => 'SQLite - partial support',     -value => 'si', },
+        { -name => 'SQLite',     -value => 'si', },
     ];
 
     my $ldriver = $frm_middle->Label( -text => 'Driver', );

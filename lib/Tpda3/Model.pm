@@ -120,8 +120,8 @@ sub dbh {
     }
 
     Exception::Db::Connect->throw(
-        logmsg  => 'Not connected.',
         usermsg => 'Please restart and login',
+        logmsg  => 'error#Not connected',
     );
 
     return;
@@ -347,7 +347,7 @@ sub query_records_count {
         ($record_count) = $sth->fetchrow_array();
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Count failed');
     };
 
     $record_count = 0 unless defined $record_count;
@@ -384,7 +384,7 @@ sub query_records_find {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Find failed');
     };
 
     return ($ary_ref, $search_limit);
@@ -415,10 +415,6 @@ sub query_filter_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
 
-
-    # p $stmt;
-    # p @bind;
-
     my @records;
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -431,7 +427,7 @@ sub query_filter_find {
         }
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Filter error');
     };
 
     return \@records;
@@ -461,7 +457,7 @@ sub query_record {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Query failed');
     };
 
     return $hash_ref;
@@ -497,7 +493,7 @@ sub table_batch_query {
         }
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Batch query failed');
     };
 
     return \@records;
@@ -530,7 +526,7 @@ sub query_dictionary {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Dictionary query failed');
     };
 
     return $ary_ref;
@@ -721,7 +717,7 @@ sub tbl_dict_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Table dictionary query failed');
     };
 
     my @dictrows;
@@ -741,7 +737,7 @@ sub tbl_dict_query {
         }
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Table dictionary query failed');
     };
 
     return \@dictrows;
@@ -767,7 +763,7 @@ sub tbl_lookup_query {
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Lookup failed');
     };
 
     my $row_rf;
@@ -782,7 +778,7 @@ sub tbl_lookup_query {
         $row_rf = $sth->fetchrow_arrayref();
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Lookup failed');
     };
 
     return $row_rf;
@@ -837,10 +833,17 @@ sub table_record_insert {
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
 
-    my $pk_id = $record->{$pkcol};
+    my $pk_id;
+    if ( exists $record->{$pkcol} ) {
+        $pk_id = $record->{$pkcol};
+    }
+
     try {
-        my $sth = $self->dbh->prepare($stmt);
-        $sth->execute(@bind);
+        my $dbh = $self->dbh;
+
+        my $sth = $dbh->prepare($stmt) or die $dbh->errstr;
+
+        $sth->execute(@bind) or die $dbh->errstr;
 
         unless (defined $pk_id) {
             $pk_id = $has_feature
@@ -849,7 +852,7 @@ sub table_record_insert {
         }
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Insert failed');
     };
 
     return $pk_id;
@@ -873,7 +876,7 @@ sub table_record_update {
         $sth->execute(@bind);
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Update failed');
     };
 
     return;
@@ -897,7 +900,7 @@ sub table_record_select {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Select failed');
     };
 
     return $hash_ref;
@@ -929,7 +932,7 @@ sub table_batch_insert {
             $sth->execute(@bind);
         }
         catch {
-            $self->db_exception($_);
+            $self->db_exception($_, 'Batch insert failed');
         };
     }
 
@@ -961,7 +964,7 @@ sub table_record_delete {
         $sth->execute(@bind);
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Delete failed');
     };
 
     return;
@@ -1318,7 +1321,7 @@ sub table_selectcol_as_array {
         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
     }
     catch {
-        $self->db_exception($_);
+        $self->db_exception($_, 'Select failed');
     };
 
     return $records;
@@ -1353,10 +1356,10 @@ sub user_message {
     my ($self, $error) = @_;
 
     $error =~ s{[\n\r]}{ }gmix;
-    my $user_message = $self->dbc->parse_db_error($error);
+    my $user_message = $self->dbc->parse_error($error);
     $user_message =~ s{"\."}{\.}gmix;        # "d"."t" ->  "d.t"
 
-    $self->_print($user_message);
+    #$self->_print($user_message);
 
     return $user_message;
 }
@@ -1369,24 +1372,43 @@ Connection errors.
 =cut
 
 sub db_exception {
-    my ( $self, $exc ) = @_;
+    my ( $self, $exc, $context ) = @_;
 
     print "Exception: '$exc'\n";
+    print "Context  : '$context'\n";
 
     if ( my $e = Exception::Base->catch($exc) ) {
+        print "Catched!\n";
+
         if ( $e->isa('Exception::Db::Connect') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-            $self->_print("warn#$logmsg $usermsg");
+            print "Exc Conn: $usermsg :: $logmsg\n";
+            $e->throw;    # rethrow the exception
         }
         elsif ( $e->isa('Exception::Db::SQL') ) {
+            my $logmsg  = $e->logmsg;
+            my $usermsg = $e->usermsg;
+            print "Exc SQL: $usermsg :: $logmsg\n";
             $e->throw;    # rethrow the exception
+        }
+        else {
+
+            # Throw other exception
+            print "Exc Other new\n";
+            my $message = $self->user_message($exc);
+            print "Message:   '$message'\n";
+            Exception::Db::SQL->throw(
+                logmsg  => $message,
+                usermsg => $context,
+            );
         }
     }
     else {
+        print "New thrown (model)\n";
         Exception::Db::SQL->throw(
-            logmsg  => $exc,
-            usermsg => 'Database - SQL Error',
+            logmsg  => "error#$exc",
+            usermsg => $context,
         );
     }
 

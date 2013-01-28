@@ -425,6 +425,28 @@ sub decode_unless_utf {
     return $value;
 }
 
+sub parse_message {
+    my ($self, $text) = @_;
+
+    (my $type, $text) = split /#/, $text, 2;
+
+    # Allow empty type
+    unless ($text) {
+        $text = $type;
+        $type = q{};
+    }
+
+    my $color;
+  SWITCH: {
+        $type eq 'error' && do { $color = 'darkred';   last SWITCH; };
+        $type eq 'info'  && do { $color = 'darkgreen'; last SWITCH; };
+        $type eq 'warn'  && do { $color = 'orange';    last SWITCH; };
+        $color = 'black';                    # default
+    }
+
+    return ($text, $color);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

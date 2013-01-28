@@ -71,11 +71,10 @@ sub new {
     my $resource = catfile( $self->{_cfg}->cfetc, 'xresource.xrdb' );
     if ($resource) {
         if ( -f $resource ) {
-            $self->log_msg("II: Reading resource from '$resource'");
             $self->optionReadfile( $resource, 'widgetDefault' );
         }
         else {
-            $self->log_msg("II: Resource not found: '$resource'");
+            $self->log_msg("EE: Resource not found: '$resource'");
         }
     }
 
@@ -852,6 +851,7 @@ sub dialog_confirm {
     my ( $self, $message, $details, $icon, $type ) = @_;
 
     my $locale_data = $self->cfg->localize->{dialog};
+    $locale_data->{title} = '';              # reset title
 
     require Tpda3::Tk::Dialog::Message;
     my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);

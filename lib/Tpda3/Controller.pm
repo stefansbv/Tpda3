@@ -158,7 +158,7 @@ sub connect_dialog {
             };
         }
         else {
-            $error = 'User and password required';
+            $error = 'error#User and password are required';
         }
     }
 
@@ -2336,7 +2336,13 @@ sub record_find_execute {
     $params->{table} = $self->scrcfg('rec')->maintable('view'); # use view
     $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
-    my ($ary_ref, $limit) = $self->model->query_records_find($params);
+    my ($ary_ref, $limit);
+    try {
+        ($ary_ref, $limit) = $self->model->query_records_find($params);
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
 
     # return unless defined $ary_ref->[0];     # test if AoA ?
     unless (ref $ary_ref eq 'ARRAY') {
@@ -2403,7 +2409,13 @@ sub record_find_count {
     $params->{table} = $self->scrcfg('rec')->maintable('view');
     $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
 
-    my $record_count = $self->model->query_records_count($params);
+    my $record_count;
+    try {
+        $record_count = $self->model->query_records_count($params);
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
 
     my $msg = $self->localize( 'status', 'count_record' );
     $self->view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
@@ -2573,7 +2585,12 @@ sub get_alternate_data_record {
 
     #-- Data
 
-    $record->{data} = $self->model->query_record( $record->{metadata} );
+    try {
+        $record->{data} = $self->model->query_record( $record->{metadata} );
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
 
     my @rec;
     push @rec, $record;    # rec data at index 0
@@ -3149,7 +3166,14 @@ sub record_load {
     #-  Main table
     my $params = $self->main_table_metadata('qry');
 
-    my $record = $self->model->query_record($params);
+    my $record;
+    try {
+        $record = $self->model->query_record($params);
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
+
     my $textstr = 'Empty record';
     $self->view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
@@ -3161,7 +3185,13 @@ sub record_load {
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
         my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
 
-        my $records = $self->model->table_batch_query($tm_params);
+        my $records;
+        try {
+            $records = $self->model->table_batch_query($tm_params);
+        }
+        catch {
+            $self->catch_db_exceptions($_);
+        };
 
         my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
         $tmx->clear_all();
@@ -3238,7 +3268,12 @@ sub record_delete {
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
-    $self->model->prepare_record_delete( \@record );
+    try {
+        $self->model->prepare_record_delete( \@record );
+    }
+    catch {
+        $self->catch_db_exceptions($_);
+    };
 
     $self->set_app_mode('idle');
 
@@ -3387,7 +3422,13 @@ sub record_save {
 
         return if !$self->if_check_required_data($record);
 
-        $self->model->prepare_record_update($record);
+        try {
+            $self->model->prepare_record_update($record);
+        }
+        catch {
+            $self->catch_db_exceptions($_);
+        };
+
         $self->view->set_status( $self->localize( 'status', 'info-saved' ),
             'ms', 'darkgreen' );
     }
@@ -3956,7 +3997,7 @@ sub screen_set_pk_col {
         $self->{_tblkeys}{$pk_col} = undef;
     }
     else {
-        die 'ERR: Unknown PK column name!';
+        die 'Unknown PK column name!';
     }
 
     return;
@@ -4190,7 +4231,7 @@ sub io_exception {
             $e->throw;    # rethrow the exception
         }
 
-        $locale_data->{title} = 'Error!';
+        $locale_data->{title} = 'IO error';
 
         my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
         $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
@@ -4208,14 +4249,23 @@ sub catch_db_exceptions {
 
     if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::Db::SQL') ) {
-            $details = $e->usermsg .' '. $e->logmsg;
+            $message = $e->usermsg;
+            $details = $e->logmsg;
+            print "Exc isa SQL ($message, $details)\n";
+        }
+        elsif ( $e->isa('Exception::Db::Connect') ) {
+            $message = $e->usermsg;
+            $details = $e->logmsg;
+            print "Exc isa Connect ($message, $details)\n";
         }
         else {
+            print "Exc isa Unknown\n";
             $self->_log->error( $e->message );
             $e->throw;    # rethrow the exception
+            return;
         }
 
-        $locale_data->{title} = 'DB Error!';
+        $locale_data->{title} = 'Database error';
 
         my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
         $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');

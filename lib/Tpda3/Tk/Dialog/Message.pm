@@ -3,8 +3,9 @@ package Tpda3::Tk::Dialog::Message;
 use strict;
 use warnings;
 use utf8;
-
 use Tk::DialogBox;
+
+require Tpda3::Utils;
 
 =head1 NAME
 
@@ -56,6 +57,8 @@ button labels.
 sub message_dialog {
     my ( $self, $view, $message, $details, $icon, $type ) = @_;
 
+    print "Dialog ($message, $details)\n";
+
     my $title    = $self->{dialog}{title};
     my $b_yes    = $self->{dialog}{b_yes};
     my $b_cancel = $self->{dialog}{b_cancel};
@@ -102,7 +105,7 @@ sub message_dialog {
         -expand => 0,
         -fill   => 'x',
         -anchor => 'w',
-        -padx   => 5,
+        -padx   => 15,
         -pady   => 10,
     );
 
@@ -130,7 +133,7 @@ sub message_dialog {
         -height             => 32,
         -highlightthickness => 0,
         -background         => $bg,
-    )->pack;
+    )->pack();
 
     $self->make_icon($view, $w_bitmap, $icon);
 
@@ -141,8 +144,12 @@ sub message_dialog {
 
     #-- label
 
+    my ( $text, $color )
+        = $details ? Tpda3::Utils->parse_message($details) : q{};
+    $color ||= 'black';
+
     my $lmessage = $mid_frame->Label( -text => $message )->pack;
-    my $ldetails = $mid_frame->Label( -text => $details )->pack;
+    my $ldetails = $mid_frame->Label( -text => $text, -fg => $color )->pack;
 
     #---
 
@@ -222,7 +229,7 @@ static unsigned char b2_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};"
     );
 
-    $image{'q'}{$view} = $view->Bitmap(
+    $image{q}{$view} = $view->Bitmap(
         -foreground => 'blue',
         -data       => "#define q_width 32\n#define q_height 32
 static unsigned char q_bits[] = {
@@ -239,7 +246,7 @@ static unsigned char q_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};"
     );
 
-    $image{'i'}{$view} = $view->Bitmap(
+    $image{i}{$view} = $view->Bitmap(
         -foreground => 'blue',
         -data       => "#define i_width 32\n#define i_height 32
 static unsigned char i_bits[] = {
@@ -256,7 +263,7 @@ static unsigned char i_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};"
     );
 
-    $image{'w1'}{$view} = $view->Bitmap(
+    $image{w1}{$view} = $view->Bitmap(
         -foreground => 'black',
         -data       => "#define w1_width 32\n#define w1_height 32
 static unsigned char w1_bits[] = {
@@ -273,7 +280,7 @@ static unsigned char w1_bits[] = {
    0xfc, 0xff, 0xff, 0x1f, 0x00, 0x00, 0x00, 0x00};"
     );
 
-    $image{'w2'}{$view} = $view->Bitmap(
+    $image{w2}{$view} = $view->Bitmap(
         -foreground => 'yellow',
         -data       => "#define w2_width 32\n#define w2_height 32
 static unsigned char w2_bits[] = {
@@ -290,7 +297,7 @@ static unsigned char w2_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};"
     );
 
-    $image{'w3'}{$view} = $view->Bitmap(
+    $image{w3}{$view} = $view->Bitmap(
         -foreground => 'black',
         -data       => "#define w3_width 32\n#define w3_height 32
 static unsigned char w3_bits[] = {
@@ -326,7 +333,7 @@ static unsigned char w3_bits[] = {
         $w_bitmap->create( qw(image 0 0 -anchor nw),
             -image => $image{b2}{$view} );
         $w_bitmap->create( qw(image 0 0 -anchor nw),
-            -image => $image{'q'}{$view} );
+            -image => $image{q}{$view} );
     }
     else {
         $w_bitmap->create( qw(image 0 0 -anchor nw),

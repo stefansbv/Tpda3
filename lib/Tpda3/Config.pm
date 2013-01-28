@@ -11,6 +11,7 @@ use File::ShareDir qw(dist_dir);
 use File::UserConfig;
 use File::Spec::Functions;
 use File::Copy::Recursive ();
+use List::Util qw(first);
 
 require Tpda3::Config::Utils;
 
@@ -56,7 +57,7 @@ sub _new_instance {
     my $self = bless {}, $class;
 
     $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file
-    $args->{default} = 'etc/default.yml'; # and app default config file
+    $args->{cfgdefa} = 'etc/default.yml'; # and app default config file
 
     print "Loading configuration files ...\n" if $args->{verbose};
 
@@ -97,7 +98,7 @@ sub init_configurations {
         user    => $args->{user}, # make accessors for user
         pass    => $args->{pass}, # and pass
         verbose => $args->{verbose},
-        default => catfile( $configpath, $args->{default} ),
+        default => catfile( $configpath, $args->{cfgdefa} ),
     };
 
     $self->make_accessors($configpath_hr);
@@ -110,12 +111,18 @@ sub init_configurations {
     # exists unless list or init argument provied on the CLI
     $args->{cfname} = $self->get_default_mnemonic()
         unless ( $args->{cfname}
-        or defined $args->{list}
-        or defined $args->{init} );
+            or defined( $args->{list} )
+            or defined( $args->{init} )
+            or $args->{default} );
+
+    my $mnemonic = $args->{cfname}
+        ? q{ } x ( 17 - length( $args->{cfname} ) ) . $args->{cfname}
+        : ( q{-} x 17 );
 
     $self->{_log} = get_logger();
     $self->{_log}->info('-------------------------');
     $self->{_log}->info('*** NEW SESSION BEGIN ***');
+    $self->{_log}->info("*   $mnemonic   *");
 
     return;
 }
@@ -150,8 +157,20 @@ Save the default mnemonic in the configs.
 sub set_default_mnemonic {
     my ($self, $arg) = @_;
 
+    # Check mnemonic
+    my $mnemonics = $self->get_mnemonics();
+    my $mnemonic_exist = first { $_ eq $arg } @{$mnemonics};
+    unless ($mnemonic_exist) {
+        print "Mnemonic '$arg' doesn't exists.\n";
+        return;
+    }
+
+    print "Setting default to: '$arg'...\r";
+
     Tpda3::Config::Utils->save_default_yaml(
         $self->default, 'mnemonic', $arg );
+
+    print "Setting default to: '$arg'... done\n";
 
     return;
 }
@@ -586,8 +605,10 @@ sub configdir_populate {
     unless ( -d $sharedir ) {
         # Funny algorithm to get the distribution name :)
         my $distname = $cfname =~ m{\d} ? uc $cfname : ucfirst $cfname;
-        $sharedir = dist_dir( 'Tpda3-' . $distname );
-        $sharedir = catdir( $sharedir, 'apps', $cfname );
+        if ($distname) {
+            $sharedir = dist_dir( 'Tpda3-' . $distname );
+            $sharedir = catdir( $sharedir, 'apps', $cfname );
+        }
     }
 
     # Fallback to the module source dir in CWD

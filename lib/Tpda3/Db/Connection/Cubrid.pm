@@ -78,7 +78,7 @@ sub db_connect {
         $dsn, $user, $pass,
         {   FetchHashKeyName  => 'NAME_lc',
             AutoCommit        => 1,
-            RaiseError        => 0,
+            RaiseError        => 1,
             PrintError        => 0,
             LongReadLen       => 524288,
             HandleError       => sub { $self->handle_error() },
@@ -140,6 +140,8 @@ sub parse_error {
         : $cb =~ m/Cannot communicate with server/smi        ? "servererr"
         : $cb =~ m/User ($RE{quoted}) is invalid/smi         ? "username:$1"
         : $cb =~ m/Incorrect or missing password/smi         ? "password"
+        : $cb =~ m/Missing value for attribute ($RE{quoted}) with the NOT NULL constraint/smi
+                                                             ? "attrib:$1"
         :                                                      "unknown"
         ;
 
@@ -152,8 +154,9 @@ sub parse_error {
         driver     => "fatal#Database driver $name not found",
         serverdb   => "fatal#Database not available $name",
         servererr  => "fatal#Server not available",
-        username   => "warn#User $name is invalid",
-        password   => "warn#Incorrect or missing password",
+        username   => "error#User $name is invalid",
+        attrib     => "error#Attribute $name error (NULL)",
+        password   => "error#Incorrect or missing password",
     };
 
     my $message;

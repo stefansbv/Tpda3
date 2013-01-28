@@ -6,6 +6,7 @@ use warnings;
 use Tk;
 
 require Tpda3::Config;
+require Tpda3::Utils;
 
 =head1 NAME
 
@@ -115,7 +116,8 @@ sub login {
 
     #-- Message
 
-    my ( $text, $color ) = $message ? $self->parse_message($message) : q{};
+    my ( $text, $color )
+        = $message ? Tpda3::Utils->parse_message($message) : q{};
     $color ||= 'black';
 
     my $lmessage = $self->{dlg}->Label(
@@ -158,22 +160,6 @@ sub login {
     }
 
     return $return_choice;
-}
-
-sub parse_message {
-    my ($self, $text) = @_;
-
-    (my $type, $text) = split /#/, $text, 2;
-
-    my $color;
-  SWITCH: {
-        $type eq 'error' && do { $color = 'darkred';   last SWITCH; };
-        $type eq 'info'  && do { $color = 'darkgreen'; last SWITCH; };
-        $type eq 'warn'  && do { $color = 'orange';    last SWITCH; };
-        $color = 'red';                      # default
-    }
-
-    return ($text, $color);
 }
 
 1;    # End of Tpda3::Tk::Dialog::Login

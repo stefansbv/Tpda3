@@ -38,12 +38,22 @@ B<Tpda3> is a classic desktop database application framework.
 
 =head1 DESCRIPTION
 
-B<Tpda3> (Tiny Perl Database Application 3) is the successor of Tpda,
-a classic desktop database application framework, written in Perl,
-that aims to follow the Model View Controller (MVC) architecture.
+Tpda3 is a classic desktop database application framework and
+run-time, written in Perl.  The graphical user interface is based on
+PerlTk. It supports the CUBRID, Firebird, PostgreSQL and SQLite RDBMS.
 
-Tpda3 has PerlTk and wxPerl support for the GUI part and Firebird,
-PostgreSQL and (limited) SQLite support for the database.
+There is also an early, experimental, graphical user interface based
+on wxPerl.
+
+B<Tpda3> should work on any OS where Perl and the required
+dependencies can be installed, but currently it's only tested on
+GNU/Linux and Windows (XP and 7).  Feedback and patches for other OSs
+is welcome.
+
+Tpda3 is the successor of TPDA and, hopefully, has a much better API
+implementation, Tpda3 follows the Model View Controller (MVC)
+architecture pattern.  The look and the user interface functionality
+of Tpda3 is almost the same as of TPDA, with some minor improvements.
 
 This project has two components, the B<Tpda3> I<runtime> and the
 B<Tpda3> I<applications>.
@@ -173,6 +183,7 @@ community behind this great projects:
  Firebird (and Flamerobin)
  Postgresql
  SQLite
+ CUBRID
 
 Thank You!
 
