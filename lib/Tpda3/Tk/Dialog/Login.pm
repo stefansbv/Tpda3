@@ -71,7 +71,7 @@ sub login {
     $frame->pack(
         -padx  => 10,
         -pady  => 10,
-        -ipadx => 5,
+        -ipadx => 7,
         -ipady => 5,
     );
 
@@ -122,11 +122,11 @@ sub login {
 
     my $lmessage = $self->{dlg}->Label(
         -text       => $text,
-        -width      => 43,
+        -width      => 44,
         -relief     => 'groove',
         -foreground => $color,
     )->pack(
-        -padx => 10,
+        -padx => 0,
         -pady => 0,
     );
 
@@ -149,11 +149,9 @@ sub login {
         my $user = $euser->get;
         my $pass = $epass->get;
 
-        if ( $user && $pass ) {
-            my $cfg = Tpda3::Config->instance();
-            $cfg->user($user);
-            $cfg->pass($pass);
-        }
+        my $cfg = Tpda3::Config->instance();
+        $cfg->user($user) if $user;
+        $cfg->pass($pass) if $pass;
     }
     else {
         $return_choice = 'cancel';

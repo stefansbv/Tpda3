@@ -157,14 +157,13 @@ sub parse_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        driver      => "fatal#Database driver $name not found",
-        nomessage   => "weird#Error without message",
-        dbnotfound  => "fatal#Database $name not found",
-        relnotfound => "fatal#Relation $name not found",
+        driver      => "error#Database driver $name not found",
+        dbnotfound  => "error#Database $name not found",
+        relnotfound => "error#Relation $name not found",
         userpass    => "error#Authentication failed",
-        nethost     => "fatal#Network problem: host $name",
-        network     => "fatal#Network problem",
-        unknown     => "fatal#Database error",
+        nethost     => "error#Network problem: host $name",
+        network     => "error#Network problem",
+        unknown     => "error#Database error",
         notconn     => "error#Not connected",
     };
 

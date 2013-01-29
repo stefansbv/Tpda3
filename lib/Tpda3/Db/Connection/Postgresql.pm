@@ -162,15 +162,14 @@ sub parse_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        nomessage   => "weird#Error without message",
-        dbnotfound  => "fatal#Database $name does not exists",
-        relnotfound => "fatal#Relation $name does not exists",
+        dbnotfound  => "error#Database $name does not exists",
+        relnotfound => "error#Relation $name does not exists",
         password    => "info#Authentication failed for $name",
         password    => "info#Authentication failed, password?",
         username    => "error#Wrong user name: $name",
-        network     => "fatal#Network problem",
-        unknown     => "fatal#Database error",
-        servererror => "fatal#Server not available",
+        network     => "error#Network problem",
+        unknown     => "error#Database error",
+        servererror => "error#Server not available",
         duplicate   => "error#Duplicate $name",
         colnotfound => "error#Column not found $name",
         checkconstr => "error#Check: $name",

@@ -151,9 +151,9 @@ sub parse_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        driver     => "fatal#Database driver $name not found",
-        serverdb   => "fatal#Database not available $name",
-        servererr  => "fatal#Server not available",
+        driver     => "error#Database driver $name not found",
+        serverdb   => "error#Database not available $name",
+        servererr  => "error#Server not available",
         username   => "error#User $name is invalid",
         attrib     => "error#Attribute $name error (NULL)",
         password   => "error#Incorrect or missing password",
