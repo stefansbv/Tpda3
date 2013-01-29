@@ -1,0 +1,28 @@
+[OPTIONS]
+Compatibility=1.1
+Full-text search=Yes
+Contents file=guide.hhc
+Compiled file=guide.chm
+Default Window=manuaHelp
+Default topic=contents.html
+Index file=guide.hhk
+Title=Tpda3 - User guide
+
+[WINDOWS]
+manuaHelp=,"guide.hhc","guide.hhk","contents.html",,,,,,0x2420,,0x380e,,,,,0,,,
+
+[FILES]
+contents.html
+intro.html
+inreg.html
+caut.html
+adaug.html
+sterg.html
+
+[ALIAS]
+IDH_Contents=contents.html
+IDH_Guide=ghid.html
+
+[MAP]
+#define IDH_Contents  50
+#define IDH_Ghid     100
