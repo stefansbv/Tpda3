@@ -238,7 +238,7 @@ sub about {
     my $LICENSE = Tpda3::Config::Utils->get_license();
 
     # Get application version
-    my $app_class = $self->fg->application_class();
+    my $app_class = $self->cfg->application_class();
     ( my $app_file = "$app_class.pm" ) =~ s{::}{/}g;
     my ( $APP_VER, $APP_NAME ) = ( '', '' );
     eval {
