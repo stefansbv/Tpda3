@@ -155,22 +155,29 @@ Save the default mnemonic in the configs.
 =cut
 
 sub set_default_mnemonic {
-    my ($self, $arg) = @_;
+    my ($self, $mnemonic) = @_;
 
-    # Check mnemonic
+    #- Check
+
     my $mnemonics = $self->get_mnemonics();
-    my $mnemonic_exist = first { $_ eq $arg } @{$mnemonics};
+    my $mnemonic_exist = first { $_ eq $mnemonic } @{$mnemonics};
     unless ($mnemonic_exist) {
-        print "Mnemonic '$arg' doesn't exists.\n";
-        return;
+        die "Mnemonic '$mnemonic' doesn't exists.\n";
+    }
+    unless ($self->validate_config($mnemonic)) {
+        die "Invalid menmonic: $mnemonic\n";
     }
 
-    print "Setting default to: '$arg'...\r";
+    #- Set
 
-    Tpda3::Config::Utils->save_default_yaml(
-        $self->default, 'mnemonic', $arg );
+    print "Setting default to: '$mnemonic'...\r";
 
-    print "Setting default to: '$arg'... done\n";
+    my $section = {};
+    $section->{mnemonic} = $mnemonic;
+
+    Tpda3::Config::Utils->save_yaml( $self->default, $section );
+
+    print "Setting default to: '$mnemonic'... done\n";
 
     return;
 }
@@ -214,9 +221,11 @@ sub config_main_load {
     my $maincfg = $self->config_data_from($main_fqn);
 
     my $main_hr = {
+        cfmainyml => $main_fqn,
         cfiface   => $maincfg->{interface},
         cfrun     => $maincfg->{runtime},
         cfextapps => $maincfg->{externalapps},
+        cfresico  => $maincfg->{resource}{icons},
         cfico     => catdir( $self->cfpath, $maincfg->{resource}{icons} ),
     };
 
@@ -473,8 +482,10 @@ Save instance configurations.  Only window geometry configuration.
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
 
-    Tpda3::Config::Utils->save_instance_yaml( $self->instance_file, $key,
-        $value );
+    my $arg = {};
+    $arg->{geometry}{$key} = $value;
+
+    Tpda3::Config::Utils->save_yaml( $self->instance_file, $arg );
 
     return;
 }

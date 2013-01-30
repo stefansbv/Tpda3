@@ -7,7 +7,6 @@ use Tk;
 use Tk::widgets qw(StatusBar LabFrame JComboBox);
 
 require Tpda3::Config;
-require Tpda3::Tk::TB;
 require Tpda3::Tk::TM;
 
 =head1 NAME
@@ -75,59 +74,13 @@ sub show_app_list {
 
     $self->{tlw} = $view->Toplevel();
     $self->{tlw}->title('AppList');
-    # $self->{tlw}->geometry('430x520');
+    #$self->{tlw}->geometry('430x420');
 
     my $f1d = 110;              # distance from left
 
     #-- Key bindings
 
     $self->{tlw}->bind( '<Escape>', sub { $self->dlg_exit } );
-
-    #- Toolbar frame
-
-    my $tbf0 = $self->{tlw}->Frame();
-    $tbf0->pack(
-        -side   => 'top',
-        -anchor => 'nw',
-        -fill   => 'x',
-    );
-
-    my $bg = $self->{tlw}->cget('-background');
-
-    # Frame for main toolbar
-    my $tbf1 = $tbf0->Frame();
-    $tbf1->pack( -side => 'left', -anchor => 'w' );
-
-    #-- ToolBar
-
-    $self->{tb4} = $tbf1->TB();
-
-    my $attribs = {
-        'tb4pr' => {
-            'tooltip' => 'Save as default',
-            'icon'    => 'filesave16',
-            'sep'     => 'none',
-            'help'    => 'Save as default',
-            'method'  => sub { $self->save_as_default(); },
-            'type'    => '_item_normal',
-            'id'      => '20101',
-        },
-        'tb4qt' => {
-            'tooltip' => 'Close',
-            'icon'    => 'actexit16',
-            'sep'     => 'after',
-            'help'    => 'Quit',
-            'method'  => sub { $self->dlg_exit; },
-            'type'    => '_item_normal',
-            'id'      => '20102',
-        }
-    };
-
-    my $toolbars = [ 'tb4pr', 'tb4qt', ];
-
-    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
-
-    #-- end ToolBar
 
     #-- StatusBar
 
@@ -250,9 +203,10 @@ sub show_app_list {
 
     #- ComboBox choices
     my $choices = [
-        { -name => 'PostgreSQL', -value => 'pg', -selected => 1 },
-        { -name => 'Firebird',   -value => 'fb', },
-        { -name => 'SQLite',     -value => 'si', },
+        { -name => 'CUBRID',     -value => 'cubrid', },
+        { -name => 'Firebird',   -value => 'firebird', },
+        { -name => 'PostgreSQL', -value => 'postgresql', },
+        { -name => 'SQLite',     -value => 'sqlite', },
     ];
 
     my $ldriver = $frm_middle->Label( -text => 'Driver', );
@@ -263,15 +217,14 @@ sub show_app_list {
     );
 
     my $selected;
-    # my $cdriver = $frm_middle->JComboBox(
-    #     -entrywidth   => 25,
-    #     -textvariable => \$selected,
-    #     -choices      => $choices,
-    # );
-    my $edriver = $frm_middle->Entry(
-        -width => 36,
+    my $cdriver = $frm_middle->JComboBox(
+        -entrywidth         => 15,
+        -textvariable       => \$selected,
+        -choices            => $choices,
+        -state              => 'disabled',
+        -disabledforeground => 'black',
     );
-    $edriver->form(
+    $cdriver->form(
         -top  => [ '&', $ldriver, 0 ],
         -left => [ %0, ($f1d + 1) ],
     );
@@ -285,7 +238,9 @@ sub show_app_list {
         -padleft => 10,
     );
     my $ehost = $frm_middle->Entry(
-        -width => 36,
+        -width              => 36,
+        -state              => 'disabled',
+        -disabledforeground => 'black',
     );
     $ehost->form(
         -top  => [ '&', $lhost, 0 ],
@@ -301,7 +256,9 @@ sub show_app_list {
         -padleft => 10,
     );
     my $edbname = $frm_middle->Entry(
-        -width => 36,
+        -width              => 36,
+        -state              => 'disabled',
+        -disabledforeground => 'black',
     );
     $edbname->form(
         -top  => [ '&', $ldbname, 0 ],
@@ -317,19 +274,45 @@ sub show_app_list {
         -padleft => 10,
     );
     my $eport = $frm_middle->Entry(
-        -width => 5,
+        -width              => 5,
+        -state              => 'disabled',
+        -disabledforeground => 'black',
     );
     $eport->form(
         -top  => [ '&', $lport, 0 ],
         -left => [ %0, $f1d ],
     );
 
+    #-  Frame bottom - Buttons
+
+    my $frm_bottom = $mf->Frame();
+    $frm_bottom->pack(
+        -expand => 0,
+        -fill   => 'both',
+    );
+
+    my $test_b = $frm_bottom->Button(
+        -text    => 'Set',
+        -width   => 10,
+        -command => sub { $self->save_as_default() },
+    );
+    $test_b->pack( -side => 'left', -padx => 20, -pady => 5 );
+
+    my $close_b = $frm_bottom->Button(
+        -text    => 'Close',
+        -width   => 10,
+        -command => sub { $self->dlg_exit },
+    );
+    $close_b->pack( -side => 'right', -padx => 20, -pady => 5 );
+
+    # End
+
     # Entry objects
     $self->{controls} = {
-        driver => [ undef, $edriver ],
-        port   => [ undef, $eport ],
-        dbname => [ undef, $edbname ],
-        host   => [ undef, $ehost ],
+        driver => [ \$selected, $cdriver ],
+        port   => [ undef,      $eport ],
+        dbname => [ undef,      $edbname ],
+        host   => [ undef,      $ehost ],
     };
 
     $self->load_mnemonics();
@@ -418,21 +401,32 @@ Load the selected mnemonic details in the controls.
 =cut
 
 sub load_mnemonic_details_for {
-    my ($self, $rec) = @_;
+    my ( $self, $rec ) = @_;
 
     my $conn_ref = $self->cfg->get_details_for( $rec->{name} );
 
     return unless ref $conn_ref;
 
     #- Write data to the controls
-    foreach my $field ( keys %{$self->{controls} } ) {
-        my $start_idx = 0;
+    foreach my $field ( keys %{ $self->{controls} } ) {
         my $value = $conn_ref->{connection}{$field};
-        $self->{controls}{$field}[1]->delete( $start_idx, 'end' );
-        $self->{controls}{$field}[1]->insert( $start_idx, $value ) if $value;
+        if ( defined $self->{controls}{$field}[0] ) {
+            # JComboBox
+            $self->{controls}{$field}[1]
+                ->setSelected( $value, -type => 'value' );
+        }
+        else {
+            # Entry
+            my $start_idx = 0;
+            $self->{controls}{$field}[1]->configure( -state => 'normal');
+            $self->{controls}{$field}[1]->delete( $start_idx, 'end' );
+            $self->{controls}{$field}[1]->insert( $start_idx, $value )
+                if $value;
+            $self->{controls}{$field}[1]->configure( -state => 'disabled');
+        }
     }
 
-    $self->_set_status(''); # clear
+    $self->_set_status('');    # clear
 
     return;
 }
@@ -456,15 +450,14 @@ sub save_as_default {
 
 =head2 _set_status
 
-Display message in the status bar.  Colour name can also be passed to
-the method in the message string separated by a # char.
+Display message in the status bar.
 
 =cut
 
 sub _set_status {
     my ( $self, $text, $color ) = @_;
 
-    my $sb_label = $self->_get_statusbar();
+    my $sb_label = $self->{_sb}{'ms'};
 
     return unless ( $sb_label and $sb_label->isa('Tk::Label') );
 
@@ -473,18 +466,6 @@ sub _set_status {
     $sb_label->configure( -foreground => $color ) if defined $color;
 
     return;
-}
-
-=head2 _get_statusbar
-
-Return the status bar handler
-
-=cut
-
-sub _get_statusbar {
-    my $self = shift;
-
-    return $self->{_sb}{'ms'};
 }
 
 =head2 dlg_exit

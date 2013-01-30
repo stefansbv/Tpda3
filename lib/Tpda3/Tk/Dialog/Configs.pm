@@ -8,7 +8,7 @@ use Tk;
 use File::Spec;
 
 require Tpda3::Config;
-require Tpda3::Tk::TB;
+require Tpda3::Config::Utils;
 
 =head1 NAME
 
@@ -103,68 +103,56 @@ sub _init {
     return;
 }
 
-=head2 make_toolbar
-
-Create a tool bar.
-
-=cut
-
-sub make_toolbar {
+sub save_as_default {
     my $self = shift;
 
-    #- Toolbar frame
+    $self->_set_status('');    # clear
 
-    my $tbf0 = $self->{tlw}->Frame();
-    $tbf0->pack(
-        -side   => 'top',
-        -anchor => 'nw',
-        -fill   => 'x',
-    );
+    my $config_ref = {};
 
-    my $bg = $self->{tlw}->cget('-background');
+    #- External apps section in main.yml
 
-    # Frame for main toolbar
-    my $tbf1 = $tbf0->Frame();
-    $tbf1->pack( -side => 'left', -anchor => 'w' );
+    my $appscfg_ref = $self->cfg->cfextapps;
 
-    #-- ToolBar
+    foreach my $field (keys %{$appscfg_ref} ) {
+        my $value = $self->{controls}{$field}[1]->get();
+        $config_ref->{externalapps}{$field}{exe_path} = $value;
+    }
 
-    $self->{tb4} = $tbf1->TB();
+    #- Runtime section in main.yml
 
-    my $attribs = {
-        'tb4pr' => {
-            'tooltip' => 'Save configration',
-            'icon'    => 'filesave16',
-            'sep'     => 'none',
-            'help'    => 'Save configration',
-            'method'  => sub { $self->save_as_default(); },
-            'type'    => '_item_normal',
-            'id'      => '20101',
-        },
-        'tb4qt' => {
-            'tooltip' => 'Close',
-            'icon'    => 'actexit16',
-            'sep'     => 'after',
-            'help'    => 'Quit',
-            'method'  => sub { $self->dlg_exit; },
-            'type'    => '_item_normal',
-            'id'      => '20102',
-        }
-    };
+    my $runcfg_ref = $self->cfg->cfrun;
 
-    my $toolbars = [ 'tb4pr', 'tb4qt', ];
+    foreach my $field (keys %{$runcfg_ref} ) {
+        my $value = $self->{controls}{$field}[1]->get();
+        $config_ref->{runtime}{docspath} = $value;
+    }
 
-    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
+    #- The rest
+
+    $config_ref->{interface} = $self->cfg->cfiface;
+    $config_ref->{resource}{icons} = $self->cfg->cfresico;
+
+    my $main_yml = $self->cfg->cfmainyml;
+
+    $self->backup_main($main_yml);
+
+    #print "Updating $main_yml...\n";
+
+    Tpda3::Config::Utils->save_yaml( $main_yml, $config_ref );
+
+    $self->_set_status('Configuration updated');
 
     return;
 }
 
-sub save_as_default {
-    my $self = shift;
+sub backup_main {
+    my ($self, $file) = @_;
 
-    foreach my $field ( keys %{ $self->{controls} } ) {
-        print " $field\n";
-    }
+    my $old = $file;
+    my $bak = "$file.orig";
+
+    rename($old, $bak) or die "can't rename $old to $bak: $!";
 
     return;
 }
@@ -195,8 +183,7 @@ sub make_statusbar {
 
 =head2 _set_status
 
-Display message in the status bar.  Colour name can also be passed to
-the method in the message string separated by a # char.
+Display message in the status bar.
 
 =cut
 
@@ -226,7 +213,6 @@ sub show_cfg_dialog {
     $self->{view} = $view;
     $self->{tlw}  = $view->Toplevel();
     $self->{tlw}->title('Configs');
-    #$self->{tlw}->geometry('480x520');
 
     $self->{bg} = $view->cget('-background');
     my $f1d = 135;              # distance from left
@@ -235,7 +221,6 @@ sub show_cfg_dialog {
 
     $self->{tlw}->bind( '<Escape>', sub { $self->dlg_exit } );
 
-    $self->make_toolbar();
     $self->make_statusbar();
 
     #- Main frame
@@ -336,15 +321,15 @@ sub show_cfg_dialog {
         -left => [ $elatex, 3 ],
     );
 
-    #-  Frame bottom - Entries
+    #-  Frame middle - Entries
 
-    my $frm_bottom = $mf->LabFrame(
+    my $frm_middle = $mf->LabFrame(
         -foreground => 'blue',
         -label      => 'Other paths',
         -labelside  => 'acrosstop'
     );
-    $frm_bottom->pack(
-        -side   => 'bottom',
+    $frm_middle->pack(
+        #-side   => 'bottom',
         -expand => 1,
         -fill   => 'x',
         -ipadx  => 3,
@@ -352,13 +337,13 @@ sub show_cfg_dialog {
     );
 
     #-- docspath
-    my $ldocspath = $frm_bottom->Label( -text => 'Documents output' );
+    my $ldocspath = $frm_middle->Label( -text => 'Documents output' );
     $ldocspath->form(
         -top     => [ %0, 0 ],
         -left    => [ %0, 0 ],
         -padleft => 5,
     );
-    my $edocspath = $frm_bottom->MEntry(
+    my $edocspath = $frm_middle->MEntry(
         -width              => 36,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -369,13 +354,37 @@ sub show_cfg_dialog {
     );
 
     #-- button
-    $frm_bottom->Button(
+    $frm_middle->Button(
         -image   => 'folderopen16',
         -command => sub { $self->update_value('docspath', 'path') },
     )->form(
         -top  => [ '&', $ldocspath, 0 ],
         -left => [ $edocspath, 3 ],
     );
+
+    #-  Frame bottom - Buttons
+
+    my $frm_bottom = $mf->Frame();
+    $frm_bottom->pack(
+        -expand => 0,
+        -fill   => 'both',
+    );
+
+    my $test_b = $frm_bottom->Button(
+        -text    => 'Set',
+        -width   => 10,
+        -command => sub { $self->save_as_default() },
+    );
+    $test_b->pack( -side => 'left', -padx => 20, -pady => 5 );
+
+    my $close_b = $frm_bottom->Button(
+        -text    => 'Close',
+        -width   => 10,
+        -command => sub { $self->dlg_exit },
+    );
+    $close_b->pack( -side => 'right', -padx => 20, -pady => 5 );
+
+    # End
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
@@ -524,13 +533,12 @@ sub update_path_field {
         warn "Error: $@";
     }
 
-    my $color;
-    if ($type eq 'path') {
-        $color = -d $value ? 'darkgreen' : 'darkred';
-    }
-    else {
-        $color = -f $value ? 'darkgreen' : 'darkred';
-    }
+    # Check path and set color
+    my $color
+        = $type eq 'path'
+        ? ( -d $value ? 'darkgreen' : 'darkred' )
+        : ( -f $value ? 'darkgreen' : 'darkred' );
+
     $self->{controls}{$field}[1]->configure( -fg => $color );
 
     return;

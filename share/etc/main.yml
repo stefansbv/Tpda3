@@ -1,6 +1,6 @@
 # tpda3
-# Interface configuration
-# Plain an simple localisation support.
+# Main configuration
+#  with plain an simple localisation support.
 ---
 interface:
   localize: etc/localisation/english.conf

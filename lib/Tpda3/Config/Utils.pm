@@ -119,36 +119,21 @@ sub find_files {
     return \@justnames;
 }
 
-=head2 save_instance_yaml
+=head2 save_yaml
 
-Save the instance config file.
+Save a yaml  file with the provided datastructure.
 
 =cut
 
-sub save_instance_yaml {
-    my ( $self, $yaml_file, $key, $value ) = @_;
+sub save_yaml {
+    my ( $self, $yaml_file, $args ) = @_;
 
     my $yaml
         = ( -f $yaml_file )
         ? YAML::Tiny->read($yaml_file)
         : YAML::Tiny->new;
 
-    $yaml->[0]->{geometry}{$key} = $value;    # add new key => value
-
-    $yaml->write($yaml_file);
-
-    return;
-}
-
-sub save_default_yaml {
-    my ( $self, $yaml_file, $key, $value ) = @_;
-
-    my $yaml
-        = ( -f $yaml_file )
-        ? YAML::Tiny->read($yaml_file)
-        : YAML::Tiny->new;
-
-    $yaml->[0]->{$key} = $value;    # add new key => value
+    $yaml->[0] = $args;
 
     $yaml->write($yaml_file);
 
