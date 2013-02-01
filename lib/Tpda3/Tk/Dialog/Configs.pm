@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 
 use Tk;
+use File::Copy;
 use File::Spec;
 
 require Tpda3::Config;
@@ -110,49 +111,64 @@ sub save_as_default {
 
     my $config_ref = {};
 
+    $self->backup_main();
+
     #- External apps section in main.yml
 
     my $appscfg_ref = $self->cfg->cfextapps;
 
-    foreach my $field (keys %{$appscfg_ref} ) {
+    foreach my $field ( keys %{$appscfg_ref} ) {
         my $value = $self->{controls}{$field}[1]->get();
-        $config_ref->{externalapps}{$field}{exe_path} = $value;
+        $self->save_yaml_main( 'externalapps', $field,
+            { 'exe_path', $value } )
+            if $value;
     }
 
     #- Runtime section in main.yml
 
     my $runcfg_ref = $self->cfg->cfrun;
 
-    foreach my $field (keys %{$runcfg_ref} ) {
+    foreach my $field ( keys %{$runcfg_ref} ) {
         my $value = $self->{controls}{$field}[1]->get();
-        $config_ref->{runtime}{docspath} = $value;
+        $self->save_yaml_main( 'runtime', 'docspath', $value )
+            if $value;
     }
 
-    #- The rest
+    return;
+}
 
-    $config_ref->{interface} = $self->cfg->cfiface;
-    $config_ref->{resource}{icons} = $self->cfg->cfresico;
+sub save_yaml_main {
+    my ( $self, $section, $key, $value ) = @_;
 
     my $main_yml = $self->cfg->cfmainyml;
 
-    $self->backup_main($main_yml);
+    print "Updating $main_yml...\n";
 
-    #print "Updating $main_yml...\n";
-
-    Tpda3::Config::Utils->save_yaml( $main_yml, $config_ref );
+    Tpda3::Config::Utils->save_yaml( $main_yml, $section, $key, $value );
 
     $self->_set_status('Configuration updated');
 
     return;
 }
 
+=head2 backup_main
+
+Make a backup file named I<main.yml.orig> if it doesn't exists yet,
+else make I<main.yml.old>.
+
+=cut
+
 sub backup_main {
-    my ($self, $file) = @_;
+    my $self = shift;
 
-    my $old = $file;
-    my $bak = "$file.orig";
+    my $yml_file = $self->cfg->cfmainyml;
 
-    rename($old, $bak) or die "can't rename $old to $bak: $!";
+    my $ext = (-f "$yml_file.orig") ? 'old' : 'orig';
+
+    my $bak_file = "$yml_file.$ext";
+
+    copy( $yml_file, $bak_file )
+        or die "can't copy $yml_file to $bak_file: $!";
 
     return;
 }

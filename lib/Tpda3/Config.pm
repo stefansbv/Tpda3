@@ -172,10 +172,8 @@ sub set_default_mnemonic {
 
     print "Setting default to: '$mnemonic'...\r";
 
-    my $section = {};
-    $section->{mnemonic} = $mnemonic;
-
-    Tpda3::Config::Utils->save_yaml( $self->default, $section );
+    Tpda3::Config::Utils->save_yaml( $self->default, 'default', 'mnemonic',
+        $mnemonic );
 
     print "Setting default to: '$mnemonic'... done\n";
 
@@ -225,7 +223,6 @@ sub config_main_load {
         cfiface   => $maincfg->{interface},
         cfrun     => $maincfg->{runtime},
         cfextapps => $maincfg->{externalapps},
-        cfresico  => $maincfg->{resource}{icons},
         cfico     => catdir( $self->cfpath, $maincfg->{resource}{icons} ),
     };
 
@@ -482,10 +479,8 @@ Save instance configurations.  Only window geometry configuration.
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
 
-    my $arg = {};
-    $arg->{geometry}{$key} = $value;
-
-    Tpda3::Config::Utils->save_yaml( $self->instance_file, $arg );
+    Tpda3::Config::Utils->save_yaml( $self->instance_file,
+        'geometry', $key, $value );
 
     return;
 }

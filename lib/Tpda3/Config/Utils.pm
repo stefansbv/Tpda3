@@ -121,21 +121,27 @@ sub find_files {
 
 =head2 save_yaml
 
-Save a yaml  file with the provided datastructure.
+Read a YAML file or create a new one if it doesn't exists. Alter the
+data structure using the provided parameters. Save the YAML file.
+
+For deeper nested data structures the B<value> parameter can be a hash
+reference.
 
 =cut
 
 sub save_yaml {
-    my ( $self, $yaml_file, $args ) = @_;
+    my ( $self, $yaml_file, $section, $key, $value ) = @_;
 
     my $yaml
         = ( -f $yaml_file )
         ? YAML::Tiny->read($yaml_file)
         : YAML::Tiny->new;
 
-    $yaml->[0] = $args;
+    $yaml->[0]->{$section}{$key} = $value;
 
     $yaml->write($yaml_file);
+
+    print "'$yaml_file' created.\n";
 
     return;
 }
