@@ -104,12 +104,17 @@ sub _init {
     return;
 }
 
+=head2 save_as_default
+
+Backup the I<main.yml> configuration file.  Write the current content
+of the widgets to the configuration file.
+
+=cut
+
 sub save_as_default {
     my $self = shift;
 
     $self->_set_status('');    # clear
-
-    my $config_ref = {};
 
     $self->backup_main();
 
@@ -134,19 +139,23 @@ sub save_as_default {
             if $value;
     }
 
+    $self->_set_status('Configuration updated');
+
     return;
 }
+
+=head2 save_yaml_main
+
+Create or update the I<main.yml> configuration file.
+
+=cut
 
 sub save_yaml_main {
     my ( $self, $section, $key, $value ) = @_;
 
     my $main_yml = $self->cfg->cfmainyml;
 
-    print "Updating $main_yml...\n";
-
     Tpda3::Config::Utils->save_yaml( $main_yml, $section, $key, $value );
-
-    $self->_set_status('Configuration updated');
 
     return;
 }
@@ -415,6 +424,12 @@ sub show_cfg_dialog {
     return;
 }
 
+=head2 load_config
+
+Load the current configuration values into the widgets.
+
+=cut
+
 sub load_config {
     my $self = shift;
 
@@ -532,6 +547,12 @@ sub get_init_dir {
     }
 }
 
+=head2 update_path_field
+
+Write into the path widget with colors.
+
+=cut
+
 sub update_path_field {
     my ($self, $field, $value, $type) = @_;
 
@@ -549,7 +570,6 @@ sub update_path_field {
         warn "Error: $@";
     }
 
-    # Check path and set color
     my $color
         = $type eq 'path'
         ? ( -d $value ? 'darkgreen' : 'darkred' )
