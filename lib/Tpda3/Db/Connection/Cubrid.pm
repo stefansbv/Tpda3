@@ -82,7 +82,6 @@ sub db_connect {
             PrintError        => 0,
             LongReadLen       => 524288,
             HandleError       => sub { $self->handle_error() },
-            #mysql_enable_utf8 => 1,
         }
     );
 
@@ -151,7 +150,7 @@ sub parse_error {
     $name = $name ? $name : '';
 
     my $translations = {
-        driver     => "error#Database driver $name not found",
+        driver     => "error#Database driver for CUBRID not found",
         serverdb   => "error#Database not available $name",
         servererr  => "error#Server not available",
         username   => "error#User $name is invalid",
@@ -164,7 +163,7 @@ sub parse_error {
         $message = $translations->{$type};
     }
     else {
-        $log->error('EE: Translation error for: $type!');
+        $log->error("EE: Translation error for: $type!");
     }
 
     return $message;

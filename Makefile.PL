@@ -22,6 +22,7 @@ requires 'Class::Unload'         => '0';
 requires 'Class::Singleton'      => '1.4';
 requires 'Class::Accessor'       => '0';
 requires 'Data::Compare'         => '0';
+requires 'Data::Diver'           => '0';
 requires 'Try::Tiny'             => '0.07';
 requires 'Exception::Base'       => '0.2401';
 requires 'SQL::Abstract'         => '1.68';

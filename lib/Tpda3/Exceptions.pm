@@ -25,6 +25,11 @@ use Exception::Base
         isa               => 'Exception::IO',
         has               => [qw( filename )],
         string_attributes => [qw( message filename )],
+    },
+    'Exception::IO::SystemCmd' => {
+        isa               => 'Exception::IO',
+        has               => [qw( usermsg logmsg )],
+        string_attributes => [qw( usermsg logmsg )],
     };
 
 

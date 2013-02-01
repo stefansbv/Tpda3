@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English;
 
+use IPC::Run3 qw( run3 );
 use Class::Unload;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
@@ -2462,16 +2463,18 @@ sub screen_report_print {
         $cmd = qq{"$report_exe" $options "$report_file"};
     }
     else {
-        print "0 parameters?\n";
-        return;
+        $self->_log->debug("No parameters for RepMan");
+        die "No parameters for RepMan\n",
     }
 
     $self->_log->debug("Report cmd: $cmd.");
 
-    if ( system $cmd ) {
-        $self->view->set_status( $self->localize( 'status', 'error-repo' ),
-            'ms' );
-    }
+    run3 $cmd, undef, undef, \my @err;
+
+    Exception::IO::SystemCmd->throw(
+        usermsg => 'Error from RepMan',
+        logmsg  => "@err",
+    ) if @err;
 
     return;
 }
