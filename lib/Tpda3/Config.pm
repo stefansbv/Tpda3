@@ -140,12 +140,36 @@ sub get_default_mnemonic {
     my $defaultapp_fqn = $self->default();
     if (-f $defaultapp_fqn) {
         my $cfg_hr = $self->config_data_from($defaultapp_fqn);
-        return $cfg_hr->{mnemonic};
+        return $cfg_hr->{default}{mnemonic};
     }
     else {
-        $self->{_log}->info("No valid default found, using 'test-tk'");
-        return 'test-tk';
+        return $self->pick_default_mnemonic();       # use as default
     }
+}
+
+=head2 pick_default_mnemonic
+
+Pick a default mnemonic. If there is only one, return it.  If there
+remains only one after removing I<test-*> pick that. Fall back to
+B<test-tk>.
+
+TODO: Should popup a dialog for the user to let him select a mnemonic,
+if there are too many choices.
+
+=cut
+
+sub pick_default_mnemonic {
+    my $self = shift;
+
+    my $mnemonics = $self->get_mnemonics();
+
+    return $mnemonics->[0] if scalar @{$mnemonics} == 1; # one choice
+
+    my @choices = grep { $_ !~ m{test\-(tk|wx)} } @{$mnemonics};
+
+    return $choices[0] if scalar @choices == 1; # one other than test-*
+
+    return 'test-tk';           # fallback to test-tk
 }
 
 =head2 set_default_mnemonic

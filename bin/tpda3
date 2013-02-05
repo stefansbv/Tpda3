@@ -14,11 +14,7 @@ use Tpda3::Config;
 my $help    = q{};
 my $man     = q{};
 my $verbose = 0;                             # be quiet
-my $list;
-my $init;
-my $user;
-my $pass;
-my $default;
+my ($list, $init, $user, $pass, $default);
 
 # Process options.
 if ( @ARGV > 0 ) {
