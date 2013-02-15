@@ -32,5 +32,6 @@
 \.tar.gz$
 \.zip$
 
-# Skip docs untill ready
+# Temp skip
 doc\b
+wx_grid_table.pl

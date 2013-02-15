@@ -1,3 +1,105 @@
+2013-02-15
+
+ Experiment with tables using GridTableBase (Wx).
+
+2013-02-05
+
+	* Pick a default mnemonic when one is not set.
+
+2013-02-01
+
+	* Update PODs.  Fix editing YAML configuration files.  Implement
+	exception for RepMan's print preview command.
+
+2013-01-30
+
+	* Dialogs layout change - remove toolbar; Implement update main.yml.
+
+2013-01-29
+
+	* Fix typo in Wx::Controller.  Replace 'fatal' with 'error' for DB
+	message types.  Translate and update user guide.
+
+2013-01-28
+
+	* Experimenting with exceptions. Fix method to set default
+	mnemonic.
+
+2013-01-26
+
+	* Fix creating new records with provided PK key.  Add new erorr
+	string.  Remove logmsg from erorr message.  Make some PK cols
+	autoincrement.  Fix error for when no title provided.  Fix
+	(potential?) problem with encodings in list header.  Fix pkcol
+	name; rename method.  Add new error string.
+
+2013-01-25
+
+	* Fix utf8 problem in list items.
+
+2013-01-24
+
+	* New Exceptions for IO. Message dialog on file/path exceptions.
+	Add experimental methods to check file and path and throw
+	exceptions.  Update method params for the Message dialog.  Add new
+	strings to localisation configs.  Change no_cancel param to type,
+	add OK button type, add p{title} to new as para.
+
+2013-01-23
+
+	* Add resource file template.  Cleanup.  Rename/remove some
+	methods in Config module. Other small fixes.  Miscelaneous
+	changes.
+
+2013-01-22
+
+	* Add 2 methods from the old module to Config::Screen.  Fix misc
+	parameters for method calls in Config::Screen.  Remove unneeded
+	parameter from call to init_cfgdata.  Refactor Config::Screen
+	using the Data::Diver module.
+
+2013-01-21
+
+	* Add commented code to fetch all keys.  Fix helper method in
+	Cubrid.pm.  Rise 'not connected' exception when appropriate.  Add
+	color to login dialog message.
+
+2013-01-20
+
+	* Use last_insert_id as alternative to insert... returning.
+	Implement methods with minimum functionality in Cubrid module.
+
+2013-01-19
+
+	* Deal with connection errors; Add table list method.  Add CUBRID
+	support, initial import.  Miscellaneous fixes.
+
+2013-01-14
+
+	* Use Tpda3::Exceptions, remove Ouch.
+
+2013-01-13
+
+	* Experimenting with Exception::Base.
+
+2013-01-10
+
+	* Bug in Tpda3::Wx::Grid.  Add feature to check if for each user
+	config coresponds a loadable app module.
+
+2013-01-07
+
+	* Update README.md. Update/add README docs.
+
+2013-01-06
+
+	* Relese v0.62.  Git ignore *.old files The Template module is
+	required.
+
+2013-01-05
+
+	* Remove mouse bindings from list.  Small miscellaneous fixes.
+
 2012-12-29
 
 	* Release v0.61. For copying user data, fallback to ./share dir

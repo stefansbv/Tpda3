@@ -23,11 +23,11 @@ Tpda3::Config - Tpda Tpda configuration module
 
 =head1 VERSION
 
-Version 0.62
+Version 0.63
 
 =cut
 
-our $VERSION = 0.62;
+our $VERSION = 0.63;
 
 =head1 SYNOPSIS
 
