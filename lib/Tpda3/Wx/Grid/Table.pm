@@ -1,14 +1,20 @@
-package Tpda3::Wx::GridTable;
+package Tpda3::Wx::Grid::Table;
 
 use strict;
 use warnings;
 use Carp;
 
-use Wx;
+use Wx qw(wxRED wxGREEN wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT
+          wxALIGN_TOP wxALIGN_CENTRE wxALIGN_BOTTOM);
 use Wx::Grid;
+
 use Wx qw(wxGRIDTABLE_NOTIFY_ROWS_INSERTED wxGRIDTABLE_NOTIFY_ROWS_DELETED);
 
-use base qw(Wx::PlGridTable);
+use base qw(Wx::PlGridTable CP::Class);
+
+our @properties = qw( tabledata );
+
+__PACKAGE__->create_both_accessors( @properties );
 
 =head1 NAME
 
@@ -47,15 +53,12 @@ must be implemented in the derived classes.
 =cut
 
 sub new {
-   my ($class, $args) = @_;
+    my ( $class, $data ) = @_;
 
-   my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new();
+    $self->set_tabledata($data);
 
-   $self->{cols}    = scalar @{ $args->{fields} };
-   $self->{coldata} = [];
-   $self->{rows}    = 0;
-
-   return $self;
+    return $self;
 }
 
 =head2 GetNumberRows
@@ -64,10 +67,14 @@ Must be overridden to return the number of rows in the table.
 
 =cut
 
-sub GetNumbeerRows {
+sub GetNumberRows {
     my $self = shift;
 
-    return $self->{rows};
+    my $rowcount = scalar( @{ $self->get_tabledata->{datarows} } );
+
+    print "rowcount: $rowcount\n";
+
+    return $rowcount;
 }
 
 =head2 GetNumberCols
@@ -79,7 +86,11 @@ Must be overridden to return the number of columns in the table.
 sub GetNumberCols {
     my $self = shift;
 
-    return $self->{cols};
+    my $colcount = scalar( @{ $self->get_tabledata->{datacols} } );
+
+    print "colcount: $colcount\n";
+
+    return $colcount;
 }
 
 =head2 IsEmptyCell
@@ -89,9 +100,11 @@ May be overridden to implement testing for empty cells.
 =cut
 
 sub IsEmptyCell {
-    my ($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
-    return defined $self->GetValue($row, $col) ? 1 : 0;
+    return ( defined( $self->get_tabledata->{datarows}->[$row]->[$col] ) )
+        ? 0
+        : 1;
 }
 
 =head2 GetValue
@@ -101,19 +114,11 @@ Must be overridden to implement accessing the table values as text.
 =cut
 
 sub GetValue {
-    my ( $self, $row, $col ) = @_;
+    my($self, $row, $col) = @_;
 
-    my $result = undef;
-    eval {
-        $result = $self->{array}->[$row][$col]->GetValue
-            if ( $row < $self->GetNumberRows
-            && $col < $self->GetNumberCols
-            && defined $self->{array}->[$row][$col] );
-        $result = '' unless defined $result;
-    };
-    carp "Exception in DBGridTable::GetValue: $@" if $@;
+    #print 'GetValue:',$self->get_tabledata->{datarows}->[$row]->[$col], "\n";
 
-    return $result;
+    return $self->get_tabledata->{datarows}->[$row]->[$col];
 }
 
 =head2 SetValue
@@ -123,14 +128,41 @@ Must be overridden to implement setting the table values as text.
 =cut
 
 sub SetValue {
-    my ( $self, $row, $col, $value ) = @_;
+    my($self, $row, $col, $value) = @_;
 
-    croak "Array out of bounds"
-        unless $row < $self->GetNumberRows && $col < $self->GetNumberCols;
-    $self->{array}->[$row][$col]->SetValue($value);
-
-    return;
+    $self->get_tabledata->{datarows}->[$row]->[$col] = $value;
 }
+
+###
+
+sub GetTypeName {
+    my($self, $row, $col) = @_;
+    return $self->get_tabledata->{datacols}->[$col]->{type};
+}
+
+sub CanGetValueAs {
+    my($self, $row, $col) = @_;
+    return $self->get_tabledata->{datacols}->[$col]->{type};
+}
+
+sub CanSetValueAs {
+    my($self, $row, $col) = @_;
+    return $self->get_tabledata->{datacols}->[$col]->{type};
+}
+
+sub GetValueAsLong { shift->GetValue( @_ ); }
+
+sub GetValueAsDouble { shift->GetValue( @_ ); }
+
+sub GetValueAsBool { shift->GetValue( @_ ); }
+
+sub SetValueAsLong { shift->SetValue( @_ ); }
+
+sub SetValueAsDouble { shift->SetValue( @_ ); }
+
+sub SetValueAsBool { shift->SetValue( @_ ); }
+
+###
 
 =head1 Table Structure Modifiers
 
@@ -197,9 +229,9 @@ Return the label of the specified row.
 =cut
 
 sub GetRowLabelValue {
-    my $row = shift;
+    my ($self, $row) = @_;
 
-    return;
+    return "RLV$row";
 }
 
 =head2 GetColLabelValue
@@ -209,9 +241,9 @@ Return the label of the specified column.
 =cut
 
 sub GetColLabelValue {
-    my $col = shift;
+    my ($self, $col) = @_;
 
-    return;
+    return $self->get_tabledata->{datacols}[$col]{label};
 }
 
 =head2 SetRowLabelValue
@@ -225,7 +257,7 @@ wxGrid::SetRowLabelValue() to work.
 =cut
 
 sub SetRowLabelValue {
-    my ($row, $label) = @_;
+    my ($self, $row, $label) = @_;
 
     return;
 }
@@ -241,7 +273,7 @@ wxGrid::SetRowLabelValue() to work.
 =cut
 
 sub SetColLabelValue {
-    my ($col, $label) = @_;
+    my ($self, $col, $label) = @_;
 
     return;
 }
@@ -260,7 +292,34 @@ Returns the attribute provider currently being used.
 GetAttrProvider
 
 Return the attribute for the given cell.
+
+=cut
+
+=head1 GetAttr
+
 GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind)
+
+=cut
+
+sub GetAttr {
+  my( $self, $row, $col, $kind ) = @_;
+
+  my $cell_attr = Wx::GridCellAttr->new;
+
+  # Text alignment
+  if ($self->GetTypeName($row, $col) eq 'double' ) {
+      $cell_attr->SetAlignment(wxALIGN_RIGHT, wxALIGN_TOP);
+  }
+  elsif ($self->GetTypeName($row, $col) eq 'int_id') {
+      $cell_attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_TOP);
+  }
+
+  $cell_attr->SetOverflow(0);
+
+  return $cell_attr;
+}
+
+=head1 Attribs
 
 Set attribute of the specified cell.
 SetAttr(wxGridCellAttr* attr, int row, int col);

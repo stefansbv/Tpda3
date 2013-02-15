@@ -122,16 +122,19 @@ sub run_screen {
 
     #--- Layout
 
-    my $main_sz = Wx::FlexGridSizer->new( 3, 1, 5, 5 );
+    my $main_sz = Wx::BoxSizer->new(wxVERTICAL);
 
-    my $top_sz = Wx::FlexGridSizer->new( 1, 2, 0, 0 );
-    my $mid_sz = Wx::BoxSizer->new(wxHORIZONTAL);
-    my $bot_sz = Wx::BoxSizer->new(wxHORIZONTAL);
+    my $top_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
+    my $top_szl = Wx::FlexGridSizer->new( 1, 2, 0, 0 );
+    my $top_szr = Wx::BoxSizer->new(wxHORIZONTAL);
 
-    $top_sz->AddGrowableCol(0,1);
+    $top_sz->Add( $top_szl, 2, wxALL | wxGROW, 0 );
+    $top_sz->Add( $top_szr, 1, wxALL | wxGROW, 0 );
 
-    $main_sz->AddGrowableRow(1);
-    $main_sz->AddGrowableCol(1);
+    $top_szl->AddGrowableCol(0,1);
+    $top_szl->AddGrowableRow(1);
+    # $top_szl->AddGrowableCol(1);
+    # $top_szl->AddGrowableCol(3);
 
     #-- Top
 
@@ -238,13 +241,13 @@ sub run_screen {
     $grid->AddGrowableCol(3);
 
     $order_sbs->Add( $grid, 1, wxALL | wxGROW, 0 );
-    $top_sz->Add( $order_sbs, 0, wxALL | wxGROW, 5 );
+    $top_szl->Add( $order_sbs, 0, wxALL | wxGROW, 5 );
 
     my $comment_sb  = Wx::StaticBox->new( $rec_page, -1, ' Comment ' );
     my $comment_sbs = Wx::StaticBoxSizer->new( $comment_sb, wxHORIZONTAL, );
 
     $comment_sbs->Add( $ecomments, 1, wxALL | wxEXPAND, 5 );
-    $top_sz->Add( $comment_sbs, 1, wxALL | wxEXPAND, 5 );
+    $top_szr->Add( $comment_sbs, 1, wxALL | wxEXPAND, 5 );
 
     #-- Middle
 
@@ -255,6 +258,8 @@ sub run_screen {
 
     my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
     my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
+
+    my $mid_sz  = Wx::BoxSizer->new(wxVERTICAL);
 
     $article_sbs->Add( $table, 1, wxALL | wxEXPAND, 5 );
     $mid_sz->Add($article_sbs, 1, wxALL | wxEXPAND, 5 );
@@ -280,6 +285,8 @@ sub run_screen {
     #-- Label frame
     my $total_sb  = Wx::StaticBox->new( $rec_page, -1, ' Order total' );
     my $total_sbs = Wx::StaticBoxSizer->new( $total_sb, wxHORIZONTAL, );
+
+    my $bot_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
 
     $total_sbs->Add( $grid_bot, 1, wxALL | wxEXPAND, 5 );
     $bot_sz->Add($total_sbs, 1, wxALL | wxEXPAND, 5 );

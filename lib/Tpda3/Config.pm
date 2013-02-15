@@ -150,8 +150,8 @@ sub get_default_mnemonic {
 =head2 pick_default_mnemonic
 
 Pick a default mnemonic. If there is only one, return it.  If there
-remains only one after removing I<test-*> pick that. Fall back to
-B<test-tk>.
+remains only one after removing I<test-(wx|tk)> pick that. Fall back
+to B<test-tk>.
 
 TODO: Should popup a dialog for the user to let him select a mnemonic,
 if there are too many choices.
