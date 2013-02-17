@@ -23,6 +23,7 @@
 \#$
 \b\.#
 \.log$
+\.al$
 
 # Other
 ^classicmodels$

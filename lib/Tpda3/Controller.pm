@@ -2835,6 +2835,8 @@ sub screen_write {
 Run the appropriate sub according to control (entry widget) type to
 write to screen controls.
 
+TODO: Use hash for paramaters
+
 =cut
 
 sub ctrl_write_to {
@@ -4236,8 +4238,8 @@ sub io_exception {
 
         $locale_data->{title} = 'IO error';
 
-        my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
-        $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
+        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view, $locale_data);
+        $dlg->message_dialog($message, $details, 'error', 'ok');
     }
 
     return;
@@ -4270,8 +4272,8 @@ sub catch_db_exceptions {
 
         $locale_data->{title} = 'Database error';
 
-        my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
-        $dlg->message_dialog($self->view, $message, $details, 'error', 'ok');
+        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view, $locale_data);
+        $dlg->message_dialog($message, $details, 'error', 'ok');
     }
 
     return;

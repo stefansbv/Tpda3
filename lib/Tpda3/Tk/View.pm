@@ -854,9 +854,9 @@ sub dialog_confirm {
     $locale_data->{title} = '';              # reset title
 
     require Tpda3::Tk::Dialog::Message;
-    my $dlg = Tpda3::Tk::Dialog::Message->new($locale_data);
+    my $dlg = Tpda3::Tk::Dialog::Message->new($self, $locale_data);
 
-    return $dlg->message_dialog($self, $message, $details, $icon, $type);
+    return $dlg->message_dialog($message, $details, $icon, $type);
 }
 
 =head2 dialog_info
@@ -1390,11 +1390,13 @@ sub list_control_choices {
 =head2 control_write_e
 
 Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
+Can use parameters to change the foreground and background colors.
+Undef is for the I<date format> parameter, irrelevant here.
 
 =cut
 
 sub control_write_e {
-    my ( $self, $control_ref, $value, $state ) = @_;
+    my ( $self, $control_ref, $value, $state, undef, $fgcolor, $bgcolor ) = @_;
 
     my $control = $control_ref->[1];
 
@@ -1406,6 +1408,9 @@ sub control_write_e {
 
     $control->delete( 0, 'end' );
     $control->insert( 0, $value ) if defined $value;
+
+    $control->configure( -bg => $bgcolor ) if $bgcolor;
+    $control->configure( -fg => $fgcolor ) if $fgcolor;
 
     $control->configure( -state => $state );
 

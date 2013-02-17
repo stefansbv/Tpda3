@@ -36,9 +36,10 @@ Constructor method
 =cut
 
 sub new {
-    my ($class, $opts) = @_;
+    my ($class, $view, $opts) = @_;
 
     my $self = {
+        view   => $view,
         dialog => $opts,
     };
 
@@ -55,9 +56,7 @@ button labels.
 =cut
 
 sub message_dialog {
-    my ( $self, $view, $message, $details, $icon, $type ) = @_;
-
-    print "Dialog ($message, $details)\n";
+    my ( $self, $message, $details, $icon, $type ) = @_;
 
     my $title    = $self->{dialog}{title};
     my $b_yes    = $self->{dialog}{b_yes};
@@ -85,7 +84,7 @@ sub message_dialog {
                 :                  $default_buttons
                 ;
 
-    my $dlg = $view->DialogBox(
+    my $dlg = $self->{view}->DialogBox(
         -title   => 'Dialog',
         -buttons => $buttons,
     );
@@ -135,7 +134,7 @@ sub message_dialog {
         -background         => $bg,
     )->pack();
 
-    $self->make_icon($view, $w_bitmap, $icon);
+    $self->make_icon($w_bitmap, $icon);
 
     #-- title (optional)
 
@@ -189,7 +188,9 @@ From:
 =cut
 
 sub make_icon {
-    my ( $self, $view, $w_bitmap, $icon ) = @_;
+    my ( $self, $w_bitmap, $icon ) = @_;
+
+    my $view = $self->{view};
 
     $icon = 'info' unless $icon;             # default icon
 

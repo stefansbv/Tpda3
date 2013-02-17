@@ -140,10 +140,15 @@ sub get_default_mnemonic {
     my $defaultapp_fqn = $self->default();
     if (-f $defaultapp_fqn) {
         my $cfg_hr = $self->config_data_from($defaultapp_fqn);
-        return $cfg_hr->{default}{mnemonic};
+        if ($cfg_hr->{default}{mnemonic}) {
+            return $cfg_hr->{default}{mnemonic};
+        }
+        else {
+            return $self->pick_default_mnemonic(); # use as default
+        }
     }
     else {
-        return $self->pick_default_mnemonic();       # use as default
+        return $self->pick_default_mnemonic(); # use as default
     }
 }
 
@@ -395,7 +400,7 @@ sub list_mnemonics_all {
         return;
     }
 
-    my $default = $self->get_default_mnemonic();
+    my $default = $self->get_default_mnemonic() || q{};
 
     print "Configurations (mnemonics):\n";
     foreach my $name ( @{$mnemonics} ) {
