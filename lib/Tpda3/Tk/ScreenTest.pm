@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+#use Test::FailWarnings;
 
 use Tpda3;
 use Tpda3::Config;
@@ -133,7 +134,7 @@ sub test_screen {
     $delay++;
 
     $ctrl->{_view}->after(
-        $delay * 100,
+        $delay * 200,
         sub {
             $ctrl->on_quit;
         }

@@ -4210,7 +4210,7 @@ Close application.
 sub on_quit {
     my $self = shift;
 
-    print "Shuting down...\n";
+    print "Shutting down...\n";
 
     $self->view->on_close_window(@_);
 }
