@@ -1009,9 +1009,9 @@ sub setup_select_bindings_entry {
     my $dict     = Tpda3::Selected->new($locale_data);
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
-    return unless $self->scrcfg($page)->can('bindings');
+    return unless $self->scrcfg($page)->can('bindings_select');
 
-    my $bindings = $self->scrcfg($page)->bindings('select');
+    my $bindings = $self->scrcfg($page)->bindings_select();
 
     foreach my $bind_name ( keys %{$bindings} ) {
         next unless $bind_name;            # skip if just an empty tag
@@ -1025,9 +1025,6 @@ sub setup_select_bindings_entry {
         my $para = {
             table  => $bindings->{$bind_name}{table},
         };
-
-        $self->_log->trace("Setup select binding for '$bind_name' with:");
-        #$self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -1054,6 +1051,8 @@ sub setup_select_bindings_entry {
                 if ($field and $value) {
                     $para->{where} = { $field => $value };
                     my $records = $dict->selected( $self->view, $para );
+
+#use Data::Printer; p $records;
 
                     # Insert into TM
                     my $xtable  = $self->scrobj('rec')->get_tm_controls($tm_ds);

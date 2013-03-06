@@ -187,19 +187,16 @@ sub select_dialog {
                     push @columns, $field;
                 }
             }
-
             my @records;
             my $doccnt = 1;
             foreach my $idx (@indexes) {
                 my @selected_row = $self->{box}->getRow($idx);
                 my $rec = {};
-                for (my $i = 0; $i < $#selected_row; $i++) {
+                for (my $i = 0; $i <= $#selected_row; $i++) {
                     $rec->{ $columns[$i] } = $selected_row[$i];
                 }
-                $rec->{id_doc} = $doccnt; # add hardwired field name: id_doc
-
+                $rec->{id_doc} = $doccnt; # add hardwired field: id_doc
                 push @records, $rec;
-
                 $doccnt++;
             }
 
