@@ -1,0 +1,4 @@
+Change and save configurations.
+Refactor Config::Screen.
+New exception system.
+Add CUBRID support.
