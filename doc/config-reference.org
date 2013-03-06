@@ -27,6 +27,10 @@ a specific Tpda3 application is executed, the application
 configuration files are installed under the Tpda3 main configuration
 path.
 
+The configuration tree is not overwritten, if Tpda3 or an application
+is upgraded and has changes in the configuration system, than the new
+or changed files have to be copied manually.
+
 * Framework configurations
 ** The main configuration file
 
@@ -36,7 +40,8 @@ generic configurations used by all the Tpda3 applications.
 *** Sections
 **** geometry
 
-The default geometry of the main window of the application.
+The default geometry of the main window of the application. REMOVED
+starting with 0.62?
 
 #+begin_src conf
   main: 520x80+20+20
@@ -79,8 +84,32 @@ LaTeX systems.
     exe_path: ~/bin/repman/printrep.bin
   pdflatex:
     exe_path: /usr/share/texmf/bin/pdflatex
-    options: -halt-on-error                     # to be removed
+    options: -halt-on-error                 # REMOVED starting with 0.62?
 #+end_src
+
+** The default application configuration file
+
+The default application configuration file is default.yml and is not
+required to exist. It can be created from the CLI, using the --default
+option:
+
+#+begin_src bash
+  tpda3 -d test-tk
+#+end_src
+
+Or from the GUI with the Menu -> App -> Set default dialog.
+
+The purpose of this configuration is to set the default application
+that is started using the tpda3 command without a mnemonic on the CLI
+or from a desktop shortcut.
+
+*** Sections
+**** default
+
+#+begin_src perl
+  mnemonic: test-tk
+#+end_src
+
 
 * Application configurations
 ** Screen configuration
@@ -88,8 +117,8 @@ LaTeX systems.
 Every screen module has a coresponding configuration file in Apache
 format as defined by the Config::General module.
 
-A screen configuration file name is lower case of the screen module
-name, but with a .conf extension.
+A screen configuration file name is the lower case of the screen module
+name, with a .conf extension.
 
 *** Sections
 
