@@ -161,6 +161,12 @@ sub bindings {
     return Dive( $self->{_scr}, 'bindings', @args );
 }
 
+sub bindings_select {
+    my ($self, @args) = @_;
+
+    return Dive( $self->{_scr}, 'bindings_select', @args );
+}
+
 sub tablebindings {
     my ($self, @args) = @_;
 
