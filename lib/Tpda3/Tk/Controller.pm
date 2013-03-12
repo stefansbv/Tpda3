@@ -502,12 +502,15 @@ Quick help dialog.
 sub guide {
     my $self = shift;
 
-    my $gui = $self->view;
-
-    require Tpda3::Tk::Dialog::Help;
-    my $gd = Tpda3::Tk::Dialog::Help->new;
-
-    $gd->help_dialog($gui);
+    if ($^O eq 'Win32') {
+        system("cmd /c start guide.chm");
+    }
+    else {
+        my $gui = $self->view;
+        require Tpda3::Tk::Dialog::Help;
+        my $gd = Tpda3::Tk::Dialog::Help->new;
+        $gd->help_dialog($gui);
+    }
 
     return;
 }
