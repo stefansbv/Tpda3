@@ -108,7 +108,7 @@ Version 0.64
 
 =head1 SYNOPSIS
 
-tpda3 <config-name> [-user <user>] [-password <pass>]
+tpda3 [<config-name>] [-user <user>] [-password <pass>]
 
 tpda3 -list
 
@@ -132,15 +132,15 @@ database application framework, written in Perl and pTk.
 =head2 Configuration
 
 A configuration name is the name of the directory underneath the
-B<.tpda3/apps/> path.  This directory contains two other directories
-B<etc> and B<scr>. The B<etc> directory contains three required
-configuration files. The first is B<connection.yml>.  This file has to
-be updated with the connection configuration for your database.  The
-second configuration file is B<menu.yml> and contains the applications
-menu definitions. The third file is B<toolbar.yml>, for the custom
-toolbars in the screens for example the [+] and [-] buttons asociated
-with tables.  The other directory named B<scr> is the place where the
-screen configuration files are stored.
+B<.tpda3/apps/> path.  This directory contains at least two other
+directories B<etc> and B<scr>. The B<etc> directory contains three
+required configuration files. The first is B<connection.yml>.  This
+file has to be updated with the connection configuration for your
+database.  The second configuration file is B<menu.yml> and contains
+the applications menu definitions. The third file is B<toolbar.yml>,
+for the custom toolbars in the screens for example the [+] and [-]
+buttons asociated with tables.  The other directory named B<scr> is
+the place where the screen configuration files are stored.
 
 Configuration files are in YAML format, the format described in the
 documentation of the YAML::Tiny module, except the screen
