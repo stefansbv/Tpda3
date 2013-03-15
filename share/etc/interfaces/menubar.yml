@@ -1,7 +1,7 @@
 # tpda3
 # Menubar interface configuration
 # Don't change, unless you know what you are doing!
-# The application menu Id's start at 5000
+# The application menu Id's start at 5000 (Wx)
 ---
 menubar:
   menu_app:
@@ -34,24 +34,6 @@ menubar:
         sep: before
         key: Alt-P
       5:
-        name: mn_sg
-        label: Window geometry
-        underline: 0
-        sep: none
-        key: Alt-W
-      6:
-        name: mn_mn
-        label: Set default
-        underline: 4
-        sep: before
-        key: Alt-D
-      7:
-        name: mn_cf
-        label: Configurations
-        underline: 0
-        sep: none
-        key: Alt-C
-      8:
         name: mn_qt
         label: Quit
         underline: 1
@@ -68,8 +50,25 @@ menubar:
         underline: 5
         sep: none
         key: Alt-E
-  menu_help:
+  menu_admin:
     id:    5003
+    label: Admin
+    underline: 1
+    popup:
+      1:
+        name: mn_mn
+        label: Set default app
+        underline: 4
+        sep: before
+        key: Alt-D
+      2:
+        name: mn_cf
+        label: Configurations
+        underline: 0
+        sep: none
+        key: Alt-C
+  menu_help:
+    id:    5004
     label: Help
     underline: 0
     popup:

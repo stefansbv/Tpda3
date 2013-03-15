@@ -5,8 +5,8 @@
 appmenubar:
   menu_user:
     id:    1001
-    label: Test
-    underline: 2
+    label: ClassicModels
+    underline: 0
     popup:
       1:
         name: Products

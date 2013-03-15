@@ -335,14 +335,6 @@ sub _set_event_handlers {
         }
     );
 
-    #-- Save geometry
-    $self->view->event_handler_for_menu(
-        'mn_sg',
-        sub {
-            $self->save_geometry();
-        }
-    );
-
     #-- Admin - set default mnemonic
     $self->view->event_handler_for_menu(
         'mn_mn',
