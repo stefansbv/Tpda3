@@ -502,8 +502,16 @@ Quick help dialog.
 sub guide {
     my $self = shift;
 
-    if ($^O eq 'Win32') {
-        system("cmd /c start guide.chm");
+    if ( $^O =~ /MSWin/ ) {
+        my $chm_file = Tpda3::Config::Utils->get_help_file('guide.chm');
+        if (-f $chm_file) {
+            system( qq(cmd /c start "$chm_file") );
+        }
+        else {
+            my ($message, $details) = ('Info','Can not locate the help file.');
+            $self->view->dialog_info($message, $details);
+            return;
+        }
     }
     else {
         my $gui = $self->view;
