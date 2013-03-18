@@ -2426,7 +2426,7 @@ sub screen_report_print {
 
     return unless ref $self->scrobj('rec');
 
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
     my $pk_val = $self->screen_get_pk_val;
 
     my $param;
@@ -3774,7 +3774,7 @@ sub main_table_metadata {
     my $metadata = {};
 
     #- Get PK field name and value and FK if exists
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
     my $pk_val = $self->screen_get_pk_val;
     # print "pk_col is $pk_col\n";
     # print "pk_val is $pk_val\n";
@@ -3821,7 +3821,7 @@ sub dep_table_metadata {
     my $metadata = {};
 
     #- Get PK field name and value
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
     my $pk_val = $self->screen_get_pk_val;
 
     if ( $for_sql eq 'qry' ) {
@@ -3962,18 +3962,6 @@ sub restore_screendata {
     return 1;
 }
 
-=head2 screen_get_pk_col
-
-Return primary key column name for the current screen.
-
-=cut
-
-sub screen_get_pk_col {
-    my $self = shift;
-
-    return $self->scrcfg('rec')->maintable('pkcol', 'name');
-}
-
 =head2 screen_set_pk_col
 
 Store primary key column name for the current screen.
@@ -3983,7 +3971,7 @@ Store primary key column name for the current screen.
 sub screen_set_pk_col {
     my $self = shift;
 
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
 
     if ($pk_col) {
         $self->{_tblkeys}{$pk_col} = undef;
@@ -4004,7 +3992,7 @@ Store primary key column value for the current screen.
 sub screen_set_pk_val {
     my ( $self, $pk_val ) = @_;
 
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
 
     if ($pk_col) {
         $self->{_tblkeys}{$pk_col} = $pk_val;
@@ -4025,7 +4013,7 @@ Return primary key column value for the current screen.
 sub screen_get_pk_val {
     my $self = shift;
 
-    my $pk_col = $self->screen_get_pk_col;
+    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
 
     return $self->{_tblkeys}{$pk_col};
 }

@@ -1159,9 +1159,9 @@ sub table_batch_update {
     my $to_update
         = $self->table_update_compare( \@to_update, $depmeta, $depdata );
 
-    print "To update: @{$to_update}\n" if ref $to_update;
-    print "To insert: @to_insert\n";
-    print "To delete: @to_delete\n";
+    # print "To update: @{$to_update}\n" if ref $to_update;
+    # print "To insert: @to_insert\n";
+    # print "To delete: @to_delete\n";
 
     $self->table_update_prepare( $to_update, $depmeta, $depdata );
     $self->table_insert_prepare( \@to_insert, $depmeta, $depdata );
@@ -1311,7 +1311,6 @@ Return an array reference of column values.
 sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
 
-    use Data::Printer; p $opts;
     my $table  = $opts->{table};
     my $pkcol  = $opts->{pkcol};
     my $fields = $opts->{fkcol};
