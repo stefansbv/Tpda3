@@ -2326,7 +2326,7 @@ sub record_find_execute {
 
     # Table data
     $params->{table} = $self->scrcfg('rec')->maintable('view'); # use view
-    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
+    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol', 'name');
 
     my ($ary_ref, $limit);
     try {
@@ -2399,7 +2399,7 @@ sub record_find_count {
 
     # Table data
     $params->{table} = $self->scrcfg('rec')->maintable('view');
-    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol');
+    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol', 'name');
 
     my $record_count;
     try {
@@ -3771,10 +3771,6 @@ Retrieve main table meta-data from the screen configuration.
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
 
-# # DEBUG
-#     my ($package, $filename, $line, $subroutine) = caller(3);
-#     print "main_table_metadata:\n $package, $line, $subroutine\n";
-
     my $metadata = {};
 
     #- Get PK field name and value and FK if exists
@@ -4243,6 +4239,7 @@ sub catch_db_exceptions {
 
     my ($message, $details);
 
+    print "Exc is '$exc'\n";
     if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::Db::SQL') ) {
             $message = $e->usermsg;

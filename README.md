@@ -1,11 +1,11 @@
 Tpda3 (Tiny Perl Database Application 3)
 ========================================
-Ștefan Suciu <stefan 'la' s2i2.ro>
+Ștefan Suciu <stefan@s2i2.ro>
 2013-01-07
 
 Version: 0.62
 
-Copyright (C) 2010-2012  Stefan Suciu
+Copyright (C) 2010-2013  Stefan Suciu
 GNU General Public License v3
 
 Tpda3 is a classic desktop database application framework and

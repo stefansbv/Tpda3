@@ -332,7 +332,7 @@ sub query_records_count {
     my ( $self, $opts ) = @_;
 
     my $table = $opts->{table};
-    my $pkcol = $opts->{pkcol}{name} ? $opts->{pkcol}{name} : '*';
+    my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
     my $where = $self->build_sql_where($opts);
 
     return if !ref $where;
@@ -368,7 +368,7 @@ sub query_records_find {
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
-    my $pkcol = $opts->{pkcol}{name};
+    my $pkcol = $opts->{pkcol};
     my $where = $self->build_sql_where($opts);
 
     return if !ref $where;
@@ -401,7 +401,7 @@ sub query_filter_find {
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
-    my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol}{name};
+    my $order = $opts->{order} ? $opts->{order} : $opts->{pkcol};
     my $where = $opts->{where};
 
     # Remove 'id_art'; for 'SELECT *', $cols have to be undef
@@ -1140,6 +1140,11 @@ to insert, update or delete.
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
 
+    # DEBUG
+    my ($package, $filename, $line, $subroutine) = caller(3);
+    print "table_batch_update:\n $package, $line, $subroutine\n";
+
+
     my $compare_col = $depmeta->{fkcol};
 
     my $tb_data = $self->table_selectcol_as_array($depmeta);
@@ -1306,8 +1311,9 @@ Return an array reference of column values.
 sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
 
+    use Data::Printer; p $opts;
     my $table  = $opts->{table};
-    my $pkcol  = $opts->{pkcol}{name};
+    my $pkcol  = $opts->{pkcol};
     my $fields = $opts->{fkcol};
     my $where  = $opts->{where};
     my $order  = $fields;
