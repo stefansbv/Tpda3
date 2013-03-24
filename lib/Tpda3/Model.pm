@@ -577,11 +577,17 @@ sub build_sql_where {
 
         if ( $find_type eq 'contains' ) {
             my $cmp = $self->cmp_function($searchstr);
-            $where->{$field} = {
-                $cmp => Tpda3::Utils->quote4like(
-                    $searchstr, $opts->{options}
-                )
-            };
+            if ($cmp eq '-CONTAINING') {
+                # Firebird specific
+                $where->{$field} = { $cmp => $searchstr };
+            }
+            else {
+                $where->{$field} = {
+                    $cmp => Tpda3::Utils->quote4like(
+                        $searchstr, $opts->{options}
+                    )
+                };
+            }
         }
         elsif ( $find_type eq 'full' ) {
             $where->{$field} = $searchstr;
@@ -639,7 +645,7 @@ sub cmp_function {
     my $driver = $self->cfg->connection->{driver};
 
     my $cmp;
-SWITCH: for ($driver) {
+  SWITCH: for ($driver) {
         /^$/ && warn "EE: Unknown database driver name!\n";
         /cubrid/i && do {
             $cmp = $ignore_case ? '-LIKE' : '-LIKE';
