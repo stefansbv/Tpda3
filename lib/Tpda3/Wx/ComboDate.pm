@@ -13,11 +13,11 @@ Tpda3::Wx::ComboDate - Tpda3::Wx::ComboCtrl with a Calendar popup.
 
 =head1 VERSION
 
-Version 0.64
+Version 0.65
 
 =cut
 
-our $VERSION = 0.64;
+our $VERSION = 0.65;
 
 =head1 SYNOPSIS
 
