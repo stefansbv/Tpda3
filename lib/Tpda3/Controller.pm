@@ -1044,8 +1044,6 @@ sub setup_select_bindings_entry {
                     $para->{where} = { $field => $value };
                     my $records = $dict->selected( $self->view, $para );
 
-#use Data::Printer; p $records;
-
                     # Insert into TM
                     my $xtable  = $self->scrobj('rec')->get_tm_controls($tm_ds);
                     $xtable->clear_all();

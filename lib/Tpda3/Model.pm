@@ -839,12 +839,6 @@ sub table_record_insert {
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
 
-    print "$table $table\n";
-    print "$pkcol $pkcol\n";
-    use Data::Printer;
-    p $record;
-    p $stmt;
-    p @bind;
     my $pk_id;
     if ( exists $record->{$pkcol} ) {
         $pk_id = $record->{$pkcol};
