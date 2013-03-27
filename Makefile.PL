@@ -75,6 +75,7 @@ recommends 'DBD::Firebird' => '0.80';
 test_requires 'Test::More'          => '0.47';
 #test_requires 'Test::FailWarnings'  => '0.001';
 test_requires 'DBD::SQLite'         => '1.29';
+test_requires 'Text::CSV_XS'        => '0';
 recommends    'Test::Pod::Coverage' => '0';
 recommends    'Test::CheckManifest' => '0';
 
