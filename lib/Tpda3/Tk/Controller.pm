@@ -495,21 +495,24 @@ sub about {
 
 =head2 guide
 
-Quick help dialog.
+Quick help dialog. On Windows start the default application that
+handles L<.chm> files.
 
 =cut
 
 sub guide {
-    my $self = shift;
+    my ($self, $guide_chm) = @_;
 
     if ( $^O =~ /MSWin/ ) {
-        my $chm_file = Tpda3::Config::Utils->get_help_file('guide.chm');
-        if (-f $chm_file) {
-            system( qq(cmd /c start "$chm_file") );
+        my $manual     = 'tpda3-manual.chm';
+        my $manual_fqp = Tpda3::Config::Utils->get_doc_file_by_name($manual);
+        if (-f $manual_fqp) {
+            system(1, "$manual_fqp");    # from [dirving] on PerlMonks
         }
         else {
-            my ($message, $details) = ('Info','Can not locate the help file.');
-            $self->view->dialog_info($message, $details);
+            my ( $message, $details )
+                = ( 'Info', "Can't locate the manual: $manual" );
+            $self->view->dialog_info( $message, $details );
             return;
         }
     }

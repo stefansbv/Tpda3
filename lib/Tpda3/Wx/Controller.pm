@@ -278,12 +278,10 @@ Quick help dialog.
 sub guide {
     my $self = shift;
 
-    my $gui = $self->view;
-
     require Tpda3::Wx::Dialog::Help;
-    my $gd = Tpda3::Wx::Dialog::Help->new;
+    my $gd = Tpda3::Wx::Dialog::Help->new( $self->view );
 
-    $gd->show_html_help();
+    $gd->show_html_help('tpda3-manual.htb');
 
     return;
 }

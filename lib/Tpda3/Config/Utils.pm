@@ -222,16 +222,16 @@ END_LICENSE
     }
 }
 
-=head2 get_help_file
+=head2 get_doc_file_by_name
 
-Return help file path.
+Return document file full path.
 
 =cut
 
-sub get_help_file {
-    my ($self, $help_file) = @_;
+sub get_doc_file_by_name {
+    my ($self, $doc_file) = @_;
 
-    return catfile( dist_dir('Tpda3'), 'help', $help_file);
+    return catfile( dist_dir('Tpda3'), 'doc', $doc_file);
 }
 
 =head1 AUTHOR

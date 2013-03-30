@@ -309,7 +309,7 @@ sub _set_event_handlers {
     $self->view->event_handler_for_menu(
         'mn_gd',
         sub {
-            $self->guide;
+            $self->guide();
         }
     );
 
