@@ -844,7 +844,7 @@ sub make_list_header {
 
 =head2 header_width
 
-Width config is in chars. Use CherWidth to compute the with in pixels.
+Width config is in chars. Use CharWidth to compute the with in pixels.
 
   pixels_with = chars_number x char_width
 

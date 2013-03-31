@@ -10,7 +10,7 @@ use Wx::Grid;
 
 use Wx qw(wxGRIDTABLE_NOTIFY_ROWS_INSERTED wxGRIDTABLE_NOTIFY_ROWS_DELETED);
 
-use base qw(Wx::PlGridTable CP::Class);
+use base qw(Wx::PlGridTable Tpda3::Wx::CP::Class);
 
 our @properties = qw( tabledata );
 
