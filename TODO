@@ -12,6 +12,7 @@ Note: Main development focus is on the PerlTk interface, at least
   - [X] Implement CUBRID support;
   - [X] Dialog to set the default application;
   - [ ] Dialog to set some configuration options;
+  - [ ] Remove FK references;
 
 * Someday, maybe [0%]
   - [ ] Custom search menu and tool (for queries like records inserted today);
