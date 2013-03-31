@@ -3,12 +3,12 @@ package Tpda3::Wx::Grid::Table;
 use strict;
 use warnings;
 use Carp;
+use Data::Printer;
 
-use Wx qw(wxRED wxGREEN wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT
-          wxALIGN_TOP wxALIGN_CENTRE wxALIGN_BOTTOM);
 use Wx::Grid;
-
-use Wx qw(wxGRIDTABLE_NOTIFY_ROWS_INSERTED wxGRIDTABLE_NOTIFY_ROWS_DELETED);
+use Wx qw(wxRED wxGREEN wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT
+          wxALIGN_TOP wxALIGN_CENTRE wxALIGN_BOTTOM
+          wxGRIDTABLE_NOTIFY_ROWS_INSERTED wxGRIDTABLE_NOTIFY_ROWS_DELETED);
 
 use base qw(Wx::PlGridTable Tpda3::Wx::CP::Class);
 
@@ -53,12 +53,27 @@ must be implemented in the derived classes.
 =cut
 
 sub new {
-    my ( $class, $data ) = @_;
+    my ( $class, $data, $grid ) = @_;
 
     my $self = $class->SUPER::new();
+
     $self->set_tabledata($data);
 
+    $self->{view} = $grid;
+
     return $self;
+}
+
+=head2 GetView
+
+Must be overridden to return the grid? Otherwise GetView returns undef.
+
+=cut
+
+sub GetView {
+    my $self = shift;
+
+    return $self->{view};
 }
 
 =head2 GetNumberRows
@@ -180,26 +195,61 @@ sub Clear {
 
 }
 
+=head2 InsertRows
+
 Insert additional rows into the table.
 
+=cut
+
 sub InsertRows {
-    my ($pos, $numRows);
-    return;
+    my ( $self, $pos, $rows ) = @_;
+
+    $rows = 1 unless defined $rows && $rows >= 0;
+
+    return 0 if $rows == 0;
+
+    print " InsertRows: pos=$pos rows=$rows\n";
+
+    eval {
+        if ( my $grid = $self->GetView() ) {
+            my $msg
+                = Wx::GridTableMessage->new( $self,
+                wxGRIDTABLE_NOTIFY_ROWS_INSERTED,
+                $pos, $rows );
+            $grid->ProcessTableMessage($msg);
+        }
+        else {
+            print "No Grid!\n";
+        }
+    };
+    if ($@) {
+        carp "DBGridTable::InsertRows Exception: $@";
+        return 0;
+    }
+
+    return 1;
 }
+
+=head2 AppendRows
 
 Append additional rows at the end of the table.
 
 sub AppendRows {
-    my (numRows);
+    my ($self, $numRows);
+
     return;
 }
+
+=head2 DeleteRows
 
 Delete rows from the table.
 
 sub DeleteRows {
-    my ($pos, $numRows);
+    my ($self, $pos, $numRows);
     return;
 }
+
+=head2 InsertCols
 
 Exactly the same as InsertRows() but for columns.
 

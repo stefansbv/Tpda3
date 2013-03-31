@@ -4,13 +4,14 @@ use strict;
 use warnings;
 
 use Wx   qw(wxSUNKEN_BORDER);
-use base qw(Wx::Grid);
 use Wx::Event qw(EVT_GRID_CELL_LEFT_CLICK EVT_GRID_CELL_RIGHT_CLICK
     EVT_GRID_CELL_LEFT_DCLICK EVT_GRID_CELL_RIGHT_DCLICK
     EVT_GRID_LABEL_LEFT_CLICK EVT_GRID_LABEL_RIGHT_CLICK
     EVT_GRID_LABEL_LEFT_DCLICK EVT_GRID_LABEL_RIGHT_DCLICK
     EVT_GRID_ROW_SIZE EVT_GRID_COL_SIZE EVT_GRID_RANGE_SELECT
     EVT_GRID_CELL_CHANGE EVT_GRID_SELECT_CELL);
+
+use base qw(Wx::Grid);
 
 use Tpda3::Wx::Grid::Table;
 require Tpda3::Utils;
@@ -94,6 +95,7 @@ sub new {
     }
 
     $table->{datarows} = [
+        # [ undef, undef, undef, undef, undef, 0 ],
         # [ 1, 'S50_1341',  '1930 Buick Marquette Phaeton', 29, 37.97, 0 ],
         # [ 2, 'S700_1691', 'American Airlines: B767-300',  48, 81.29, 0 ],
         # [ 3, 'S700_3167', 'F/A 18 Hornet 1/72',           38, 70.40, 0 ],
@@ -115,21 +117,19 @@ sub new {
     #     ]
     # };
 
-    # p $table;
+    my $dt = Tpda3::Wx::Grid::Table->new($table, $self);
 
-    my $dt = Tpda3::Wx::Grid::Table->new($table, 1);
+    $self->SetTable($dt, 1);
 
-    $self->SetTable($dt);
-
-    $self->SetColLabelSize(20);
+    $self->SetColLabelSize(20);              # height
 
     # Set column width
-    my $char_width = $self->GetCharWidth();
+    my $char_width = $self->GetCharWidth() - 1;
     foreach my $col ( @{ $table->{datacols} } ) {
         $self->SetColSize( $col->{id}, $char_width * $col->{width} );
     }
 
-    # Nu mere!
+    # Nu mere!?
     #$self->BeginBatch();
     #$self->SetSelectionMode(wxGrid::wxGridSelectRows);
     #$self->ForceRefresh();
@@ -141,13 +141,29 @@ sub new {
     #$self->SetColFormatFloat(5, 6, 2);
     #$self->EndBatch();
 
+    foreach my $pos (0..1) {
+        $dt->InsertRows($pos, 1);
+        my @data = ( $pos+1, 'S50_1341', '1930 Buick Marquette Phaeton', 29, 37.97, 0 );
+        for (my $col = 0; $col <= $#data; $col++) {
+            print "$col: $data[$col]\n";
+            $dt->SetValue($pos, $col, $data[$col]);
+        }
+    }
+
+    # $self->ForceRefresh();
+
+    my $r =  $dt->GetNumberRows();
+    print " R1: $r\n";
+
+    my $val = $dt->GetValue(1,1);
+    print "val (1,1) is  $val\n";
     return $self;
 }
 
 sub get_type {
     my ($self, $type) = @_;
 
-    return $translation_table{$type}
+    return $translation_table{$type};
 }
 
 =head2 init
