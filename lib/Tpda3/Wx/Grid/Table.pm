@@ -92,7 +92,6 @@ sub GetNumberRows {
     my $self = shift;
 
     my $rowcount = scalar( @{ $self->get_tabledata->{datarows} } );
-    print "rowcount: $rowcount\n";
 
     return $rowcount;
 }
@@ -107,7 +106,6 @@ sub GetNumberCols {
     my $self = shift;
 
     my $colcount = scalar( @{ $self->get_tabledata->{datacols} } );
-    #print "colcount: $colcount\n";
 
     return $colcount;
 }
@@ -143,10 +141,16 @@ sub GetValue {
             and defined $self->get_tabledata->{datarows}[$row][$col];
     };
     carp "Exception in Grid::Table::GetValue: $@" if $@;
-    my $type = $self->GetTypeName($col);
+    my $type = $self->GetTypeName(0, $col);
     $result = $default{$type} unless defined $result;
 
     return $result;
+}
+
+sub get_data_all {
+    my $self = shift;
+
+    return $self->get_tabledata->{datarows};
 }
 
 =head2 SetValue
@@ -161,7 +165,7 @@ sub SetValue {
     carp "row overflow" if $row > $self->GetNumberRows;
     carp "col overflow" if $col > $self->GetNumberCols;
 
-    my $type = $self->GetTypeName($col);
+    my $type = $self->GetTypeName(0, $col);
     $value = $default{$type} unless defined $value;
 
     print "I: $row, $col, $value\n";
@@ -171,17 +175,17 @@ sub SetValue {
 ###
 
 sub GetTypeName {
-    my($self, $col) = @_;
+    my($self, $row, $col) = @_;
     return $self->get_tabledata->{datacols}[$col]{type};
 }
 
 sub CanGetValueAs {
-    my($self, $col) = @_;
+    my($self, $row, $col) = @_;
     return $self->get_tabledata->{datacols}->[$col]->{type};
 }
 
 sub CanSetValueAs {
-    my($self, $col) = @_;
+    my($self, $row, $col) = @_;
     return $self->get_tabledata->{datacols}->[$col]->{type};
 }
 
@@ -403,10 +407,10 @@ sub GetAttr {
   my $cell_attr = Wx::GridCellAttr->new;
 
   # Text alignment
-  if ($self->GetTypeName($col) eq 'double' ) {
+  if ($self->GetTypeName(0, $col) eq 'double' ) {
       $cell_attr->SetAlignment(wxALIGN_RIGHT, wxALIGN_TOP);
   }
-  elsif ($self->GetTypeName($col) eq 'int_id') {
+  elsif ($self->GetTypeName(0, $col) eq 'int_id') {
       $cell_attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_TOP);
   }
 

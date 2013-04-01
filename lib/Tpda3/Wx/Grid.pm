@@ -4,7 +4,11 @@ use strict;
 use warnings;
 use Carp;
 
-use Wx   qw(wxSUNKEN_BORDER);
+use Data::Printer;
+
+use Wx qw(wxSUNKEN_BORDER wxALIGN_LEFT wxALIGN_RIGHT wxALIGN_CENTRE
+    wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL wxFONTWEIGHT_NORMAL
+    wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD);
 use Wx::Event qw(EVT_GRID_CELL_LEFT_CLICK EVT_GRID_CELL_RIGHT_CLICK
     EVT_GRID_CELL_LEFT_DCLICK EVT_GRID_CELL_RIGHT_DCLICK
     EVT_GRID_LABEL_LEFT_CLICK EVT_GRID_LABEL_RIGHT_CLICK
@@ -67,19 +71,12 @@ sub new {
     $self->DisableDragRowSize();
     $self->AutoSize();
 
-    # $self->SetRowLabelAlignment(wxALIGN_RIGHT, wxALIGN_CENTRE);
-    # $self->SetColLabelAlignment(wxALIGN_LEFT,  wxALIGN_CENTRE);
-    # $self->SetDefaultCellAlignment(wxALIGN_LEFT,  wxALIGN_CENTRE);
-
-    # $table->{datacols}->[0]{type}  = 'string';
-    # $table->{datacols}->[0]{label} = 'Art';
-    # ...
-    # $table->{datarows}->[0][0] = 'r1al1';
-    # ...
+    $self->SetColLabelAlignment(wxALIGN_CENTRE, wxALIGN_CENTRE);
+    $self->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_CENTRE);
 
     #-- Transforma data
 
-    use Data::Printer;
+
 
     my $table = {};
 
@@ -122,25 +119,30 @@ sub new {
 
     $self->SetTable($self->{grid}, 1);
 
+    # $self->SetMargins(25, 25); ???
+    my $label_font
+        = Wx::Font->new( 8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
+        wxFONTWEIGHT_NORMAL );
+    $self->SetLabelFont($label_font);
     $self->SetColLabelSize(20);              # height
+    $self->SetSelectionMode(Wx::wxGridSelectRows);
 
     # Set column width
-    my $char_width = $self->GetCharWidth() - 1;
+    my $char_width = $self->GetCharWidth();
     foreach my $col ( @{ $table->{datacols} } ) {
         $self->SetColSize( $col->{id}, $char_width * $col->{width} );
     }
 
-    # Nu mere!?
-    #$self->BeginBatch();
-    #$self->SetSelectionMode(wxGrid::wxGridSelectRows);
-    #$self->ForceRefresh();
-
+    # No visible change with this :(
+    # $self->BeginBatch();
     # We can specify the some cells will store numeric values rather
     # than strings. Here we set grid column 5 to hold floating point
     # values displayed with width of 6 and precision of 2
-    #$self->SetColFormatFloat(4, 6, 2);
-    #$self->SetColFormatFloat(5, 6, 2);
-    #$self->EndBatch();
+    # $self->SetColFormatNumber(0);
+    $self->SetColFormatFloat(3, -1, 2);
+    # $self->SetColFormatFloat(4, 6, 2);
+    # $self->SetColFormatFloat(5, 6, 2);
+    # $self->EndBatch();
 
     # foreach my $pos (0..1) {
     #     $self->{grid}->InsertRows($pos, 1);
@@ -150,11 +152,6 @@ sub new {
     #         $self->{grid}->SetValue($pos, $col, $data[$col]);
     #     }
     # }
-
-    # $self->ForceRefresh();
-
-    my $r =  $self->{grid}->GetNumberRows();
-    print " R1: $r\n";
 
     return $self;
 }
@@ -182,9 +179,6 @@ sub init {
     # Other
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
-
-    # use Data::Printer; p $self->{columns};
-    # $self->set_tags();
 
     return;
 }
@@ -249,8 +243,10 @@ sub clear_all {
 }
 
 sub data_read {
-    my ($self, ) = @_;
-    return;
+    my $self = shift;
+
+    # Have to change the structure of the data to be returned
+    return; #$self->{grid}->get_data_all;
 }
 
 sub get_selected {
@@ -291,23 +287,28 @@ sub fill {
                 = @$fld_cfg{ 'id', 'datatype', 'displ_width', 'numscale' }
                 ;                                  # hash slice
 
-            if ( $datatype eq 'numeric' ) {
-                $value = 0 unless $value;
-                if ( defined $numscale ) {
+            # if ( $datatype eq 'numeric' ) {
+            #     $value = 0 unless $value;
+            #     if ( defined $numscale ) {
 
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${numscale}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
+            #         # Daca SCALE >= 0, Formatez numarul
+            #         $value = sprintf( "%.${numscale}f", $value );
+            #     }
+            #     else {
+            #         $value = sprintf( "%.0f", $value );
+            #     }
+            # }
 
             $self->{grid}->SetValue( $row, $col, $value );
         }
 
         $row++;
     }
+
+    print "Data:\n";
+    my $dd = $self->{grid}->get_data_all;
+    p $dd;
+    #$self->ForceRefresh();
 
     return;
 }
