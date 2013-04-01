@@ -78,16 +78,22 @@ sub get_controls {
 
 =head2 get_tm_controls
 
-Get a data structure containing references to table widgets.
-
-Not yet!
+Get a data structure containing references to table (grid) widgets.
+If TM Id parameter is provided return a reference to that TM object.
 
 =cut
 
 sub get_tm_controls {
-    my ( $self, $tm ) = @_;
+    my ( $self, $tm_ds ) = @_;
 
-    return {};
+    return {} if !exists $self->{tm_controls};
+
+    if ($tm_ds) {
+        return ${ $self->{tm_controls}{rec}{$tm_ds} };
+    }
+    else {
+        return $self->{tm_controls}{rec};
+    }
 }
 
 =head2 get_rq_controls

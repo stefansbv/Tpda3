@@ -16,6 +16,12 @@ our @properties = qw( tabledata );
 
 __PACKAGE__->create_both_accessors( @properties );
 
+my %default = (
+    integer => 0,
+    string  => q{},
+    double  => 0.00,
+);
+
 =head1 NAME
 
 Tpda3::Wx::GridTable
@@ -66,7 +72,7 @@ sub new {
 
 =head2 GetView
 
-Must be overridden to return the grid? Otherwise GetView returns undef.
+Overridden to return the grid? Otherwise GetView returns undef.
 
 =cut
 
@@ -78,7 +84,7 @@ sub GetView {
 
 =head2 GetNumberRows
 
-Must be overridden to return the number of rows in the table.
+Overridden to return the number of rows in the table.
 
 =cut
 
@@ -86,7 +92,6 @@ sub GetNumberRows {
     my $self = shift;
 
     my $rowcount = scalar( @{ $self->get_tabledata->{datarows} } );
-
     print "rowcount: $rowcount\n";
 
     return $rowcount;
@@ -94,7 +99,7 @@ sub GetNumberRows {
 
 =head2 GetNumberCols
 
-Must be overridden to return the number of columns in the table.
+Overridden to return the number of columns in the table.
 
 =cut
 
@@ -102,15 +107,14 @@ sub GetNumberCols {
     my $self = shift;
 
     my $colcount = scalar( @{ $self->get_tabledata->{datacols} } );
-
-    print "colcount: $colcount\n";
+    #print "colcount: $colcount\n";
 
     return $colcount;
 }
 
 =head2 IsEmptyCell
 
-May be overridden to implement testing for empty cells.
+Overridden to implement testing for empty cells.
 
 =cut
 
@@ -124,44 +128,60 @@ sub IsEmptyCell {
 
 =head2 GetValue
 
-Must be overridden to implement accessing the table values as text.
+Overridden to implement accessing the table values as text.
 
 =cut
 
 sub GetValue {
-    my($self, $row, $col) = @_;
+    my ( $self, $row, $col ) = @_;
 
-    #print 'GetValue:',$self->get_tabledata->{datarows}->[$row]->[$col], "\n";
+    my $result = undef;
+    eval {
+        $result = $self->get_tabledata->{datarows}[$row][$col]
+            if  $row < $self->GetNumberRows
+            and $col < $self->GetNumberCols
+            and defined $self->get_tabledata->{datarows}[$row][$col];
+    };
+    carp "Exception in Grid::Table::GetValue: $@" if $@;
+    my $type = $self->GetTypeName($col);
+    $result = $default{$type} unless defined $result;
 
-    return $self->get_tabledata->{datarows}->[$row]->[$col];
+    return $result;
 }
 
 =head2 SetValue
 
-Must be overridden to implement setting the table values as text.
+Overridden to implement setting the table values as text.
 
 =cut
 
 sub SetValue {
-    my($self, $row, $col, $value) = @_;
+    my ( $self, $row, $col, $value ) = @_;
 
-    $self->get_tabledata->{datarows}->[$row]->[$col] = $value;
+    carp "row overflow" if $row > $self->GetNumberRows;
+    carp "col overflow" if $col > $self->GetNumberCols;
+
+    my $type = $self->GetTypeName($col);
+    $value = $default{$type} unless defined $value;
+
+    print "I: $row, $col, $value\n";
+    $self->get_tabledata->{datarows}[$row][$col] = $value;
 }
 
 ###
 
 sub GetTypeName {
-    my($self, $row, $col) = @_;
-    return $self->get_tabledata->{datacols}->[$col]->{type};
+    my($self, $col) = @_;
+    return $self->get_tabledata->{datacols}[$col]{type};
 }
 
 sub CanGetValueAs {
-    my($self, $row, $col) = @_;
+    my($self, $col) = @_;
     return $self->get_tabledata->{datacols}->[$col]->{type};
 }
 
 sub CanSetValueAs {
-    my($self, $row, $col) = @_;
+    my($self, $col) = @_;
     return $self->get_tabledata->{datacols}->[$col]->{type};
 }
 
@@ -223,7 +243,7 @@ sub InsertRows {
         }
     };
     if ($@) {
-        carp "DBGridTable::InsertRows Exception: $@";
+        carp "Grid::Table::InsertRows Exception: $@";
         return 0;
     }
 
@@ -244,9 +264,35 @@ sub AppendRows {
 
 Delete rows from the table.
 
+=cut
+
 sub DeleteRows {
-    my ($self, $pos, $numRows);
-    return;
+    my ( $self, $pos, $rows ) = @_;
+
+    $rows = 1 unless defined $rows && $rows >= 0;
+
+    return 0 if $rows == 0;
+
+    print " DeleteRows: pos=$pos rows=$rows\n";
+
+    eval {
+        if ( my $grid = $self->GetView() ) {
+            my $msg
+                = Wx::GridTableMessage->new( $self,
+                wxGRIDTABLE_NOTIFY_ROWS_DELETED,
+                $pos, $rows );
+            $grid->ProcessTableMessage($msg);
+        }
+        else {
+            print "No Grid!\n";
+        }
+    };
+    if ($@) {
+        carp "Grid::Table::DeleteRows Exception: $@";
+        return 0;
+    }
+
+    return 1;
 }
 
 =head2 InsertCols
@@ -357,10 +403,10 @@ sub GetAttr {
   my $cell_attr = Wx::GridCellAttr->new;
 
   # Text alignment
-  if ($self->GetTypeName($row, $col) eq 'double' ) {
+  if ($self->GetTypeName($col) eq 'double' ) {
       $cell_attr->SetAlignment(wxALIGN_RIGHT, wxALIGN_TOP);
   }
-  elsif ($self->GetTypeName($row, $col) eq 'int_id') {
+  elsif ($self->GetTypeName($col) eq 'int_id') {
       $cell_attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_TOP);
   }
 
@@ -386,3 +432,35 @@ CanHaveAttributes();
 =cut
 
 1;
+
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+None known.
+
+Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGMENTS
+
+Based on the CP::Wx::Grid::Table module Copyright (c) 2012 Mark
+Dootson and the DBGridTable package example from
+http://wiki.wxperl.nl/Wx::GridTableBase.
+
+Thank you!
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright:
+  Mark Dootson  2012
+  Stefan Suciu  2013
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Wx::Grid::Table

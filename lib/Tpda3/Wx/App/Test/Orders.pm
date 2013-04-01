@@ -260,7 +260,7 @@ sub run_screen {
     my $columns = $header->{columns};
     my $table
         = Tpda3::Wx::Grid->new( $rec_page, -1, undef, undef, undef, $columns );
-    #$table->init( undef, $header );
+    $table->init( undef, $header );
 
     my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
     my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
@@ -320,6 +320,9 @@ sub run_screen {
         comments       => [ undef, $ecomments ],
         ordertotal     => [ undef, $eordertotal ],
     };
+
+    # Grid objects; just one for now :)
+    $self->{tm_controls} = { rec => { tm1 => \$table, }, };
 
     return;
 }

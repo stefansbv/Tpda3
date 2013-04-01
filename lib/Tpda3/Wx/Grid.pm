@@ -2,6 +2,7 @@ package Tpda3::Wx::Grid;
 
 use strict;
 use warnings;
+use Carp;
 
 use Wx   qw(wxSUNKEN_BORDER);
 use Wx::Event qw(EVT_GRID_CELL_LEFT_CLICK EVT_GRID_CELL_RIGHT_CLICK
@@ -117,9 +118,9 @@ sub new {
     #     ]
     # };
 
-    my $dt = Tpda3::Wx::Grid::Table->new($table, $self);
+    $self->{grid} = Tpda3::Wx::Grid::Table->new($table, $self);
 
-    $self->SetTable($dt, 1);
+    $self->SetTable($self->{grid}, 1);
 
     $self->SetColLabelSize(20);              # height
 
@@ -141,22 +142,20 @@ sub new {
     #$self->SetColFormatFloat(5, 6, 2);
     #$self->EndBatch();
 
-    foreach my $pos (0..1) {
-        $dt->InsertRows($pos, 1);
-        my @data = ( $pos+1, 'S50_1341', '1930 Buick Marquette Phaeton', 29, 37.97, 0 );
-        for (my $col = 0; $col <= $#data; $col++) {
-            print "$col: $data[$col]\n";
-            $dt->SetValue($pos, $col, $data[$col]);
-        }
-    }
+    # foreach my $pos (0..1) {
+    #     $self->{grid}->InsertRows($pos, 1);
+    #     my @data = ( $pos+1, 'S50_1341', '1930 Buick Marquette Phaeton', 29, 37.97, 0 );
+    #     for (my $col = 0; $col <= $#data; $col++) {
+    #         print "$col: $data[$col]\n";
+    #         $self->{grid}->SetValue($pos, $col, $data[$col]);
+    #     }
+    # }
 
     # $self->ForceRefresh();
 
-    my $r =  $dt->GetNumberRows();
+    my $r =  $self->{grid}->GetNumberRows();
     print " R1: $r\n";
 
-    my $val = $dt->GetValue(1,1);
-    print "val (1,1) is  $val\n";
     return $self;
 }
 
@@ -233,6 +232,82 @@ sub set_tags {
     #     # Change the tag priority
     #     $self->tagRaise( 'expnd', 'title' );
     # }
+
+    return;
+}
+
+sub clear_all {
+    my ($self, ) = @_;
+
+    my $rows = $self->{grid}->GetNumberRows;
+    if ( $rows > 0 ) {
+        print " deleting $rows rows\n";
+        warn "rows not deleted" unless $self->{grid}->DeleteRows( 0, $rows );
+    }
+
+    return;
+}
+
+sub data_read {
+    my ($self, ) = @_;
+    return;
+}
+
+sub get_selected {
+    my ($self, ) = @_;
+    return;
+}
+
+sub set_selected {
+    my ($self, ) = @_;
+    return;
+}
+
+=head2 fill
+
+Fill Grid with data.
+
+=cut
+
+sub fill {
+    my ( $self, $record_ref ) = @_;
+
+    my $row = 0;
+
+    #- Scan and write to table
+
+    foreach my $record ( @{$record_ref} ) {
+        warn "row not inserted" unless $self->{grid}->InsertRows( $row, 1 );
+        foreach my $field ( keys %{ $self->{columns} } ) {
+            my $fld_cfg = $self->{columns}{$field};
+
+            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
+
+            my $value = $record->{$field};
+            $value = q{} unless defined $value;    # empty
+            $value =~ s/[\n\t]//g;                 # delete control chars
+
+            my ( $col, $datatype, $width, $numscale )
+                = @$fld_cfg{ 'id', 'datatype', 'displ_width', 'numscale' }
+                ;                                  # hash slice
+
+            if ( $datatype eq 'numeric' ) {
+                $value = 0 unless $value;
+                if ( defined $numscale ) {
+
+                    # Daca SCALE >= 0, Formatez numarul
+                    $value = sprintf( "%.${numscale}f", $value );
+                }
+                else {
+                    $value = sprintf( "%.0f", $value );
+                }
+            }
+
+            $self->{grid}->SetValue( $row, $col, $value );
+        }
+
+        $row++;
+    }
 
     return;
 }
