@@ -107,7 +107,7 @@ toolbar:
   tb_tn:
     id:      1006
     type:    _item_normal
-    icon:    apppencil16
+    icon:    editcopy16
     tooltip: Take note
     help:    Take note
     sep:     none
@@ -127,7 +127,7 @@ toolbar:
   tb_tr:
     id:      1007
     type:    _item_normal
-    icon:    actredo16
+    icon:    editpaste16
     tooltip: Restore note
     help:    Restore note
     sep:     after

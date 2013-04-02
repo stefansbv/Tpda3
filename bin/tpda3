@@ -108,15 +108,15 @@ Version 0.65
 
 =head1 SYNOPSIS
 
-tpda3 [<config-name>] [-user <user>] [-password <pass>]
+tpda3 [<mnemonic>] [-user <user>] [-password <pass>]
 
 tpda3 -list
 
-tpda3 <config-name> -init <new-config-name>
+tpda3 <mnemonic> -init <new-mnemonic>
 
 Options:
 
- -init <config-name>  Create a copy of a configuration with a different name
+ -init <mnemonic>  Create a copy of a configuration with a different name
  -list                List available configuration names
  -user                User name
  -password            Password
@@ -126,21 +126,27 @@ Options:
 
 =head1 DESCRIPTION
 
-B<Tpda3> (Tiny Perl Database Application) is a classic desktop,
-database application framework, written in Perl and pTk.
+Tiny Perl Database Application - B<Tpda3> is a classic desktop
+database application framework and run-time, written in Perl.  The
+graphical user interface is based on PerlTk. It supports the CUBRID,
+Firebird, PostgreSQL and SQLite RDBMS.
+
+There is also an early, experimental, graphical user interface based
+on wxPerl.
 
 =head2 Configuration
 
 A configuration name is the name of the directory underneath the
-B<.tpda3/apps/> path.  This directory contains at least two other
-directories B<etc> and B<scr>. The B<etc> directory contains three
-required configuration files. The first is B<connection.yml>.  This
-file has to be updated with the connection configuration for your
-database.  The second configuration file is B<menu.yml> and contains
-the applications menu definitions. The third file is B<toolbar.yml>,
-for the custom toolbars in the screens for example the [+] and [-]
-buttons asociated with tables.  The other directory named B<scr> is
-the place where the screen configuration files are stored.
+B<.tpda3/apps/> path and the term used for it is B<mnemonic>.  This
+directory contains at least two other directories B<etc> and
+B<scr>. The B<etc> directory contains three required configuration
+files. The first is B<connection.yml>.  This file has to be updated
+with the connection configuration for your database.  The second
+configuration file is B<menu.yml> and contains the applications menu
+definitions. The third file is B<toolbar.yml>, for the custom toolbars
+in the screens for example the [+] and [-] buttons asociated with
+tables.  The other directory named B<scr> is the place where the
+screen configuration files are stored.
 
 Configuration files are in YAML format, the format described in the
 documentation of the YAML::Tiny module, except the screen
@@ -150,12 +156,12 @@ configuration files which are in Config::General format.
 
 =over
 
-=item B<-init> <config-name>
+=item B<-init> <mnemonic>
 
 Create a copy of a configuration with a different name.  A connection
 name is required, that exists in the I<share> directory.
 
-=item B<-list> [config-name]
+=item B<-list> [mnemonic]
 
 List all configuration names.  Usually a configuration name is the
 same as the database name, but this is not a requirement.
