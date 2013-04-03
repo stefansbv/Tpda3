@@ -14,11 +14,11 @@ Tpda3::Wx::DatePopup - A custom, Calendar popup for Tpda3::Wx::ComboDate.
 
 =head1 VERSION
 
-Version 0.65
+Version 0.66
 
 =cut
 
-our $VERSION = 0.65;
+our $VERSION = 0.66;
 
 =head1 SYNOPSIS
 
