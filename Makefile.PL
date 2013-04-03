@@ -1,7 +1,7 @@
 #
 # Makefile.PL for Tpda3
 #
-# Copyright (C) 2010-2012  Stefan Suciu
+# Copyright (C) 2010-2013  Stefan Suciu
 # GNU General Public License v3
 #
 

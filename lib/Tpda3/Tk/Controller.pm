@@ -474,7 +474,7 @@ sub about {
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
     $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2010-2012\n", 'normal' );
+    $text->insert( 'end', "Copyright 2010-2013\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', 'stefan@s2i2.ro',
         'italic' );
@@ -845,7 +845,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2012 Stefan Suciu.
+Copyright 2010-2013 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

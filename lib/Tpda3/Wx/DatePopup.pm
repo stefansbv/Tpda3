@@ -116,7 +116,7 @@ Copyright (c) 2007 Mattia Barbon
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Stefan Suciu.
+Copyright 2012-2013 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

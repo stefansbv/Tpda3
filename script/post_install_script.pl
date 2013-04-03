@@ -7,7 +7,7 @@
 # In this particular case the load order for tables is not important.
 #
 # This script is part of the Tpda3 application.
-# Copyleft 2011-2012 Ștefan Suciu
+# Copyleft 2011-2013 Ștefan Suciu
 #
 
 use strict;

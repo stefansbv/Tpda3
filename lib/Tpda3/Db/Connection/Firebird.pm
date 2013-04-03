@@ -404,11 +404,11 @@ Please report any bugs or feature requests to the author.
 Information schema queries inspired from:
 
  - http://www.alberton.info/firebird_sql_meta_info.html by Lorenzo Alberton
- - Flamerobin Copyright (c) 2004-2012 The FlameRobin Development Team
+ - Flamerobin Copyright (c) 2004-2013 The FlameRobin Development Team
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2012 Stefan Suciu.
+Copyright 2010-2013 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

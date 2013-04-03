@@ -2,7 +2,7 @@
 #
 # Import CSV files into databases, using the Text::CSV_XS module.
 #
-# Copyleft 2011-2012 Ștefan Suciu
+# Copyleft 2011-2013 Ștefan Suciu
 #
 
 use strict;
