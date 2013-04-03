@@ -179,12 +179,15 @@ without:
  SQLite
  CUBRID
 
-The implementation of the MVC pattern is (heavily) based on the
+The implementation of the MVC pattern is heavily based on the
 implementation from the Cipres project:
 
 Author: Rutger Vos, 17/Aug/2006
         http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
              /cipres/framework/perl/cipres/lib/Cipres/
+
+The implementation of the Wx interface is heavily based on the work
+of Mark Dootson.
 
 Thank You!
 
