@@ -165,15 +165,9 @@ You can also look for information at: http://tpda.sourceforge.net
 
 =head1 ACKNOWLEDGEMENTS
 
-The implementation of the MVC pattern is (heavily) based on the
-implementation from the Cipres project:
-
-Author: Rutger Vos, 17/Aug/2006
-        http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
-             /cipres/framework/perl/cipres/lib/Cipres/
-
 The Open Source movement, and all the authors, contributors and
-community behind this great projects:
+community behind this great projects, this project would not exist
+without:
 
  Perl and Perl modules including CPAN
  Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
@@ -184,6 +178,13 @@ community behind this great projects:
  Postgresql
  SQLite
  CUBRID
+
+The implementation of the MVC pattern is (heavily) based on the
+implementation from the Cipres project:
+
+Author: Rutger Vos, 17/Aug/2006
+        http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
+             /cipres/framework/perl/cipres/lib/Cipres/
 
 Thank You!
 
