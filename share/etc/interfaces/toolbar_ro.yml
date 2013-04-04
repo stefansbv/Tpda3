@@ -28,8 +28,8 @@ toolbar:
     id:      1002
     type:    _item_normal
     icon:    actcheck16
-    tooltip: Execuţie căutare
-    help:    Execuţie căutare
+    tooltip: Execuție căutare
+    help:    Execuție căutare
     sep:     none
     state:
       rec:
@@ -48,8 +48,8 @@ toolbar:
     id:      1003
     type:    _item_normal
     icon:    acthelp16
-    tooltip: Execuţie numărare
-    help:    Execuţie numărare
+    tooltip: Execuție numărare
+    help:    Execuție numărare
     sep:     after
     state:
       rec:
@@ -107,9 +107,9 @@ toolbar:
   tb_tn:
     id:      1006
     type:    _item_normal
-    icon:    apppencil16
-    tooltip: Notiţă
-    help:    Notiţă înregistrare
+    icon:    editcopy16
+    tooltip: Copiere înregistrare
+    help:    Copiere înregistrare
     sep:     none
     state:
       rec:
@@ -127,9 +127,9 @@ toolbar:
   tb_tr:
     id:      1007
     type:    _item_normal
-    icon:    actredo16
-    tooltip: Restaurare notiţă
-    help:    Restaurare notiţă înregistrare
+    icon:    editpaste16
+    tooltip: Inserare înregistrare
+    help:    Inserare înregistrare
     sep:     after
     state:
       rec:
@@ -188,8 +188,8 @@ toolbar:
     id:      1010
     type:    _item_normal
     icon:    actitemdelete16
-    tooltip: Ştergere înregistrare
-    help:    Ştergere înregistrare
+    tooltip: Ștergere înregistrare
+    help:    Ștergere înregistrare
     sep:     none
     state:
       rec:
@@ -248,8 +248,8 @@ toolbar:
     id:      1013
     type:    _item_normal
     icon:    actexit16
-    tooltip: Ieşire
-    help:    Ieşire din aplicaţie
+    tooltip: Ieșire
+    help:    Ieșire din aplicație
     sep:     after
     state:
       rec:

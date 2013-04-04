@@ -108,8 +108,8 @@ toolbar:
     id:      1006
     type:    _item_normal
     icon:    editcopy16
-    tooltip: Take note
-    help:    Take note
+    tooltip: Copy record
+    help:    Copy record
     sep:     none
     state:
       rec:
@@ -128,8 +128,8 @@ toolbar:
     id:      1007
     type:    _item_normal
     icon:    editpaste16
-    tooltip: Restore note
-    help:    Restore note
+    tooltip: Paste record
+    help:    Paste record
     sep:     after
     state:
       rec:
