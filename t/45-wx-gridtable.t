@@ -1,10 +1,10 @@
 #!/bin/env perl
-
+#
+# Inspired from the test of the Wx-Scintilla module,
+# Copyright (C) 2011 Ahmad M. Zawawi
+#
 use strict;
-
-BEGIN {
-    $^W = 1;
-}
+use warnings;
 
 use Test::More;
 
@@ -30,10 +30,6 @@ sub Notify {
     main::ok( 1, "Timer works.. Destroyed the frame!" );
 }
 
-#----> DEMO EDITOR APPLICATION
-
-# First, define an application object class to encapsulate the
-# application itself
 package TestApp;
 
 use strict;

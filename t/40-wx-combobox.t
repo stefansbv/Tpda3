@@ -1,10 +1,10 @@
-#!/usr/bin/perl
-
+#!/bin/env perl
+#
+# Inspired from the test of the Wx-Scintilla module,
+# Copyright (C) 2011 Ahmad M. Zawawi
+#
 use strict;
-
-BEGIN {
-    $^W = 1;
-}
+use warnings;
 
 use Test::More;
 
@@ -30,11 +30,7 @@ sub Notify {
     main::ok( 1, "Timer works.. Destroyed the frame!" );
 }
 
-#----> DEMO EDITOR APPLICATION
-
-# First, define an application object class to encapsulate the
-# application itself
-package DemoEditorApp;
+package TestApp;
 
 use strict;
 use warnings;
@@ -92,7 +88,7 @@ sub OnInit {
     foreach my $choice ( @{$choices} ) {
         my $name  = $choice->{-name};
         my $value = $choice->{-value};
-        main::diag("Testing with '$name' = '$value'");
+        #main::diag("Testing with '$name' = '$value'");
         main::is( $cb->set_selected($value), undef,  "Set selected '$value'" );
         main::is( $cb->get_selected(),       $value, "Get selected '$value'" );
     }
@@ -107,5 +103,5 @@ sub OnInit {
 
 # Create the application object, and pass control to it.
 package main;
-my $app = DemoEditorApp->new;
+my $app = TestApp->new;
 $app->MainLoop;
