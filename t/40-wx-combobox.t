@@ -1,34 +1,49 @@
-#
-# Tpda3 Wx GUI test script
-#
-# DONE: Change to properly skip if no Wx (use WxTest problem)
-#
+#!/usr/bin/perl
+
 use strict;
-use warnings;
-use lib qw(t/lib);
 
-use Test::More skip_all => 'Not ready';
+BEGIN {
+    $^W = 1;
+}
 
-my $ok_test;
+use Test::More;
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
+}
+plan( tests => 17 );
 
-    eval { require WxTest; };
-    if ($@) {
-        plan( skip_all => 'wxPerl is required for this test' );
-    }
-    else {
-        plan tests => 16;
-        $ok_test = 1;
-    }
+package MyTimer;
+
+use Wx qw(:everything);
+use Wx::Event;
+
+use vars qw(@ISA); @ISA = qw(Wx::Timer);
+
+sub Notify {
+    my $self  = shift;
+    my $frame = Wx::wxTheApp()->GetTopWindow;
+    $frame->Destroy;
+    main::ok( 1, "Timer works.. Destroyed the frame!" );
 }
 
-use if $ok_test, "Wx", q{:everything};
-use if $ok_test, "Wx::Event", q{EVT_TIMER};
-use if $ok_test, "Tpda3::Wx::ComboBox";
+#----> DEMO EDITOR APPLICATION
+
+# First, define an application object class to encapsulate the
+# application itself
+package DemoEditorApp;
+
+use strict;
+use warnings;
+
+use Wx qw(:everything);
+use Wx::Event;
+use base 'Wx::App';
+
+use Tpda3::Wx::ComboBox;
 
 my $choices = [
     {   '-name'  => 'Cancelled',
@@ -51,8 +66,16 @@ my $choices = [
     }
 ];
 
-#main::test {
-    my $frame = shift;
+# We must override OnInit to build the window
+sub OnInit {
+    my $self = shift;
+
+    my $frame = $self->{frame} = Wx::Frame->new(
+        undef,                        # no parent window
+        -1,                           # no window id
+        'Test!',                      # Window title
+    );
+
     my $cb = Tpda3::Wx::ComboBox->new(
         $frame,
         -1,
@@ -62,15 +85,27 @@ my $choices = [
         wxCB_SORT | wxTE_PROCESS_ENTER,
     );
 
-    is( $cb->add_choices($choices), undef, 'Add choices' );
+    main::ok( $cb, 'ComboBox instance created' );
+
+    main::is( $cb->add_choices($choices), undef, 'Add choices' );
 
     foreach my $choice ( @{$choices} ) {
         my $name  = $choice->{-name};
         my $value = $choice->{-value};
-        diag("Testing with '$name' = '$value'");
-        is( $cb->set_selected($value), undef,  "Set selected '$value'" );
-        is( $cb->get_selected(),       $value, "Get selected '$value'" );
+        main::diag("Testing with '$name' = '$value'");
+        main::is( $cb->set_selected($value), undef,  "Set selected '$value'" );
+        main::is( $cb->get_selected(),       $value, "Get selected '$value'" );
     }
-#}
 
-#-- End test
+    # Uncomment this to observe the test
+    $frame->Show(1);
+
+    MyTimer->new->Start( 500, 1 );
+
+    return 1;
+}
+
+# Create the application object, and pass control to it.
+package main;
+my $app = DemoEditorApp->new;
+$app->MainLoop;

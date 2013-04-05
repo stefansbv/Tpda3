@@ -1550,6 +1550,8 @@ Enable / disable controls and set background color.
 sub configure_controls {
     my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
 
+    #$bg_color = 'PALE GREEN' if $bg_color;
+
     $state = $state eq 'normal' ? 1 : 0;
     if ($fld_cfg->{ctrltype} eq 'e' or $fld_cfg->{ctrltype} eq 't') {
         $control->SetEditable($state);

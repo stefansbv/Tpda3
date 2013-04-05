@@ -14,7 +14,7 @@ use Wx::Event qw(EVT_GRID_CELL_LEFT_CLICK EVT_GRID_CELL_RIGHT_CLICK
     EVT_GRID_LABEL_LEFT_CLICK EVT_GRID_LABEL_RIGHT_CLICK
     EVT_GRID_LABEL_LEFT_DCLICK EVT_GRID_LABEL_RIGHT_DCLICK
     EVT_GRID_ROW_SIZE EVT_GRID_COL_SIZE EVT_GRID_RANGE_SELECT
-    EVT_GRID_CELL_CHANGE EVT_GRID_SELECT_CELL);
+    EVT_GRID_CELL_CHANGING EVT_GRID_SELECT_CELL);
 
 use base qw(Wx::Grid);
 
@@ -64,7 +64,7 @@ sub new {
         $id   || -1,
         $pos  || [ -1, -1 ],
         $size || [ -1, -1 ],
-        ( $style || 0 ),
+        #( $style || 0 ),
     );
 
     $self->SetRowLabelSize(0);
@@ -75,8 +75,6 @@ sub new {
     $self->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_CENTRE);
 
     #-- Transforma data
-
-
 
     my $table = {};
 
@@ -125,7 +123,7 @@ sub new {
         wxFONTWEIGHT_NORMAL );
     $self->SetLabelFont($label_font);
     $self->SetColLabelSize(20);              # height
-    $self->SetSelectionMode(Wx::wxGridSelectRows);
+    #$self->SetSelectionMode(Wx::wxGridSelectRows);
 
     # Set column width
     my $char_width = $self->GetCharWidth();
@@ -230,14 +228,21 @@ sub set_tags {
     return;
 }
 
+sub get_num_rows {
+    my $self = shift;
+    return $self->{grid}->GetNumberRows;
+}
+
 sub clear_all {
-    my ($self, ) = @_;
+    my $self = shift;
 
     my $rows = $self->{grid}->GetNumberRows;
     if ( $rows > 0 ) {
-        print " deleting $rows rows\n";
-        warn "rows not deleted" unless $self->{grid}->DeleteRows( 0, $rows );
+        warn "rows not deleted"
+            unless $self->{grid}->DeleteRows( 0, $rows );
     }
+
+    $self->ForceRefresh;
 
     return;
 }
@@ -261,54 +266,41 @@ sub set_selected {
 
 =head2 fill
 
-Fill Grid with data.
+Fill the Grid with data.
 
 =cut
 
 sub fill {
     my ( $self, $record_ref ) = @_;
 
-    my $row = 0;
-
-    #- Scan and write to table
-
-    foreach my $record ( @{$record_ref} ) {
-        warn "row not inserted" unless $self->{grid}->InsertRows( $row, 1 );
-        foreach my $field ( keys %{ $self->{columns} } ) {
-            my $fld_cfg = $self->{columns}{$field};
-
-            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # empty
-            $value =~ s/[\n\t]//g;                 # delete control chars
-
-            my ( $col, $datatype, $width, $numscale )
-                = @$fld_cfg{ 'id', 'datatype', 'displ_width', 'numscale' }
-                ;                                  # hash slice
-
-            # if ( $datatype eq 'numeric' ) {
-            #     $value = 0 unless $value;
-            #     if ( defined $numscale ) {
-
-            #         # Daca SCALE >= 0, Formatez numarul
-            #         $value = sprintf( "%.${numscale}f", $value );
-            #     }
-            #     else {
-            #         $value = sprintf( "%.0f", $value );
-            #     }
-            # }
-
-            $self->{grid}->SetValue( $row, $col, $value );
-        }
-
-        $row++;
+    foreach my $row_record ( @{$record_ref} ) {
+        $self->append_rows( $row_record );
     }
 
-    print "Data:\n";
-    my $dd = $self->{grid}->get_data_all;
-    p $dd;
-    #$self->ForceRefresh();
+    return;
+}
+
+=head2 append_rows
+
+Transform data from HoH to AoA and call GridTable->AppendRows.
+
+=cut
+
+sub append_rows {
+    my ($self, $row_record) = @_;
+
+    my $row = $self->get_num_rows;
+
+    my @record;
+    my $fields = Tpda3::Utils->sort_hash_by_id( $self->{columns} );
+    foreach my $field ( @{$fields} ) {
+        push @record, $row_record->{$field};
+    }
+
+    croak "row not appended"
+        unless $self->{grid}->AppendRows( $row, 1, \@record );
+
+    $self->ForceRefresh;
 
     return;
 }

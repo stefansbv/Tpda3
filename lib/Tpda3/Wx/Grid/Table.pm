@@ -140,7 +140,7 @@ sub GetValue {
             and $col < $self->GetNumberCols
             and defined $self->get_tabledata->{datarows}[$row][$col];
     };
-    carp "Exception in Grid::Table::GetValue: $@" if $@;
+    croak "Exception in Grid::Table::GetValue: $@" if $@;
     my $type = $self->GetTypeName(0, $col);
     $result = $default{$type} unless defined $result;
 
@@ -168,7 +168,7 @@ sub SetValue {
     my $type = $self->GetTypeName(0, $col);
     $value = $default{$type} unless defined $value;
 
-    print "I: $row, $col, $value\n";
+    #print "I: $row, $col, $value\n";
     $self->get_tabledata->{datarows}[$row][$col] = $value;
 }
 
@@ -227,13 +227,35 @@ Insert additional rows into the table.
 
 sub InsertRows {
     my ( $self, $pos, $rows ) = @_;
+    return 0;
+}
+
+=head2 AppendRows
+
+Append additional rows at the end of the table.
+
+=cut
+
+sub AppendRows {
+    my ( $self, $pos, $rows, $record_aref ) = @_;
 
     $rows = 1 unless defined $rows && $rows >= 0;
 
     return 0 if $rows == 0;
 
-    print " InsertRows: pos=$pos rows=$rows\n";
+    print " AppendRows: pos=$pos rows=$rows\n";
+    my $table_cols = $self->GetNumberCols;
+    my $data_cols  = scalar @{$record_aref};
 
+    croak "Wrong data columns number got:$data_cols, expected $table_cols"
+        if $table_cols != $data_cols;
+
+    # Insert data
+    for (my $col = 0; $col < $data_cols; $col++) {
+        $self->SetValue( $pos, $col, $record_aref->[$col] );
+    }
+
+    # Notify the Grid about the insert
     eval {
         if ( my $grid = $self->GetView() ) {
             my $msg
@@ -243,25 +265,15 @@ sub InsertRows {
             $grid->ProcessTableMessage($msg);
         }
         else {
-            print "No Grid!\n";
+            croak "No Grid!\n";
         }
     };
     if ($@) {
-        carp "Grid::Table::InsertRows Exception: $@";
+        croak "Grid::Table::AppendRows Exception: $@";
         return 0;
     }
 
     return 1;
-}
-
-=head2 AppendRows
-
-Append additional rows at the end of the table.
-
-sub AppendRows {
-    my ($self, $numRows);
-
-    return;
 }
 
 =head2 DeleteRows
@@ -279,6 +291,9 @@ sub DeleteRows {
 
     print " DeleteRows: pos=$pos rows=$rows\n";
 
+    my $data = $self->get_data_all;
+    splice @{$data}, $pos, $rows;            # why does this work ???
+
     eval {
         if ( my $grid = $self->GetView() ) {
             my $msg
@@ -288,11 +303,11 @@ sub DeleteRows {
             $grid->ProcessTableMessage($msg);
         }
         else {
-            print "No Grid!\n";
+            croak "No Grid!\n";
         }
     };
     if ($@) {
-        carp "Grid::Table::DeleteRows Exception: $@";
+        croak "Grid::Table::DeleteRows Exception: $@";
         return 0;
     }
 

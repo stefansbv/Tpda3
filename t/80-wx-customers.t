@@ -5,11 +5,11 @@
 use strict;
 use warnings;
 
-use Test::More skip_all => 'Not ready';
+use Test::More; skip_all => 'Not ready';
 
 use lib qw( lib ../lib );
 
-my $ok_test;
+my $ok_test_it;
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -22,12 +22,12 @@ BEGIN {
     }
     else {
         plan tests => 23;
-        $ok_test = 1;
+        $ok_test_it = 1;
     }
 }
 
-use if $ok_test, "Wx", q{:everything};
-use if $ok_test, "Wx::Event", q{EVT_TIMER};
+use if $ok_test_it, "Wx", q{:everything};
+use if $ok_test_it, "Wx::Event", q{EVT_TIMER};
 
 require Tpda3;
 require Tpda3::Config;
@@ -98,7 +98,7 @@ my $timer3 = Wx::Timer->new( $a->{gui}{_view}, 3 );
 $timer3->Start(2000);
 
 EVT_TIMER $a->{gui}{_view}, 3, sub {
-    $a->{gui}{_view}->on_quit;
+    $a->{gui}->on_quit;
 };
 
 $a->run;

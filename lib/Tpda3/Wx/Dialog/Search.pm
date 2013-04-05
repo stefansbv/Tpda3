@@ -316,6 +316,7 @@ Refresh the message on the screen.
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
 
+    #$color = 'PALE GREEN' if $color;
     $self->{_msg}->SetLabel($text) if defined $text;
     $self->{_msg}->SetForegroundColour( Wx::Colour->new($color) ) if $color;
 
