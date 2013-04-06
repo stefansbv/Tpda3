@@ -1,7 +1,8 @@
 #!/bin/env perl
 #
-# Inspired from the test of the Wx-Scintilla module,
-# Copyright (C) 2011 Ahmad M. Zawawi
+# Inspired from the tests of the Wx-Scintilla module,
+# Copyright (C) 2011 Ahmad M. Zawawi,
+# the MyTimer package is copied verbatim.
 #
 use strict;
 use warnings;
@@ -14,7 +15,7 @@ BEGIN {
         exit 0;
     }
 }
-plan( tests => 11 );
+plan( tests => 14 );
 
 package MyTimer;
 
@@ -27,7 +28,7 @@ sub Notify {
     my $self  = shift;
     my $frame = Wx::wxTheApp()->GetTopWindow;
     $frame->Destroy;
-    main::ok( 1, "Timer works.. Destroyed the frame!" );
+    main::ok( 1, "Grid instance destroyed" );
 }
 
 package TestApp;
@@ -139,11 +140,7 @@ my $record = [
 sub OnInit {
     my $self = shift;
 
-    my $frame = $self->{frame} = Wx::Frame->new(
-        undef,                        # no parent window
-        -1,                           # no window id
-        'Test!',                      # Window title
-    );
+    my $frame = $self->{frame} = Wx::Frame->new( undef, -1, 'Test!', );
 
     my $columns = $header->{columns};
     my $table = Tpda3::Wx::Grid->new(
@@ -158,21 +155,16 @@ sub OnInit {
 
     main::ok( $table, 'Grid instance created' );
 
-    # main::is( $cb->add_choices($choices), undef, 'Add choices' );
-    main::is( $table->fill($record), undef, 'fill TM' );
-    main::is( $table->clear_all, undef, 'clear TM' );
-    main::is( $table->get_num_rows, 0, 'no rows' );
-
-    main::is( $table->fill($record), undef, 'fill TM' );
-    main::is( $table->clear_all, undef, 'clear TM' );
-    main::is( $table->get_num_rows, 0, 'no rows' );
-
-    main::is( $table->fill($record), undef, 'fill TM' );
-    main::is( $table->clear_all, undef, 'clear TM' );
-    main::is( $table->get_num_rows, 0, 'no rows' );
+    # Fill the table and delete all
+    foreach (1..3) {
+        main::is( $table->fill($record), undef, 'fill TM' );
+        main::is( $table->get_num_rows, 3, '3 rows' );
+        main::is( $table->clear_all, undef, 'clear TM' );
+        main::is( $table->get_num_rows, 0, 'no rows' );
+    }
 
     # Uncomment this to observe the test
-    $frame->Show(1);
+    # $frame->Show(1);
 
     MyTimer->new->Start( 500, 1 );
 
