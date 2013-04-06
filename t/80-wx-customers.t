@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More; skip_all => 'Not ready';
+use Test::More;
 
 use lib qw( lib ../lib );
 

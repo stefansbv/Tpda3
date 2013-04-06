@@ -14,8 +14,15 @@ BEGIN {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
+
+    eval { require Wx; };
+    if ($@) {
+        plan( skip_all => 'wxPerl is required for this test' );
+    }
+    else {
+        plan tests => 14;
+    }
 }
-plan( tests => 14 );
 
 package MyTimer;
 

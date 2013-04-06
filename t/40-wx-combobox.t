@@ -13,8 +13,15 @@ BEGIN {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
+
+    eval { require Wx; };
+    if ($@) {
+        plan( skip_all => 'wxPerl is required for this test' );
+    }
+    else {
+        plan tests => 17;
+    }
 }
-plan( tests => 17 );
 
 package MyTimer;
 
@@ -94,7 +101,7 @@ sub OnInit {
     }
 
     # Uncomment this to observe the test
-    $frame->Show(1);
+    # $frame->Show(1);
 
     MyTimer->new->Start( 500, 1 );
 
