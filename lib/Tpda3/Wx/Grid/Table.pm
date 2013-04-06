@@ -468,6 +468,10 @@ Based on the CP::Wx::Grid::Table module Copyright (c) 2012 Mark
 Dootson and the DBGridTable package example from
 http://wiki.wxperl.nl/Wx::GridTableBase.
 
+Also the Grid_MegaExample.py from
+git://github.com/freephys/wxPython-In-Action.git, is a good source of
+inspiration.
+
 Thank you!
 
 =head1 LICENSE AND COPYRIGHT

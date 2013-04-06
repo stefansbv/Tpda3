@@ -257,9 +257,9 @@ sub run_screen {
 
     #-- Table
     my $header  = $self->{scrcfg}->dep_table_header_info('tm1');
-    my $columns = $header->{columns};
     my $table
-        = Tpda3::Wx::Grid->new( $rec_page, -1, undef, undef, undef, $columns );
+        = Tpda3::Wx::Grid->new( $rec_page, -1, undef, undef, undef,
+        $header->{columns} );
     $table->init( undef, $header );
 
     my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
