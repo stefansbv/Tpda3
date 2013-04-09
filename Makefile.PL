@@ -43,7 +43,7 @@ requires 'Tree::DAG_Node'        => '0';
 
 #- Tk
 
-eval { require Wx; };
+eval { require Tk; };
 unless ($@) {
     requires 'Tk'                   => '804.028';
     requires 'Tk::ToolBar'          => '0.09';
@@ -84,6 +84,7 @@ recommends    'Test::CheckManifest' => '0';
 
 install_share 'share';
 install_script 'bin/tpda3';
+install_script 'script/make_classicmodels.pl';
 
 WriteAll;
 
