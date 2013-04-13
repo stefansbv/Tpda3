@@ -27,7 +27,7 @@ use Carp;
 require Exporter;
 use base qw( Exporter );
 
-our $VERSION = '0.66';
+our $VERSION = '0.67';
 
 #-------------------------------------------------------------------
 # Object Constructor

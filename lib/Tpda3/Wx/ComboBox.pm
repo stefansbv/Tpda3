@@ -13,11 +13,11 @@ Tpda3::Wx::ComboBox - A subclass of Wx::ComboBox.
 
 =head1 VERSION
 
-Version 0.66
+Version 0.67
 
 =cut
 
-our $VERSION = 0.66;
+our $VERSION = 0.67;
 
 =head1 SYNOPSIS
 

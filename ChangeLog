@@ -1,6 +1,86 @@
+2013-04-03
+
+	* Update docs.
+
+2013-04-02
+
+	* Change icons - add copy paste.
+
+2013-04-01
+
+	* Revert GetTypeName and 2 other subs. Fix insert and delete.
+	Implement insert record in grid; delete rows has bugs.
+
+2013-03-31
+
+	* Make Grid InsertRows work (with a workaround for GetView).  Make
+	grid table header from configs.
+
+2013-03-30
+
+	* Change dir and name of help files. Fix cmd on W32 to start chm
+	viewer.
+
+2013-03-29
+
+	* Remove docs/.
+
+2013-03-27
+
+	* Cleanup debug statements.  Add inc/ to repo
+	(inc::Module::Install).
+
+2013-03-24
+
+	* Bump version to 0.65
+
+2013-03-24
+
+	* Fix search of type CONTAINING specific to Firebird.
+
+2013-03-18
+
+	* Remove 'screen_get_pk_col' method.  Fix inconsistent usage of
+	$pkcol as string vs hash ref.
+
+2013-03-17
+
+	* Remove help dir.
+
+2013-03-15
+
+	* Move some menu itms from app to the new Admin menu.  Locate the
+	chm file.
+
+2013-03-12
+
+	* Start chm help viewer on Win instead of guide dialog.  The
+	config-name parameter is optional.
+
+2013-03-06
+
+	* Add release notes for 0.63.  Update configs reference docs.  Fix
+	Select dialog and it's bindings method.  Add bindings_select.
+
+2013-02-26
+
+	* Increase delay at close for tk tests;
+
+2013-02-24
+
+	* Update TODO.
+
+2013-02-18
+
+	* Release v0.64.
+
+2013-02-17
+
+	* Fix message dialogs (Tk).
+
 2013-02-15
 
- Experiment with tables using GridTableBase (Wx).
+	* Release v0.63.  Experiment with tables using GridTableBase (Wx).
 
 2013-02-05
 
