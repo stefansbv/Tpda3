@@ -2,10 +2,8 @@
 
 - Bugfix
   - Miscelaneous fixes and changes
-
 - Features
   - When the test database is created, load the data in the tables.
-
 - Docs
   - Update manuals in htb and chm format and PODs.
 
@@ -13,10 +11,8 @@
 
 - Docs
   - Update docs.
-
 - Feature
   - Change 2 icons - new icons for copy and paste.
-
 - Other
   - Wx GUI experimentes.
 
@@ -27,11 +23,9 @@
   - Fix inconsistent usage of $pkcol as string vs hash ref.
   - Fix Select dialog and it's bindings.
   - Increase delay at close for tk tests;
-
 - Changes
   - Move some menu itms from app to the new Admin menu.
   - Start chm help viewer on Win instead of guide dialog.
-
 - Docs
   - Update configs reference docs.
 
@@ -49,16 +43,13 @@
   - Exception for RepMan's print preview command.
   - Dialogs layout change - remove toolbar;
   - Implement update main.yml.
-
 - Docs
   - Update PODs.
   - Translate and update user guide.
-
 - Bugfix
   - Fix creating new records with provided PK key.
   - Fix error when no title provided.
   - Fix problem with encodings in list header and items.
-
 - Features
   - New Exceptions for IO.
   - Message dialog on file/path exceptions.
@@ -79,10 +70,8 @@
 
 - Bugfix
   - Fallback to share dir from the dist for copying user data.
-
 - Configuration file change
   - Move attributes form main.yml into code.
-
 - Features
   - Configuration dialog for external apps.
 
