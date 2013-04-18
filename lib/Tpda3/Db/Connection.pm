@@ -112,13 +112,15 @@ SWITCH: for ($driver) {
     catch {
         if ( my $e = Exception::Base->catch($_) ) {
             if ( $e->isa('Exception::Db::Connect') ) {
-                # print "Not connected!\n";
-                # print $e->usermsg, "\n";
-                # print $e->logmsg, "\n";
                 $e->throw;      # rethrow the exception
             }
             else {
-                print 'Error!: ', $e->logmsg, "\n";
+                print 'DBError: ', $e->can('logmsg') ? $e->logmsg : $_
+                    if $inst->verbose;
+                Exception::Db::Connect->throw(
+                    logmsg  => "error#$_",
+                    usermsg => 'error#Database error',
+                );
             }
         }
     };
