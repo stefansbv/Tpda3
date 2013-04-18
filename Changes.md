@@ -7,6 +7,7 @@
 - Docs
   - Update manuals in htb and chm format and PODs.
 
+
 ## 0.66 (2013-04-03)
 
 - Docs
@@ -16,7 +17,8 @@
 - Other
   - Wx GUI experimentes.
 
-## 0.65 ()
+
+## 0.65 (2013-02-15)
 
 - Bugfix
   - Fix search of type CONTAINING specific to Firebird.
@@ -36,7 +38,7 @@
   - Fix message dialogs (Tk).
 
 
-## 0.63.  2013-02-06
+## 0.63 (2013-02-06)
 
 - Feature
   - Pick a default mnemonic when one is not set.
@@ -65,6 +67,7 @@
   - Deal with connection errors; Add table list method.
   - Add CUBRID support, initial import.
   - Use Tpda3::Exceptions, remove Ouch.
+
 
 ## 0.61 (2012-12-29)
 
