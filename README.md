@@ -48,12 +48,20 @@ Troubleshooting
 See README.trouble. There is a new dir on SF with some patched modules.
 
 
-Development
------------
+Links
+-----
+
+Home page:
+
+http://tpda.s2i2.ro/
 
 Development takes place, currently, on GitHub:
 
-https://github.com/stefansbv/Tpda3
+https://github.com/stefansbv/Tpda3/
+
+The project page on SourceForge:
+
+https://sourceforge.net/projects/tpda/
 
 
 License And Copyright
