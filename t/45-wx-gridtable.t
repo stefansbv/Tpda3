@@ -20,7 +20,7 @@ BEGIN {
         plan( skip_all => 'wxPerl is required for this test' );
     }
     else {
-        plan tests => 14;
+        plan tests => 42;
     }
 }
 
@@ -150,20 +150,12 @@ sub OnInit {
     my $frame = $self->{frame} = Wx::Frame->new( undef, -1, 'Test!', );
 
     my $columns = $header->{columns};
-    my $table = Tpda3::Wx::Grid->new(
-        $frame,
-        -1,
-        undef,
-        undef,
-        undef,
-        $columns,
-    );
-    $table->init( undef, $header );
+    my $table = Tpda3::Wx::Grid->new( $frame, $columns, );
 
     main::ok( $table, 'Grid instance created' );
 
     # Fill the table and delete all
-    foreach (1..3) {
+    foreach (1..10) {
         main::is( $table->fill($record), undef, 'fill TM' );
         main::is( $table->get_num_rows, 3, '3 rows' );
         main::is( $table->clear_all, undef, 'clear TM' );
