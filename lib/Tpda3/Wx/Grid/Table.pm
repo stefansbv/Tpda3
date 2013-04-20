@@ -6,15 +6,11 @@ use Carp;
 use Data::Printer;
 
 use Wx::Grid;
-use Wx qw(wxRED wxGREEN wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT
+use Wx qw(wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT
           wxALIGN_TOP wxALIGN_CENTRE wxALIGN_BOTTOM
           wxGRIDTABLE_NOTIFY_ROWS_INSERTED wxGRIDTABLE_NOTIFY_ROWS_DELETED);
 
-use base qw(Wx::PlGridTable Tpda3::Wx::CP::Class);
-
-our @properties = qw( tabledata );
-
-__PACKAGE__->create_both_accessors( @properties );
+use base qw(Wx::PlGridTable);
 
 my %default = (
     integer => 0,
@@ -59,13 +55,12 @@ must be implemented in the derived classes.
 =cut
 
 sub new {
-    my ( $class, $data, $grid ) = @_;
+    my ( $class, $gdt, $grid ) = @_;
 
     my $self = $class->SUPER::new();
 
-    $self->set_tabledata($data);
-
     $self->{view} = $grid;
+    $self->{gdt}  = $gdt;
 
     return $self;
 }
@@ -91,7 +86,8 @@ Overridden to return the number of rows in the table.
 sub GetNumberRows {
     my $self = shift;
 
-    my $rowcount = scalar( @{ $self->get_tabledata->{datarows} } );
+    my $rowcount = $self->{gdt}->get_row_num;
+    print "rowcount: $rowcount\n";
 
     return $rowcount;
 }
@@ -105,7 +101,8 @@ Overridden to return the number of columns in the table.
 sub GetNumberCols {
     my $self = shift;
 
-    my $colcount = scalar( @{ $self->get_tabledata->{datacols} } );
+    my $colcount = $self->{gdt}->get_col_num;
+    print "colcount $colcount\n";
 
     return $colcount;
 }
@@ -119,7 +116,7 @@ Overridden to implement testing for empty cells.
 sub IsEmptyCell {
     my ( $self, $row, $col ) = @_;
 
-    return ( defined( $self->get_tabledata->{datarows}->[$row]->[$col] ) )
+    return ( defined( $self->{gdt}->get_row_value($row, $col) ) )
         ? 0
         : 1;
 }
@@ -135,10 +132,10 @@ sub GetValue {
 
     my $result = undef;
     eval {
-        $result = $self->get_tabledata->{datarows}[$row][$col]
+        $result = $self->{gdt}->get_row_value($row, $col)
             if  $row < $self->GetNumberRows
             and $col < $self->GetNumberCols
-            and defined $self->get_tabledata->{datarows}[$row][$col];
+            and defined $self->{gdt}->get_row_value($row, $col);
     };
     croak "Exception in Grid::Table::GetValue: $@" if $@;
     my $type = $self->GetTypeName(0, $col);
@@ -150,7 +147,7 @@ sub GetValue {
 sub get_data_all {
     my $self = shift;
 
-    return $self->get_tabledata->{datarows};
+    return $self->{gdt}->get_row_data;
 }
 
 =head2 SetValue
@@ -162,31 +159,31 @@ Overridden to implement setting the table values as text.
 sub SetValue {
     my ( $self, $row, $col, $value ) = @_;
 
-    carp "row overflow" if $row > $self->GetNumberRows;
-    carp "col overflow" if $col > $self->GetNumberCols;
+    croak "row overflow" if $row > $self->GetNumberRows;
+    croak "col overflow" if $col > $self->GetNumberCols;
 
     my $type = $self->GetTypeName(0, $col);
     $value = $default{$type} unless defined $value;
 
-    #print "I: $row, $col, $value\n";
-    $self->get_tabledata->{datarows}[$row][$col] = $value;
-}
+    print "M: $row, $col, [$value]\n";
+    $self->{gdt}->set_row_value($row, $col, $value);
 
-###
+    return;
+}
 
 sub GetTypeName {
     my($self, $row, $col) = @_;
-    return $self->get_tabledata->{datacols}[$col]{type};
+    return  $self->{gdt}->get_col_attrib($col,'type');
 }
 
 sub CanGetValueAs {
     my($self, $row, $col) = @_;
-    return $self->get_tabledata->{datacols}->[$col]->{type};
+    return  $self->{gdt}->get_col_attrib($col,'type');
 }
 
 sub CanSetValueAs {
     my($self, $row, $col) = @_;
-    return $self->get_tabledata->{datacols}->[$col]->{type};
+    return  $self->{gdt}->get_col_attrib($col,'type');
 }
 
 sub GetValueAsLong { shift->GetValue( @_ ); }
@@ -237,23 +234,11 @@ Append additional rows at the end of the table.
 =cut
 
 sub AppendRows {
-    my ( $self, $pos, $rows, $record_aref ) = @_;
+    my ( $self, $pos, $rows ) = @_;
 
     $rows = 1 unless defined $rows && $rows >= 0;
 
     return 0 if $rows == 0;
-
-    print " AppendRows: pos=$pos rows=$rows\n";
-    my $table_cols = $self->GetNumberCols;
-    my $data_cols  = scalar @{$record_aref};
-
-    croak "Wrong data columns number got:$data_cols, expected $table_cols"
-        if $table_cols != $data_cols;
-
-    # Insert data
-    for (my $col = 0; $col < $data_cols; $col++) {
-        $self->SetValue( $pos, $col, $record_aref->[$col] );
-    }
 
     # Notify the Grid about the insert
     eval {
@@ -346,7 +331,7 @@ Return the label of the specified row.
 sub GetRowLabelValue {
     my ($self, $row) = @_;
 
-    return "RLV$row";
+    return "r$row";
 }
 
 =head2 GetColLabelValue
@@ -358,7 +343,7 @@ Return the label of the specified column.
 sub GetColLabelValue {
     my ($self, $col) = @_;
 
-    return $self->get_tabledata->{datacols}[$col]{label};
+    return  $self->{gdt}->get_col_attrib($col,'label');
 }
 
 =head2 SetRowLabelValue
@@ -393,29 +378,6 @@ sub SetColLabelValue {
     return;
 }
 
-=head1 Attributes Management
-
-By default the attributes management is delegated to
-wxGridCellAttrProvider class. You may override the methods in this
-section to handle the attributes directly if, for example, they can be
-computed from the cell values.
-
-Associate this attributes provider with the table.
-SetAttrProvider(wxGridCellAttrProvider *attrProvider);
-
-Returns the attribute provider currently being used.
-GetAttrProvider
-
-Return the attribute for the given cell.
-
-=cut
-
-=head1 GetAttr
-
-GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind)
-
-=cut
-
 sub GetAttr {
   my( $self, $row, $col, $kind ) = @_;
 
@@ -434,31 +396,13 @@ sub GetAttr {
   return $cell_attr;
 }
 
-=head1 Attribs
-
-Set attribute of the specified cell.
-SetAttr(wxGridCellAttr* attr, int row, int col);
-
-Set attribute of the specified row.
-SetRowAttr(wxGridCellAttr *attr, int row);
-
-Set attribute of the specified column.
-SetColAttr(wxGridCellAttr *attr, int col);
-
-Returns true if this table supports attributes or false otherwise.
-CanHaveAttributes();
-
-=cut
-
-1;
-
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>
 
 =head1 BUGS
 
-None known.
+Many!
 
 Please report any bugs or feature requests to the author.
 
@@ -469,7 +413,11 @@ Dootson and the DBGridTable package example from
 http://wiki.wxperl.nl/Wx::GridTableBase.
 
 Also the Grid_MegaExample.py from
+<<<<<<< Updated upstream
 git://github.com/freephys/wxPython-In-Action.git, is a good source of
+=======
+git://github.com/freephys/wxPython-In-Action.git, was a source of
+>>>>>>> Stashed changes
 inspiration.
 
 Thank you!

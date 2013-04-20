@@ -11,6 +11,7 @@ use Wx::Calendar;
 
 use Tpda3::Wx::ComboBox;
 use Tpda3::Wx::Grid;
+use Tpda3::Wx::Grid::DataTable;
 
 =head1 NAME
 
@@ -256,11 +257,8 @@ sub run_screen {
     $self->make_toolbar_for_table( 'tm1', '$frm_t' );
 
     #-- Table
-    my $header  = $self->{scrcfg}->dep_table_header_info('tm1');
-    my $table
-        = Tpda3::Wx::Grid->new( $rec_page, -1, undef, undef, undef,
-        $header->{columns} );
-    $table->init( undef, $header );
+    my $columns = $self->{scrcfg}->deptable( 'tm1', 'columns' );
+    my $table = Tpda3::Wx::Grid->new( $rec_page, $columns );
 
     my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
     my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
