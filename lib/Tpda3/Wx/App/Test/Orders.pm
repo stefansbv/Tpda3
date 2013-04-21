@@ -118,12 +118,15 @@ sub run_screen {
 
     #-- ordertotal
     my $lordertotal = Wx::StaticText->new( $rec_page, -1, 'Order total' );
-    my $eordertotal
-        = Wx::TextCtrl->new( $rec_page, -1, q{}, [ -1, -1 ], [ -1, -1 ] );
+    my $eordertotal = Wx::TextCtrl->new(
+        $rec_page, -1, q{},
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxALIGN_RIGHT
+    );
 
     #--- Layout
 
-    #my $main_sz = Wx::BoxSizer->new(wxVERTICAL);
     my $main_sz = Wx::FlexGridSizer->new( 3, 1, 5, 5 );
 
     my $top_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
@@ -137,6 +140,7 @@ sub run_screen {
     $top_szl->AddGrowableRow(1);
 
     $main_sz->AddGrowableRow(1);
+    $main_sz->AddGrowableCol(0);
 
     #-- Top
 
@@ -275,27 +279,30 @@ sub run_screen {
     #-- ordertotal
     $grid_bot->Add(
         $lordertotal,
-        gbpos( 0, 4 ),
+        gbpos( 0, 0 ),
         gbspan( 1, 1 ),
         wxLEFT | wxRIGHT, 5
     );
     $grid_bot->Add(
         $eordertotal,
-        gbpos( 0, 5 ),
+        gbpos( 0, 1 ),
         gbspan( 1, 1 ),
         wxEXPAND | wxLEFT | wxRIGHT, 5
     );
+
+    my $bot_vsz = Wx::BoxSizer->new(wxVERTICAL);
+    $bot_vsz->Add( $grid_bot, 1, wxALIGN_RIGHT | wxALL, 0 );
 
     #-- Label frame
     my $total_sb  = Wx::StaticBox->new( $rec_page, -1, ' Order total' );
     my $total_sbs = Wx::StaticBoxSizer->new( $total_sb, wxHORIZONTAL, );
 
+    #-- Layout
+
     my $bot_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
 
-    $total_sbs->Add( $grid_bot, 1, wxALL | wxEXPAND, 5 );
+    $total_sbs->Add( $bot_vsz, 1, wxALL, 0 );
     $bot_sz->Add($total_sbs, 1, wxALL | wxEXPAND, 5 );
-
-    #-- Layout
 
     $main_sz->Add( $top_sz, 0, wxALL | wxGROW, 5 );
     $main_sz->Add( $mid_sz, 0, wxALL | wxGROW, 5 );
