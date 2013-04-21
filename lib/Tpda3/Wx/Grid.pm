@@ -86,7 +86,7 @@ sub new {
     my $cols_idx = $self->{gdt}->get_col_num - 1;
     foreach my $col ( 0..$cols_idx ) {
         my $id    = $self->{gdt}->get_col_attrib($col, 'id');
-        my $width = $self->{gdt}->get_col_attrib($col, 'width');
+        my $width = $self->{gdt}->get_col_attrib($col, 'displ_width');
         $self->SetColSize( $id, $char_width * $width );
     }
 
@@ -116,11 +116,14 @@ sub init_datatable {
     my $col = 0;
     foreach my $field ( @{$columns_sorted} ) {
         my $col_attr_ref = {
-            id    => $columns->{$field}{id},
-            label => $columns->{$field}{label},
-            type  => $self->get_type( $columns->{$field}{datatype} ),
-            width => $columns->{$field}{displ_width},
-            field => $field,
+            id          => $columns->{$field}{id},
+            field       => $field,
+            label       => $columns->{$field}{label},
+            type        => $self->get_type( $columns->{$field}{datatype} ),
+            displ_width => $columns->{$field}{displ_width},
+            valid_width => $columns->{$field}{valid_width},
+            numscale    => $columns->{$field}{numscale},
+            readwrite   => $columns->{$field}{readwrite},
         };
         $self->{gdt}->set_col_attribs( $col, $col_attr_ref );
         $col++;
@@ -138,6 +141,11 @@ sub get_type {
 sub get_num_rows {
     my $self = shift;
     return $self->{table}->GetNumberRows;
+}
+
+sub get_num_cols {
+    my $self = shift;
+    return $self->{table}->GetNumberCols;
 }
 
 sub clear_all {
@@ -193,9 +201,41 @@ sub fill {
     return;
 }
 
+=head2 data_read
+
+Read data from widget.
+
+The C<selectorcol> functionality is not implemented.
+
+=cut
+
 sub data_read {
-    my ($self, ) = @_;
-    return;
+    my $self = shift;
+
+    my $cols_no  = $self->get_num_cols;
+    my $cols_idx = $cols_no - 1;
+
+    # Read table data and create an AoH
+    my @tabledata;
+
+    my $data = $self->{gdt}->get_row_data;
+
+    foreach my $row (@$data) {
+        my $rowdata = {};
+        for my $col ( 0 .. $cols_idx ) {
+            my $cell_value = $row->[$col];
+            my $col_name   = $self->{gdt}{datacols}[$col]{field};
+            my $readwrite  = $self->{gdt}{datacols}[$col]{readwrite};
+
+            next if $readwrite eq 'ro';    # skip ro cols
+
+            $rowdata->{$col_name} = $cell_value;
+        }
+
+        push @tabledata, $rowdata;
+    }
+
+    return ( \@tabledata, undef ); # $sc
 }
 
 sub delete_row {
