@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use Carp;
 
+use Wx qw(:misc :frame :toolbar :textctrl :aui);
+use Wx::Event qw();
+use Wx::ArtProvider qw(:artid);
+
 require Tpda3::Utils;
 require Tpda3::Config::Screen;
 
@@ -184,7 +188,7 @@ buttons.
 =cut
 
 sub make_toolbar_for_table {
-    my ( $self, $name, $tb_frame ) = @_;
+    my ( $self, $name, $tb_frame, $article_sbs ) = @_;
 
     # $self->{tb}{$name} = $tb_frame->TB();
 
@@ -193,7 +197,18 @@ sub make_toolbar_for_table {
 
     # $self->{tb}{$name}->make_toolbar_buttons( $toolbars, $attribs );
 
-    return;
+    my $tb1 = Wx::ToolBar->new(
+        $tb_frame, -1,
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxTB_HORIZONTAL | wxNO_BORDER | wxTB_FLAT, 5050,
+    );
+    # $tb1->AddTool( -1, "Test", Wx::ArtProvider::GetBitmap(wxART_ERROR) );
+    # $tb1->AddTool( -1, "Test", Wx::ArtProvider::GetBitmap(wxART_ERROR) );
+    # $tb1->AddTool( -1, "Test", Wx::ArtProvider::GetBitmap(wxART_ERROR) );
+    $tb1->Realize;
+
+    return $tb1;
 }
 
 =head1 AUTHOR

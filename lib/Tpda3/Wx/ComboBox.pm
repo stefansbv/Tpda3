@@ -3,9 +3,10 @@ package Tpda3::Wx::ComboBox;
 use strict;
 use warnings;
 
-use Wx qw (wxCB_SORT wxTE_PROCESS_ENTER wxNOT_FOUND);
-use base qw{Wx::ComboBox};
+use Wx qw ( wxCB_SORT wxTE_PROCESS_ENTER wxNOT_FOUND );
 use Wx::Event qw(EVT_SET_FOCUS EVT_CHAR EVT_KEY_DOWN EVT_KEY_UP);
+
+use base qw( Wx::ComboBox );
 
 =head1 NAME
 
