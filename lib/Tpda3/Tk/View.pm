@@ -2,6 +2,7 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+use Carp;
 
 use File::Spec::Functions qw(abs2rel catfile);
 use Log::Log4perl qw(get_logger);
@@ -1396,9 +1397,14 @@ Undef is for the I<date format> parameter, irrelevant here.
 =cut
 
 sub control_write_e {
-    my ( $self, $control_ref, $value, $state, undef, $fgcolor, $bgcolor ) = @_;
+    my ( $self, $field, $control_ref, $value, $state, undef, $fgcolor, $bgcolor ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::Entry') ) {
+        carp qq(Widget for writing entry '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget ('-state');
 
@@ -1424,9 +1430,14 @@ Write to a Tk::Text widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $control_ref, $value, $state ) = @_;
+    my ( $self, $field, $control_ref, $value, $state ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::Frame') ) {
+        carp qq(Widget for writing text '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget ('-state');
 
@@ -1450,9 +1461,14 @@ Date is required to come from the database in the ISO format.
 =cut
 
 sub control_write_d {
-    my ( $self, $control_ref, $value, $state, $date_format ) = @_;
+    my ( $self, $field, $control_ref, $value, $state, $date_format ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::DateEntry') ) {
+        carp qq(Widget for writing date '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget('-state');
 
@@ -1480,9 +1496,14 @@ delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $control_ref, $value, $state ) = @_;
+    my ( $self, $field, $control_ref, $value, $state ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::JComboBox') ) {
+        carp qq(Widget for writing combobox '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget ('-state');
 
@@ -1505,9 +1526,14 @@ Write to a Tk::Checkbox widget.
 =cut
 
 sub control_write_c {
-    my ( $self, $control_ref, $value, $state ) = @_;
+    my ( $self, $field, $control_ref, $value, $state ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::Checkbox') ) {
+        carp qq(Widget for writing checkbox '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget ('-state');
 
@@ -1531,9 +1557,14 @@ Write to a Tk::RadiobuttonGroup widget.
 =cut
 
 sub control_write_r {
-    my ( $self, $control_ref, $value, $state ) = @_;
+    my ( $self, $field, $control_ref, $value, $state ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::RadiobuttonGroup') ) {
+        carp qq(Widget for writing radiobutton '$field' not found);
+        return;
+    }
 
     $state = $state || $control->cget('-state');
 
@@ -1558,9 +1589,16 @@ Read contents of a Tk::Entry control.
 =cut
 
 sub control_read_e {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    return $control_ref->[1]->get;
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::Entry') ) {
+        carp qq(Widget for reading entry '$field' not found);
+        return;
+    }
+
+    return $control->get;
 }
 
 =head2 control_read_t
@@ -1570,9 +1608,16 @@ Read contents of a Tk::Text control.
 =cut
 
 sub control_read_t {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    return $control_ref->[1]->get( '0.0', 'end' );
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::Frame') ) {
+        carp qq(Widget for reading text '$field' not found);
+        return;
+    }
+
+    return $control->get( '0.0', 'end' );
 }
 
 =head2 control_read_d
@@ -1582,12 +1627,17 @@ Read contents of a Tk::DateEntry control.
 =cut
 
 sub control_read_d {
-    my ( $self, $control_ref, $date_format ) = @_;
+    my ( $self, $field, $control_ref, $date_format ) = @_;
 
-    my $control = $control_ref->[0];
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Tk::DateEntry') ) {
+        carp qq(Widget for reading date '$field' not found);
+        return;
+    }
 
     # Value from widget variable or the empty string
-    my $value = ${$control} || q{};
+    my $value = ${ $control_ref->[0] } || q{};
     if ($value) {
 
         # Skip date formatting for find mode
@@ -1611,13 +1661,16 @@ Read contents of a Tk::JComboBox control.
 =cut
 
 sub control_read_m {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    my $control = $control_ref->[0];
+    my $control = $control_ref->[1];
 
-    my $value = ${$control};    # value from variable
+    unless ( defined $control and $control->isa('Tk::JComboBox') ) {
+        carp qq(Widget for reading combobox '$field' not found);
+        return;
+    }
 
-    return $value;
+    return ${ $control_ref->[0] };           # value from variable
 }
 
 =head2 control_read_c
@@ -1627,13 +1680,16 @@ Read state of a Checkbox.
 =cut
 
 sub control_read_c {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    my $control = $control_ref->[0];
+    my $control = $control_ref->[1];
 
-    my $value = ${$control};
+    unless ( defined $control and $control->isa('Tk::Checkbox') ) {
+        carp qq(Widget for reading checkbox '$field' not found);
+        return;
+    }
 
-    return $value;
+    return ${ $control_ref->[0] };           # value from variable
 }
 
 =head2 control_read_r
@@ -1643,13 +1699,16 @@ Read RadiobuttonGroup.
 =cut
 
 sub control_read_r {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    my $control = $control_ref->[0];
+    my $control = $control_ref->[1];
 
-    my $value = ${$control} || q{};
+    unless ( defined $control and $control->isa('Tk::RadiobuttonGroup') ) {
+        carp qq(Widget for reading radiobutton '$field' not found);
+        return;
+    }
 
-    return $value;
+    return ${ $control_ref->[0] };           # value from variable
 }
 
 =head2 configure_controls
