@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resource>
+  <object class="wxPanel" name="Orders">
+    <title>Tpda3::wxPerl</title>
+    <object class="wxBoxSizer" member="no" variable="BoxSizer1">
+      <object class="sizeritem">
+        <object class="wxPanel" member="yes" name="ID_PANEL1" variable="Panel1">
+          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer1">
+            <rows>3</rows>
+            <growablecols>0</growablecols>
+            <growablerows>1</growablerows>
+            <object class="sizeritem">
+              <object class="wxBoxSizer" member="no" variable="BoxSizer2">
+                <object class="sizeritem">
+                  <object class="wxBoxSizer" member="no" variable="BoxSizer5">
+                    <orient>wxVERTICAL</orient>
+                    <object class="sizeritem">
+                      <object class="wxStaticBoxSizer" member="no" variable="StaticBoxSizer4">
+                        <label>Order</label>
+                        <object class="sizeritem">
+                          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer5">
+                            <cols>2</cols>
+                            <growablecols>1</growablecols>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT6" variable="StaticText6">
+                                <label>Number</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxTextCtrl" member="yes" name="eordernumber" variable="eordernumber">
+                                <value></value>
+                              </object>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT3" variable="StaticText3">
+                                <label>Date</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxDatePickerCtrl" member="yes" name="dorderdate" variable="dorderdate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT7" variable="StaticText7">
+                                <label>Label</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxComboBox" subclass="Tpda3::Wx::ComboBox" member="yes" name="bstatuscode" variable="bstatuscode"/>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                          </object>
+                          <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                          <border>5</border>
+                          <option>1</option>
+                        </object>
+                      </object>
+                      <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                      <border>5</border>
+                      <option>1</option>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxStaticBoxSizer" member="no" variable="StaticBoxSizer1">
+                        <label>Customer</label>
+                        <orient>wxVERTICAL</orient>
+                        <object class="sizeritem">
+                          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer2">
+                            <cols>2</cols>
+                            <growablecols>1</growablecols>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT1" variable="StaticText1">
+                                <label>Name</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxTextCtrl" member="yes" name="ecustomername" variable="ecustomername"/>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT2" variable="StaticText2">
+                                <label>Number</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxTextCtrl" member="yes" name="ecustomernumber" variable="ecustomernumber"/>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                          </object>
+                          <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                          <border>5</border>
+                          <option>1</option>
+                        </object>
+                      </object>
+                      <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                      <border>5</border>
+                      <option>1</option>
+                    </object>
+                  </object>
+                  <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                  <border>5</border>
+                  <option>1</option>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxBoxSizer" member="no" variable="BoxSizer6">
+                    <orient>wxVERTICAL</orient>
+                    <object class="sizeritem">
+                      <object class="wxStaticBoxSizer" member="no" variable="StaticBoxSizer2">
+                        <label>Shippment dates</label>
+                        <object class="sizeritem">
+                          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer3">
+                            <cols>2</cols>
+                            <growablecols>1</growablecols>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT4" variable="StaticText4">
+                                <label>Required</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxDatePickerCtrl" member="yes" name="drequireddate" variable="drequireddate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT5" variable="StaticText5">
+                                <label>Shipped</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxDatePickerCtrl" member="yes" name="dshippeddate" variable="dshippeddate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
+                              <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                          </object>
+                          <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                          <border>5</border>
+                          <option>1</option>
+                        </object>
+                      </object>
+                      <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                      <border>5</border>
+                      <option>1</option>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxStaticBoxSizer" member="no" variable="StaticBoxSizer3">
+                        <label>Comment</label>
+                        <object class="sizeritem">
+                          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer4">
+                            <growablecols>0</growablecols>
+                            <object class="sizeritem">
+                              <object class="wxTextCtrl" member="yes" name="ecomments" variable="ecomments">
+                                <style>wxTE_MULTILINE</style>
+                              </object>
+                              <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                          </object>
+                          <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                          <border>5</border>
+                          <option>1</option>
+                        </object>
+                      </object>
+                      <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                      <border>5</border>
+                      <option>1</option>
+                    </object>
+                  </object>
+                  <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                  <border>5</border>
+                  <option>1</option>
+                </object>
+              </object>
+              <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+              <border>5</border>
+              <option>1</option>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer" variable="BoxSizer3" member="no"/>
+              <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+              <border>5</border>
+              <option>1</option>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer" member="no" variable="BoxSizer4">
+                <object class="sizeritem">
+                  <object class="wxStaticBoxSizer" member="no" variable="StaticBoxSizer5">
+                    <label>Total</label>
+                    <object class="sizeritem">
+                      <object class="wxBoxSizer" member="no" variable="BoxSizer7">
+                        <orient>wxVERTICAL</orient>
+                        <object class="sizeritem">
+                          <object class="wxFlexGridSizer" member="no" variable="FlexGridSizer6">
+                            <cols>2</cols>
+                            <object class="sizeritem">
+                              <object class="wxStaticText" member="yes" name="ID_STATICTEXT8" variable="StaticText8">
+                                <label>Order total</label>
+                              </object>
+                              <flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                            <object class="sizeritem">
+                              <object class="wxTextCtrl" member="yes" name="eordertotal" variable="eordertotal">
+                                <size>106,20</size>
+                              </object>
+                              <flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                              <border>5</border>
+                              <option>1</option>
+                            </object>
+                          </object>
+                          <flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+                          <option>1</option>
+                        </object>
+                      </object>
+                      <flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                      <border>5</border>
+                      <option>1</option>
+                    </object>
+                  </object>
+                  <flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+                  <border>5</border>
+                  <option>1</option>
+                </object>
+              </object>
+              <flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+              <border>5</border>
+              <option>1</option>
+            </object>
+          </object>
+        </object>
+        <flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+        <option>1</option>
+      </object>
+    </object>
+  </object>
+</resource>
