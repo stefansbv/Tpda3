@@ -3,6 +3,7 @@ package Tpda3::Wx::Screen;
 use strict;
 use warnings;
 use Carp;
+use Data::Printer;
 
 use Wx qw(:misc :frame :toolbar :textctrl :aui);
 use Wx::Event qw();
@@ -67,10 +68,6 @@ Get a data structure containing references to the widgets.
 
 sub get_controls {
     my ($self, $field) = @_;
-
-    # croak "'get_controls' not implemented.\n"
-    #     unless exists $self->{controls}
-    #         and scalar %{ $self->{controls} };
 
     if ($field) {
         return $self->{controls}{$field};

@@ -10,14 +10,17 @@ use base 'Tpda3::Wx::Screen';
 
 use Wx::Event qw(EVT_DATE_CHANGED);
 use Wx::Calendar;
-
-use Tpda3::Wx::ComboBox;
-use Tpda3::Wx::Grid;
-use Tpda3::Wx::Grid::DataTable;
-
 use Wx::ArtProvider qw(:artid);
 
+use Tpda3::Wx::Factory;
+
+use Tpda3::Wx::ComboBox;
+# use Tpda3::Wx::Grid;
+# use Tpda3::Wx::Grid::DataTable;
+
 use Data::Printer;
+
+Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
 =head1 NAME
 
@@ -84,7 +87,6 @@ sub run_screen {
     my $drequireddate   = $self->XRC('drequireddate');
     my $dshippeddate    = $self->XRC('dshippeddate');
     my $bstatuscode     = $self->XRC('bstatuscode');
-    p $bstatuscode;
     my $ecomments       = $self->XRC('ecomments');
     my $eordertotal     = $self->XRC('eordertotal');
 

@@ -5,6 +5,8 @@ use warnings;
 use utf8;
 use English;
 
+use Data::Printer;
+
 use IPC::Run3 qw( run3 );
 use Class::Unload;
 use File::Basename;
@@ -2836,7 +2838,7 @@ sub ctrl_write_to {
     my $sub_name = qq{control_write_$ctrltype};
     if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        $self->view->$sub_name($control_ref, $value, $state, $date_format);
+        $self->view->$sub_name($field, $control_ref, $value, $state, $date_format);
     }
     else {
         print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
@@ -3041,8 +3043,13 @@ sub controls_state_set {
         $bg_color = $bg if $bg_color =~ m{bg|bground|background};
 
         # Configure controls
-        my $control = $self->scrobj()->get_controls($field)->[1];
-        $self->view->configure_controls($control, $state, $bg_color, $fld_cfg);
+        my $control = $self->scrobj()->get_controls($field);
+        if ($control) {
+            $self->view->configure_controls($control->[1], $state, $bg_color, $fld_cfg);
+        }
+        else {
+            warn "Can't configure control for '$field'";
+        }
     }
 
     return;

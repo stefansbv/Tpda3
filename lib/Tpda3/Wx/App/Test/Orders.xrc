@@ -31,7 +31,7 @@
                             </object>
                             <object class="sizeritem">
                               <object class="wxTextCtrl" member="yes" name="eordernumber" variable="eordernumber">
-                                <value>Text</value>
+                                <value></value>
                               </object>
                               <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
                               <border>5</border>

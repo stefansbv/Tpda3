@@ -34,17 +34,19 @@ Constructor method.
 =cut
 
 sub new {
-    my ( $class, $parent, $id, $pos, $size, $style ) = @_;
+    my $class = shift;
+    #my ( $class, $parent, $id, $pos, $size, $style ) = @_;
 
-    my $self = $class->SUPER::new(
-        $parent,
-        $id || -1,
-        q{},
-        $pos  || [ -1, -1 ],
-        $size || [ -1, -1 ],
-        [],
-        ( $style || 0 ) | wxCB_SORT | wxTE_PROCESS_ENTER
-    );
+    my $self = $class->SUPER::new();
+    # my $self = $class->SUPER::new(
+    #     $parent,
+    #     $id || -1,
+    #     q{},
+    #     $pos  || [ -1, -1 ],
+    #     $size || [ -1, -1 ],
+    #     [],
+    #     ( $style || 0 ) | wxCB_SORT | wxTE_PROCESS_ENTER
+    # );
 
     $self->{lookup} = {};
 

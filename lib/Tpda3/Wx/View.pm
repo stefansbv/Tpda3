@@ -2,6 +2,8 @@ package Tpda3::Wx::View;
 
 use strict;
 use warnings;
+use Carp;
+use Data::Printer;
 
 use POSIX qw (floor ceil);
 use Log::Log4perl qw(get_logger);
@@ -1406,9 +1408,15 @@ Write to a Wx::Entry widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_e {
-    my ( $self, $control_ref, $value ) = @_;
+    my ( $self, $field, $control_ref, $value ) = @_;
 
     my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Wx::ComboBox') ) {
+        carp qq(Control for '$field' not found);
+        return;
+    }
+
     $control->Clear;
     $control->SetValue($value) if defined $value;;
 
@@ -1422,16 +1430,9 @@ Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_t {
-    my ( $self, $control_ref, $value ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $control = $control_ref->[1];
-
-    $control->ClearAll;
-
-    return unless defined $value;
-
-    $control->AppendText($value);
-    $control->AppendText("\n");
+    croak qq(Use 'e' type for '$field' widget!);
 
     return;
 }
@@ -1443,7 +1444,12 @@ Write to a Wx::DateEntry widget.  If I<$value> not true, than clear.
 =cut
 
 sub control_write_d {
-    my ( $self, $control_ref, $value, $state, $format ) = @_;
+    my ( $self, $field, $control_ref, $value, $state, $format ) = @_;
+
+    unless (ref $control_ref) {
+        carp qq(Control for '$field' not found);
+        return;
+    }
 
     my $control = $control_ref->[1];
 
@@ -1471,11 +1477,16 @@ Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
 =cut
 
 sub control_write_m {
-    my ( $self, $control_ref, $value ) = @_;
+    my ( $self, $field, $control_ref, $value ) = @_;
 
     my $control = $control_ref->[1];
 
-#???    $control->set_selected($value);
+    unless ( defined $control and $control->isa('Wx::ComboBox') ) {
+        carp qq(Control for '$field' not found);
+        return;
+    }
+
+    $control->set_selected($value);
 
     return;
 }
