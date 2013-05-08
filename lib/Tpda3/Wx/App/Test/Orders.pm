@@ -67,12 +67,14 @@ sub run_screen {
     die "XRC file not found: $res_file" unless $res_file;
     $res->Load($res_file);
 
-    my $main_hbox_sz = Wx::BoxSizer->new( Wx::wxHORIZONTAL );
+    #my $main_hbox_sz = Wx::BoxSizer->new( Wx::wxVERTICAL );
+    my $main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
+    my $top_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
+    my $bot_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
+
+    $main_sz->AddGrowableRow(1);
 
     $self->{frame} = $res->LoadPanel($rec_page, 'Orders');
-
-    $main_hbox_sz->Add( $self->{frame}, 1, wxGROW );
-    $rec_page->SetSizer( $main_hbox_sz );
 
     my $vorderdate = Wx::DateTime->new();
     my $vrequireddate = Wx::DateTime->new();
@@ -88,7 +90,24 @@ sub run_screen {
     my $ecomments       = $self->XRC('ecomments');
     my $eordertotal     = $self->XRC('eordertotal');
 
-    #-- Layout end
+    $top_sz->Add( $self->{frame}, 1, wxGROW );
+
+    #-- Table
+    my $columns = $self->{scrcfg}->deptable( 'tm1', 'columns' );
+    my $table = Tpda3::Wx::Grid->new( $rec_page, $columns );
+
+    my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
+    my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
+
+    $article_sbs->Add( $table, 1, wxALL | wxEXPAND, 5 );
+    $bot_sz->Add($article_sbs, 1, wxALL | wxEXPAND, 5 );
+
+    #-- Layout
+
+    $main_sz->Add( $top_sz, 0, wxALL | wxGROW, 5 );
+    $main_sz->Add( $bot_sz, 0, wxALL | wxGROW, 5 );
+
+    $rec_page->SetSizer( $main_sz );
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'orders.conf'
@@ -105,7 +124,7 @@ sub run_screen {
     };
 
     # Grid objects; just one for now :)
-    #$self->{tm_controls} = { rec => { tm1 => \$table, }, };
+    $self->{tm_controls} = { rec => { tm1 => \$table, }, };
 
     return;
 }
