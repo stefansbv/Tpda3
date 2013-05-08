@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use Carp;
 
-use Data::Printer;
-
 use Wx qw(wxSUNKEN_BORDER wxALIGN_LEFT wxALIGN_RIGHT wxALIGN_CENTRE
     wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL wxFONTWEIGHT_NORMAL
     wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD

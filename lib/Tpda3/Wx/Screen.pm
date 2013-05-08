@@ -3,7 +3,6 @@ package Tpda3::Wx::Screen;
 use strict;
 use warnings;
 use Carp;
-use Data::Printer;
 
 use Wx qw(:misc :frame :toolbar :textctrl :aui);
 use Wx::Event qw();

@@ -3,7 +3,6 @@ package Tpda3::Wx::Grid::Table;
 use strict;
 use warnings;
 use Carp;
-use Data::Printer;
 
 use Wx::Grid;
 use Wx qw(wxALIGN_LEFT wxALIGN_CENTRE wxALIGN_RIGHT

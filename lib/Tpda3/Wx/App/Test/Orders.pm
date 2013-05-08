@@ -18,8 +18,6 @@ use Tpda3::Wx::ComboBox;
 # use Tpda3::Wx::Grid;
 # use Tpda3::Wx::Grid::DataTable;
 
-use Data::Printer;
-
 Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
 =head1 NAME

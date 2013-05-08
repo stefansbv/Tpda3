@@ -5,8 +5,6 @@ use warnings;
 use utf8;
 use English;
 
-use Data::Printer;
-
 use IPC::Run3 qw( run3 );
 use Class::Unload;
 use File::Basename;
@@ -2677,7 +2675,7 @@ sub ctrl_read_from {
     my $sub_name = "control_read_$ctrltype";
     if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        $value = $self->view->$sub_name( $control_ref, $date_format );
+        $value = $self->view->$sub_name($field, $control_ref, $date_format );
         $self->clean_and_save_value( $field, $value, $ctrltype );
     }
     else {
@@ -2718,7 +2716,7 @@ because some of them may be empty, interpreted as a new NULL value.
 sub clean_and_save_value {
     my ($self, $field, $value, $ctrltype) = @_;
 
-    $value = Tpda3::Utils->trim($value);
+    $value = Tpda3::Utils->trim($value) if defined $value;
 
     # Find mode
     if ( $self->model->is_mode('find') ) {
@@ -2728,7 +2726,7 @@ sub clean_and_save_value {
         else {
             if ($ctrltype eq 'e') {
                 # Can't use numeric eq (==) here
-                if ( $value =~ m{^0+$} ) {
+                if (defined($value) and ( $value =~ m{^0+$} ) ) {
                     $self->{_scrdata}{$field} = $value;
                 }
             }
@@ -2805,7 +2803,7 @@ sub screen_write {
             $value = Tpda3::Utils->decode_unless_utf($value);
 
             # Trim spaces and '\n' from the end
-            $value = Tpda3::Utils->trim($value);
+            $value = Tpda3::Utils->trim($value) if $value;
 
             # Number
             if (   ( $fldcfg->{datatype} eq 'numeric' )

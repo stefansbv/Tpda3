@@ -46,7 +46,9 @@
                               <option>1</option>
                             </object>
                             <object class="sizeritem">
-                              <object class="wxDatePickerCtrl" member="yes" name="dorderdate" variable="dorderdate"/>
+                              <object class="wxDatePickerCtrl" member="yes" name="dorderdate" variable="dorderdate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
                               <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
                               <border>5</border>
                               <option>1</option>
@@ -145,7 +147,9 @@
                               <option>1</option>
                             </object>
                             <object class="sizeritem">
-                              <object class="wxDatePickerCtrl" member="yes" name="drequireddate" variable="drequireddate"/>
+                              <object class="wxDatePickerCtrl" member="yes" name="drequireddate" variable="drequireddate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
                               <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
                               <border>5</border>
                               <option>1</option>
@@ -159,7 +163,9 @@
                               <option>1</option>
                             </object>
                             <object class="sizeritem">
-                              <object class="wxDatePickerCtrl" member="yes" name="dshippeddate" variable="dshippeddate"/>
+                              <object class="wxDatePickerCtrl" member="yes" name="dshippeddate" variable="dshippeddate">
+                                <style>wxDP_ALLOWNONE</style>
+                              </object>
                               <flag>wxALL|wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
                               <border>5</border>
                               <option>1</option>

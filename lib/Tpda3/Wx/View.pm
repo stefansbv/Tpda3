@@ -3,7 +3,6 @@ package Tpda3::Wx::View;
 use strict;
 use warnings;
 use Carp;
-use Data::Printer;
 
 use POSIX qw (floor ceil);
 use Log::Log4perl qw(get_logger);
@@ -1403,7 +1402,7 @@ sub list_control_choices {
 
 =head2 control_write_e
 
-Write to a Wx::Entry widget.  If I<$value> not true, than only delete.
+Write to a Wx::TextCtrl widget.  If I<$value> not true, than only delete.
 
 =cut
 
@@ -1412,8 +1411,8 @@ sub control_write_e {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Wx::ComboBox') ) {
-        carp qq(Control for '$field' not found);
+    unless ( defined $control and $control->isa('Wx::TextCtrl') ) {
+        carp qq(Widget for writing text '$field' not found);
         return;
     }
 
@@ -1439,19 +1438,19 @@ sub control_write_t {
 
 =head2 control_write_d
 
-Write to a Wx::DateEntry widget.  If I<$value> not true, than clear.
+Write to a Wx::DatePickerCtrl widget.  If I<$value> not true, than clear.
 
 =cut
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $format ) = @_;
 
-    unless (ref $control_ref) {
-        carp qq(Control for '$field' not found);
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Wx::DatePickerCtrl') ) {
+        carp qq(Widget for writing text '$field' not found);
         return;
     }
-
-    my $control = $control_ref->[1];
 
     my ( $y, $m, $d, $dt );
     if ($value) {
@@ -1482,7 +1481,7 @@ sub control_write_m {
     my $control = $control_ref->[1];
 
     unless ( defined $control and $control->isa('Wx::ComboBox') ) {
-        carp qq(Control for '$field' not found);
+        carp qq(Widget for writing text '$field' not found);
         return;
     }
 
@@ -1500,11 +1499,16 @@ Read contents of a Wx::TextCtrl control.
 =cut
 
 sub control_read_e {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    my $value = $control_ref->[1]->GetValue;
+    my $control = $control_ref->[1];
 
-    return $value;
+    unless ( defined $control and $control->isa('Wx::TextCtrl') ) {
+        carp qq(Widget for reading text '$field' not found);
+        return;
+    }
+
+    return $control->GetValue;
 }
 
 =head2 control_read_t
@@ -1514,25 +1518,31 @@ Read contents of a Wx::Text control.
 =cut
 
 sub control_read_t {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field ) = @_;
 
-    my $value = $control_ref->[1]->GetValue;
+    croak qq(Use 'e' type for '$field' widget!);
 
-    return $value;
+    return;
 }
 
 =head2 control_read_d
 
-Read contents of a Wx::DateEntry control.
+Read contents of a Wx::DatePickerCtrl control.
 
 =cut
 
 sub control_read_d {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    my $datetime = $control_ref->[1]->GetValue();
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Wx::DatePickerCtrl') ) {
+        carp qq(Widget for reading date '$field' not found);
+        return;
+    }
+
+    my $datetime = $control->GetValue();
     my $invalid  = Wx::DateTime->new();
-
     if($datetime->IsEqualTo($invalid)) {
         return q{};                          # empty
     } else {
@@ -1547,9 +1557,16 @@ Read contents of a Wx::ComboBox control.
 =cut
 
 sub control_read_m {
-    my ( $self, $control_ref ) = @_;
+    my ( $self, $field, $control_ref ) = @_;
 
-    return $control_ref->[1]->get_selected();
+    my $control = $control_ref->[1];
+
+    unless ( defined $control and $control->isa('Wx::ComboBox') ) {
+        carp qq(Widget for reading combobox '$field' not found);
+        return;
+    }
+
+    return $control->get_selected();
 }
 
 =head2 configure_controls
