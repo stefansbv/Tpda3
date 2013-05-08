@@ -15,8 +15,8 @@ use Wx::ArtProvider qw(:artid);
 use Tpda3::Wx::Factory;
 
 use Tpda3::Wx::ComboBox;
-# use Tpda3::Wx::Grid;
-# use Tpda3::Wx::Grid::DataTable;
+use Tpda3::Wx::Grid;
+use Tpda3::Wx::Grid::DataTable;
 
 Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
@@ -57,11 +57,15 @@ sub run_screen {
     $self->{view} = $nb->GetParent();
     $self->{bg}   = $rec_page->GetBackgroundColour();
 
+    $self->{cfg} = Tpda3::Config->instance();
+
     # TODO: use Wx::Perl::TextValidator
 
     my $res = Wx::XmlResource->new;
     $res->InitAllHandlers();
-    $res->Load('/home/stefan/project/public/tpda3/lib/Tpda3/Wx/App/Test/Orders.xrc');
+    my $res_file = $self->{cfg}->resource_path_for( 'Orders.xrc', 'res' );
+    die "XRC file not found: $res_file" unless $res_file;
+    $res->Load($res_file);
 
     my $main_hbox_sz = Wx::BoxSizer->new( Wx::wxHORIZONTAL );
 
@@ -69,10 +73,6 @@ sub run_screen {
 
     $main_hbox_sz->Add( $self->{frame}, 1, wxGROW );
     $rec_page->SetSizer( $main_hbox_sz );
-
-    #$self->Layout(); ##force layout of the children anew
-    # $main_hbox_sz->Fit( $self );
-    # $main_hbox_sz->SetSizeHints( $self );
 
     my $vorderdate = Wx::DateTime->new();
     my $vrequireddate = Wx::DateTime->new();
