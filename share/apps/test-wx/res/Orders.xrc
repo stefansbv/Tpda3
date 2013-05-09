@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxPanel" name="Orders">
-		<style>wxTAB_TRAVERSAL</style>
+		<style>wxFULL_REPAINT_ON_RESIZE|wxTAB_TRAVERSAL</style>
 		<object class="wxBoxSizer">
-			<orient>wxHORIZONTAL</orient>
+			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
 				<option>0</option>
 				<flag>wxALL|wxEXPAND</flag>
-				<border>5</border>
+				<border>0</border>
 				<object class="wxBoxSizer">
 					<orient>wxVERTICAL</orient>
 					<object class="sizeritem">
 						<option>1</option>
 						<flag>wxALL|wxEXPAND</flag>
-						<border>5</border>
+						<border>0</border>
 						<object class="wxBoxSizer">
 							<orient>wxHORIZONTAL</orient>
 							<object class="sizeritem">
 								<option>2</option>
 								<flag>wxALL|wxEXPAND</flag>
-								<border>5</border>
+								<border>0</border>
 								<object class="wxBoxSizer">
 									<orient>wxVERTICAL</orient>
 									<object class="sizeritem">
 										<option>1</option>
 										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
+										<border>0</border>
 										<object class="wxStaticBoxSizer">
 											<orient>wxVERTICAL</orient>
 											<label>Customer</label>
@@ -75,7 +75,7 @@
 									<object class="sizeritem">
 										<option>0</option>
 										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
+										<border>0</border>
 										<object class="wxStaticBoxSizer">
 											<orient>wxHORIZONTAL</orient>
 											<label>Order</label>
@@ -225,7 +225,7 @@
 							<object class="sizeritem">
 								<option>1</option>
 								<flag>wxALL|wxEXPAND</flag>
-								<border>5</border>
+								<border>0</border>
 								<object class="wxStaticBoxSizer">
 									<orient>wxVERTICAL</orient>
 									<label>Comments</label>
