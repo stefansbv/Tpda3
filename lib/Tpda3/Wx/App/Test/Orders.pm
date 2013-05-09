@@ -53,7 +53,6 @@ sub run_screen {
 
     my $rec_page = $nb->GetPage(0);
     my $det_page = $nb->GetPage(2);
-    #$self->{view} = $nb->GetGrandParent();
     $self->{view} = $nb->GetParent();
     $self->{bg}   = $rec_page->GetBackgroundColour();
 
@@ -67,11 +66,11 @@ sub run_screen {
     die "XRC file not found: $res_file" unless $res_file;
     $res->Load($res_file);
 
-    #my $main_hbox_sz = Wx::BoxSizer->new( Wx::wxVERTICAL );
-    my $main_sz = Wx::FlexGridSizer->new( 2, 1, 5, 5 );
-    my $top_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
+    my $main_sz = Wx::FlexGridSizer->new( 2, 1, 0, 0 );
+    my $top_sz  = Wx::BoxSizer->new(wxVERTICAL);
     my $bot_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
 
+    $main_sz->AddGrowableCol(0);
     $main_sz->AddGrowableRow(1);
 
     $self->{frame} = $res->LoadPanel($rec_page, 'Orders');
@@ -90,7 +89,7 @@ sub run_screen {
     my $ecomments       = $self->XRC('ecomments');
     my $eordertotal     = $self->XRC('eordertotal');
 
-    $top_sz->Add( $self->{frame}, 1, wxGROW );
+    $top_sz->Add( $self->{frame}, 1, wxALL | wxEXPAND, 5 );
 
     #-- Table
     my $columns = $self->{scrcfg}->deptable( 'tm1', 'columns' );
@@ -104,10 +103,10 @@ sub run_screen {
 
     #-- Layout
 
-    $main_sz->Add( $top_sz, 0, wxALL | wxGROW, 5 );
-    $main_sz->Add( $bot_sz, 0, wxALL | wxGROW, 5 );
+    $main_sz->Add( $top_sz, 1, wxALL | wxGROW, 5 );
+    $main_sz->Add( $bot_sz, 1, wxALL | wxGROW, 5 );
 
-    $rec_page->SetSizer( $main_sz );
+    $rec_page->SetSizerAndFit( $main_sz );
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in 'orders.conf'
