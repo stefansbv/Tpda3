@@ -1395,7 +1395,7 @@ sub event_handler_for_tb_button {
 sub list_control_choices {
     my ($self, $control, $choices) = @_;
 
-#???    $control->add_choices($choices);
+    $control->add_choices($choices);
 
     return;
 }
