@@ -1,3 +1,11 @@
+## 0.68 (2013-05-09)
+
+- Features
+  - Check for widget type before read / write (Tk) and report fields
+    with inconsistent configuration - devel tool.
+  - Wx GUI improvements.
+
+
 ## 0.67 (2013-04-13)
 
 - Bugfix
