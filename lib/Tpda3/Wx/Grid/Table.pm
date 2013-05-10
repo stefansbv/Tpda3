@@ -412,11 +412,7 @@ Dootson and the DBGridTable package example from
 http://wiki.wxperl.nl/Wx::GridTableBase.
 
 Also the Grid_MegaExample.py from
-<<<<<<< Updated upstream
-git://github.com/freephys/wxPython-In-Action.git, is a good source of
-=======
 git://github.com/freephys/wxPython-In-Action.git, was a source of
->>>>>>> Stashed changes
 inspiration.
 
 Thank you!

@@ -89,4 +89,32 @@ sub get_selection {
     return $self->{selection};
 }
 
-1;
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+Many!
+
+Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGMENTS
+
+Inspired from the CP::Wx::Grid::Table module Copyright (c) 2012 Mark
+Dootson and the DBGridTable package example from
+http://wiki.wxperl.nl/Wx::GridTableBase.
+
+Thank you!
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2013 Stefan Suciu.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Wx::Grid::DataTable
