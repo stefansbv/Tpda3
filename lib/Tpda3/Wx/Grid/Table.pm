@@ -85,10 +85,7 @@ Overridden to return the number of rows in the table.
 sub GetNumberRows {
     my $self = shift;
 
-    my $rowcount = $self->{gdt}->get_row_num;
-    print "rowcount: $rowcount\n";
-
-    return $rowcount;
+    return $self->{gdt}->get_row_num;
 }
 
 =head2 GetNumberCols
@@ -100,10 +97,7 @@ Overridden to return the number of columns in the table.
 sub GetNumberCols {
     my $self = shift;
 
-    my $colcount = $self->{gdt}->get_col_num;
-    print "colcount $colcount\n";
-
-    return $colcount;
+    return $self->{gdt}->get_col_num;
 }
 
 =head2 IsEmptyCell

@@ -6,10 +6,10 @@ use Carp;
 
 use Wx qw(wxSUNKEN_BORDER wxALIGN_LEFT wxALIGN_RIGHT wxALIGN_CENTRE
     wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL wxFONTWEIGHT_NORMAL
-    wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD
+    wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD WXK_RETURN
     wxGridSelectRows wxGridSelectColumns);
 
-use Wx::Event qw(EVT_GRID_RANGE_SELECT);
+use Wx::Event qw(EVT_GRID_RANGE_SELECT EVT_KEY_DOWN);
 
 use base qw(Wx::Grid);
 
@@ -97,7 +97,43 @@ sub new {
         $_[1]->Skip;
     };
 
+    # Advance to the next cell to the right
+    EVT_KEY_DOWN $self, sub {
+        $_[0]->on_key_down($_[1]);
+    };
+
     return $self;
+}
+
+sub on_key_down {
+    my ( $self, $evt ) = @_;
+
+    if ( $evt->GetKeyCode() != WXK_RETURN ) {
+        $evt->Skip();
+        return;
+    }
+
+    if ( $evt->ControlDown() ) {    # the edit control needs this key
+        $evt->Skip();
+        return;
+    }
+
+    #$self->DisableCellEditControl(); ???
+
+    my $success = $self->MoveCursorRight( $evt->ShiftDown() );
+    if ( not $success ) {
+        my $newRow = $self->GetGridCursorRow() + 1;
+        print "New row $newRow\n";
+        if ( $newRow < $self->get_num_rows() ) {
+            $self->SetGridCursor( $newRow, 0 );
+            $self->MakeCellVisible( $newRow, 0 );
+        }
+        else {
+            print "Add row\n";
+            # this would be a good place to add a new row if your app
+            # needs to do that
+        }
+    }
 }
 
 sub init_datatable {
@@ -248,4 +284,31 @@ sub delete_row {
     return 1;
 }
 
-1;
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+Many!
+
+Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGMENTS
+
+Advance to the next cell to the right inspired from:
+https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
+
+Thank you!
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright Stefan Suciu, 2013
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Wx::Grid
