@@ -7,7 +7,8 @@ use Carp;
 use Wx qw(wxSUNKEN_BORDER wxALIGN_LEFT wxALIGN_RIGHT wxALIGN_CENTRE
     wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL wxFONTWEIGHT_NORMAL
     wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD WXK_RETURN
-    wxGridSelectRows wxGridSelectColumns);
+    wxGridSelectRows wxGridSelectColumns
+    wxGREEN wxRED);
 
 use Wx::Event qw(EVT_GRID_RANGE_SELECT EVT_KEY_DOWN);
 
@@ -97,13 +98,20 @@ sub new {
         $_[1]->Skip;
     };
 
-    # Advance to the next cell to the right
+    # Advance to the next cell to the right on ENTER
     EVT_KEY_DOWN $self, sub {
         $_[0]->on_key_down($_[1]);
     };
 
     return $self;
 }
+
+=head2 on_key_down
+
+Adapted from:
+https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
+
+=cut
 
 sub on_key_down {
     my ( $self, $evt ) = @_;
@@ -121,7 +129,7 @@ sub on_key_down {
     #$self->DisableCellEditControl(); ???
 
     my $success = $self->MoveCursorRight( $evt->ShiftDown() );
-    if ( not $success ) {
+    unless ($success) {
         my $newRow = $self->GetGridCursorRow() + 1;
         print "New row $newRow\n";
         if ( $newRow < $self->get_num_rows() ) {
@@ -134,6 +142,8 @@ sub on_key_down {
             # needs to do that
         }
     }
+
+    return;
 }
 
 sub init_datatable {
@@ -158,6 +168,7 @@ sub init_datatable {
             valid_width => $columns->{$field}{valid_width},
             numscale    => $columns->{$field}{numscale},
             readwrite   => $columns->{$field}{readwrite},
+            tag         => $columns->{$field}{tag},
         };
         $self->{gdt}->set_col_attribs( $col, $col_attr_ref );
         $col++;
@@ -295,11 +306,6 @@ Many!
 Please report any bugs or feature requests to the author.
 
 =head1 ACKNOWLEDGMENTS
-
-Advance to the next cell to the right inspired from:
-https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
-
-Thank you!
 
 =head1 LICENSE AND COPYRIGHT
 
