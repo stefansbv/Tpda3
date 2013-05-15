@@ -382,7 +382,6 @@ TODO: Not efficient, alternatives?
 sub GetAttr {
     my ( $self, $row, $col, $kind ) = @_;
 
-    my $attr_rw  = $self->{gdt}->get_col_attrib( $col, 'readwrite' );
     my $attr_tag = $self->{gdt}->get_col_attrib( $col, 'tag' );
 
     my $cell_attr = Wx::GridCellAttr->new;
