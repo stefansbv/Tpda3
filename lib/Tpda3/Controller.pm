@@ -2836,7 +2836,8 @@ sub ctrl_write_to {
     my $sub_name = qq{control_write_$ctrltype};
     if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
-        $self->view->$sub_name($field, $control_ref, $value, $state, $date_format);
+        $self->view->$sub_name( $field, $control_ref, $value, $state,
+            $date_format );
     }
     else {
         print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";

@@ -1530,7 +1530,7 @@ sub control_write_c {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Checkbox') ) {
+    unless ( defined $control and $control->isa('Tk::Checkbutton') ) {
         carp qq(Widget for writing checkbox '$field' not found);
         return;
     }
@@ -1684,7 +1684,7 @@ sub control_read_c {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Checkbox') ) {
+    unless ( defined $control and $control->isa('Tk::Checkbutton') ) {
         carp qq(Widget for reading checkbox '$field' not found);
         return;
     }
