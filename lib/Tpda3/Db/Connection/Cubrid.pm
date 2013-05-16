@@ -134,6 +134,7 @@ sub parse_error {
 
     my $message_type
         = $cb eq q{}                                         ? "nomessage"
+        : $cb =~ m/Cannot connect to CUBRID CAS/smi          ? "servererr"
         : $cb =~ m/Failed to connect to database server, ($RE{quoted})/smi
                                                              ? "serverdb:$1"
         : $cb =~ m/Cannot communicate with server/smi        ? "servererr"
