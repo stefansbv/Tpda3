@@ -57,6 +57,7 @@ unless ($@) {
     requires 'Tk::DateEntry'        => '0';
     requires 'Tk::TableMatrix'      => '1.23';
     requires 'Tk::RadiobuttonGroup' => '0';
+    requires 'Tk::JFileDialog'      => '1.14';
     $have_toolkit++;
 }
 
