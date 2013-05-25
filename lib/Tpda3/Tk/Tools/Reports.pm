@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Tk::widgets qw(); # DateEntry JComboBox
+use Tk::widgets qw(JFileDialog);
 
 use base q{Tpda3::Tk::Screen};
 
@@ -250,11 +250,17 @@ sub report_file {
     my $cfg = Tpda3::Config->instance();
     my $initdir = catdir( $cfg->configdir, 'rep' );
 
-    my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
-    my $path = $self->{view}->getOpenFile(
-        -filetypes  => $types,
-        -initialdir => $initdir,
+    my $file_dlg = $self->{view}->JFileDialog(
+        -Title       => 'Alegeti fisierul',
+        -Create      => 0,
+        -Path        => $initdir,
+        -FPat        => '*.rep',
+        -ShowAll     => 0,
+        -DisableFPat => 1,
+        -Chdir       => 0,
     );
+
+    my $path = $file_dlg->Show(-Horiz => 1);
 
     return unless $path;
 
