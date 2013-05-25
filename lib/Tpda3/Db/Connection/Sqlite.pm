@@ -172,6 +172,9 @@ Table info 'short'.
 
 sub table_info_short {
     my ( $self, $table ) = @_;
+
+    die "\n\nMethod to retrieve SQLite table info not implemented!\n\n";
+
     return;
 }
 
@@ -216,25 +219,9 @@ Get the primary key field name of the table.
 sub table_keys {
     my ( $self, $table ) = @_;
 
-    my $log = get_logger();
+    die "\n\nMethod to retrieve SQLite table keys not implemented!\n\n";
 
-    my $sql = qq( SELECT name
-                FROM sqlite_master
-                WHERE type = 'index'
-                    AND name = '$table'
-                    AND sql IS NULL;
-    );
-
-    my $val_ret;
-    try {
-        ($val_ret) = $self->{_dbh}->selectrow_array($sql);
-    }
-    catch {
-        $log->fatal("Transaction aborted because $_")
-            or print STDERR "$_\n";
-    };
-
-    return $val_ret;
+    return;
 }
 
 =head2 table_list

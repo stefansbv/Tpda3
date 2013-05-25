@@ -74,6 +74,7 @@ sub load_classicmodels_data {
 
     my $data_files = data_file_list();
 
+    diag "Load data...";
     foreach my $data_file ( @{$data_files} ) {
         load_table_data( $dbh, $data_file );
     }
