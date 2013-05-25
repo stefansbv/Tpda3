@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 
 use Tk;
+use Tk::widgets qw(JFileDialog);
 use File::Copy;
 use File::Spec;
 
@@ -489,12 +490,15 @@ sub dialog_file {
 
     my $initialdir = $self->get_init_dir($field);
 
-    my $types = [ [ 'Executable', $self->{$field} ], [ 'All Files', '*', ], ];
-    my $path = $self->{tlw}->getOpenFile(
-        -filetypes  => $types,
-        -initialdir => $initialdir,
+    my $file_dlg = $self->{tlw}->JFileDialog(
+        -Title  => 'Alegeti fisierul',
+        -Create => 0,
+        -Path   => $initialdir,
+        -FPat    => '*',
+        -ShowAll => 'NO',
     );
 
+    my $path = $file_dlg->Show(-Horiz => 1);
     unless ($path and -f $path) {
         $self->_set_status('Error, file not found', 'red');
     }

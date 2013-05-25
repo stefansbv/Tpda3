@@ -91,7 +91,6 @@ Generate LaTeX source from TT template.
 sub tex_from_template {
     my ($self, $record, $model_file, $output_path) = @_;
 
-    #
     Tpda3::Utils->check_file($model_file);
     Tpda3::Utils->check_path($output_path);
 
@@ -161,7 +160,11 @@ sub pdf_from_latex {
     my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
     my $pdflatex_opt = q{-halt-on-error};
     my $docspath     = $self->cfg->cfrun->{docspath};
+
+    Tpda3::Utils->check_file($pdflatex_exe);
     Tpda3::Utils->check_path($docspath);
+
+    $self->_log->info(qq{Generating PDF in "$docspath"});
 
     my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
     my $output_pdf = catfile($docspath, qq{$name.pdf});
