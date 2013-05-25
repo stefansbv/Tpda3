@@ -41,6 +41,10 @@ requires 'DBI'                   => '1.53';
 requires 'Math::Symbolic'        => '0';
 requires 'Tree::DAG_Node'        => '0';
 
+# Toolkits
+
+my $have_toolkit = 0;
+
 #- Tk
 
 eval { require Tk; };
@@ -53,6 +57,7 @@ unless ($@) {
     requires 'Tk::DateEntry'        => '0';
     requires 'Tk::TableMatrix'      => '1.23';
     requires 'Tk::RadiobuttonGroup' => '0';
+    $have_toolkit++;
 }
 
 #- For generating PDF from TeX
@@ -66,7 +71,10 @@ eval { require Wx; };
 unless ($@) {
     requires 'Wx'                 => '0.970101';
     requires 'Wx::Perl::ListCtrl' => '0.03';
+    $have_toolkit++;
 }
+
+die "\nThis application requires PerlTk or wxPerl.\n\n" if $have_toolkit == 0;
 
 #- Database
 
