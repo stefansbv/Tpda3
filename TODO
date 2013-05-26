@@ -4,9 +4,9 @@ Note: Main development focus is on the PerlTk interface, at least
       until I find (and learn to use) equivalent Wx controls for the
       screens, with the same functionality as the PerlTk widgets have.
 
-* To do [60%]
+* To do [70%]
   - [X] Improve exception handling, error reporting and user messages;
-  - [ ] Test Log::Dispatch::FileRotate;
+  - [X] Test Log::Dispatch::FileRotate;
   - [X] Implement language support (translations);
   - [ ] Date fields and date validation in TM;
   - [X] Implement CUBRID support;
