@@ -66,7 +66,7 @@ sub new {
 
 =head2 GetView
 
-Overridden to return the grid? Otherwise GetView returns undef.
+Overridden to return the grid, otherwise GetView returns undef.
 
 =cut
 
@@ -85,10 +85,7 @@ Overridden to return the number of rows in the table.
 sub GetNumberRows {
     my $self = shift;
 
-    my $rowcount = $self->{gdt}->get_row_num;
-    print "rowcount: $rowcount\n";
-
-    return $rowcount;
+    return $self->{gdt}->get_row_num;
 }
 
 =head2 GetNumberCols
@@ -100,10 +97,7 @@ Overridden to return the number of columns in the table.
 sub GetNumberCols {
     my $self = shift;
 
-    my $colcount = $self->{gdt}->get_col_num;
-    print "colcount $colcount\n";
-
-    return $colcount;
+    return $self->{gdt}->get_col_num;
 }
 
 =head2 IsEmptyCell
@@ -377,22 +371,39 @@ sub SetColLabelValue {
     return;
 }
 
+=head2 GetAttr
+
+Returns a new attribute object every time is called.
+
+TODO: Not efficient, alternatives?
+
+=cut
+
 sub GetAttr {
-  my( $self, $row, $col, $kind ) = @_;
+    my ( $self, $row, $col, $kind ) = @_;
 
-  my $cell_attr = Wx::GridCellAttr->new;
+    my $attr_tag = $self->{gdt}->get_col_attrib( $col, 'tag' );
 
-  # Text alignment
-  if ($self->GetTypeName(0, $col) eq 'double' ) {
-      $cell_attr->SetAlignment(wxALIGN_RIGHT, wxALIGN_TOP);
-  }
-  elsif ($self->GetTypeName(0, $col) eq 'int_id') {
-      $cell_attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_TOP);
-  }
+    my $cell_attr = Wx::GridCellAttr->new;
 
-  $cell_attr->SetOverflow(0);
+    $cell_attr->SetOverflow(0);
 
-  return $cell_attr;
+    # Text alignment
+    $cell_attr->SetAlignment( wxALIGN_LEFT, wxALIGN_TOP )
+        if $attr_tag =~ m{left$}i;
+    $cell_attr->SetAlignment( wxALIGN_CENTRE, wxALIGN_TOP )
+        if $attr_tag =~ m{center$}i;
+    $cell_attr->SetAlignment( wxALIGN_RIGHT, wxALIGN_TOP )
+        if $attr_tag =~ m{right$}i;
+
+    # Read only cell
+    $cell_attr->SetReadOnly(1) if $attr_tag =~ m{^ro}i;
+
+    # Search dialog binding
+    $cell_attr->SetBackgroundColour( Wx::Colour->new('PALE GREEN') )
+        if $attr_tag =~ m{^find}i;
+
+    return $cell_attr;
 }
 
 =head1 AUTHOR

@@ -6,10 +6,11 @@ use Carp;
 
 use Wx qw(wxSUNKEN_BORDER wxALIGN_LEFT wxALIGN_RIGHT wxALIGN_CENTRE
     wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL wxFONTWEIGHT_NORMAL
-    wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD
-    wxGridSelectRows wxGridSelectColumns);
+    wxFONTWEIGHT_LIGHT wxFONTWEIGHT_BOLD WXK_RETURN
+    wxGridSelectRows wxGridSelectColumns
+    wxGREEN wxRED);
 
-use Wx::Event qw(EVT_GRID_RANGE_SELECT);
+use Wx::Event qw(EVT_GRID_RANGE_SELECT EVT_KEY_DOWN);
 
 use base qw(Wx::Grid);
 
@@ -97,7 +98,52 @@ sub new {
         $_[1]->Skip;
     };
 
+    # Advance to the next cell to the right on ENTER
+    EVT_KEY_DOWN $self, sub {
+        $_[0]->on_key_down($_[1]);
+    };
+
     return $self;
+}
+
+=head2 on_key_down
+
+Adapted from:
+https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
+
+=cut
+
+sub on_key_down {
+    my ( $self, $evt ) = @_;
+
+    if ( $evt->GetKeyCode() != WXK_RETURN ) {
+        $evt->Skip();
+        return;
+    }
+
+    if ( $evt->ControlDown() ) {    # the edit control needs this key
+        $evt->Skip();
+        return;
+    }
+
+    #$self->DisableCellEditControl(); ???
+
+    my $success = $self->MoveCursorRight( $evt->ShiftDown() );
+    unless ($success) {
+        my $newRow = $self->GetGridCursorRow() + 1;
+        print "New row $newRow\n";
+        if ( $newRow < $self->get_num_rows() ) {
+            $self->SetGridCursor( $newRow, 0 );
+            $self->MakeCellVisible( $newRow, 0 );
+        }
+        else {
+            print "Add row\n";
+            # this would be a good place to add a new row if your app
+            # needs to do that
+        }
+    }
+
+    return;
 }
 
 sub init_datatable {
@@ -122,6 +168,7 @@ sub init_datatable {
             valid_width => $columns->{$field}{valid_width},
             numscale    => $columns->{$field}{numscale},
             readwrite   => $columns->{$field}{readwrite},
+            tag         => $columns->{$field}{tag},
         };
         $self->{gdt}->set_col_attribs( $col, $col_attr_ref );
         $col++;
@@ -248,4 +295,26 @@ sub delete_row {
     return 1;
 }
 
-1;
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+Many!
+
+Please report any bugs or feature requests to the author.
+
+=head1 ACKNOWLEDGMENTS
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright Stefan Suciu, 2013
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Wx::Grid

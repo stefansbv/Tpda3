@@ -91,13 +91,23 @@ sub run_screen {
 
     $top_sz->Add( $self->{frame}, 1, wxALL | wxEXPAND, 5 );
 
+    #-- Button bar
+    my $button_sz  = Wx::BoxSizer->new(wxHORIZONTAL);
+
+    foreach my $name (qw(actitemadd16 actitemdelete16)) {
+        my $bmp  = $self->make_bitmap($name);
+        my $button = Wx::BitmapButton->new( $rec_page, -1, $bmp, [ -1, -1 ] );
+        $button_sz->Add( $button, 0, wxALIGN_CENTRE | wxGROW | wxALL, 2 );
+    }
+
     #-- Table
     my $columns = $self->{scrcfg}->deptable( 'tm1', 'columns' );
     my $table = Tpda3::Wx::Grid->new( $rec_page, $columns );
 
     my $article_sb  = Wx::StaticBox->new( $rec_page, -1, ' Articles ' );
-    my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxHORIZONTAL, );
+    my $article_sbs = Wx::StaticBoxSizer->new( $article_sb, wxVERTICAL, );
 
+    $article_sbs->Add( $button_sz, 0 );
     $article_sbs->Add( $table, 1, wxALL | wxEXPAND, 5 );
     $bot_sz->Add($article_sbs, 1, wxALL | wxEXPAND, 5 );
 
@@ -134,9 +144,19 @@ sub XRC {
     return  $self->{frame}->FindWindow(Wx::XmlResource::GetXRCID($object) );
 }
 
-sub gbpos { Wx::GBPosition->new(@_) }
+# sub gbpos { Wx::GBPosition->new(@_) }
 
-sub gbspan { Wx::GBSpan->new(@_) }
+# sub gbspan { Wx::GBSpan->new(@_) }
+
+sub make_bitmap {
+    my ( $self, $icon ) = @_;
+
+    my $ico_path = $self->{cfg}->cfico;
+
+    my $bmp = Wx::Bitmap->new( $ico_path . "/$icon.gif", wxBITMAP_TYPE_ANY, );
+
+    return $bmp;
+}
 
 =head1 AUTHOR
 
