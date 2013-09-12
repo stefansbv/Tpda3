@@ -63,8 +63,8 @@ unless ($@) {
 
 #- For generating PDF from TeX
 
-requires 'IPC::Run3' => '0';
-requires 'Template'  => '0';
+requires 'IPC::System::Simple' => '1.17';
+requires 'Template'            => '0';
 
 #- and/or Wx - Experimental
 

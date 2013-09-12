@@ -7,9 +7,27 @@ use warnings;
 
 use Cwd;
 use File::Spec::Functions;
-use Test::More tests => 4;
+use IPC::System::Simple 1.17 qw(capture);
+use Try::Tiny;
+use Test::More;
 
 use lib qw( lib ../lib );
+
+BEGIN {
+    my $pdflatex_exe = 'pdflatex'. ( $^O eq 'MSWin32' ? '.exe' : '' );
+    my $output = q{};
+    try {
+        $output = capture("$pdflatex_exe -version");
+    }
+    catch {
+        plan( skip_all => 'pdfTeX is required for this test' );
+    }
+    finally {
+        # print "OUTPUT: >$output<\n";
+    };
+
+    plan tests => 4;
+}
 
 use Tpda3::Config;
 use Tpda3::Generator;
