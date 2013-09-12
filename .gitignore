@@ -19,3 +19,4 @@ TAGS
 *.htb
 .al
 *.html
+t/text/output/test.*

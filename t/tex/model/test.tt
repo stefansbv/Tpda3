@@ -1,0 +1,66 @@
+% +---------------------------------------------------------------------------+
+% | Model test template                                                       |
+% | Copyright (c) 2011-2013 by Stefan Suciu.                                  |
+% | Version: 0.1                                                              |
+% | uses enumitem, alnumsec packages                                          |
+% +---------------------------------------------------------------------------+
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[top=3cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[romanian,english]{babel}
+\usepackage{relsize}                   % to be able to add the comma under sStT
+\usepackage{alnumsec}                  % section with Roman char
+\alnumsecstyle{Ral}
+
+%% Record:
+%%-----------------------------
+[%- FOREACH key = r.keys %]
+% [% key %] : [% r.$key -%]
+[% END %]
+%%-----------------------------
+%% Usage: r.field
+
+\begin{document}
+
+\begin{center}
+  GENERATE PDF TEST DOCUMENT
+\end{center}
+
+%------------------------------
+\section{First section}
+%------------------------------
+
+One for all and all for one, [% r.name1 %] are always ready.  One for
+all and all for one, helping everybody.  One for all and all for one,
+it's a pretty story.  Sharing everything with fun, that's the way to
+be.  One for all and all for one, [% r.name1 %] are always ready.  One
+for all and all for one, helping everybody.  One for all and all for
+one, can sound pretty corny.  If you've got a problem chum, think how
+it could be.
+
+There's a voice that keeps on calling me.  Down the road, that's where
+I'll always be.  Every stop I make, I make a new friend.  Can't stay
+for long, just turn around and I'm gone again.  Maybe tomorrow, I'll
+want to settle down, Until tomorrow, I'll just keep moving on.
+
+%------------------------------
+\section{Last section}
+%------------------------------
+
+[% r.name2 %]!  The most effectual [% r.name2 %]!  Who's intellectual
+close friends get to call him [% r.init2 %], providing it's with
+dignity.  [% r.name2 %]!  The indisputable leader of the gang.  He's
+the boss, he's a pip, he's the championship.  He's the most tip top,
+[% r.name2 %].
+
+%------------------------------
+\section{Acknowledgements}
+%------------------------------
+
+Sample text from Text|Generator: http://www.malevole.com/mv/misc/text/
+
+\end{document}
+
+%% End - template

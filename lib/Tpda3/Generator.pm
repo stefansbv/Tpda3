@@ -3,16 +3,16 @@ package Tpda3::Generator;
 use strict;
 use warnings;
 
-use IPC::Run3 qw( run3 );
+use IPC::System::Simple 1.17 qw(capture);
 use File::Spec::Functions;
 use File::Basename;
 use Template;
-
-use Log::Log4perl qw(get_logger :levels);
 use Try::Tiny;
+use Log::Log4perl qw(get_logger :levels);
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
+require Tpda3::Utils;
 
 =head1 NAME
 
@@ -145,56 +145,50 @@ sub tex_from_template {
 
 =head2 pdf_from_latex
 
-Generate PDF from LaTeX source using L<pdflatex>. On success
+Generate PDF from LaTeX source using L<pdflatex>.  On success
 L<pdflatex> returns 0.
 
 =cut
 
 sub pdf_from_latex {
-    my ($self, $tex_file) = @_;
+    my ($self, $tex_file, $docspath) = @_;
 
     Tpda3::Utils->check_file($tex_file);
 
-    $self->_log->info(qq{Generating PDF from "$tex_file"});
-
     my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
-    my $pdflatex_opt = q{-halt-on-error};
-    my $docspath     = $self->cfg->cfrun->{docspath};
+    my $output_path  = $docspath || $self->cfg->cfrun->{docspath};
+
+    $self->_log->info(qq{Generating PDF from "$tex_file" in "$output_path"});
 
     Tpda3::Utils->check_file($pdflatex_exe);
-    Tpda3::Utils->check_path($docspath);
+    Tpda3::Utils->check_path($output_path);
 
-    $self->_log->info(qq{Generating PDF in "$docspath"});
-
-    my ($name, $path, $ext) = fileparse( $tex_file, qr/\Q.tex\E/ );
-    my $output_pdf = catfile($docspath, qq{$name.pdf});
-    my $cnt = unlink $output_pdf;
-    if ($cnt == 1) {
-        $self->_log->info(qq{Removed temporary file: "$output_pdf"});
+    my ( $name, $path, $ext ) = fileparse( $tex_file, qr/\Q.tex\E/ );
+    foreach my $ext (qw{aux log pdf}) {
+        my $temp_file = catfile( $output_path, qq{$name.$ext} );
+        my $cnt = unlink $temp_file;
+        if ( $cnt == 1 ) {
+            $self->_log->info(qq{Removed temporary file: "$temp_file"});
+        }
     }
 
-    $pdflatex_opt .= q{ -output-directory=} . qq{"$docspath"};
+    my @opts  = qw{-halt-on-error -no-shell-escape -interaction=batchmode};
+    push @opts, qq{-output-directory="$output_path"};
+    push @opts, qq{"$tex_file"};
 
-    my $cmd = qq{"$pdflatex_exe" $pdflatex_opt "$tex_file"};
-
-    run3 $cmd, undef, \undef;
-
-    my $error_str;
-    if ($? == -1) {
-        $error_str = "failed to execute: $!";
+    my $output = q{};
+    try {
+        # Not capture($pdflatex_exe, @opts), always use the shell!
+        $output = capture("$pdflatex_exe @opts");
     }
-    elsif ($? & 127) {
-        $error_str = sprintf "child died with signal %d, %s coredump\n",
-            ($? & 127),  ($? & 128) ? 'with' : 'without';
+    catch {
+        print "EE: '$pdflatex_exe @opts': $_\n";
     }
+    finally {
+        print "OUTPUT: >$output<\n" if $self->cfg->verbose;
+    };
 
-    if ($error_str) {
-        $self->_log->info("CMD: $cmd");
-        $self->_log->info("EE: $error_str");
-        return;
-    }
-
-    return $output_pdf;
+    return catfile($output_path, qq{$name.pdf});
 }
 
 =head1 AUTHOR
