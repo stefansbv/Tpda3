@@ -7,12 +7,8 @@
 
 \documentclass[a4paper,10pt]{article}
 \usepackage[top=3cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
-\usepackage{ucs}
-\usepackage[utf8x]{inputenc}
 \usepackage[romanian,english]{babel}
-\usepackage{relsize}                   % to be able to add the comma under sStT
-\usepackage{alnumsec}                  % section with Roman char
-\alnumsecstyle{Ral}
+\usepackage{relsize}                  % to be able to add the comma under sStT
 
 %% Record:
 %%-----------------------------
