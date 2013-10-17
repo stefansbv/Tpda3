@@ -9,6 +9,7 @@ use File::Basename;
 use Template;
 use Try::Tiny;
 use Log::Log4perl qw(get_logger :levels);
+use File::Which;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -153,15 +154,18 @@ L<pdflatex> returns 0.
 sub pdf_from_latex {
     my ($self, $tex_file, $docspath) = @_;
 
-    Tpda3::Utils->check_file($tex_file);
+    my $pdflatex_exe;
+    unless ( $pdflatex_exe = $self->find_pdflatex() ) {
+        $self->_log->info(qq{pdfTeX (pdflatex) not found.});
+        return;
+    }
 
-    my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
-    my $output_path  = $docspath || $self->cfg->cfrun->{docspath};
+    my $output_path = $docspath || $self->cfg->cfrun->{docspath};
+
+    Tpda3::Utils->check_file($tex_file);
+    Tpda3::Utils->check_path($output_path);
 
     $self->_log->info(qq{Generating PDF from "$tex_file" in "$output_path"});
-
-    Tpda3::Utils->check_file($pdflatex_exe);
-    Tpda3::Utils->check_path($output_path);
 
     my ( $name, $path, $ext ) = fileparse( $tex_file, qr/\Q.tex\E/ );
     foreach my $ext (qw{aux log pdf}) {
@@ -172,7 +176,10 @@ sub pdf_from_latex {
         }
     }
 
-    my @opts  = qw{-halt-on-error -no-shell-escape -interaction=batchmode};
+    # Options for TeXLive
+    #my @opts  = qw{-halt-on-error -no-shell-escape -interaction=batchmode};
+    # Options for standard TeX
+    my @opts  = qw{-halt-on-error -interaction=batchmode};
     push @opts, qq{-output-directory="$output_path"};
     push @opts, qq{"$tex_file"};
 
@@ -189,6 +196,36 @@ sub pdf_from_latex {
     };
 
     return catfile($output_path, qq{$name.pdf});
+}
+
+sub find_pdflatex {
+    my $self = shift;
+
+    # First check the config
+    my $pdflatex_exe = $self->cfg->cfextapps->{latex}{exe_path};
+    if ( $pdflatex_exe = $self->check_pdflatex($pdflatex_exe) ) {
+        return $pdflatex_exe if $pdflatex_exe;
+    }
+
+    # Try the find it in the PATH
+    my $pdflatex = 'pdflatex' . ( $^O eq 'MSWin32' ? '.exe' : '' );
+    $pdflatex_exe = File::Which::which($pdflatex);
+    if ( $pdflatex_exe = $self->check_pdflatex($pdflatex_exe) ) {
+        return $pdflatex_exe if $pdflatex_exe;
+    }
+
+    return;
+}
+
+sub check_pdflatex {
+    my ($self, $exe) = @_;
+
+    return unless -f "$exe";
+
+    my $output = q{};
+    try { $output = capture("$exe -version") } catch { $exe = '' }
+
+    return $exe;
 }
 
 =head1 AUTHOR

@@ -10,27 +10,25 @@ use File::Spec::Functions;
 use IPC::System::Simple 1.17 qw(capture);
 use Try::Tiny;
 use Test::More;
+use File::Which ();
 
 use lib qw( lib ../lib );
 
+require Tpda3::Config;
+
 BEGIN {
-    my $pdflatex_exe = 'pdflatex'. ( $^O eq 'MSWin32' ? '.exe' : '' );
-    my $output = q{};
-    try {
-        $output = capture("$pdflatex_exe -version");
-    }
-    catch {
-        plan( skip_all => 'pdfTeX is required for this test' );
-    }
-    finally {
-        # print "OUTPUT: >$output<\n";
+    eval {
+        require Tpda3::Generator;
+        my $gen = Tpda3::Generator->new();
+        die unless $gen->find_pdflatex();
     };
-
-    plan tests => 4;
+    if ($@) {
+        plan( skip_all => 'pdflatex is required for this test' );
+    }
+    else {
+        plan tests => 4;
+    }
 }
-
-use Tpda3::Config;
-use Tpda3::Generator;
 
 my $args = {
     cfname => 'test-tk',
