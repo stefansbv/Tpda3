@@ -220,7 +220,7 @@ sub find_pdflatex {
 sub check_pdflatex {
     my ($self, $exe) = @_;
 
-    return unless -f "$exe";
+    return unless defined $exe and -f $exe;
 
     my $output = q{};
     try { $output = capture("$exe -version") } catch { $exe = '' }
