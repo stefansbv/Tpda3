@@ -84,6 +84,14 @@ sub _init {
 
     my $os = $^O;
 
+    $self->{initial_dir} =
+       $os eq q{}       ? ''
+     : $os =~ /mswin/i  ? 'C:/'
+     : $os =~ /linux/i  ? '/'
+     :                    '';
+
+    # External apps
+
     $self->{repman} =
        $os eq q{}       ? ''
      : $os =~ /mswin/i  ? 'printrepxp.exe'
@@ -96,10 +104,10 @@ sub _init {
      : $os =~ /linux/i  ? 'pdflatex'
      :                    '';
 
-    $self->{initial_dir} =
+    $self->{chm_viewer} =
        $os eq q{}       ? ''
-     : $os =~ /mswin/i  ? 'C:/'
-     : $os =~ /linux/i  ? '/'
+     : $os =~ /mswin/i  ? 'NOT USED'
+     : $os =~ /linux/i  ? 'chm viewer'
      :                    '';
 
     return;
@@ -123,7 +131,7 @@ sub save_as_default {
 
     my $appscfg_ref = $self->cfg->cfextapps;
 
-    foreach my $field ( keys %{$appscfg_ref} ) {
+    foreach my $field ( qw{repman latex chm_viewer} ) {
         my $value = $self->{controls}{$field}[1]->get();
         $self->save_yaml_main( 'externalapps', $field,
             { 'exe_path', $value } )
@@ -303,7 +311,7 @@ sub show_cfg_dialog {
 
     $frm_top->Button(
         -image   => 'fileopen16',
-        -command => sub { $self->update_value('repman', 'file') },
+        -command => sub { $self->update_value('repman', 'file', 'strict') },
     )->form(
         -top  => [ '&', $lrepman, 0 ],
         -left => [ $erepman, 3 ],
@@ -341,10 +349,48 @@ sub show_cfg_dialog {
     #-- button
     $frm_top->Button(
         -image   => 'fileopen16',
-        -command => sub { $self->update_value('latex', 'file') },
+        -command => sub { $self->update_value('latex', 'file', 'strict') },
     )->form(
         -top  => [ '&', $llatex, 0 ],
         -left => [ $elatex, 3 ],
+    );
+
+    #-- extapp3
+
+    my $lextapp3 = $frm_top->Label(
+        -text => 'CHM viewer',
+    );
+    $lextapp3->form(
+        -top     => [ $llatex, 8 ],
+        -right   => [ %100, -35 ],
+        -padleft => 5,
+    );
+
+    #-- CHM viewer
+
+    my $chm_label = "File: $self->{chm_viewer}";
+    my $lchm_viewer = $frm_top->Label( -text => $chm_label, );
+    $lchm_viewer->form(
+        -top     => [ $lextapp3, 8 ],
+        -left    => [ %0, 0 ],
+        -padleft => 10,
+    );
+
+    my $echm_viewer = $frm_top->Entry(
+        -width => 36,
+    );
+    $echm_viewer->form(
+        -top  => [ '&', $lchm_viewer, 0 ],
+        -left => [ %0, $f1d ],
+    );
+
+    #-- button
+    $frm_top->Button(
+        -image   => 'fileopen16',
+        -command => sub { $self->update_value('chm_viewer', 'file') },
+    )->form(
+        -top  => [ '&', $lchm_viewer, 0 ],
+        -left => [ $echm_viewer, 3 ],
     );
 
     #-  Frame middle - Entries
@@ -415,9 +461,10 @@ sub show_cfg_dialog {
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
     $self->{controls} = {
-        repman   => [ undef, $erepman ],
-        latex    => [ undef, $elatex ],
-        docspath => [ undef, $edocspath ],
+        repman     => [ undef, $erepman ],
+        latex      => [ undef, $elatex ],
+        chm_viewer => [ undef, $echm_viewer ],
+        docspath   => [ undef, $edocspath ],
     };
 
     $self->load_config();
@@ -459,7 +506,7 @@ dialog.
 =cut
 
 sub update_value {
-    my ($self, $field, $type) = @_;
+    my ($self, $field, $type, $strict) = @_;
 
     $self->_set_status('');     # clear status
 
@@ -470,9 +517,16 @@ sub update_value {
 
     # Check if file name match the desired one
     if ( $type eq 'file' ) {
-        my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
-        unless ( $self->{$field} eq $file ) {
-            $self->_set_status( "Error, wrong file '$file'", 'red' );
+        if ($strict) {
+            my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
+            unless ( $self->{$field} eq $file ) {
+                $self->_set_status( "Error, wrong file '$file'", 'red' );
+            }
+        }
+        else {
+            unless ( -x $path ) {
+                $self->_set_status( "Error, wrong path '$path'", 'red' );
+            }
         }
     }
 

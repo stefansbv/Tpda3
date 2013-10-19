@@ -503,24 +503,29 @@ handles L<.chm> files.
 sub guide {
     my ($self, $guide_chm) = @_;
 
+    my $manual     = 'tpda3-manual.chm';
+    my $manual_fqp = Tpda3::Config::Utils->get_doc_file_by_name($manual);
+    unless ( -f $manual_fqp ) {
+        my ( $message, $details )
+            = ( 'Info', "Can't locate the manual: $manual_fqp" );
+        $self->view->dialog_info( $message, $details );
+        return;
+    }
+
     if ( $^O =~ /MSWin/ ) {
-        my $manual     = 'tpda3-manual.chm';
-        my $manual_fqp = Tpda3::Config::Utils->get_doc_file_by_name($manual);
-        if (-f $manual_fqp) {
-            system(1, "$manual_fqp");    # from [dirving] on PerlMonks
+        system(1, "$manual_fqp");    # from [dirving] on PerlMonks
+    }
+    else {
+        my $chm_viewer = $self->cfg->cfextapps->{chm_viewer}{exe_path};
+        if ($chm_viewer and -f $chm_viewer) {
+            system($chm_viewer, "$manual_fqp");
         }
         else {
             my ( $message, $details )
-                = ( 'Info', "Can't locate the manual: $manual_fqp" );
+            = ( 'Info', "Please, set the path for a .chm files viewer, using the Configurations dialog from the Admin menu bar.\nOkular from KDE4 can be used." );
             $self->view->dialog_info( $message, $details );
             return;
         }
-    }
-    else {
-        my $gui = $self->view;
-        require Tpda3::Tk::Dialog::Help;
-        my $gd = Tpda3::Tk::Dialog::Help->new;
-        $gd->help_dialog($gui);
     }
 
     return;
