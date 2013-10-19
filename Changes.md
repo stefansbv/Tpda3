@@ -1,3 +1,13 @@
+## 0.69 (2013-10-19)
+
+- Bugfix
+  - Switch to JFileDialog
+  - Refactor the PDF generation module
+  - Miscelaneous fixes
+- Features
+  - Replace the old help module with a manual in CHM format for all platforms
+  - Small advance for the Wx implmentation
+
 ## 0.68 (2013-05-09)
 
 - Features

@@ -1,9 +1,9 @@
 Tpda3 (Tiny Perl Database Application 3)
 ========================================
 Ștefan Suciu <stefan@s2i2.ro>
-2013-04-13
+2013-10-19
 
-Version: 0.67
+Version: 0.69
 
 Copyright (C) 2010-2013  Stefan Suciu
 GNU General Public License v3
