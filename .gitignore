@@ -15,8 +15,6 @@ classicmodels.db
 \#*#
 errors.txt
 TAGS
-*.chm
-*.htb
 .al
 *.html
 t/tex/output/test.*

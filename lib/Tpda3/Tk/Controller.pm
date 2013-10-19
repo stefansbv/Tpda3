@@ -511,7 +511,7 @@ sub guide {
         }
         else {
             my ( $message, $details )
-                = ( 'Info', "Can't locate the manual: $manual" );
+                = ( 'Info', "Can't locate the manual: $manual_fqp" );
             $self->view->dialog_info( $message, $details );
             return;
         }
