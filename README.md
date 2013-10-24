@@ -19,7 +19,7 @@ on wxPerl.
 Requirements
 ------------
 
-- Perl v5.8.9 or newer.
+- Perl v5.8.9 or newer. For full UTF support is recomended at least v5.10.1
 
 - PostgreSQL version 8.2 or greater or
 - Firebird version 2.1 or greater

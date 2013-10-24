@@ -15,6 +15,8 @@ name 'Tpda3';
 all_from 'lib/Tpda3.pm';
 
 requires 'perl'                      => '5.008005';
+requires 'Params::Validate::XS'      => '0';
+requires 'Params::Validate::PP'      => '0';
 requires 'Regexp::Common'            => '0';
 requires 'Config::General'           => '0';
 requires 'YAML::Tiny'                => '0';
