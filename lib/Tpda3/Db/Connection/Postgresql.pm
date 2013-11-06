@@ -102,17 +102,15 @@ Log errors.
 sub handle_error {
     my $self = shift;
 
-    my $errorstr;
-
     if ( defined $self->{_dbh} and $self->{_dbh}->isa('DBI::db') ) {
-        $errorstr = $self->{_dbh}->errstr;
+        my $errorstr = $self->{_dbh}->errstr;
         Exception::Db::SQL->throw(
             logmsg  => $errorstr,
             usermsg => $self->parse_error($errorstr),
         );
     }
     else {
-        $errorstr = DBI->errstr;
+        my $errorstr = DBI->errstr;
         Exception::Db::Connect->throw(
             logmsg  => $errorstr,
             usermsg => $self->parse_error($errorstr),
