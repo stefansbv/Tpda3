@@ -9,7 +9,9 @@ use Tpda3::Model::Table::Record;
 subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
 
 coerce 'TableRecordObject', from 'ArrayRef', via {
-    [ map { Tpda3::Model::Table::Record->new( name => $_, value => undef ) } @{$_} ];
+    [   map { Tpda3::Model::Table::Record->new( name => $_, value => undef ) }
+            @{$_}
+    ];
 };
 
 has 'table' => (
@@ -37,22 +39,22 @@ has '_keys' => (
         map_keys    => 'map',
         find_key    => 'first',
         count_keys  => 'count',
-        has_no_keys => 'is_empty',
     },
 );
 
 sub find_index_for {
     my ($self, $name) = @_;
     my $key = $self->find_key( sub { $_->name eq $name } );
+
     die "No key found for '$name'" unless ref $key;
+
     return $key;
 }
 
 sub update_field {
     my ($self, $name, $new_value) = @_;
 
-    die "Wrong parameters for 'update_field'"
-        unless ( defined($name) and defined($new_value) );
+    die "Wrong parameters for 'update_field'" unless defined $name;
 
     $self->find_index_for($name)->value($new_value);
     return $new_value;
@@ -61,8 +63,7 @@ sub update_field {
 sub update_index {
     my ( $self, $index, $new_value ) = @_;
 
-    die "Wrong parameters for 'update_key_index'"
-        unless ( defined($index) and defined($new_value) );
+    die "Wrong parameters for 'update_key_index'" unless defined $index;
 
     my $key = $self->get_key($index);
     die "No key found with index '$index" unless ref $key;
