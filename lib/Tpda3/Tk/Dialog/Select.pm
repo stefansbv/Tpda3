@@ -3,6 +3,7 @@ package Tpda3::Tk::Dialog::Select;
 use strict;
 use warnings;
 use utf8;
+use Locale::TextDomain 1.20 qw(Tpda3);
 
 use Tk::LabFrame;
 use Tk::MListbox;
@@ -42,8 +43,6 @@ sub new {
 
     my $self = {};
 
-    $self->{localize} = $opts;
-
     bless( $self, $class );
 
     return $self;
@@ -58,21 +57,17 @@ Define and show search dialog.
 sub select_dialog {
     my ( $self, $view, $para ) = @_;
 
-    my $title    = $self->{localize}{title};
-    my $b_load   = $self->{localize}{b_load};
-    my $b_cancel = $self->{localize}{b_cancel};
-    my $b_find   = $self->{localize}{b_find};
-
     #--- Dialog Box
 
     my $dlg = $view->DialogBox(
-        -title   => $title,
-        -buttons => [ $b_load, $b_cancel ],
+        -title   => __ 'Select',
+        -buttons => [ __ 'Load', __ 'Cancel' ],
     );
 
     #-- Key bindings
 
-    $dlg->bind( '<Escape>', sub { $dlg->Subwidget("B_$b_cancel")->invoke } );
+    $dlg->bind( '<Escape>',
+        sub { $dlg->Subwidget( 'B_' . __ 'Cancel' )->invoke } );
 
     #-- Main frame
 
@@ -85,7 +80,7 @@ sub select_dialog {
     #-- Frame (lista rezultate)
 
     my $frm2 = $mf->LabFrame(
-        -label      => $self->{localize}{lbl_result},
+        -label      => __ 'Result',
         -foreground => 'darkgreen',
     )->pack(
         -expand => 1,
@@ -176,8 +171,11 @@ sub select_dialog {
 
     my $result = $dlg->Show;
 
+    my @options = ( N__"Load" );
+    my $option_load  = __( $options[0] );
+
     my @indexes;
-    if ( $result =~ /$b_load/i ) {
+    if ( $result =~ /$option_load/i ) {
         eval { @indexes = $self->{box}->curselection(); };
         unless ($@) {
             # Something selected

@@ -5,8 +5,16 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger);
+use Locale::TextDomain 1.20 qw(Tpda3);
+use Locale::Messages qw(bind_textdomain_filter);
 
 require Tpda3::Config;
+
+BEGIN {
+    # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
+    $ENV{OUTPUT_CHARSET} = 'UTF-8';
+    bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;
+}
 
 =head1 NAME
 
@@ -188,6 +196,9 @@ Author: Rutger Vos, 17/Aug/2006
 
 The implementation of the Wx interface is heavily based on the work
 of Mark Dootson.
+
+The implementation of the localization code is based on the work of
+David E. Wheeler.
 
 Thank You!
 

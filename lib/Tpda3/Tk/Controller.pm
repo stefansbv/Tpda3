@@ -162,9 +162,7 @@ sub _set_event_handlers_keys {
         '<F5>' => sub {
             $self->model->is_mode('edit')
                 ? $self->record_reload()
-                : $self->view->set_status(
-                    $self->localize( 'status', 'not-edit' ),
-                    'ms', 'orange' );
+                : $self->view->set_status('not-edit', 'ms', 'orange');
         }
     );
 
@@ -185,9 +183,7 @@ sub _set_event_handlers_keys {
         '<F8>' => sub {
             ( $self->{_rscrcls} and $self->model->is_mode('find') )
                 ? $self->record_find_execute
-                : $self->view->set_status(
-                    $self->localize( 'status', 'not-find' ),
-                    'ms', 'orange' );
+                : $self->view->set_status('not-find', 'ms', 'orange');
         }
     );
 
@@ -196,9 +192,7 @@ sub _set_event_handlers_keys {
         '<F9>' => sub {
             ( $self->{_rscrcls} and $self->model->is_mode('find') )
                 ? $self->record_find_count
-                : $self->view->set_status(
-                    $self->localize( 'status', 'not-find' ),
-                    'ms', 'orange' );
+                : $self->view->set_status('not-find', 'ms', 'orange');
         }
     );
 

@@ -1,0 +1,189 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR "Stefan Suciu."
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Tpda3 0.70\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-26 22:25+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: lib/Tpda3/Controller.pm:539
+msgid "Not selected"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:599
+msgid "Record loaded (d)"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:1735
+msgid "Details"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2357 lib/Tpda3/Controller.pm:2423
+msgid "records"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2507 lib/Tpda3/Controller.pm:3126
+#: lib/Tpda3/Controller.pm:3358 lib/Tpda3/Controller.pm:3422
+msgid "Empty record"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2515
+msgid " Report failed! "
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2522
+msgid "Output path not found"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2532 lib/Tpda3/Controller.pm:2549
+msgid "Failed to generate PDF"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3072
+msgid "Record loaded (r)"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3094
+msgid "Reloaded"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3188
+msgid "Deleted"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3307
+msgid "Record changed"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3308 lib/Tpda3/Controller.pm:3312
+msgid "Save record?"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3311
+msgid "New record"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3315
+msgid "Delete record"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3316
+msgid "Confirm record delete?"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3349 lib/Tpda3/Controller.pm:3373
+msgid "Saved"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3376
+msgid "Not in edit|add mode!"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3583
+msgid "Changed record check failed!"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3606
+msgid "Note taken"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3607
+msgid "Note take failed"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3626
+msgid "Note restored"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3627
+msgid "Note restore failed"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:669
+msgid "Record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:670
+msgid "List"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:675
+msgid "Search results"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:875 lib/Tpda3/Tk/View.pm:895
+msgid "Info"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:1827
+msgid "Error"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:64
+msgid "Search"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Select.pm:64
+msgid "Load"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:73
+msgid "Clear"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:71
+#: lib/Tpda3/Tk/Dialog/Message.pm:76 lib/Tpda3/Tk/Dialog/Select.pm:64
+#: lib/Tpda3/Tk/Dialog/Select.pm:70
+msgid "Cancel"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:113
+msgid "contains"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:114
+msgid "starts"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:115
+msgid "ends"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:129
+msgid "Find"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:150 lib/Tpda3/Tk/Dialog/Select.pm:83
+msgid "Result"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:71 lib/Tpda3/Tk/Dialog/Message.pm:74
+msgid "Ok"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:75 lib/Tpda3/Tk/Dialog/Message.pm:76
+msgid "Yes"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:75 lib/Tpda3/Tk/Dialog/Message.pm:76
+msgid "No"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:134
+msgid "Title"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Select.pm:63
+msgid "Select"
+msgstr ""

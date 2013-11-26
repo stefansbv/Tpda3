@@ -8,6 +8,7 @@ use File::Spec::Functions qw(abs2rel catfile);
 use Log::Log4perl qw(get_logger);
 use POSIX qw (floor);
 use Data::Compare;
+use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk;
 use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
@@ -665,14 +666,13 @@ sub create_notebook {
 
     #- Panels
 
-    my $localized = $self->cfg->localize->{notebook};
-    $self->create_notebook_panel( 'rec', $localized->{lbl_record} );
-    $self->create_notebook_panel( 'lst', $localized->{lbl_list} );
+    $self->create_notebook_panel( 'rec', __ 'Record' );
+    $self->create_notebook_panel( 'lst', __ 'List' );
 
     # Frame box
     my $frm_box = $self->{_nb}{lst}->LabFrame(
         -foreground => 'blue',
-        -label      => 'Search results',
+        -label      => __ 'Search results',
         -labelside  => 'acrosstop'
     )->pack( -expand => 1, -fill => 'both' );
 
@@ -854,11 +854,8 @@ Confirmation dialog.
 sub dialog_confirm {
     my ( $self, $message, $details, $icon, $type ) = @_;
 
-    my $locale_data = $self->cfg->localize->{dialog};
-    $locale_data->{title} = '';              # reset title
-
     require Tpda3::Tk::Dialog::Message;
-    my $dlg = Tpda3::Tk::Dialog::Message->new($self, $locale_data);
+    my $dlg = Tpda3::Tk::Dialog::Message->new($self);
 
     return $dlg->message_dialog($message, $details, $icon, $type);
 }
@@ -875,7 +872,7 @@ sub dialog_info {
     $type = 'ok' unless $type;               # default
 
     my $dialog_i = $self->MsgBox(
-        -title   => 'Info',
+        -title   => __ 'Info',
         -type    => $type,
         -icon    => 'info',
         -message => $message,
@@ -895,7 +892,7 @@ sub dialog_error {
     my ( $self, $message, $details ) = @_;
 
     my $dialog_e = $self->MsgBox(
-        -title   => 'Info',
+        -title   => __ 'Info',
         -type    => 'ok',
         -icon    => 'error',
         -message => $message,
@@ -1235,8 +1232,6 @@ sub list_read_selected {
     eval { @returned = ( $self->get_recordlist->getRow($indecs) )[@idxs]; };
     if ($@) {
         warn "Error: $@";
-
-        # $self->refresh_sb( 'll', 'No record selected!' );
         return;
     }
     else {
@@ -1829,7 +1824,7 @@ sub Tk::Error {
     $self->log_msg("EE: '$log_messsge'");
 
     $self->Dialog(
-        -title => 'Error!',
+        -title => __ 'Error',
         -text  => $dlg_message,
     )->Show();
 

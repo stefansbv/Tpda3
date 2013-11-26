@@ -3,6 +3,7 @@ package Tpda3::Tk::Dialog::Message;
 use strict;
 use warnings;
 use utf8;
+use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk::DialogBox;
 
 require Tpda3::Utils;
@@ -58,14 +59,6 @@ button labels.
 sub message_dialog {
     my ( $self, $message, $details, $icon, $type ) = @_;
 
-    my $title    = $self->{dialog}{title};
-    my $b_yes    = $self->{dialog}{b_yes};
-    my $b_cancel = $self->{dialog}{b_cancel};
-    my $b_no     = $self->{dialog}{b_no};
-    my $b_ok     = $self->{dialog}{b_ok};
-
-    $title = $title ? $title . q{  } : q {}; # add space(s) at right
-
     #--- Dialog Box
 
     # # Make all buttons same width
@@ -75,13 +68,13 @@ sub message_dialog {
     # $padded = sprintf("%*s", $len_l, $text);
     # $padded = sprintf("%-*s", $len_r, $text);
 
-    my $default_buttons = [ $b_ok ];
+    my $default_buttons = [ __ 'Ok' ];
     my $buttons =
                   $type eq q{}    ?  $default_buttons
-                : $type eq 'ok'   ?  [ $b_ok ]
-                : $type eq 'yn'   ?  [ $b_yes, $b_no ]
-                : $type eq 'ycn'  ?  [ $b_yes, $b_cancel, $b_no ]
-                :                  $default_buttons
+                : $type eq 'ok'   ?  [ __ 'Ok' ]
+                : $type eq 'yn'   ?  [ __ 'Yes', __ 'No' ]
+                : $type eq 'ycn'  ?  [ __ 'Yes', __ 'Cancel', __ 'No' ]
+                :                    $default_buttons
                 ;
 
     my $dlg = $self->{view}->DialogBox(
@@ -138,7 +131,7 @@ sub message_dialog {
 
     #-- title (optional)
 
-    my $ltitle = $frame_top_right->Label( -text => $title, -fg => 'blue' )
+    my $ltitle = $frame_top_right->Label( -text => __ 'Title', -fg => 'blue' )
         ->pack( -anchor => 'se', );
 
     #-- label
@@ -154,11 +147,11 @@ sub message_dialog {
 
     my $result = $dlg->Show;
     my $answer
-        # button label                answer
-        = $result =~ /^$b_yes$/i    ? q{yes}
-        : $result =~ /^$b_no$/i     ? q{no}
-        : $result =~ /^$b_cancel$/i ? q{cancel}
-        :                             undef # default
+        # button label             answer
+        = $result =~ /^yes$/i    ? q{yes}
+        : $result =~ /^no$/i     ? q{no}
+        : $result =~ /^cancel$/i ? q{cancel}
+        :                          undef # default
         ;
 
     return $answer;

@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Data::Printer;
 
-use IPC::Run3 qw( run3 );
+use IPC::Run3 qw(run3);
 use Class::Unload;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
@@ -16,6 +16,7 @@ use Scalar::Util qw(blessed looks_like_number);
 use Storable qw (store retrieve);
 use Try::Tiny;
 use Data::Compare;
+use Locale::TextDomain 1.20 qw(Tpda3);
 
 require Tpda3::Exceptions;
 require Tpda3::Utils;
@@ -217,24 +218,6 @@ sub table_key {
     return $self->{_tblkeys}{$page}{$name};
 }
 
-=head2 localize
-
-Simple localisation.
-
-=cut
-
-sub localize {
-    my ($self, $section, $string) = @_;
-
-    my $localized = $self->cfg->localize->{$section}{$string};
-    unless ($localized) {
-        $localized = "'$string'";
-        print "Localization error for '$string'\n";
-    }
-
-    return $localized;
-}
-
 =head2 _log
 
 Return log instance variable
@@ -293,9 +276,7 @@ sub _set_event_handlers {
         sub {
             $self->model->is_mode('find')
                 ? $self->record_find_execute
-                : $self->view->set_status(
-                    $self->localize( 'status', 'not-find' ),
-                    'ms', 'orange' );
+                : $self->view->set_status('Not in find mode', 'ms', 'orange' );
         }
     );
 
@@ -305,9 +286,7 @@ sub _set_event_handlers {
         sub {
             $self->model->is_mode('find')
                 ? $self->record_find_count
-                : $self->view->set_status(
-                    $self->localize( 'status', 'not-find' ),
-                    'ms', 'orange' );
+                : $self->view->set_status('Not in find mode', 'ms', 'orange');
         }
     );
 
@@ -557,8 +536,7 @@ sub on_page_rec_activate {
 
     my $selected_href = $self->view->list_read_selected();
     unless ($selected_href) {
-        $self->view->set_status( $self->localize( 'status', 'not-selected' ),
-            'ms', 'orange' );
+        $self->view->set_status(__ 'Not selected', 'ms', 'orange');
         $self->set_app_mode('idle');
 
         return;
@@ -618,8 +596,7 @@ sub on_page_det_activate {
     $self->get_selected_and_store_key;
     $self->record_load();       # load detail record
 
-    $self->view->set_status( $self->localize( 'status', 'info-rec-load-d' ),
-                              'ms', 'blue' );
+    $self->view->set_status(__ 'Record loaded (d)', 'ms', 'blue');
     $self->set_app_mode('edit');
 
     $self->view->nb_set_page_state( 'lst', 'disabled');
@@ -852,9 +829,7 @@ used as a filter.
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $locale_data = $self->cfg->localize->{search};
-
-    my $dict     = Tpda3::Lookup->new($locale_data);
+    my $dict     = Tpda3::Lookup->new;
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
     my $bindings = $self->scrcfg($page)->bindings;
@@ -999,9 +974,7 @@ Setup select bindings entry.
 sub setup_select_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $locale_data = $self->cfg->localize->{search};
-
-    my $dict     = Tpda3::Selected->new($locale_data);
+    my $dict     = Tpda3::Selected->new;
     my $ctrl_ref = $self->scrobj($page)->get_controls();
 
     return unless $self->scrcfg($page)->can('bindings_select');
@@ -1144,8 +1117,7 @@ sub lookup_call {
         $filter = $tmx->cell_read( $r, $col );
     }
 
-    my $locale_data = $self->cfg->localize->{search};
-    my $dict        = Tpda3::Lookup->new($locale_data);
+    my $dict        = Tpda3::Lookup->new;
     my $record      = $dict->lookup( $self->view, $lk_para, $filter );
 
     $tmx->write_row( $r, $c, $record, $tm_ds );
@@ -1760,7 +1732,7 @@ sub screen_module_load {
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_details();
     if ($has_det) {
-        my $lbl_details = $self->localize( 'notebook', 'lbl_details' );
+        my $lbl_details = __ 'Details';
         $self->view->create_notebook_panel( 'det', $lbl_details );
         $self->_set_event_handler_nb('det');
     }
@@ -2382,9 +2354,9 @@ sub record_find_execute {
     }
 
     my $record_count = scalar @{$ary_ref};
-    my $msg1 = $self->localize( 'status', 'count_record' );
+    my $msg1 = __ 'records';
     my $msg0 = $record_count == $limit
-             ? $self->localize( 'status', 'first' )
+             ? 'first'
              : q{};
 
     $self->view->set_status( "$msg0 $record_count $msg1", 'ms', 'darkgreen' );
@@ -2448,7 +2420,7 @@ sub record_find_count {
         $self->catch_db_exceptions($_);
     };
 
-    my $msg = $self->localize( 'status', 'count_record' );
+    my $msg = __ 'records';
     $self->view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
 
     return;
@@ -2532,8 +2504,7 @@ sub screen_document_generate {
 
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
-        $self->view->set_status( $self->localize( 'status', 'empty-record' ),
-            'ms', 'red' );
+        $self->view->set_status(__ 'Empty record', 'ms', 'red');
         $self->_log->error('Generator: No data!');
     }
 
@@ -2541,18 +2512,14 @@ sub screen_document_generate {
     my $model_file = $self->cfg->resource_path_for($model_name, 'tex', 'model');
 
     unless ( -f $model_file ) {
-        $self->view->set_status(
-            $self->localize( ' status ', ' error-repo ' ),
-            'ms', 'red' );
+        $self->view->set_status(__ ' Report failed! ', 'ms', 'red' );
         $self->_log->error('Generator: Template not found');
         return;
     }
 
     my $out_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
     unless ( -d $out_path ) {
-        $self->view->set_status(
-            $self->localize( ' status ', 'no-out-path' ),
-            'ms', 'red' );
+        $self->view->set_status(__ 'Output path not found', 'ms', 'red' );
         $self->_log->error('Generator: Output path not found');
         return;
     }
@@ -2562,7 +2529,7 @@ sub screen_document_generate {
     #-- Generate LaTeX document from template
 
     my $tex_file;
-    my $tex_context = $self->localize( 'status', 'error-gen-pdf' );
+    my $tex_context = __ 'Failed to generate PDF';
     try {
         $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
     }
@@ -2571,7 +2538,6 @@ sub screen_document_generate {
     };
 
     unless ( $tex_file and ( -f $tex_file ) ) {
-        #my $msg = $self->localize( 'status', 'error-gen-tex' );
         $self->view->set_status( $tex_context, 'ms', 'red' );
         $self->_log->error($tex_context);
         return;
@@ -2580,7 +2546,7 @@ sub screen_document_generate {
     #-- Generate PDF from LaTeX
 
     my $pdf_file;
-    my $pdf_context = $self->localize( 'status', 'error-gen-pdf' );
+    my $pdf_context = __ 'Failed to generate PDF';
     try {
         $pdf_file = $gen->pdf_from_latex($tex_file);
     }
@@ -3103,9 +3069,7 @@ sub record_load_new {
     $self->record_load();
 
     if ( $self->model->is_loaded ) {
-        $self->view->set_status(
-            $self->localize( 'status', 'info-rec-load-r' ),
-            'ms', 'blue' );
+        $self->view->set_status(__ 'Record loaded (r)', 'ms', 'blue');
     }
 
     return;
@@ -3127,8 +3091,7 @@ sub record_reload {
 
     $self->toggle_detail_tab;
 
-    $self->view->set_status( $self->localize( 'status', 'info-rec-reload' ),
-        'ms', 'blue' );
+    $self->view->set_status(__ 'Reloaded', 'ms', 'blue');
 
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                          # undef = unloaded
@@ -3160,7 +3123,7 @@ sub record_load {
         $self->catch_db_exceptions($_);
     };
 
-    my $textstr = 'Empty record';
+    my $textstr = __ 'Empty record';
     $self->view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
 
@@ -3222,8 +3185,7 @@ sub event_record_delete {
 
     $self->record_delete();
 
-    $self->view->set_status( $self->localize( 'status', 'info-deleted' ),
-        'ms', 'darkgreen' );    # removed
+    $self->view->set_status(__ 'Deleted', 'ms', 'darkgreen' );    # removed
 
     return;
 }
@@ -3312,18 +3274,18 @@ sub ask_to_save {
         if ( $self->record_changed ) {
             my $answer = $self->ask_to('save');
 
-            if ( $answer eq 'yes' ) {
+            my @options = ( N__"Yes", N__"No");
+            my $option_y = __( $options[0] );
+            my $option_n = __( $options[1] );
+
+            if ( $answer eq $option_y ) {
                 $self->record_save();
             }
-            elsif ( $answer eq 'no' ) {
-                $self->view->set_status(
-                    $self->localize( 'status', 'not-saved' ),
-                    'ms', 'blue' );
+            elsif ( $answer eq $option_n ) {
+                $self->view->set_status(__ 'Not saved', 'ms', 'blue' );
             }
             else {
-                $self->view->set_status(
-                    $self->localize( 'status', 'canceled' ),
-                    , 'ms', 'blue' );
+                $self->view->set_status(__ 'Canceled', 'ms', 'blue');
                 return;
             }
         }
@@ -3346,16 +3308,16 @@ sub ask_to {
 
     my ($message, $details);
     if ( $for_action eq 'save' ) {
-        $message = $self->localize('dialog','msg-sav');
-        $details = $self->localize('dialog','det-sav');
+        $message = __ 'Record changed';
+        $details = __ 'Save record?';
     }
     elsif ( $for_action eq 'save_insert' ) {
-        $message = $self->localize('dialog','msg-add');
-        $details = $self->localize('dialog','det-add');
+        $message = __ 'New record';
+        $details = __ 'Save record?';
     }
     elsif ( $for_action eq 'delete' ) {
-        $message = $self->localize('dialog','msg-del');
-        $details = $self->localize('dialog','det-del');
+        $message = __ 'Delete record';
+        $details = __ 'Confirm record delete?';
     }
 
     # Message dialog
@@ -3388,28 +3350,20 @@ sub record_save {
             if ($pk_val) {
                 $self->record_reload();
                 $self->list_update_add(); # insert the new record in the list
-                $self->view->set_status(
-                    $self->localize( 'status', 'info-saved' ),
-                    , 'ms', 'darkgreen' );
+                $self->view->set_status(__ 'Saved', 'ms', 'darkgreen');
             }
         }
         else {
-            $self->view->set_status(
-                $self->localize( 'status', 'canceled' ),
-                , 'ms', 'orange' );
+            $self->view->set_status('canceled', 'ms', 'orange');
         }
     }
     elsif ( $self->model->is_mode('edit') ) {
         if ( !$self->is_record ) {
-            $self->view->set_status(
-                $self->localize( 'status', 'empty-record' ),
-                'ms', 'orange' );
+            $self->view->set_status(__ 'Empty record', 'ms', 'orange');
             return;
         }
 
         my $record = $self->get_screen_data_record('upd');
-        print "UPDATE:\n";
-        p $record;
 
         return unless $self->check_required_data($record);
 
@@ -3420,12 +3374,10 @@ sub record_save {
             $self->catch_db_exceptions($_);
         };
 
-        $self->view->set_status( $self->localize( 'status', 'info-saved' ),
-            'ms', 'darkgreen' );
+        $self->view->set_status(__ 'Saved', 'ms', 'darkgreen');
     }
     else {
-        $self->view->set_status( $self->localize( 'status', 'not-editadd' ),
-            'ms', 'darkred' );
+        $self->view->set_status(__ 'Not in edit|add mode!', 'ms', 'darkred');
         return;
     }
 
@@ -3471,8 +3423,7 @@ sub check_required_data {
     my ($self, $record) = @_;
 
     unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
-        $self->view->set_status( $self->localize( 'status', 'empty-record' ),
-            'ms', 'darkred' );
+        $self->view->set_status(__ 'Empty record', 'ms', 'darkred');
         return 0;
     }
 
@@ -3540,7 +3491,7 @@ sub check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $message = $self->localize( 'dialog', 'info-add' );
+        my $message = 'info-add';
         my $details = join( "\n", @message );
         $self->view->dialog_info($message, $details);
     }
@@ -3633,8 +3584,7 @@ sub record_changed {
     my $witness_file = $self->storable_file_name('orig');
 
     unless ( -f $witness_file ) {
-        $self->view->set_status( $self->localize( 'status', 'err-chkchanged' ),
-            'ms', 'orange' );
+        $self->view->set_status(__ 'Changed record check failed!', 'ms', 'orange');
         die "Can't find saved data for comparison!";
     }
 
@@ -3657,8 +3607,8 @@ sub take_note {
 
     my $msg
         = $self->save_screendata( $self->storable_file_name )
-        ? $self->localize( 'status', 'info-note-take' )
-        : $self->localize( 'status', 'error-note-take' );
+        ? __ 'Note taken'
+        : __ 'Note take failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
 
@@ -3677,8 +3627,8 @@ sub restore_note {
 
     my $msg
         = $self->restore_screendata( $self->storable_file_name )
-        ? $self->localize( 'status', 'info-note-rest' )
-        : $self->localize( 'status', 'error-note-rest' );
+        ? __ 'Note restored'
+        : __ 'Note restore failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
 
@@ -4102,8 +4052,6 @@ sub on_quit {
 sub io_exception {
     my ($self, $exc, $context) = @_;
 
-    my $locale_data = $self->cfg->localize->{dialog};
-
     my ($message, $details);
 
     if ( my $e = Exception::Base->catch($exc) ) {
@@ -4120,9 +4068,7 @@ sub io_exception {
             $e->throw;    # rethrow the exception
         }
 
-        $locale_data->{title} = 'IO error';
-
-        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view, $locale_data);
+        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
         $dlg->message_dialog($message, $details, 'error', 'ok');
     }
 
@@ -4131,8 +4077,6 @@ sub io_exception {
 
 sub catch_db_exceptions {
     my ($self, $exc) = @_;
-
-    my $locale_data = $self->cfg->localize->{dialog};
 
     my ($message, $details);
 
@@ -4155,9 +4099,7 @@ sub catch_db_exceptions {
             return;
         }
 
-        $locale_data->{title} = 'Database error';
-
-        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view, $locale_data);
+        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
         $dlg->message_dialog($message, $details, 'error', 'ok');
     }
 

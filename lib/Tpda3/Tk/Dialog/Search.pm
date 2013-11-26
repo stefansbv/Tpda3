@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use utf8;
 
+use Locale::TextDomain 1.20 qw(Tpda3);
+
 use Tk::LabFrame;
 use Tk::MListbox;
 use Tk::StatusBar;
@@ -19,7 +21,7 @@ Version 0.70
 
 =cut
 
-our $VERSION = 0.70;
+our $VERSION = '0.70';
 
 =head1 SYNOPSIS
 
@@ -42,8 +44,6 @@ sub new {
 
     my $self = {};
 
-    $self->{localize} = $opts;
-
     bless( $self, $class );
 
     return $self;
@@ -58,23 +58,19 @@ Define and show search dialog.
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
 
-    my $title    = $self->{localize}{title};
-    my $b_load   = $self->{localize}{b_load};
-    my $b_clear  = $self->{localize}{b_clear};
-    my $b_cancel = $self->{localize}{b_cancel};
-    my $b_find   = $self->{localize}{b_find};
-
     #--- Dialog Box
 
     my $dlg = $view->DialogBox(
-        -title   => $title,
-        -buttons => [ $b_load, $b_clear, $b_cancel ],
+        -title   => __ 'Search',
+        -buttons => [ __ 'Load', __ 'Clear', __ 'Cancel' ],
     );
 
     #-- Key bindings
 
-    $dlg->bind( '<Escape>', sub { $dlg->Subwidget("B_$b_cancel")->invoke } );
-    $dlg->bind( '<Alt-r>' , sub { $dlg->Subwidget("B_$b_clear" )->invoke } );
+    $dlg->bind( '<Escape>',
+        sub { $dlg->Subwidget( 'B_' . __ 'Cancel' )->invoke } );
+    $dlg->bind( '<Alt-r>',
+        sub { $dlg->Subwidget( 'B_' . __ 'Clear' )->invoke } );
 
     #-- Main frame
 
@@ -109,18 +105,14 @@ sub search_dialog {
         -pady   => 5,
     );
 
-    my $opt_contains = $self->{localize}{opt_contains};
-    my $opt_starts   = $self->{localize}{opt_starts};
-    my $opt_ends     = $self->{localize}{opt_ends};
-
     my $selected;
     my $searchopt = $frm1->JComboBox(
         -entrywidth   => 10,
         -textvariable => \$selected,
         -choices      => [
-            { -name => $opt_contains, -value => 'C', -selected => 1 },
-            { -name => $opt_starts  , -value => 'S', },
-            { -name => $opt_ends    , -value => 'E', },
+            { -name => __ 'contains', -value => 'C', -selected => 1 },
+            { -name => __ 'starts'  , -value => 'S', },
+            { -name => __ 'ends'    , -value => 'E', },
         ],
         )->grid(
         -row    => 0,
@@ -134,7 +126,7 @@ sub search_dialog {
 
     # Buton cautare
     my $find_button = $frm1->Button(
-        -text    => $b_find,
+        -text    => __ 'Find',
         -width   => 4,
         -command => [
             sub {
@@ -155,7 +147,7 @@ sub search_dialog {
     #-- Frame (lista rezultate)
 
     my $frm2 = $mf->LabFrame(
-        -label      => $self->{localize}{lbl_result},
+        -label      => __ 'Result',
         -foreground => 'darkgreen',
         )->pack(
         -expand => 1,
@@ -247,17 +239,6 @@ sub search_dialog {
         -ipady  => 3,
     );
 
-    #- Label
-
-    # my $fltlbl = $frm3->Label(
-    #     -text   =>  $self->{localize}{lbl_filter},
-    # )->grid(
-    #     -row    => 0,
-    #     -column => 0,
-    #     -sticky => 'e',
-    #     -padx   => 5,
-    # );
-
     #- Filter label
 
     $self->{filt} = $frm3->Label(
@@ -282,17 +263,6 @@ sub search_dialog {
         -padx   => 8,
     );
 
-    # Callback for search JCombobox
-
-    # $searchopt->configure(
-    #     -browsecmd => sub {
-    #         my ( $self, $search_ctrl, $sele ) = @_;
-
-    #         # Initialy empty
-    #         # $self->{box}->delete( 0, 'end' );
-    #     },
-    # );
-
     # Filter?
 
     if ( ref $filter ) {
@@ -315,7 +285,14 @@ sub search_dialog {
     my $result = $dlg->Show;
     my $ind_cod;
 
-    if ( $result =~ /$b_load/i ) {
+    my @options = (
+        N__"Load",
+        N__"Clear",
+    );
+    my $option_load  = __( $options[0] );
+    my $option_clear = __( $options[1] );
+
+    if ( $result =~ /$option_load/i ) {
         eval { $ind_cod = $self->{box}->curselection(); };
         if ($@) {
             warn "Error: $@";
@@ -335,7 +312,7 @@ sub search_dialog {
 
         return $row_data;
     }
-    elsif ( $result =~ /$b_clear/i ) {
+    elsif ( $result =~ /$option_clear/i ) {
 
         # Prepare empty values
         my $row_data = {};
