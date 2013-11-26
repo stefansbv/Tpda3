@@ -3,14 +3,13 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
-use English;
 use Data::Printer;
 
 use IPC::Run3 qw( run3 );
 use Class::Unload;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
-use List::MoreUtils qw{uniq any};
+use List::MoreUtils qw(uniq any);
 use Log::Log4perl qw(get_logger :levels);
 use Math::Symbolic;
 use Scalar::Util qw(blessed looks_like_number);
@@ -77,7 +76,6 @@ sub new {
     my $class = shift;
 
     my $model   = Tpda3::Model->new;
-    my $tblkeys = Tpda3::Model::Table->new;
 
     my $self = {
         _model   => $model,
@@ -85,7 +83,7 @@ sub new {
         _rscrobj => undef,
         _dscrcls => undef,
         _dscrobj => undef,
-        _tblkeys => $tblkeys,
+        _tblkeys => undef,
         _scrdata => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
@@ -205,6 +203,18 @@ sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
+}
+
+sub table_key {
+    my ($self, $page, $name) = @_;
+
+    die "Unknown 'page' parameter for 'table_key'"
+        unless defined $page
+        and ( $page eq 'rec' or $page eq 'det' );
+
+    die "Unknown 'name' parameter for 'table_key'" unless $name;
+
+    return $self->{_tblkeys}{$page}{$name};
 }
 
 =head2 localize
@@ -545,8 +555,8 @@ sub on_page_rec_activate {
 
     return unless $self->view->get_nb_previous_page eq 'lst';
 
-    my $selected = $self->view->list_read_selected();    # array reference
-    unless ($selected) {
+    my $selected_href = $self->view->list_read_selected();
+    unless ($selected_href) {
         $self->view->set_status( $self->localize( 'status', 'not-selected' ),
             'ms', 'orange' );
         $self->set_app_mode('idle');
@@ -556,20 +566,17 @@ sub on_page_rec_activate {
 
     #- Compare Key values, load record only if different
 
-    my @keys_val_new = @{$selected};
-    my @keys_val_old = $self->{_tblkeys}->rec_main->map_keys( sub { $_->value } );
+    my @current = $self->table_key('rec','main')->map_keys( sub { $_->value } );
+    my @selected = values %{$selected_href};
 
-    print "Compare:\n";
-    p @keys_val_new;
-    p @keys_val_old;
-
-    my $dc   = Data::Compare->new(\@keys_val_new, \@keys_val_old);
+    my $dc   = Data::Compare->new(\@selected, \@current);
     my $same = $dc->Cmp ? 1 : 0;
     print "Same? ", $same ? 'YES ' : 'NO ', "\n";
 
     unless ($same) {
         print "Loding record...\n";
-        $self->record_load_new(@keys_val_new);
+
+        $self->record_load_new($selected_href);
     }
 
     $self->toggle_detail_tab;
@@ -601,24 +608,19 @@ load it if not.
 sub on_page_det_activate {
     my $self = shift;
 
-    my $dsm = $self->screen_detail_name();
-    if ($dsm) {
+    if ( my $dsm = $self->screen_detail_name ) {
         $self->screen_detail_load($dsm);
     }
     else {
-        $self->view->get_notebook()->raise('rec');
-        return;
+        return $self->view->get_notebook()->raise('rec');
     }
 
-    $self->get_selected_and_set_fk_val;
-
-    $self->record_load();                    # load detail record
+    $self->get_selected_and_store_key;
+    $self->record_load();       # load detail record
 
     $self->view->set_status( $self->localize( 'status', 'info-rec-load-d' ),
                               'ms', 'blue' );
     $self->set_app_mode('edit');
-
-    # $self->model->set_scrdata_rec(q{});    # empty
 
     $self->view->nb_set_page_state( 'lst', 'disabled');
 
@@ -647,7 +649,7 @@ sub screen_detail_name {
     return $dsm;
 }
 
-=head2 get_selected_and_set_fk_val
+=head2 get_selected_and_store_key
 
 Read the selected row from I<tm1> TableMatrix widget from the
 I<Record> page and get the foreign key value designated by the
@@ -659,7 +661,7 @@ Only one table can have a selector column: I<tm1>.
 
 =cut
 
-sub get_selected_and_set_fk_val {
+sub get_selected_and_store_key {
     my $self = shift;
 
     my $row = $self->tmatrix_get_selected;
@@ -668,18 +670,12 @@ sub get_selected_and_set_fk_val {
 
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen('details');
-
     my $tmx    = $self->scrobj('rec')->get_tm_controls('tm1');
-    my $params = $tmx->cell_read( $row, $screen->{filter} );
 
-    my $fk_col = $self->{_tblkeys}->rec_main->get_key_index(1)->name;
-    my $fk_val = $params->{$fk_col};
-
-    print "Details screen:\n";
-    p $fk_col;
-    p $fk_val;
-
-    $self->{_tblkeys}->rec_main->update_key_index( 1, $fk_val );
+    my $rec_params = $self->table_key('rec','main')->get_key(0)->get_href;
+    $self->screen_store_key_values($rec_params);
+    my $det_params = $tmx->cell_read( $row, $screen->{filter} );
+    $self->screen_store_key_values($det_params);
 
     return;
 }
@@ -980,7 +976,7 @@ table to execute the appropriate function when the return key is
 pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
-activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
+activates the C<Tpda3::XX::Dialog::Search> module, to look-pu value
 key translations from a database table and fill the configured cells
 with the results.  The second can call a method in the current screen.
 
@@ -1421,14 +1417,13 @@ sub set_app_mode {
 
 =head2 is_record
 
-Return true if a record is loaded in screen.
+Return true if a record is loaded in the main screen.
 
 =cut
 
 sub is_record {
     my $self = shift;
-    return if $self->{_tblkeys}->rec_main->get_key(0); # ???
-    return $self->{_tblkeys}->rec_main->get_key(0)->value;
+    return $self->table_key('rec','main')->get_key(0)->value;
 }
 
 =head2 on_screen_mode_idle
@@ -1620,10 +1615,6 @@ page.
 sub scrcfg {
     my ( $self, $page ) = @_;
 
-# # DEBUG
-#     my ($package, $filename, $line, $subroutine) = caller(3);
-#     print "scrcfg:\n $package, $line, $subroutine\n";
-
     $page ||= $self->view->get_nb_current_page();
 
     return unless $page;
@@ -1792,7 +1783,8 @@ sub screen_module_load {
     $self->setup_bindings_table();
 
     # Set Key column names
-    $self->screen_init_keys('rec');
+    $self->{_tblkeys}{rec} = undef; # reset
+    $self->screen_init_keys( 'rec', $self->scrcfg('rec') );
 
     $self->set_app_mode('idle');
 
@@ -1837,6 +1829,63 @@ sub screen_module_load {
     $self->screen_load_lists();
 
     return 1;                       # to make ok from Test::More happy
+}
+
+
+=head2 screen_init_keys
+
+Initialize key column names for the current screen.  The format of the
+configuration section has changed starting with v0.70.
+  <maintable>
+      name                = customers
+      view                = v_customers
+      <keys>
+          name            = [ customernumber ]
+      </keys>
+  ...
+  </maintable>
+
+=cut
+
+sub screen_init_keys {
+    my ($self, $page, $scrcfg) = @_;
+
+    #-- Main table on the '$page' page
+
+    my $keys_m = $self->scrcfg->maintable( 'keys', 'name' );
+
+    die
+        "Configuration error!\nThe key fields configuration was changed in Tpda3 v0.70.\nSorry for the inconvenience.\n"
+        unless defined $keys_m and ref($keys_m) eq 'ARRAY';
+
+    my $table  = Tpda3::Model::Table->new(
+        keys   => $keys_m,
+        table  => $self->scrcfg->maintable('name'),
+        view   => $self->scrcfg->maintable('view'),
+    );
+    if (ref $table) {
+        print "Register main table object on $page page\n";
+        $self->{_tblkeys}{$page}{main} = $table;
+    }
+
+    #-- Dependent tables (TableMatrix)
+
+    my @tms = keys %{ $self->scrcfg->deptable };
+    foreach my $tm (@tms) {
+        my $keys_d = $self->scrcfg->deptable( $tm, 'keys', 'name' );
+        my $table = Tpda3::Model::Table->new(
+            keys   => $keys_d,
+            table  => $self->scrcfg->deptable( $tm, 'name' ),
+            view   => $self->scrcfg->deptable( $tm, 'view' ),
+        );
+
+        if (ref $table) {
+            print "Register dep '$tm' table object on $page page\n";
+            $self->{_tblkeys}{$page}{$tm} = $table;
+        }
+    }
+
+    return;
 }
 
 =head2 check_cfg_version
@@ -1944,7 +1993,8 @@ sub screen_module_detail_load {
     $self->view->set_status( '', 'ms' );
 
     # Set Key column names
-    $self->screen_init_keys('det');
+    $self->{_tblkeys}{det} = undef; # reset
+    $self->screen_init_keys( 'det', $self->scrcfg('det') );
 
     return;
 }
@@ -2212,30 +2262,6 @@ sub toggle_screen_interface_controls {
         }
     }
 
-    #- Other controls
-
-    # my $cfg_ref = $self->scrcfg($page);
-    # my $cfgdeps = $self->scrcfg($page)->dependencies;
-
-    # foreach my $field ( keys %{ $cfg_ref->main_table_columns } ) {
-
-    #     # Skip field if not in record or not dependent
-    #     next
-    #         unless $self->is_dependent( $field, $cfgdeps );
-
-    #     my $fldcfg = $cfg_ref->main_table_column($field);
-
-    #     # Process dependencies
-    #     my $state;
-    #     if (exists $cfgdeps->{$field} ) {
-    #         $state = $self->dependencies($field, $cfgdeps);
-    #     }
-
-    #     print "Set state of '$field' to '$state'\n";
-    #     my $control = $self->scrobj()->get_controls($field)->[1];
-    #     $control->configure( -state => $state );
-    # }
-
     return;
 }
 
@@ -2338,8 +2364,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $self->scrcfg('rec')->maintable('view'); # use view
-    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol', 'name');
+    $params->{table} = $self->table_key('rec','main')->view;
+    $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
 
     my ($ary_ref, $limit);
     try {
@@ -2411,8 +2437,8 @@ sub record_find_count {
     }
 
     # Table data
-    $params->{table} = $self->scrcfg('rec')->maintable('view');
-    $params->{pkcol} = $self->scrcfg('rec')->maintable('pkcol', 'name');
+    $params->{table} = $self->table_key('rec','main')->view;
+    $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
 
     my $record_count;
     try {
@@ -2439,8 +2465,8 @@ sub screen_report_print {
 
     return unless ref $self->scrobj('rec');
 
-    my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
-    my $pk_val = $self->screen_get_pk_val;
+    my $pk_col = $self->table_key('rec','main')->get_key(0)->name;
+    my $pk_val = $self->table_key('rec','main')->get_key(0)->value;
 
     my $param;
     if ($pk_val) {
@@ -3068,9 +3094,9 @@ list control on the I<List> page.
 =cut
 
 sub record_load_new {
-    my ( $self, @key_values ) = @_;
+    my ( $self, $selected_href ) = @_;
 
-    $self->screen_store_key_values(@key_values);
+    $self->screen_store_key_values($selected_href);
 
     $self->tmatrix_set_selected();    # initialize selector
 
@@ -3096,19 +3122,6 @@ the database table and loads the record data in the controls.
 
 sub record_reload {
     my $self = shift;
-
-    my $page = $self->view->get_nb_current_page();
-
-    # Save PK-value
-    my $pk_val = $self->screen_get_pk_val;    # get old pk-val
-
-    $self->record_clear;
-
-    # Restore PK-value
-    $self->screen_set_pk_val($pk_val);
-
-    # Set parameters for record load (pk, fk)
-    $self->get_selected_and_set_fk_val if $page eq 'det';
 
     $self->record_load();
 
@@ -3151,6 +3164,9 @@ sub record_load {
     $self->view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
 
+    # print "RECORD:\n";
+    # p $record;
+
     $self->screen_write($record);
 
     #- Dependent table(s), (if any)
@@ -3184,7 +3200,7 @@ sub record_load {
         if $self->scrobj($page)->can('on_load_record');
 
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
-                                          # undef = unloaded
+                                         # undef = unloaded
 
     return;
 }
@@ -3202,7 +3218,7 @@ sub event_record_delete {
 
     return if $answer eq 'cancel' or $answer eq 'no';
 
-    $self->list_update_remove();    # first remove from list
+    $self->list_remove;         # first remove from list
 
     $self->record_delete();
 
@@ -3269,7 +3285,7 @@ sub record_clear {
 
     $self->screen_write($record);
 
-    $self->screen_store_key_values();
+    $self->screen_clear_key_values;
 
     $self->model->unset_scrdata_rec();    # false = loaded,  true = modified,
                                           # undef = unloaded
@@ -3288,7 +3304,7 @@ sub ask_to_save {
 
     return 0 unless $self->{_rscrcls}; # do we have record screen?
 
-    return 0 if !$self->is_record;
+    return 0 unless $self->is_record;
 
     if (   $self->model->is_mode('edit')
         or $self->model->is_mode('add') )
@@ -3361,7 +3377,7 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('ins');
 
-        return if !$self->if_check_required_data($record);
+        return unless $self->check_required_data($record);
 
         my $answer = $self->ask_to('save_insert');
 
@@ -3392,8 +3408,10 @@ sub record_save {
         }
 
         my $record = $self->get_screen_data_record('upd');
+        print "UPDATE:\n";
+        p $record;
 
-        return if !$self->if_check_required_data($record);
+        return unless $self->check_required_data($record);
 
         try {
             $self->model->prepare_record_update($record);
@@ -3415,14 +3433,14 @@ sub record_save {
     $self->save_screendata( $self->storable_file_name('orig') );
 
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
-                                          # undef = unloaded
+                                         # undef = unloaded
 
     $self->toggle_detail_tab;
 
     return;
 }
 
-=head2 if_check_required_data
+=head2 check_required_data
 
 Check if required data is present in the screen.
 
@@ -3449,7 +3467,7 @@ Returns I<true> if all required fields have values.
 
 =cut
 
-sub if_check_required_data {
+sub check_required_data {
     my ($self, $record) = @_;
 
     unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
@@ -3458,12 +3476,13 @@ sub if_check_required_data {
         return 0;
     }
 
+    my $page = $self->view->get_nb_current_page();
     my $ok_to_save = 1;
 
-    my $ctrl_req = $self->scrobj('rec')->get_rq_controls();
+    my $ctrl_req = $self->scrobj($page)->get_rq_controls();
     if ( !scalar keys %{$ctrl_req} ) {
         my $warn_str = 'WW: Unimplemented screen data check in '
-            . ucfirst $self->screen_string('rec');
+            . ucfirst $self->screen_string($page);
         $self->_log->info($warn_str);
 
         return $ok_to_save;
@@ -3549,8 +3568,8 @@ sub record_save_insert {
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
         $self->screen_write( { $pk_col => $pk_val } );
+        $self->screen_store_key_values( { $pk_col => $pk_val } );
         $self->set_app_mode('edit');
-        $self->screen_set_pk_val($pk_val);    # save PK value
     }
 
     return $pk_val;
@@ -3581,20 +3600,22 @@ sub list_update_add {
     return;
 }
 
-=head2 list_update_remove
+=head2 list_remove
 
-Compare the selected row in the I<List> with given Pk and optionally Fk
-values and remove it.
+Compare the selected row in the I<List> with given keys values and
+remove it.
 
 =cut
 
-sub list_update_remove {
+sub list_remove {
     my $self = shift;
 
-    my $pk_val = $self->screen_get_pk_val();
-    my $fk_val = $self->screen_get_fk_val();
-
-    $self->view->list_remove_selected( $pk_val, $fk_val );
+    my @keys = $self->table_key('rec','main')->all_keys;
+    my $key_values = {};
+    foreach my $key (@keys) {
+        $key_values->{$key->name} = $key->value;
+    }
+    $self->view->list_remove_selected($key_values);
 
     return;
 }
@@ -3710,6 +3731,9 @@ sub get_screen_data_record {
     $record->{metadata} = $self->main_table_metadata($for_sql);
     $record->{data}     = {};
 
+    # print "SCRDATA:\n";
+    # p $self->{_scrdata};
+
     #-- Data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         $record->{data}{$field} = $value;
@@ -3750,38 +3774,30 @@ sub main_table_metadata {
 
     my $metadata = {};
 
+    my $page = $self->view->get_nb_current_page();
+
     if ( $for_sql eq 'qry' ) {
-        print "qry\n";
-        $metadata->{table} = $self->scrcfg()->maintable('view');
-        my @keys = $self->{_tblkeys}->rec_main->all_keys;
+        $metadata->{table} = $self->table_key($page, 'main')->view;
+        my @keys = $self->table_key($page, 'main')->all_keys;
         foreach my $key (@keys) {
             $metadata->{where}{ $key->name } = $key->value;
         }
     }
     elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
-        $metadata->{table} = $self->scrcfg()->maintable('name');
-        print "upd or del\n";
-        # my $idx = 0;
-        # foreach my $rec ( @{ $self->{_tblkeys} } ) {
-        #     foreach my $key_field ( keys %{$rec} ) {
-        #         my $pk_col = $key_field;
-        #         my $pk_val = $self->{_tblkeys}[$idx]{$key_field};
-        #         $metadata->{where}{$pk_col} = $pk_val;
-        #         $idx++;
-        #     }
-        # }
+        $metadata->{table} = $self->table_key($page, 'main')->table;
+        my @keys = $self->table_key($page, 'main')->all_keys;
+        foreach my $key (@keys) {
+            $metadata->{where}{ $key->name } = $key->value;
+        }
     }
     elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->scrcfg()->maintable('name');
-        $metadata->{pkcol} = ${ $self->{_tblkeys} }[0];
+        $metadata->{table} = $self->table_key($page, 'main')->table;
+        $metadata->{pkcol} = $self->table_key($page, 'main')->get_key(0)->name;
     }
     else {
         warn "Wrong parameter: $for_sql\n";
         return;
     }
-
-    # print "MMETA:\n";
-    # p $metadata;
 
     return $metadata;
 }
@@ -3793,49 +3809,37 @@ Retrieve dependent table meta-data from the screen configuration.
 =cut
 
 sub dep_table_metadata {
-    my ( $self, $tm_ds, $for_sql ) = @_;
+    my ( $self, $tm, $for_sql ) = @_;
 
     my $metadata = {};
 
-    #- Get PK field name and value
-    # my $pk_col = $self->scrcfg('rec')->maintable('pkcol', 'name');
-    # my $pk_val = $self->screen_get_pk_val;
+    my $page = $self->view->get_nb_current_page();
+
+    my $pk_key = $self->table_key($page, 'main')->get_key(0)->name;
+    my $pk_val = $self->table_key($page, 'main')->get_key(0)->value;
 
     if ( $for_sql eq 'qry' ) {
-        print "qry\n";
-        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'view');
-        my @keys = $self->{_tblkeys}->rec_main->all_keys;
-        foreach my $key (@keys) {
-            $metadata->{where}{ $key->name } = $key->value;
-        }
+        $metadata->{table} = $self->table_key($page, $tm)->view;
+        $metadata->{where}{$pk_key} = $pk_val;
     }
     elsif ( $for_sql eq 'upd' or $for_sql eq 'del' ) {
-        print "upd or del\n";
-        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'name');
-        # my $idx = 0;
-        # foreach my $rec ( @{ $self->{_tblkeys} } ) {
-        #     foreach my $key_field ( keys %{$rec} ) {
-        #         my $pk_col = $key_field;
-        #         my $pk_val = $self->{_tblkeys}[$idx]{$key_field};
-        #         $metadata->{where}{$pk_col} = $pk_val;
-        #         $idx++;
-        #     }
-        # }
+        $metadata->{table} = $self->table_key($page, $tm)->table;
+        $metadata->{where}{$pk_key} = $pk_val;
     }
     elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->scrcfg->deptable($tm_ds, 'name');
+        $metadata->{table} = $self->table_key($page, $tm)->table;
     }
     else {
         die "Bad parameter: $for_sql";
     }
 
-    my $columns = $self->scrcfg->deptable($tm_ds, 'columns');
+    my $columns = $self->scrcfg->deptable($tm, 'columns');
 
-    # $metadata->{pkcol}    = $pk_col;
-    # $metadata->{fkcol}    = $self->scrcfg->deptable($tm_ds, 'fkcol', 'name');
-    $metadata->{order}    = $self->scrcfg->deptable($tm_ds, 'orderby');
+    $metadata->{pkcol}    = $pk_key;
+    $metadata->{fkcol}    = $self->table_key($page, $tm)->get_key(1)->name;
+    $metadata->{order}    = $self->scrcfg->deptable($tm, 'orderby');
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $metadata->{updstyle} = $self->scrcfg->deptable($tm_ds, 'updatestyle');
+    $metadata->{updstyle} = $self->scrcfg->deptable($tm, 'updatestyle');
 
     return $metadata;
 }
@@ -3952,44 +3956,6 @@ sub restore_screendata {
     return 1;
 }
 
-=head2 screen_init_keys
-
-Initialize key column names for the current screen.  The format of the
-configuration section has changed starting with v0.70.
-  <maintable>
-      name                = customers
-      view                = v_customers
-      <keys>
-          name            = [ customernumber ]
-      </keys>
-  ...
-  </maintable>
-
-=cut
-
-sub screen_init_keys {
-    my ($self, $page) = @_;
-
-    my $key_fields = $self->scrcfg($page)->maintable('keys', 'name');
-
-    print "KF ($page):\n";
-    p $key_fields;
-
-    die "Configuration error for table key fields!\n"
-        . " Expecting an array reference..."
-        unless defined($key_fields) and ref($key_fields) eq 'ARRAY';
-
-    die "Configuration error for table key fields... \n"
-        . " No keys defined for the main table..."
-        unless scalar @{$key_fields} > 0;
-
-    foreach my $key_field ( @{$key_fields} ) {
-        $self->{_tblkeys}->rec_main->add_keys( { name => $key_field, value => undef } );
-    }
-
-    return;
-}
-
 =head2 screen_store_key_values
 
 Store key column values for the current screen.
@@ -3997,108 +3963,35 @@ Store key column values for the current screen.
 =cut
 
 sub screen_store_key_values {
-    my ( $self, @key_values ) = @_;
+    my ( $self, $record_href ) = @_;
 
     my $page = $self->view->get_nb_current_page();
 
-    my $idx = 0;
-    my @keys = $self->{_tblkeys}->rec_main->all_keys;
-    foreach (@key_values) {
-        $self->{_tblkeys}->rec_main->update_key_index( $idx, $key_values[$idx] );
-        $idx++;
+    print "Update key -> value:\n";
+    while ( my ( $field, $value ) = each( %{$record_href} ) ) {
+        print "  $field: $value\n";
+        $self->table_key($page, 'main')->update_field( $field, $value );
     }
 
     return;
 }
 
-# =head2 screen_get_pk_val
+=head2 screen_clear_key_values
 
-# Return primary key column value for the current screen.
+Clear key column values for the current screen.
 
-# =cut
+=cut
 
-# sub screen_get_keys_val {
-#     my $self = shift;
+sub screen_clear_key_values {
+    my $self = shift;
 
-#     print "GET:\n";
-#     p $self->{_tblkeys};
+    my $page = $self->view->get_nb_current_page();
+    foreach my $key ( $self->table_key($page, 'main')->all_keys ) {
+        $key->value(undef);
+    }
 
-#     my $idx = 0;
-#     foreach my $rec ( @{ $self->{_tblkeys} } ) {
-#         foreach my $key_field ( keys %{$rec} ) {
-#             p $self->{_tblkeys}[$idx]{$key_field};
-#             $idx++;
-#         }
-#     }
-
-#     return;
-# }
-
-# =head2 screen_get_fk_col
-
-# Return foreign key column name for the current screen.
-
-# =cut
-
-# sub screen_get_fk_col {
-#     my ( $self, $page ) = @_;
-
-#     $page ||= $self->view->get_nb_current_page();
-
-#     return $self->scrcfg($page)->maintable('fkcol', 'name');
-# }
-
-# =head2 screen_set_fk_col
-
-# Store foreign key column name for the current screen.
-
-# =cut
-
-# sub screen_set_fk_col {
-#     my $self = shift;
-
-#     my $fk_col = $self->screen_get_fk_col;
-
-#     if ($fk_col) {
-#         $self->{_tblkeys}{$fk_col} = undef;
-#     }
-
-#     return;
-# }
-
-# =head2 screen_set_fk_val
-
-# Store foreign key column value for the current screen.
-
-# =cut
-
-# sub screen_set_fk_val {
-#     my ( $self, $fk_val ) = @_;
-
-#     my $fk_col = $self->screen_get_fk_col;
-
-#     if ($fk_col) {
-#         $self->{_tblkeys}{$fk_col} = $fk_val;
-#     }
-
-#     return;
-# }
-
-# =head2 screen_get_fk_val
-
-# Return foreign key column value for the current screen.
-
-# =cut
-
-# sub screen_get_fk_val {
-#     my $self = shift;
-
-#     my $fk_col = $self->screen_get_fk_col;
-
-#     return unless $fk_col;
-
-#     return $self->{_tblkeys}{$fk_col};
-# }
+    return;
+}
 
 =head2 list_column_names
 

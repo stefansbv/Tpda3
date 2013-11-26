@@ -7,6 +7,7 @@ use Carp;
 use File::Spec::Functions qw(abs2rel catfile);
 use Log::Log4perl qw(get_logger);
 use POSIX qw (floor);
+use Data::Compare;
 use Tk;
 use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
@@ -18,6 +19,8 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
+
+use Data::Printer;
 
 =head1 NAME
 
@@ -1027,8 +1030,8 @@ sub make_list_header {
     foreach my $col ( @{$header_look} ) {
         $self->list_header( $fields->{$col}, $colcnt );
 
-        # Save index of columns to return
-        push @{ $self->{lookup} }, $colcnt;
+        # Save index of columns to return (and the column name)
+        push @{ $self->{lookup} }, { $colcnt => $col };
 
         $colcnt++;
     }
@@ -1191,18 +1194,14 @@ sub has_list_records {
 
 =head2 list_read_selected
 
-Read and return selected row (column 0) from list
+Read and return selected row (column 0..n) from the list.
 
 =cut
 
 sub list_read_selected {
     my $self = shift;
 
-    if ( !$self->has_list_records ) {
-
-        # No records
-        return;
-    }
+    return unless $self->has_list_records;   # no records
 
     my @selected;
     my $indecs;
@@ -1227,9 +1226,12 @@ sub list_read_selected {
         }
     }
 
-    # In scalar context, getRow returns the value of column 0
-    my @idxs = @{ $self->{lookup} };    # indices for Pk and Fk cols
+    # 'lookup' is an arrayref and holds the return column: index => name
+    my @idxs;
+    push @idxs, keys %{$_} foreach @{ $self->{lookup} };
+
     my @returned;
+    # In scalar context, getRow returns the value of column 0
     eval { @returned = ( $self->get_recordlist->getRow($indecs) )[@idxs]; };
     if ($@) {
         warn "Error: $@";
@@ -1241,20 +1243,27 @@ sub list_read_selected {
         @returned = Tpda3::Utils->trim(@returned) if @returned;
     }
 
-    return \@returned;
+    my %selected;
+    foreach (@{ $self->{lookup} }) {
+        while (my ($idx, $field) = each (%{$_})) {
+            $selected{$field} = $returned[$idx];
+        }
+    }
+
+    return \%selected;
 }
 
 =head2 list_remove_selected
 
 Remove the selected row from the list.
 
-First it compares the Pk and the Fk values from the screen, with the
-selected row contents in the list.
+First it compares the key values from the screen, with the selected
+row contents in the list.
 
 =cut
 
 sub list_remove_selected {
-    my ( $self, $pk_val, $fk_val ) = @_;
+    my ( $self, $keys ) = @_;
 
     my $sel = $self->list_read_selected();
     if ( !ref $sel ) {
@@ -1262,20 +1271,9 @@ sub list_remove_selected {
         return;
     }
 
-    my $fk_idx = $self->{lookup}[1];
-
-    my $found;
-    if ( $sel->[0] eq $pk_val ) {
-
-        # Check fk, if defined
-        if ( defined $fk_idx ) {
-            $found = 1 if $sel->[1] eq $fk_val;
-        }
-        else {
-            $found = 1;
-        }
-    }
-    else {
+    my $dc   = Data::Compare->new($sel, $keys);
+    my $same = $dc->Cmp ? 1 : 0;
+    unless ($same) {
         print "EE: No matching list row!\n";
         return;
     }
@@ -1286,8 +1284,6 @@ sub list_remove_selected {
     eval { @selected = $self->get_recordlist->curselection(); };
     if ($@) {
         warn "Error: $@";
-
-        # $self->refresh_sb( 'll', 'No record selected' );
         return;
     }
     else {
