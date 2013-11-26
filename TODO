@@ -1,10 +1,10 @@
 TODO                                                      -*- mode: org; -*-
 
-Note: Main development focus is on the PerlTk interface, at least
+Note: The main development focus is on the PerlTk interface, at least
       until I find (and learn to use) equivalent Wx controls for the
       screens, with the same functionality as the PerlTk widgets have.
 
-* To do [58%]
+* To do [66%]
   - [X] Improve exception handling, error reporting and user messages;
   - [X] Test Log::Dispatch::FileRotate;
   - [X] Implement language support (translations);
@@ -13,7 +13,7 @@ Note: Main development focus is on the PerlTk interface, at least
   - [ ] Implement MySQL support;
   - [X] Dialog to set the default application;
   - [X] Dialog to set some configuration options;
-  - [ ] Remove FK references;
+  - [X] Remove FK references - refactor keys;
   - [X] Refactor home site;
   - [-] Make documentation;
     - [X] User;
