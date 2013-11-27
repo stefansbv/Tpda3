@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Data::Printer;
 
-use IPC::Run3 qw(run3);
+use IPC::System::Simple 1.17 qw(capture);
 use Class::Unload;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
@@ -2451,7 +2451,7 @@ sub screen_report_print {
         $param = "$pk_col=$pk_val";          # default parameter ID
     } else {
         # Atentie
-        my $textstr = "Load a record first";
+        my $textstr = __ "Load a record, first";
         $self->view->status_message("error#$textstr");
         return;
     }
@@ -2460,29 +2460,28 @@ sub screen_report_print {
     my $report_name = $self->scrcfg('rec')->defaultreport('file');
     my $report_file = $self->cfg->resource_path_for($report_name, 'rep');
 
-    my $options = qq{-preview -param$param};
-
-    $self->_log->trace("Report tool: $report_exe");
-    $self->_log->trace("Report file: $report_file");
-
     # Metaviewxp
-    my $cmd;
+    my @opts  = qq{-preview};
+    my $cmd = qq{"$report_exe"};
     if ( defined $param ) {
-        $cmd = qq{"$report_exe" $options "$report_file"};
+        push @opts, qq{-param$param};
+        push @opts, qq{"$report_file"};
     }
     else {
         $self->_log->debug("No parameters for RepMan");
         die "No parameters for RepMan\n",
     }
 
-    $self->_log->debug("Report cmd: $cmd.");
-
-    run3 $cmd, undef, undef, \my @err;
-
-    Exception::IO::SystemCmd->throw(
-        usermsg => 'Error from RepMan',
-        logmsg  => "@err",
-    ) if @err;
+    my $output = q{};
+    try {
+        $output = capture("$cmd @opts");
+    }
+    catch {
+        Exception::IO::SystemCmd->throw(
+            usermsg => 'Error from RepMan',
+            logmsg  => $output,
+        );
+    };
 
     return;
 }
