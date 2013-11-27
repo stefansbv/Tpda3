@@ -65,4 +65,12 @@ ok( my $tex_file = $gen->tex_from_template( $record, $model_file, $out_path ),
 
 ok( $gen->pdf_from_latex($tex_file, $out_path), 'Generate PDF from LaTeX' );
 
+END {
+    # Cleanup
+    foreach my $file (qw{test.aux test.log test.pdf test.tex}) {
+        my $tmpfile = catfile($out_path, $file);
+        unlink $tmpfile if -f $tmpfile;
+    }
+}
+
 # end test
