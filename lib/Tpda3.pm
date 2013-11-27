@@ -1,5 +1,7 @@
 package Tpda3;
 
+# ABSTRACT: Tiny Perl Database Application 3
+
 use 5.008009;
 use strict;
 use warnings;

@@ -559,8 +559,7 @@ C<Tree::DAG_Node>.
 sub tmshr_fill_table {
     my $self = shift;
 
-    my $tm_ds  = 'tm1';                      # hardwired configuration
-    my $header = $self->scrcfg('rec')->dep_table_header_info($tm_ds);
+    my $header = $self->scrcfg('rec')->repo_table_header_info;
 
     #- Make a tree
 
@@ -568,7 +567,7 @@ sub tmshr_fill_table {
     my $tree = Tpda3::Tree->new({});
     $tree->name('root');
 
-    my $columns  = $self->scrcfg()->deptable($tm_ds, 'columns');
+    my $columns  = $self->scrcfg('rec')->repotable('columns');
     my $colnames = Tpda3::Utils->sort_hash_by_id($columns);
     $tree->set_header($colnames);
 
@@ -576,15 +575,16 @@ sub tmshr_fill_table {
 
     my $level = 0;                           # maintable level
 
-    my $levels = $self->scrcfg()->deptable( $tm_ds, 'datasources', 'level' );
+    my $levels = $self->scrcfg('rec')->repotable( 'datasources', 'level' );
     my $last_level = $#{$levels};
 
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
 
-    my $mainmeta = $self->report_table_metadata( $tm_ds, $level );
+    my $mainmeta = $self->report_table_metadata($level);
     my $nodename = $mainmeta->{pkcol};
     my $countcol = $mainmeta->{rowcount};
-    my $sum_up_cols = $self->get_table_sumup_cols( $tm_ds, $level );
+    my $sum_up_cols = $self->get_table_sumup_cols($level);
+
 
     my ($records, $levelmeta) = $self->model->report_data($mainmeta);
 
@@ -602,7 +602,7 @@ sub tmshr_fill_table {
 
     my $uplevelmeta = $levelmeta;
     while ( $level <= $last_level ) {
-        my $metadata = $self->report_table_metadata( $tm_ds, $level );
+        my $metadata = $self->report_table_metadata($level);
         my $levelmeta
             = $self->tmshr_process_level( $level, $uplevelmeta, $metadata,
             $countcol, $header, $tree );
@@ -786,7 +786,7 @@ sub tmshr_check_varnames {
     my ( $self, $vars ) = @_;
 
     my $tm_ds = 'tm1';
-    my $header = $self->scrcfg('rec')->dep_table_header_info($tm_ds);
+    my $header = $self->scrcfg('rec')->repo_table_header_info($tm_ds);
 
     my $check = 1;
     foreach my $field ( @{$vars} ) {

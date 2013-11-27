@@ -3,7 +3,6 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
-use Data::Printer;
 
 use IPC::System::Simple 1.17 qw(capture);
 use Class::Unload;
@@ -549,13 +548,9 @@ sub on_page_rec_activate {
 
     my $dc   = Data::Compare->new(\@selected, \@current);
     my $same = $dc->Cmp ? 1 : 0;
-    print "Same? ", $same ? 'YES ' : 'NO ', "\n";
+    # print "Same? ", $same ? 'YES ' : 'NO ', "\n";
 
-    unless ($same) {
-        print "Loding record...\n";
-
-        $self->record_load_new($selected_href);
-    }
+    $self->record_load_new($selected_href) unless $same;
 
     $self->toggle_detail_tab;
 
@@ -669,7 +664,7 @@ sub screen_detail_load {
     my $dscrstr = $self->screen_string('det');
 
     unless ( $dscrstr && ( $dscrstr eq lc($dsm) ) ) {
-        print "Loading detail screen ($dsm)\n";
+        # Loading detail screen ($dsm)
         $self->screen_module_detail_load($dsm);
     }
     return;
@@ -1673,7 +1668,7 @@ Load screen chosen from the menu.
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
 
-    print "Loading $module\n";
+    #print "Loading $module\n";
 
     my $rscrstr = lc $module;
 
@@ -1836,7 +1831,7 @@ sub screen_init_keys {
         view   => $self->scrcfg->maintable('view'),
     );
     if (ref $table) {
-        print "Register main table object on $page page\n";
+        # Register main table object on $page page
         $self->{_tblkeys}{$page}{main} = $table;
     }
 
@@ -1852,7 +1847,7 @@ sub screen_init_keys {
         );
 
         if (ref $table) {
-            print "Register dep '$tm' table object on $page page\n";
+            # Register dep '$tm' table object on $page page
             $self->{_tblkeys}{$page}{$tm} = $table;
         }
     }
@@ -3132,9 +3127,6 @@ sub record_load {
     $self->view->status_message("error#$textstr")
         if scalar keys %{$record} <= 0;
 
-    # print "RECORD:\n";
-    # p $record;
-
     $self->screen_write($record);
 
     #- Dependent table(s), (if any)
@@ -3682,9 +3674,6 @@ sub get_screen_data_record {
     $record->{metadata} = $self->main_table_metadata($for_sql);
     $record->{data}     = {};
 
-    # print "SCRDATA:\n";
-    # p $self->{_scrdata};
-
     #-- Data
     while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
         $record->{data}{$field} = $value;
@@ -3803,18 +3792,18 @@ the screen configuration.
 =cut
 
 sub report_table_metadata {
-    my ( $self, $tm_ds, $level ) = @_;
+    my ( $self, $level ) = @_;
 
     my $metadata = {};
 
     # DataSourceS meta-data
-    my $dss    = $self->scrcfg()->deptable($tm_ds, 'datasources');
-    my $cntcol = $self->scrcfg()->deptable($tm_ds, 'rowcount');
+    my $dss    = $self->scrcfg()->repotable('datasources');
+    my $cntcol = $self->scrcfg()->repotable('rowcount');
     my $table  = $dss->{level}[$level]{table};
     my $pkcol  = $dss->{level}[$level]{pkcol};
 
     # DataSource meta-data by column
-    my $ds = $self->scrcfg()->dep_table_columns_by_level($tm_ds, $level);
+    my $ds = $self->scrcfg()->repo_table_columns_by_level($level);
 
     my @datasource = grep { m/^[^=]/ } keys %{$ds};
     my @tables = uniq @datasource;
@@ -3843,7 +3832,7 @@ Return table C<sumup> cols.
 sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
 
-    my $metadata = $self->scrcfg->dep_table_columns_by_level($tm_ds, $level);
+    my $metadata = $self->scrcfg->repo_table_columns_by_level($tm_ds, $level);
 
     return $metadata->{'=sumup'};
 }
@@ -3918,9 +3907,7 @@ sub screen_store_key_values {
 
     my $page = $self->view->get_nb_current_page();
 
-    print "Update key -> value:\n";
     while ( my ( $field, $value ) = each( %{$record_href} ) ) {
-        print "  $field: $value\n";
         $self->table_key($page, 'main')->update_field( $field, $value );
     }
 
@@ -4081,7 +4068,6 @@ sub catch_db_exceptions {
 
     my ($message, $details);
 
-    print "Exc is '$exc'\n";
     if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::Db::SQL') ) {
             $message = $e->usermsg;

@@ -179,6 +179,12 @@ sub deptable {
     return Dive( $self->{_scr}, 'deptable', @args );
 }
 
+sub repotable {
+    my ($self, @args) = @_;
+
+    return Dive( $self->{_scr}, 'repotable', @args );
+}
+
 sub scrtoolbar {
     my ($self, @args) = @_;
 
@@ -298,6 +304,26 @@ sub dep_table_header_info {
     return $href;
 }
 
+=head2 repo_table_header_info
+
+Return the table header configuration data structure bound to the
+related Tk::TableMatrix widget.
+
+=cut
+
+sub repo_table_header_info {
+    my $self = shift;
+
+    my $href = {};
+
+    $href->{columns}       = $self->repotable('columns');
+    $href->{selectorcol}   = $self->repotable('selectorcol');
+    $href->{colstretch}    = $self->repotable('colstretch');
+    $href->{selectorstyle} = $self->repotable('selectorstyle');
+
+    return $href;
+}
+
 =head2 app_dateformat
 
 Date format configuration.
@@ -342,7 +368,7 @@ sub dep_table_has_selectorcol {
     return $sc;
 }
 
-=head2 dep_table_columns_by_level
+=head2 repo_table_columns_by_level
 
 Return the dependent table columns configuration data structure bound
 to the related Tk::TableMatrix widget, filtered by the I<level>.
@@ -351,10 +377,10 @@ Columns with no level ...
 
 =cut
 
-sub dep_table_columns_by_level {
-    my ( $self, $tm_ds, $level ) = @_;
+sub repo_table_columns_by_level {
+    my ( $self, $level ) = @_;
 
-    my $cols = $self->deptable($tm_ds, 'columns');
+    my $cols = $self->repotable('columns');
 
     $level = 'level' . $level;
     my $dss;

@@ -22,8 +22,6 @@ require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 
-use Data::Printer;
-
 =head1 NAME
 
 Tpda3::Tk::App - Tk Perl application class
