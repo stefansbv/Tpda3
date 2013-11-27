@@ -11,6 +11,7 @@ use Locale::Messages qw(bind_textdomain_filter);
 require Tpda3::Config;
 
 BEGIN {
+    # Stolen from Sqitch...
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
     $ENV{OUTPUT_CHARSET} = 'UTF-8';
     bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;

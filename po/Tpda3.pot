@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-26 22:25+0200\n"
+"POT-Creation-Date: 2013-11-27 13:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: lib/Tpda3/Controller.pm:539
 msgid "Not selected"
@@ -29,104 +30,235 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2357 lib/Tpda3/Controller.pm:2423
+#: lib/Tpda3/Controller.pm:2357
+msgid "record"
+msgid_plural "records"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/Tpda3/Controller.pm:2359
+msgid "first"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2363
+#, perl-brace-format
+msgid "{pre} {count} {post}"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2429
 msgid "records"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2507 lib/Tpda3/Controller.pm:3126
-#: lib/Tpda3/Controller.pm:3358 lib/Tpda3/Controller.pm:3422
+#: lib/Tpda3/Controller.pm:2513 lib/Tpda3/Controller.pm:3132
+#: lib/Tpda3/Controller.pm:3364 lib/Tpda3/Controller.pm:3428
 msgid "Empty record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2515
-msgid " Report failed! "
+#: lib/Tpda3/Controller.pm:2521
+msgid "Report failed!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2522
+#: lib/Tpda3/Controller.pm:2528
 msgid "Output path not found"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2532 lib/Tpda3/Controller.pm:2549
+#: lib/Tpda3/Controller.pm:2538 lib/Tpda3/Controller.pm:2555
 msgid "Failed to generate PDF"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3072
+#: lib/Tpda3/Controller.pm:3078
 msgid "Record loaded (r)"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3094
+#: lib/Tpda3/Controller.pm:3100
 msgid "Reloaded"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3188
+#: lib/Tpda3/Controller.pm:3194
 msgid "Deleted"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3307
+#: lib/Tpda3/Controller.pm:3287
+msgid "Not saved"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3290
+msgid "Canceled"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3313
 msgid "Record changed"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3308 lib/Tpda3/Controller.pm:3312
+#: lib/Tpda3/Controller.pm:3314 lib/Tpda3/Controller.pm:3318
 msgid "Save record?"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3311
+#: lib/Tpda3/Controller.pm:3317
 msgid "New record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3315
+#: lib/Tpda3/Controller.pm:3321
 msgid "Delete record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3316
+#: lib/Tpda3/Controller.pm:3322
 msgid "Confirm record delete?"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3349 lib/Tpda3/Controller.pm:3373
+#: lib/Tpda3/Controller.pm:3355 lib/Tpda3/Controller.pm:3379
 msgid "Saved"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3376
+#: lib/Tpda3/Controller.pm:3382
 msgid "Not in edit|add mode!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3583
+#: lib/Tpda3/Controller.pm:3496
+msgid "Please, fill in data for:"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:3589
 msgid "Changed record check failed!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3606
-msgid "Note taken"
+#: lib/Tpda3/Controller.pm:3612
+msgid "Record copied"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3607
-msgid "Note take failed"
+#: lib/Tpda3/Controller.pm:3613
+msgid "Record copy failed"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3626
-msgid "Note restored"
+#: lib/Tpda3/Controller.pm:3632
+msgid "Record restored"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3627
-msgid "Note restore failed"
+#: lib/Tpda3/Controller.pm:3633
+msgid "Record restore failed"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:669
+#: lib/Tpda3/Tk/View.pm:310
+msgid "Tools"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:312
+msgid "Edit reports data"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:315
+msgid "Admin"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:317
+msgid "Set default app"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:318
+msgid "Configurations"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:322
+msgid "Help"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:324
+msgid "Guide"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:325
+msgid "About"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:329
+msgid "App"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:331 lib/Tpda3/Tk/View.pm:698 lib/Tpda3/Tk/View.pm:699
+msgid "Toggle find mode"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:332 lib/Tpda3/Tk/View.pm:710 lib/Tpda3/Tk/View.pm:711
+msgid "Execute search"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:333 lib/Tpda3/Tk/View.pm:742 lib/Tpda3/Tk/View.pm:743
+msgid "Execute count"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:334
+msgid "Preview report"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:335 lib/Tpda3/Tk/View.pm:702
+msgid "Quit"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:694 lib/Tpda3/Tk/View.pm:695
+msgid "Reload record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:703
+msgid "Quit the application"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:706 lib/Tpda3/Tk/View.pm:707
+msgid "Paste record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:714 lib/Tpda3/Tk/View.pm:715
+msgid "Save record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:718
+msgid "Print preview"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:719
+msgid "Print preview default report"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:722 lib/Tpda3/Tk/View.pm:723
+msgid "Add record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:726 lib/Tpda3/Tk/View.pm:727
+msgid "Save current window geometry"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:730 lib/Tpda3/Tk/View.pm:731
+msgid "Remove record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:734
+msgid "Generate document"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:735
+msgid "Generate default document"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:738 lib/Tpda3/Tk/View.pm:739
+msgid "Copy record"
+msgstr ""
+
+#: lib/Tpda3/Tk/View.pm:779
 msgid "Record"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:670
+#: lib/Tpda3/Tk/View.pm:780
 msgid "List"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:675
+#: lib/Tpda3/Tk/View.pm:785
 msgid "Search results"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:875 lib/Tpda3/Tk/View.pm:895
+#: lib/Tpda3/Tk/View.pm:985 lib/Tpda3/Tk/View.pm:1005
 msgid "Info"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:1827
+#: lib/Tpda3/Tk/View.pm:1937
 msgid "Error"
 msgstr ""
 
@@ -134,17 +266,19 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Select.pm:64
+#: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:289
+#: lib/Tpda3/Tk/Dialog/Select.pm:64 lib/Tpda3/Tk/Dialog/Select.pm:174
 msgid "Load"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:73
+#: lib/Tpda3/Tk/Dialog/Search.pm:290
 msgid "Clear"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:71
-#: lib/Tpda3/Tk/Dialog/Message.pm:76 lib/Tpda3/Tk/Dialog/Select.pm:64
-#: lib/Tpda3/Tk/Dialog/Select.pm:70
+#: lib/Tpda3/Tk/Dialog/Message.pm:76 lib/Tpda3/Tk/Dialog/Message.pm:152
+#: lib/Tpda3/Tk/Dialog/Select.pm:64 lib/Tpda3/Tk/Dialog/Select.pm:70
 msgid "Cancel"
 msgstr ""
 
@@ -169,19 +303,25 @@ msgid "Result"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:71 lib/Tpda3/Tk/Dialog/Message.pm:74
-msgid "Ok"
+msgid "OK"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:75 lib/Tpda3/Tk/Dialog/Message.pm:76
+#: lib/Tpda3/Tk/Dialog/Message.pm:152
 msgid "Yes"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:75 lib/Tpda3/Tk/Dialog/Message.pm:76
+#: lib/Tpda3/Tk/Dialog/Message.pm:152
 msgid "No"
 msgstr ""
 
-#: lib/Tpda3/Tk/Dialog/Message.pm:134
-msgid "Title"
+#: lib/Tpda3/Tk/Dialog/Message.pm:81
+msgid "Dialog"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:135
+msgid "Question"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Select.pm:63

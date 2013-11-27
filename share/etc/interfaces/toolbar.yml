@@ -8,8 +8,6 @@ toolbar:
     id:      1001
     type:    _item_check
     icon:    filefind16
-    tooltip: Toggle find mode
-    help:    Toggle find mode
     sep:     none
     state:
       rec:
@@ -28,8 +26,6 @@ toolbar:
     id:      1002
     type:    _item_normal
     icon:    actcheck16
-    tooltip: Execute search
-    help:    Execute search
     sep:     none
     state:
       rec:
@@ -48,8 +44,6 @@ toolbar:
     id:      1003
     type:    _item_normal
     icon:    acthelp16
-    tooltip: Execute count
-    help:    Execute count
     sep:     after
     state:
       rec:
@@ -68,8 +62,6 @@ toolbar:
     id:      1004
     type:    _item_normal
     icon:    fileprint16
-    tooltip: Print (preview)
-    help:    Print (preview) default report
     sep:     none
     state:
       rec:
@@ -88,8 +80,6 @@ toolbar:
     id:      1005
     type:    _item_normal
     icon:    edit16
-    tooltip: Generate document
-    help:    Generate default document
     sep:     after
     state:
       rec:
@@ -108,8 +98,6 @@ toolbar:
     id:      1006
     type:    _item_normal
     icon:    editcopy16
-    tooltip: Copy record
-    help:    Copy record
     sep:     none
     state:
       rec:
@@ -128,8 +116,6 @@ toolbar:
     id:      1007
     type:    _item_normal
     icon:    editpaste16
-    tooltip: Paste record
-    help:    Paste record
     sep:     after
     state:
       rec:
@@ -148,8 +134,6 @@ toolbar:
     id:      1008
     type:    _item_normal
     icon:    actreload16
-    tooltip: Reload record
-    help:    Reload record
     sep:     after
     state:
       rec:
@@ -168,8 +152,6 @@ toolbar:
     id:      1009
     type:    _item_check
     icon:    actitemadd16
-    tooltip: Add record
-    help:    Add record
     sep:     none
     state:
       rec:
@@ -188,8 +170,6 @@ toolbar:
     id:      1010
     type:    _item_normal
     icon:    actitemdelete16
-    tooltip: Remove record
-    help:    Remove record
     sep:     none
     state:
       rec:
@@ -208,8 +188,6 @@ toolbar:
     id:      1011
     type:    _item_normal
     icon:    filesave16
-    tooltip: Save record
-    help:    Save record
     sep:     after
     state:
       rec:
@@ -228,8 +206,6 @@ toolbar:
     id:      1012
     type:    _item_normal
     icon:    actattach16
-    tooltip: Attach to desktop, here
-    help:    Save actual window position and dimensions
     sep:     after
     state:
       rec:
@@ -248,8 +224,6 @@ toolbar:
     id:      1013
     type:    _item_normal
     icon:    actexit16
-    tooltip: Quit
-    help:    Quit the application
     sep:     after
     state:
       rec:

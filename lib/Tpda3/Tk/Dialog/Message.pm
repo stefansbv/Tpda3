@@ -68,17 +68,17 @@ sub message_dialog {
     # $padded = sprintf("%*s", $len_l, $text);
     # $padded = sprintf("%-*s", $len_r, $text);
 
-    my $default_buttons = [ __ 'Ok' ];
+    my $default_buttons = [ __ 'OK' ];
     my $buttons =
                   $type eq q{}    ?  $default_buttons
-                : $type eq 'ok'   ?  [ __ 'Ok' ]
+                : $type eq 'ok'   ?  [ __ 'OK' ]
                 : $type eq 'yn'   ?  [ __ 'Yes', __ 'No' ]
                 : $type eq 'ycn'  ?  [ __ 'Yes', __ 'Cancel', __ 'No' ]
                 :                    $default_buttons
                 ;
 
     my $dlg = $self->{view}->DialogBox(
-        -title   => 'Dialog',
+        -title   => __ 'Dialog',
         -buttons => $buttons,
     );
 
@@ -131,8 +131,10 @@ sub message_dialog {
 
     #-- title (optional)
 
-    my $ltitle = $frame_top_right->Label( -text => __ 'Title', -fg => 'blue' )
-        ->pack( -anchor => 'se', );
+    my $ltitle = $frame_top_right->Label(
+        -text => __ 'Question',
+        -fg   => 'blue',
+    )->pack( -anchor => 'se', );
 
     #-- label
 
@@ -146,12 +148,18 @@ sub message_dialog {
     #---
 
     my $result = $dlg->Show;
+
+    my @options  = ( N__"Yes", N__"Cancel", N__"No");
+    my $option_y = __( $options[0] );
+    my $option_c = __( $options[1] );
+    my $option_n = __( $options[2] );
+
     my $answer
-        # button label             answer
-        = $result =~ /^yes$/i    ? q{yes}
-        : $result =~ /^no$/i     ? q{no}
-        : $result =~ /^cancel$/i ? q{cancel}
-        :                          undef # default
+        # button       label        answer
+        = $result =~ /^$option_y$/i ? q{yes}
+        : $result =~ /^$option_n$/i ? q{no}
+        : $result =~ /^$option_c$/i ? q{cancel}
+        :                           undef # default
         ;
 
     return $answer;

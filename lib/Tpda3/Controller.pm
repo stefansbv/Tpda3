@@ -2354,12 +2354,18 @@ sub record_find_execute {
     }
 
     my $record_count = scalar @{$ary_ref};
-    my $msg1 = __ 'records';
+    my $msg1 = __n 'record', 'records', $record_count;
     my $msg0 = $record_count == $limit
-             ? 'first'
+             ? __ 'first'
              : q{};
 
-    $self->view->set_status( "$msg0 $record_count $msg1", 'ms', 'darkgreen' );
+    my $message = __x(
+        "{pre} {count} {post}",
+        pre   => $msg0,
+        count => $record_count,
+        post  => $msg1
+    );
+    $self->view->set_status($message, 'ms', 'darkgreen');
 
     $self->view->list_init();
     my $record_inlist = $self->view->list_populate($ary_ref);
@@ -2512,7 +2518,7 @@ sub screen_document_generate {
     my $model_file = $self->cfg->resource_path_for($model_name, 'tex', 'model');
 
     unless ( -f $model_file ) {
-        $self->view->set_status(__ ' Report failed! ', 'ms', 'red' );
+        $self->view->set_status(__ 'Report failed!', 'ms', 'red' );
         $self->_log->error('Generator: Template not found');
         return;
     }
@@ -3274,14 +3280,10 @@ sub ask_to_save {
         if ( $self->record_changed ) {
             my $answer = $self->ask_to('save');
 
-            my @options = ( N__"Yes", N__"No");
-            my $option_y = __( $options[0] );
-            my $option_n = __( $options[1] );
-
-            if ( $answer eq $option_y ) {
+            if ( $answer eq 'yes' ) {
                 $self->record_save();
             }
-            elsif ( $answer eq $option_n ) {
+            elsif ( $answer eq 'no' ) {
                 $self->view->set_status(__ 'Not saved', 'ms', 'blue' );
             }
             else {
@@ -3491,7 +3493,7 @@ sub check_required_data {
     my @message = grep { defined } @{$messages};    # remove undef elements
 
     if ( !$ok_to_save ) {
-        my $message = 'info-add';
+        my $message = __ 'Please, fill in data for:';
         my $details = join( "\n", @message );
         $self->view->dialog_info($message, $details);
     }
@@ -3607,8 +3609,8 @@ sub take_note {
 
     my $msg
         = $self->save_screendata( $self->storable_file_name )
-        ? __ 'Note taken'
-        : __ 'Note take failed';
+        ? __ 'Record copied'
+        : __ 'Record copy failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
 
@@ -3627,8 +3629,8 @@ sub restore_note {
 
     my $msg
         = $self->restore_screendata( $self->storable_file_name )
-        ? __ 'Note restored'
-        : __ 'Note restore failed';
+        ? __ 'Record restored'
+        : __ 'Record restore failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
 

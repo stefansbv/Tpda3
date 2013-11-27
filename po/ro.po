@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-26 22:21+0200\n"
-"PO-Revision-Date: 2013-11-26 22:26+0200\n"
+"POT-Creation-Date: 2013-11-27 13:01+0200\n"
+"PO-Revision-Date: 2013-11-27 13:02+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -30,131 +30,279 @@ msgid "Details"
 msgstr "Detalii"
 
 #: lib/Tpda3/Controller.pm:2357
-#: lib/Tpda3/Controller.pm:2423
+msgid "record"
+msgid_plural "records"
+msgstr[0] "înregistrare"
+msgstr[1] "înregistrări"
+msgstr[2] "înregistrări"
+
+#: lib/Tpda3/Controller.pm:2359
+msgid "first"
+msgstr "primele"
+
+#: lib/Tpda3/Controller.pm:2363
+#, perl-brace-format
+msgid "{pre} {count} {post}"
+msgstr ""
+
+#: lib/Tpda3/Controller.pm:2429
 msgid "records"
 msgstr "înregistrări"
 
-#: lib/Tpda3/Controller.pm:2507
-#: lib/Tpda3/Controller.pm:3126
-#: lib/Tpda3/Controller.pm:3358
-#: lib/Tpda3/Controller.pm:3422
+#: lib/Tpda3/Controller.pm:2513
+#: lib/Tpda3/Controller.pm:3132
+#: lib/Tpda3/Controller.pm:3364
+#: lib/Tpda3/Controller.pm:3428
 msgid "Empty record"
 msgstr "Înregistrare goală"
 
-#: lib/Tpda3/Controller.pm:2515
-msgid " Report failed! "
+#: lib/Tpda3/Controller.pm:2521
+msgid "Report failed!"
 msgstr "Raportare eșuată"
 
-#: lib/Tpda3/Controller.pm:2522
+#: lib/Tpda3/Controller.pm:2528
 msgid "Output path not found"
 msgstr "Calea de ieșire nu a fost găsită"
 
-#: lib/Tpda3/Controller.pm:2532
-#: lib/Tpda3/Controller.pm:2549
+#: lib/Tpda3/Controller.pm:2538
+#: lib/Tpda3/Controller.pm:2555
 msgid "Failed to generate PDF"
 msgstr "Generare PDF eșuată "
 
-#: lib/Tpda3/Controller.pm:3072
+#: lib/Tpda3/Controller.pm:3078
 msgid "Record loaded (r)"
 msgstr "Înregistrare încărcată (r)"
 
-#: lib/Tpda3/Controller.pm:3094
+#: lib/Tpda3/Controller.pm:3100
 msgid "Reloaded"
 msgstr "Reîncărcat"
 
-#: lib/Tpda3/Controller.pm:3188
+#: lib/Tpda3/Controller.pm:3194
 msgid "Deleted"
 msgstr "Șters"
 
-#: lib/Tpda3/Controller.pm:3307
+#: lib/Tpda3/Controller.pm:3287
+msgid "Not saved"
+msgstr "Nesalvat"
+
+#: lib/Tpda3/Controller.pm:3290
+msgid "Canceled"
+msgstr "Abandonat"
+
+#: lib/Tpda3/Controller.pm:3313
 msgid "Record changed"
 msgstr "Înregistrare modificată"
 
-#: lib/Tpda3/Controller.pm:3308
-#: lib/Tpda3/Controller.pm:3312
+#: lib/Tpda3/Controller.pm:3314
+#: lib/Tpda3/Controller.pm:3318
 msgid "Save record?"
 msgstr "Salvez înregistrarea?"
 
-#: lib/Tpda3/Controller.pm:3311
+#: lib/Tpda3/Controller.pm:3317
 msgid "New record"
 msgstr "Înregistrare nouă"
 
-#: lib/Tpda3/Controller.pm:3315
+#: lib/Tpda3/Controller.pm:3321
 msgid "Delete record"
 msgstr "Șterg Înregistrarea"
 
-#: lib/Tpda3/Controller.pm:3316
+#: lib/Tpda3/Controller.pm:3322
 msgid "Confirm record delete?"
 msgstr "Confirmați ștergerea înregistrării"
 
-#: lib/Tpda3/Controller.pm:3349
-#: lib/Tpda3/Controller.pm:3373
+#: lib/Tpda3/Controller.pm:3355
+#: lib/Tpda3/Controller.pm:3379
 msgid "Saved"
 msgstr "Salvat"
 
-#: lib/Tpda3/Controller.pm:3376
+#: lib/Tpda3/Controller.pm:3382
 msgid "Not in edit|add mode!"
 msgstr "Nu este în mod editare|adăugare"
 
-#: lib/Tpda3/Controller.pm:3583
+#: lib/Tpda3/Controller.pm:3496
+msgid "Please, fill in data for:"
+msgstr "Rog, completați datele pentru:"
+
+#: lib/Tpda3/Controller.pm:3589
 msgid "Changed record check failed!"
 msgstr "Verificarea la modificare eșuată!"
 
-#: lib/Tpda3/Controller.pm:3606
-msgid "Note taken"
-msgstr ""
+#: lib/Tpda3/Controller.pm:3612
+msgid "Record copied"
+msgstr "Înregistrare copiată"
 
-#: lib/Tpda3/Controller.pm:3607
-msgid "Note take failed"
-msgstr ""
+#: lib/Tpda3/Controller.pm:3613
+msgid "Record copy failed"
+msgstr "Copiere Înregistrare eșuată"
 
-#: lib/Tpda3/Controller.pm:3626
-msgid "Note restored"
-msgstr ""
+#: lib/Tpda3/Controller.pm:3632
+msgid "Record restored"
+msgstr "Înregistrare restaurată"
 
-#: lib/Tpda3/Controller.pm:3627
-msgid "Note restore failed"
-msgstr ""
+#: lib/Tpda3/Controller.pm:3633
+msgid "Record restore failed"
+msgstr "Restaurare înregistrare eșuată"
 
-#: lib/Tpda3/Tk/View.pm:669
+#: lib/Tpda3/Tk/View.pm:310
+msgid "Tools"
+msgstr "Unelte"
+
+#: lib/Tpda3/Tk/View.pm:312
+msgid "Edit reports data"
+msgstr "Editare listă rapoarte"
+
+#: lib/Tpda3/Tk/View.pm:315
+msgid "Admin"
+msgstr "Administrare"
+
+#: lib/Tpda3/Tk/View.pm:317
+msgid "Set default app"
+msgstr "Aplicația implicită"
+
+#: lib/Tpda3/Tk/View.pm:318
+msgid "Configurations"
+msgstr "Configurări"
+
+#: lib/Tpda3/Tk/View.pm:322
+msgid "Help"
+msgstr "Ajutor"
+
+#: lib/Tpda3/Tk/View.pm:324
+msgid "Guide"
+msgstr "Ghid"
+
+#: lib/Tpda3/Tk/View.pm:325
+msgid "About"
+msgstr "Despre"
+
+#: lib/Tpda3/Tk/View.pm:329
+msgid "App"
+msgstr "Aplicație"
+
+#: lib/Tpda3/Tk/View.pm:331
+#: lib/Tpda3/Tk/View.pm:698
+#: lib/Tpda3/Tk/View.pm:699
+msgid "Toggle find mode"
+msgstr "Comută mod căutare"
+
+#: lib/Tpda3/Tk/View.pm:332
+#: lib/Tpda3/Tk/View.pm:710
+#: lib/Tpda3/Tk/View.pm:711
+msgid "Execute search"
+msgstr "Execută căutare"
+
+#: lib/Tpda3/Tk/View.pm:333
+#: lib/Tpda3/Tk/View.pm:742
+#: lib/Tpda3/Tk/View.pm:743
+msgid "Execute count"
+msgstr "Execută numărare"
+
+#: lib/Tpda3/Tk/View.pm:334
+msgid "Preview report"
+msgstr "Vizualizare raport"
+
+#: lib/Tpda3/Tk/View.pm:335
+#: lib/Tpda3/Tk/View.pm:702
+msgid "Quit"
+msgstr "Ieșire"
+
+#: lib/Tpda3/Tk/View.pm:694
+#: lib/Tpda3/Tk/View.pm:695
+msgid "Reload record"
+msgstr "Reîncărcare înregistrare"
+
+#: lib/Tpda3/Tk/View.pm:703
+msgid "Quit the application"
+msgstr "Părăsește aplicația"
+
+#: lib/Tpda3/Tk/View.pm:706
+#: lib/Tpda3/Tk/View.pm:707
+msgid "Paste record"
+msgstr "Inserez înregistrarea"
+
+#: lib/Tpda3/Tk/View.pm:714
+#: lib/Tpda3/Tk/View.pm:715
+msgid "Save record"
+msgstr "Salvez înregistrarea"
+
+#: lib/Tpda3/Tk/View.pm:718
+msgid "Print preview"
+msgstr "Previzualizare"
+
+#: lib/Tpda3/Tk/View.pm:719
+msgid "Print preview default report"
+msgstr "Vizualizare raport implicit"
+
+#: lib/Tpda3/Tk/View.pm:722
+#: lib/Tpda3/Tk/View.pm:723
+msgid "Add record"
+msgstr "Adaug înregistrare"
+
+#: lib/Tpda3/Tk/View.pm:726
+#: lib/Tpda3/Tk/View.pm:727
+msgid "Save current window geometry"
+msgstr "Salvează geometria ferestrei"
+
+#: lib/Tpda3/Tk/View.pm:730
+#: lib/Tpda3/Tk/View.pm:731
+msgid "Remove record"
+msgstr "Șterg înregistrarea"
+
+#: lib/Tpda3/Tk/View.pm:734
+msgid "Generate document"
+msgstr "Generează document"
+
+#: lib/Tpda3/Tk/View.pm:735
+msgid "Generate default document"
+msgstr "Generează document implicit"
+
+#: lib/Tpda3/Tk/View.pm:738
+#: lib/Tpda3/Tk/View.pm:739
+msgid "Copy record"
+msgstr "Copiere Înregistrare"
+
+#: lib/Tpda3/Tk/View.pm:779
 msgid "Record"
 msgstr "Înregistrare"
 
-#: lib/Tpda3/Tk/View.pm:670
+#: lib/Tpda3/Tk/View.pm:780
 msgid "List"
 msgstr "Listă"
 
-#: lib/Tpda3/Tk/View.pm:675
+#: lib/Tpda3/Tk/View.pm:785
 msgid "Search results"
 msgstr "Rezultat căutare"
 
-#: lib/Tpda3/Tk/View.pm:875
-#: lib/Tpda3/Tk/View.pm:895
+#: lib/Tpda3/Tk/View.pm:985
+#: lib/Tpda3/Tk/View.pm:1005
 msgid "Info"
 msgstr "Info"
 
-#: lib/Tpda3/Tk/View.pm:1827
+#: lib/Tpda3/Tk/View.pm:1937
 msgid "Error"
 msgstr "Eroare"
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:64
-#, fuzzy
 msgid "Search"
-msgstr "Rezultat căutare"
+msgstr "Căutare"
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:65
+#: lib/Tpda3/Tk/Dialog/Search.pm:289
 #: lib/Tpda3/Tk/Dialog/Select.pm:64
+#: lib/Tpda3/Tk/Dialog/Select.pm:174
 msgid "Load"
 msgstr "Încarcă"
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:65
 #: lib/Tpda3/Tk/Dialog/Search.pm:73
+#: lib/Tpda3/Tk/Dialog/Search.pm:290
 msgid "Clear"
-msgstr ""
+msgstr "Golește"
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:65
 #: lib/Tpda3/Tk/Dialog/Search.pm:71
 #: lib/Tpda3/Tk/Dialog/Message.pm:76
+#: lib/Tpda3/Tk/Dialog/Message.pm:152
 #: lib/Tpda3/Tk/Dialog/Select.pm:64
 #: lib/Tpda3/Tk/Dialog/Select.pm:70
 msgid "Cancel"
@@ -183,24 +331,35 @@ msgstr "Rezultat"
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:71
 #: lib/Tpda3/Tk/Dialog/Message.pm:74
-msgid "Ok"
-msgstr ""
+msgid "OK"
+msgstr "OK"
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:75
 #: lib/Tpda3/Tk/Dialog/Message.pm:76
+#: lib/Tpda3/Tk/Dialog/Message.pm:152
 msgid "Yes"
 msgstr "Da"
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:75
 #: lib/Tpda3/Tk/Dialog/Message.pm:76
+#: lib/Tpda3/Tk/Dialog/Message.pm:152
 msgid "No"
 msgstr "Nu"
 
-#: lib/Tpda3/Tk/Dialog/Message.pm:134
-msgid "Title"
-msgstr "Titlu"
+#: lib/Tpda3/Tk/Dialog/Message.pm:81
+msgid "Dialog"
+msgstr "Dialog"
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:135
+msgid "Question"
+msgstr "Întrebare"
 
 #: lib/Tpda3/Tk/Dialog/Select.pm:63
 msgid "Select"
 msgstr "Select"
 
+#~ msgid "Ok"
+#~ msgstr "Ok"
+
+#~ msgid "Title"
+#~ msgstr "Titlu"

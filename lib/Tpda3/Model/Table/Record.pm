@@ -4,7 +4,7 @@ use Mouse;
 use namespace::autoclean;
 
 has 'name'  => ( is  => 'ro', isa => 'Str' );
-has 'value' => ( is  => 'rw', isa => 'Maybe[Int]' );
+has 'value' => ( is  => 'rw', isa => 'Maybe[Str]' );
 
 sub get_href {
     my $self = shift;
