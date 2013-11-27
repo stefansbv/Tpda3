@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-27 13:01+0200\n"
-"PO-Revision-Date: 2013-11-27 13:02+0200\n"
+"POT-Creation-Date: 2013-11-27 13:27+0200\n"
+"PO-Revision-Date: 2013-11-27 13:28+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -305,8 +305,9 @@ msgstr "Golește"
 #: lib/Tpda3/Tk/Dialog/Message.pm:152
 #: lib/Tpda3/Tk/Dialog/Select.pm:64
 #: lib/Tpda3/Tk/Dialog/Select.pm:70
+#: lib/Tpda3/Tk/Dialog/Login.pm:62
 msgid "Cancel"
-msgstr "Abandon"
+msgstr "Renunț"
 
 #: lib/Tpda3/Tk/Dialog/Search.pm:113
 msgid "contains"
@@ -331,8 +332,10 @@ msgstr "Rezultat"
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:71
 #: lib/Tpda3/Tk/Dialog/Message.pm:74
+#: lib/Tpda3/Tk/Dialog/Login.pm:62
+#: lib/Tpda3/Tk/Dialog/Login.pm:149
 msgid "OK"
-msgstr "OK"
+msgstr "Accept"
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:75
 #: lib/Tpda3/Tk/Dialog/Message.pm:76
@@ -357,6 +360,22 @@ msgstr "Întrebare"
 #: lib/Tpda3/Tk/Dialog/Select.pm:63
 msgid "Select"
 msgstr "Select"
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:61
+#: lib/Tpda3/Tk/Dialog/Login.pm:69
+msgid "Login"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:81
+msgid "User"
+msgstr "Utilizator"
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:100
+msgid "Password"
+msgstr "Parola"
+
+#~ msgid "Accept"
+#~ msgstr "Accept"
 
 #~ msgid "Ok"
 #~ msgstr "Ok"

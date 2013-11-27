@@ -3,6 +3,7 @@ package Tpda3::Tk::Dialog::Login;
 use strict;
 use warnings;
 
+use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk;
 
 require Tpda3::Config;
@@ -57,15 +58,15 @@ sub login {
 
     $self->{bg}  = $mw->cget('-background');
     $self->{dlg} = $mw->DialogBox(
-        -title   => 'Login',
-        -buttons => [qw/Accept Cancel/],
+        -title   => __ 'Login',
+        -buttons => [__ "OK", __ "Cancel"],
     );
 
     #- Frame
 
     my $frame = $self->{dlg}->LabFrame(
         -foreground => 'blue',
-        -label      => 'Login',
+        -label      => __ 'Login',
         -labelside  => 'acrosstop',
     );
     $frame->pack(
@@ -77,7 +78,7 @@ sub login {
 
     #-- User
 
-    my $luser = $frame->Label( -text => 'User', );
+    my $luser = $frame->Label( -text => __ 'User', );
     $luser->form(
         -top     => [ %0, 0 ],
         -left    => [ %0, 0 ],
@@ -96,7 +97,7 @@ sub login {
 
     #-- Pass
 
-    my $lpass = $frame->Label( -text => 'Password', );
+    my $lpass = $frame->Label( -text => __ 'Password', );
     $lpass->form(
         -top     => [ $luser, 8 ],
         -left    => [ %0,     0 ],
@@ -145,7 +146,10 @@ sub login {
     my $answer = $self->{dlg}->Show();
     my $return_choice = '';
 
-    if ( $answer eq 'Accept' ) {
+    my @options  = ( N__"OK");
+    my $option_y = __( $options[0] );
+
+    if ( $answer eq $option_y ) {
         my $user = $euser->get;
         my $pass = $epass->get;
 

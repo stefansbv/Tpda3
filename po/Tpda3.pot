@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-27 13:01+0200\n"
+"POT-Creation-Date: 2013-11-27 13:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -279,6 +279,7 @@ msgstr ""
 #: lib/Tpda3/Tk/Dialog/Search.pm:65 lib/Tpda3/Tk/Dialog/Search.pm:71
 #: lib/Tpda3/Tk/Dialog/Message.pm:76 lib/Tpda3/Tk/Dialog/Message.pm:152
 #: lib/Tpda3/Tk/Dialog/Select.pm:64 lib/Tpda3/Tk/Dialog/Select.pm:70
+#: lib/Tpda3/Tk/Dialog/Login.pm:62
 msgid "Cancel"
 msgstr ""
 
@@ -303,6 +304,7 @@ msgid "Result"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:71 lib/Tpda3/Tk/Dialog/Message.pm:74
+#: lib/Tpda3/Tk/Dialog/Login.pm:62 lib/Tpda3/Tk/Dialog/Login.pm:149
 msgid "OK"
 msgstr ""
 
@@ -326,4 +328,16 @@ msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Select.pm:63
 msgid "Select"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:61 lib/Tpda3/Tk/Dialog/Login.pm:69
+msgid "Login"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:81
+msgid "User"
+msgstr ""
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:100
+msgid "Password"
 msgstr ""
