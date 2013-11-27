@@ -32,6 +32,7 @@
 ^errors.txt$
 \.tar.gz$
 \.zip$
+^TAGS$
 
 # Temp skip
 wx_grid_table.pl
