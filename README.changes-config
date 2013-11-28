@@ -1,9 +1,13 @@
-- Section: maintable
+Configuration changes                                     -*- mode: org; -*-
 
-- Changes in the column attribute labels:
 
--- Version 1
+* Version 1
 
+Section: maintable
+
+Changes in the column attribute labels:
+
+#+begin_src conf
 <column_name>
     ...
     places     = 0         | renamed to numscale
@@ -13,16 +17,17 @@
     required   = no        | removed
     ...
 </column_name>
-
--- Version 2
-
--- Changes (2012-03-13):
-
-    renamed atribute label 'coltype' to 'datatype'.
+#+end_src
 
 
-- Full, ordered, set of values and labels:
+* Version 2
+  [2012-03-13]
 
+Renamed atribute label 'coltype' to 'datatype'.
+
+Full, ordered, set of values and labels:
+
+#+begin_src conf
 <column_name>
     state     = disabled | normal        default widget state
     ctrltype  = e                        widget type Tk::Entry
@@ -51,11 +56,14 @@
               | email
               | date
 <column_name>
+#+end_src
 
-- Section: deptable
 
--- Changes in the column attribute labels:
+Section: <deptable>
 
+Changes in the column attribute labels:
+
+#+begin_src conf
 <column_name>
   ...
     rw         = r         | renamed to readwrite
@@ -93,35 +101,40 @@
               | email
               | date
 <column_name>
+#+end_src
 
--- Version 3
 
--- Changes (2012-05-26):
+* Version 3
+  [2012-05-26]
 
 Seperate width attribute for display (in list and tables) and for
 validation.
 
 - Section: maintable
 
+#+begin_src conf
 <column_name>
     ...
     displ_width = <smallint>          | rename 'width' to 'displ_width'
     valid_width = <smallint>          | new attribute
     ...
 </column_name>
+#+end_src
 
 - Section: deptable
 
+#+begin_src conf
 <column_name>
     ...
     displ_width = <smallint>          | rename 'width' to 'displ_width'
     valid_width = <smallint>          | new attribute
     ...
 <column_name>
+#+end_src
 
--- Version 4
 
--- Changes (2012-06-27):
+* Version 4
+  [2012-06-27]
 
 Simplified data structure.  Remove name key from bindings section for
 the case when the field names are different than the control names.
@@ -129,6 +142,7 @@ Also replaced 'lookup' key name with 'search'.
 
 - Old config example:
 
+#+begin_src conf
 <bindings>
   <loc_ds>
     table               = localitati
@@ -146,9 +160,11 @@ Also replaced 'lookup' key name with 'search'.
    </field>
   </loc_ds>
 </bindings>
+#+end_src
 
 - New config example:
 
+#+begin_src conf
 <bindings>
     <loc_ds>
         table           = siruta
@@ -162,5 +178,70 @@ Also replaced 'lookup' key name with 'search'.
         </field>
     </loc_ds>
 </bindings>
+#+end_src
+
+
+* Version 5
+  [2013-11-28]
+
+
+** Changes for the <maintable> and <deptable> sections
+
+The <pkcol> and the <fkcol> sections are replaced by the <keys>
+section and can have multiple name = field entries.
+
+- Old config example:
+
+#+begin_src conf
+<maintable>
+    name                = products
+    view                = v_products
+    <pkcol>
+        name            = productcode
+    </pkcol>
+    <columns>
+    ...
+<maintable>
+#+end_src
+
+- New config example:
+
+#+begin_src conf
+<maintable>
+    name                = products
+    view                = v_products
+    <keys>
+        name            = [ productcode ]
+    </keys>
+    <columns>
+    ...
+<maintable>
+#+end_src
+
+Notice the "[" and "]" around 'productcode' field, this is required if
+there is only one key field, and must be skipped for >= 2, like this:
+
+#+begin_src conf
+<maintable>
+    name                = cursuri
+    view                = v_cursuri
+    <keys>
+        name            = id_pers
+        name            = id_act
+    </keys>
+    <columns>
+    ...
+<maintable>
+#+end_src
+
+** New section <repotable>
+
+The <deptable> section it's renamed to <repotable> in the screens with
+style=report.  An empty <deptable> section is also required.
+
+#+begin_src conf
+<deptable />
+#+end_src
+
 
 -- End

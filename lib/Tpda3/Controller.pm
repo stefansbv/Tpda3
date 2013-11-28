@@ -1389,8 +1389,10 @@ Return true if a record is loaded in the main screen.
 =cut
 
 sub is_record {
-    my $self = shift;
-    return $self->table_key('rec','main')->get_key(0)->value;
+    my $self  = shift;
+    my $table = $self->table_key( 'rec', 'main' );
+    return if !$table or !$table->isa('Tpda3::Model::Table');
+    return $table->get_key(0)->value;
 }
 
 =head2 on_screen_mode_idle
@@ -1722,7 +1724,7 @@ sub screen_module_load {
     $self->{_rscrobj} = $class->new($rscrstr);
     $self->_log->trace("New screen instance: $module");
 
-    return unless $self->check_cfg_version;  # current version is 3
+    return unless $self->check_cfg_version;  # current version is 5
 
     # Details page
     my $has_det = $self->scrcfg('rec')->has_screen_details();
@@ -1866,17 +1868,26 @@ sub check_cfg_version {
 
     my $cfg = $self->scrcfg()->screen;
 
-    my $req_ver = 4;            # current screen config version
-    my $cfg_ver = ( exists $cfg->{version} )
-                ? $cfg->{version}
-                : 1
-                ;
+    my $req_ver = 5;            # current screen config version
+    my $cfg_ver = ( exists $cfg->{version} ) ? $cfg->{version} : 1;
 
     unless ( $cfg_ver == $req_ver ) {
         my $screen_name = $self->scrcfg->screen('name');
-        print "Error ($screen_name.conf):\n";
-        print "  screen config version is $cfg_ver\n";
-        print "       required version is $req_ver\n";
+        my $msg = "Screen configuration ($screen_name.conf) error!\n\n";
+          $msg .= "The screen configuration file version is '$cfg_ver' ";
+          $msg .= "but the required version is '$req_ver'\n\n";
+          $msg .= "Hint: Upgrade Tpda3 to a newer version.\n" if
+              $cfg_ver > $req_ver;
+        Exception::Config::Version->throw(
+            usermsg => $msg,
+            logmsg  => "Config version error for '$screen_name.conf'\n",
+        );
+        if ( $self->{_rscrcls} ) {
+            Class::Unload->unload( $self->{_rscrcls} );
+            if ( Class::Inspector->loaded( $self->{_rscrcls} ) ) {
+                $self->_log->info("Error unloading '$self->{_rscrcls}' screen");
+            }
+        }
         return;
     }
     else {

@@ -30,6 +30,12 @@ use Exception::Base
         isa               => 'Exception::IO',
         has               => [qw( usermsg logmsg )],
         string_attributes => [qw( usermsg logmsg )],
+    },
+    'Exception::Config',
+    'Exception::Config::Version' => {
+        isa               => 'Exception::Config',
+        has               => [qw( usermsg logmsg )],
+        string_attributes => [qw( usermsg )],
     };
 
 

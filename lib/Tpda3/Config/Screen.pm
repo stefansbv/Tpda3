@@ -85,7 +85,7 @@ and for each, the corresponding screen module is loaded.  The
 C<filter> parametere is the foreign key of the database table.
 
     <screen>
-        version             = 4
+        version             = 5
         name                = persoane
         description         = Persoane si activitati
         style               = default
