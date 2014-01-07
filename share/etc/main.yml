@@ -1,15 +1,9 @@
 # tpda3
 # Main configuration
-#  with plain an simple localisation support.
 ---
 interface:
-  localize: etc/localisation/english.conf
   toolbar: etc/interfaces/toolbar.yml
   menubar: etc/interfaces/menubar.yml
-  # Configuration example for romanian:
-  #localize: etc/localisation/romanian.conf
-  #toolbar: etc/interfaces/toolbar_ro.yml
-  #menubar: etc/interfaces/menubar_ro.yml
 runtime:
   docspath: /tmp
 resource:
