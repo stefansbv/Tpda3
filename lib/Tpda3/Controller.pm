@@ -871,8 +871,8 @@ sub setup_lookup_bindings_entry {
             filter => $filter_field,
         };
 
-        $self->_log->trace("Setup binding for '$bind_name' with:");
-        #$self->_log->trace( sub { Dumper($para) } );
+        # $self->_log->trace("Setup binding for '$bind_name' with:");
+        # $self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -2096,6 +2096,7 @@ Data source for list widgets (JCombobox)
 
  <lists_ds>
      <statuscode>
+         orderby = description
          table   = status
          code    = code
          name    = description
