@@ -13,8 +13,6 @@ use File::Spec::Functions;
 use File::Copy::Recursive ();
 use List::Util qw(first);
 
-use Data::Printer;
-
 require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
