@@ -17,7 +17,7 @@ my $args = {
     cfname => 'test-tk',
     user   => 'user',
     pass   => 'pass',
-    cfpath => 't/',
+    cfpath => 'share/',
 };
 
 my $c1 = Tpda3::Config->instance($args);

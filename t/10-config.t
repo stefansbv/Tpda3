@@ -16,7 +16,7 @@ my $args = {
     cfname => 'test-tk',
     user   => 'user',
     pass   => 'pass',
-    cfpath => 't/',
+    cfpath => 'share/',
 };
 
 #-- Check the one instance functionality

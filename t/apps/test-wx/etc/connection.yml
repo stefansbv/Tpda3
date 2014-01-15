@@ -1,8 +1,0 @@
-# tpda3
-# Database connection configuration
----
-connection:
-  driver: sqlite
-  host:   localhost
-  dbname: classicmodels
-  port:
