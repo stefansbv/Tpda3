@@ -46,7 +46,6 @@ Constructor method.
 =cut
 
 sub new {
-
     my $type = shift;
 
     my $self = {

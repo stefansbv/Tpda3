@@ -25,7 +25,7 @@ BEGIN {
 my $help    = q{};
 my $man     = q{};
 my $verbose = 0;                             # be quiet
-my ($list, $init, $user, $pass, $default);
+my ($list, $init, $user, $pass, $default, $cfpath);
 
 # Process options.
 if ( @ARGV > 0 ) {
@@ -38,6 +38,7 @@ if ( @ARGV > 0 ) {
         'password=s'=> \$pass,
         'init=s'    => \$init,
         'default=s' => \$default,
+        'cfpath=s'  => \$cfpath,
         ),
         or pod2usage(2);
 }
@@ -92,6 +93,7 @@ if ( $default ) {
 $opts->{user} = $user;
 $opts->{pass} = $pass;
 $opts->{cfname}  = $cfname;
+$opts->{cfpath}  = $cfpath;
 $opts->{verbose} = $verbose;
 
 # Go and run the app
@@ -134,6 +136,7 @@ Options:
  -help                Brief help message
  -man                 Full documentation
  -verbose             Be verbose
+ -cfpath <path>       Optional absolute path to the configuration tree
 
 =head1 DESCRIPTION
 
@@ -191,6 +194,10 @@ usage and exit.  If the user is specified skip the login dialog.
 =item B<-man>
 
 Prints the manual page and exits.
+
+=item  B<-cfpath> <path>
+
+Optional absolute path to the configuration tree.  Used in tests.
 
 =item B<-verbose>
 

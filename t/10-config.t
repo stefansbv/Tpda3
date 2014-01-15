@@ -10,12 +10,13 @@ use Test::More tests => 5;
 
 use lib qw( lib ../lib );
 
-use Tpda3::Config;
+require Tpda3::Config;
 
 my $args = {
     cfname => 'test-tk',
     user   => 'user',
     pass   => 'pass',
+    cfpath => 't/',
 };
 
 #-- Check the one instance functionality

@@ -41,6 +41,7 @@ my $args = {
     cfname => 'test-wx',
     user   => undef,
     pass   => undef,
+    cfpath => 't/',
 };
 
 ok( my $a = Tpda3->new($args), 'New Tpda3 app' );

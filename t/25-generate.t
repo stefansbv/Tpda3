@@ -16,11 +16,13 @@ use lib qw( lib ../lib );
 
 require Tpda3::Config;
 
+my $cwd        = Cwd::cwd();
+my $model_file = catfile( $cwd, qw{t tex model test.tt} );
+my $out_path   = catdir( $cwd, qw{t tex output} );
+
 BEGIN {
     eval {
         require Tpda3::Generator;
-        my $gen = Tpda3::Generator->new();
-        die unless $gen->find_pdflatex();
     };
     if ($@) {
         plan( skip_all => 'pdflatex is required for this test' );
@@ -30,10 +32,19 @@ BEGIN {
     }
 }
 
+END {
+    # Cleanup
+    foreach my $file (qw{test.aux test.log test.pdf test.tex}) {
+        my $tmpfile = catfile($out_path, $file);
+        unlink $tmpfile if -f $tmpfile;
+    }
+}
+
 my $args = {
     cfname => 'test-tk',
     user   => 'user',
     pass   => 'pass',
+    cfpath => 't/',
 };
 
 my $c1 = Tpda3::Config->instance($args);
@@ -56,21 +67,14 @@ my $record = [
     }
 ];
 
-my $cwd        = Cwd::cwd();
-my $model_file = catfile( $cwd, qw{t tex model test.tt} );
-my $out_path   = catdir( $cwd, qw{t tex output} );
-
 ok( my $tex_file = $gen->tex_from_template( $record, $model_file, $out_path ),
     'Generate LaTeX from template' );
 
-ok( $gen->pdf_from_latex($tex_file, $out_path), 'Generate PDF from LaTeX' );
-
-END {
-    # Cleanup
-    foreach my $file (qw{test.aux test.log test.pdf test.tex}) {
-        my $tmpfile = catfile($out_path, $file);
-        unlink $tmpfile if -f $tmpfile;
-    }
+SKIP: {
+    skip "pdflatex is required for this test", 1
+        unless $gen->find_pdflatex();
+    ok( $gen->pdf_from_latex( $tex_file, $out_path ),
+        'Generate PDF from LaTeX' );
 }
 
 # end test

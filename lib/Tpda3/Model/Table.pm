@@ -54,7 +54,7 @@ sub find_index_for {
 sub update_field {
     my ($self, $name, $new_value) = @_;
 
-    die "Wrong parameters for 'update_field'" unless defined $name;
+    die "Wrong parameters for 'update_field'" unless $name;
 
     $self->find_index_for($name)->value($new_value);
     return $new_value;

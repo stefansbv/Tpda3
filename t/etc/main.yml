@@ -1,0 +1,17 @@
+# tpda3
+# Main configuration
+---
+interface:
+  toolbar: etc/interfaces/toolbar.yml
+  menubar: etc/interfaces/menubar.yml
+runtime:
+  docspath: /tmp
+resource:
+  icons: etc/interfaces/icons
+externalapps:
+  repman:
+    exe_path: ~/bin/repman/printrep.bin
+  latex:
+    exe_path: /usr/share/texmf/bin/pdflatex
+  chm_viewer:
+    exe_path: /usr/bin/okular

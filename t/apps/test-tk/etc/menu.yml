@@ -1,0 +1,28 @@
+# tpda3
+# Application menu interface configuration
+# Don't change, unless you know what you are doing!
+---
+appmenubar:
+  menu_user:
+    id:    1001
+    label: ClassicModels
+    underline: 0
+    popup:
+      1:
+        name: Products
+        label: Products
+        underline: 0
+        sep: none
+        key: ~
+      2:
+        name: Customers
+        label: Customers
+        underline: 0
+        sep: none
+        key: ~
+      3:
+        name: Orders
+        label: Orders
+        underline: 0
+        sep: none
+        key: ~

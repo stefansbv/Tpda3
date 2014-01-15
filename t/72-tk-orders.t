@@ -13,6 +13,7 @@ my $args = {
     cfname => 'test-tk',
     user   => 'user',
     pass   => 'pass',
+    cfpath => 't/',
 };
 
 test_screen($args, 'Tpda3::Tk::App::Test::Orders');

@@ -13,6 +13,8 @@ use File::Spec::Functions;
 use File::Copy::Recursive ();
 use List::Util qw(first);
 
+use Data::Printer;
+
 require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
@@ -86,10 +88,13 @@ Initialize basic configuration options.
 sub init_configurations {
     my ( $self, $args ) = @_;
 
-    my $configpath = File::UserConfig->new(
-        dist     => 'Tpda3',
-        sharedir => 'share',
-    )->configdir;
+    my $configpath
+        = $args->{cfpath}
+        ? $args->{cfpath}
+        : File::UserConfig->new(
+            dist     => 'Tpda3',
+            sharedir => 'share',
+        )->configdir;
 
     my $configpath_hr = {
         cfpath  => $configpath,
