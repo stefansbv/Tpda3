@@ -106,9 +106,11 @@ sub init_configurations {
 
     $self->make_accessors($configpath_hr);
 
-    my $etc_dir = catdir( $self->cfpath, 'etc' );
-    unless ( -d $etc_dir ) {
-        die "Failed to initialize the configuration tree in " . $self->cfpath;
+    # Check if conf tree is initialized
+    my $main_conf = catfile( $self->cfpath, 'etc/main.conf' );
+    unless ( -f $main_conf ) {
+        die "Failed to initialize the configuration tree in:\n"
+            . $self->cfpath;
     }
 
     # Log init, can't do before we know the application config path
