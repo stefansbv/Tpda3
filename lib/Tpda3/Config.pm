@@ -106,12 +106,18 @@ sub init_configurations {
 
     $self->make_accessors($configpath_hr);
 
+    my $etc_dir = catdir( $self->cfpath, 'etc' );
+    unless ( -d $etc_dir ) {
+        die "Failed to initialize the configuration tree in " . $self->cfpath;
+    }
+
     # Log init, can't do before we know the application config path
     my $log_fqn = catfile( $self->cfpath, 'etc/log.conf' );
-    Log::Log4perl->init($log_fqn);
+    Log::Log4perl->init($log_fqn) if -f $log_fqn;
 
     # Fallback to the default cfname (mnemonic) from default.yml if
     # exists unless list or init argument provied on the CLI
+
     $args->{cfname} = $self->get_default_mnemonic()
         unless ( $args->{cfname}
             or defined( $args->{list} )
