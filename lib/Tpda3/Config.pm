@@ -107,7 +107,7 @@ sub init_configurations {
     $self->make_accessors($configpath_hr);
 
     # Check if conf tree is initialized
-    my $main_conf = catfile( $self->cfpath, 'etc/main.conf' );
+    my $main_conf = catfile( $self->cfpath, 'etc/main.yml' );
     unless ( -f $main_conf ) {
         die "Failed to initialize the configuration tree in:\n"
             . $self->cfpath;
