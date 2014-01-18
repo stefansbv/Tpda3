@@ -298,6 +298,8 @@ sub _create_menu {
 
 Merge separate labels from the menu config so we can translate them.
 
+TODO: Maybe get rid of menubar.yml and make a data module...
+
 =cut
 
 sub get_menubar_merged_labels {
@@ -683,6 +685,15 @@ sub toolbar_names {
 
     return ( $toolbars, $attribs );
 }
+
+=head2 get_toolbar_merged_labels
+
+Merge separate labels from the toolbar config so we can translate
+them.
+
+TODO: Maybe get rid of toolbar.yml and make a data module...
+
+=cut
 
 sub get_toolbar_merged_labels {
     my $self = shift;

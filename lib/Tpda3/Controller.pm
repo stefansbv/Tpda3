@@ -543,7 +543,8 @@ sub on_page_rec_activate {
 
     #- Compare Key values, load record only if different
 
-    my @current = $self->table_key('rec','main')->map_keys( sub { $_->value } );
+    my @current
+        = $self->table_key( 'rec', 'main' )->map_keys( sub { $_->value } );
     my @selected = values %{$selected_href};
 
     my $dc   = Data::Compare->new(\@selected, \@current);

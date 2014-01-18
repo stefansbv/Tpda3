@@ -7,6 +7,8 @@ use Carp;
 use POSIX qw (floor ceil);
 use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel);
+use Hash::Merge qw(merge);
+use Locale::TextDomain 1.20 qw(Tpda3);
 
 use Wx qw{:everything};
 use Wx::Event qw(EVT_CLOSE EVT_CHOICE EVT_MENU EVT_TOOL EVT_TIMER
@@ -86,6 +88,8 @@ sub new {
     $self->Fit;
 
     $log->trace('Frame created');
+
+    $self->{lookup}  = undef;    # info about list header
 
     return $self;
 }
@@ -203,11 +207,61 @@ sub _create_menu {
 
     $self->{_menu} = $menu;
 
-    $self->make_menus( $self->cfg->menubar );
+    my $attribs = $self->get_menubar_merged_labels;
+
+    $self->make_menus($attribs);
 
     $self->SetMenuBar($menu);
 
     return;
+}
+
+=head2 get_menubar_merged_labels
+
+Merge separate labels from the menu config so we can translate them.
+
+TODO: Maybe get rid of menubar.yml and make a data module...
+
+=cut
+
+sub get_menubar_merged_labels {
+    my $self = shift;
+
+    my $labels = {
+        'menu_tool' => {
+            'label' => __ 'Tools',
+            'popup' => {
+                '1' => { 'label' => __ 'Edit reports data' } },
+        },
+        'menu_admin' => {
+            'label' => __ 'Admin',
+            'popup' => {
+                '1' => { 'label' => __ 'Set default app' },
+                '2' => { 'label' => __ 'Configurations' }
+            },
+        },
+        'menu_help' => {
+            'label' => __ 'Help',
+            'popup' => {
+                '1' => { 'label' => __ 'Guide' },
+                '2' => { 'label' => __ 'About' }
+            },
+        },
+        'menu_app' => {
+            'label' => __ 'App',
+            'popup' => {
+                '1' => { 'label' => __ 'Toggle find mode' },
+                '2' => { 'label' => __ 'Execute search' },
+                '3' => { 'label' => __ 'Execute count' },
+                '4' => { 'label' => __ 'Preview report' },
+                '5' => { 'label' => __ 'Quit' }
+            },
+        }
+    };
+
+    my $menucfg = $self->cfg->menubar;
+
+    return merge( $menucfg, $labels );
 }
 
 =head2 _create_app_menu
@@ -220,9 +274,8 @@ item of the default menu.
 sub _create_app_menu {
     my $self = shift;
 
-    my $attribs = $self->cfg->appmenubar;
-
-    $self->make_menus( $attribs, 1 );    # insert starting with position 1
+    # Insert starting with position 1
+    $self->make_menus( $self->cfg->appmenubar, 1 );
 
     return;
 }
@@ -394,13 +447,85 @@ sub toolbar_names {
     my $self = shift;
 
     # Get ToolBar button atributes
-    my $attribs = $self->cfg->toolbar;
+    my $attribs = $self->get_toolbar_merged_labels;
 
     # TODO: Change the config file so we don't need this sorting anymore
     # or better keep them sorted and ready to use in config
     my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
 
     return ( $toolbars, $attribs );
+}
+
+=head2 get_toolbar_merged_labels
+
+Merge separate labels from the toolbar config so we can translate
+them.
+
+TODO: Maybe get rid of toolbar.yml and make a data module...
+
+=cut
+
+sub get_toolbar_merged_labels {
+    my $self = shift;
+
+    my $labels = {
+        tb_rr => {
+            tooltip => __ 'Reload record',
+            help    => __ 'Reload record',
+        },
+        tb_fm => {
+            tooltip => __ 'Toggle find mode',
+            help    => __ 'Toggle find mode',
+        },
+        tb_qt => {
+            tooltip => __ 'Quit',
+            help    => __ 'Quit the application',
+        },
+        tb_tr => {
+            tooltip => __ 'Paste record',
+            help    => __ 'Paste record',
+        },
+        tb_fe => {
+            tooltip => __ 'Execute search',
+            help    => __ 'Execute search',
+        },
+        tb_sv => {
+            tooltip => __ 'Save record',
+            help    => __ 'Save record',
+        },
+        tb_pr => {
+            tooltip => __ 'Print preview',
+            help    => __ 'Print preview default report',
+        },
+        tb_ad => {
+            tooltip => __ 'Add record',
+            help    => __ 'Add record',
+        },
+        tb_at => {
+            tooltip => __ 'Save current window geometry',
+            help    => __ 'Save current window geometry',
+        },
+        tb_rm => {
+            tooltip => __ 'Remove record',
+            help    => __ 'Remove record',
+        },
+        tb_gr => {
+            tooltip => __ 'Generate document',
+            help    => __ 'Generate default document',
+        },
+        tb_tn => {
+            tooltip => __ 'Copy record',
+            help    => __ 'Copy record',
+        },
+        tb_fc => {
+            tooltip => __ 'Execute count',
+            help    => __ 'Execute count',
+        },
+    };
+
+    my $toolcfg = $self->cfg->toolbar;
+
+    return merge($toolcfg, $labels);
 }
 
 =head2 enable_tool
@@ -826,8 +951,8 @@ sub make_list_header {
         my $col_attribs = $self->header_width($fields->{$col});
         $self->list_header( $col_attribs, $colcnt );
 
-        # Save index of columns to return
-        push @{ $self->{lookup} }, $colcnt;
+        # Save index of columns to return (and the column name)
+        push @{ $self->{lookup} }, { $colcnt => $col };
 
         $colcnt++;
     }
@@ -1230,10 +1355,7 @@ Read and return selected row (column 0) from list
 sub list_read_selected {
     my $self = shift;
 
-    if ( !$self->has_list_records ) {
-        warn "No records!\n";
-        return;
-    }
+    return unless $self->has_list_records;
 
     my $sel_no = $self->get_recordlist->GetSelectedItemCount();
     if ( $sel_no <= 0 ) {
@@ -1243,19 +1365,23 @@ sub list_read_selected {
 
     my $row = $self->get_list_selected_index();
 
+    # 'lookup' is an arrayref and holds the return column: index => name
+    my @idxs;
+    push @idxs, keys %{$_} foreach @{ $self->{lookup} };
+
     # Return column 0 in the row
-    my $selected_value = $self->get_list_text_col( $row, 0 );    # col 0
 
-    if ( defined $selected_value ) {
+    my @returned = map{ $self->get_list_text_col( $row, $_ ) } @idxs;
+    @returned = Tpda3::Utils->trim(@returned) if @returned;
 
-        # Trim spaces
-        if ( defined($selected_value) ) {
-            $selected_value =~ s/^\s+//;
-            $selected_value =~ s/\s+$//;
+    my %selected;
+    foreach (@{ $self->{lookup} }) {
+        while (my ($idx, $field) = each (%{$_})) {
+            $selected{$field} = $returned[$idx];
         }
     }
 
-    return [$selected_value];              # return an array reference
+    return \%selected;
 }
 
 =head2 list_raise

@@ -370,6 +370,9 @@ Insert ampersand character for underline mark in menu.
 sub ins_underline_mark {
     my ( $self, $label, $position ) = @_;
 
+    die "Wrong parameters for 'ins_underline_mark'"
+        unless $label and defined $position;
+
     substr( $label, $position, 0 ) = '&';
 
     return $label;
