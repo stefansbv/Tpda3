@@ -16,6 +16,6 @@ my $args = {
     cfpath => 'share/',
 };
 
-test_screen($args, 'Tpda3::Wx::App::Test::Customers');
+test_screen($args, 'Tpda3::Wx::App::Test::Orders');
 
 # done
