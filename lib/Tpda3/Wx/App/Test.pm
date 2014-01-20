@@ -28,7 +28,7 @@ Used only for the version information.
 sub application_name {
     my $name = "Test and demo application for Tpda3\n";
     $name .= "Author: Stefan Suciu\n";
-    $name .= "Copyright 2010-2013\n";
+    $name .= "Copyright 2010-2014\n";
     $name .= "GNU General Public License (GPL)\n";
     $name .= 'stefan@s2i2.ro';
 
@@ -51,7 +51,7 @@ You can find documentation for this module with the perldoc command.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2013 Stefan Suciu.
+Copyright 2010-2014 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

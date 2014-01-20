@@ -466,7 +466,7 @@ http://www.alberton.info/postgresql_meta_info.html
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2013 Stefan Suciu.
+Copyright 2010-2014 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

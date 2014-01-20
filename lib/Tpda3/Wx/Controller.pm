@@ -259,7 +259,7 @@ sub about {
     $about->SetName($PROGRAM_NAME);
     $about->SetVersion($PROGRAM_VER);
     $about->SetDescription("$PROGRAM_DESC\nDatabase application framework and run-time");
-    $about->SetCopyright('(c) 2010-2013 Ştefan Suciu <stefan@s2i2.ro>');
+    $about->SetCopyright('(c) 2010-2014 Ştefan Suciu <stefan@s2i2.ro>');
     $about->SetLicense($LICENSE);
     $about->SetWebSite( 'http://tpda.s2i2.ro/', 'The Tpda3 home site');
     $about->AddDeveloper( 'Ştefan Suciu <stefan@s2i2.ro>' );
@@ -298,7 +298,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2013 Stefan Suciu.
+Copyright 2010-2014 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

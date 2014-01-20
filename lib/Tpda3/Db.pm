@@ -121,7 +121,7 @@ Inspired from PerlMonks node [id://609543] by GrandFather.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2013 Stefan Suciu.
+Copyright 2010-2014 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
