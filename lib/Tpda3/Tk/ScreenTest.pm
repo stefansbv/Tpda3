@@ -50,7 +50,7 @@ BEGIN {
         exit 0;
     }
 
-    eval { use Tk; };
+    eval { require Tk; };
     if ($@) {
         plan( skip_all => 'Perl Tk is required for this test' );
     }

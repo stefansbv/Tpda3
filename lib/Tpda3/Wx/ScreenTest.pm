@@ -51,8 +51,7 @@ BEGIN {
     }
 
     eval {
-        use Wx;
-        use Wx::Event qw(EVT_TIMER);
+        require Wx;
     };
     if ($@) {
         plan( skip_all => 'wxPerl is required for this test' );
@@ -69,6 +68,8 @@ Test method. Not exported by default.
 
 sub test_screen {
     my ( $args, $screen_module_package ) = @_;
+
+    use Wx::Event q(EVT_TIMER);
 
     my $screen_name = ( split /::/, $screen_module_package )[-1];
 
