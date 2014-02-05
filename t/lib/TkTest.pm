@@ -100,7 +100,7 @@ sub load_table_data {
         or die "Error: $!";
 
     my $table = $csv->getline($fh)->[0];
-    diag "Loading data for '$table'";
+    # diag "Loading data for '$table'";
 
     my $header = $csv->getline($fh);
 
