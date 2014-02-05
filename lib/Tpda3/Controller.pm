@@ -743,10 +743,11 @@ sub _check_app_menus {
     my $appmenus = $self->view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
-        eval { require $module_file };
-        if ($@) {
+        try { require $module_file }
+        catch {
             $self->view->set_menu_enable($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
+            print "Reason: $_" if $self->cfg->verbose;
         }
     }
 
@@ -2263,7 +2264,7 @@ The accepted values for I<findtype> are:
 
 =item contains - Translated to LIKE | CONTAINING I<%searchstring%>
 
-=item full   - field = I<searchstring>
+=item full     - field = I<searchstring>
 
 =item date     - Used for date widgets, see below
 
@@ -2861,7 +2862,7 @@ sub ctrl_write_to {
             $date_format );
     }
     else {
-        print "WW: No '$ctrltype' ctrl type for writing '$field'!\n";
+        warn "WW: No '$ctrltype' ctrl type for writing '$field'!";
     }
 
     return;
