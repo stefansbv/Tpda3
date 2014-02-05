@@ -1510,7 +1510,7 @@ sub control_write_e {
 
     my $control = $control_ref->[1];
 
-    unless ( $control->isa('Tpda3::Tk::Entry') ) {
+    unless ( $control->isa('Tk::Entry') ) {
         warn qq(Widget for writing entry '$field' not found\n);
         return;
     }
