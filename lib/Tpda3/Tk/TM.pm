@@ -17,11 +17,11 @@ Tpda3::Tk::TM - Create a table matrix widget.
 
 =head1 VERSION
 
-Version 0.70
+Version 0.80
 
 =cut
 
-our $VERSION = 0.70;
+our $VERSION = 0.80;
 
 =head1 SYNOPSIS
 

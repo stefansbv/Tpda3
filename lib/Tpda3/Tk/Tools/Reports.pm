@@ -21,11 +21,11 @@ Tpda3::Tk::Tools::Reports screen.
 
 =head1 VERSION
 
-Version 0.70
+Version 0.80
 
 =cut
 
-our $VERSION = 0.70;
+our $VERSION = 0.80;
 
 =head1 SYNOPSIS
 
