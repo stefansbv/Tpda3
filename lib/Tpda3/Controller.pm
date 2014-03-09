@@ -766,7 +766,7 @@ field, looks like this:
  <bindings>
    <customer>
      table               = customers
-     lookup              = customername
+     search              = customername
      field               = customernumber
    </customer>
  </bindings>
@@ -872,9 +872,6 @@ sub setup_lookup_bindings_entry {
             search => $search,
             filter => $filter_field,
         };
-
-        # $self->_log->trace("Setup binding for '$bind_name' with:");
-        # $self->_log->trace( sub { Dumper($para) } );
 
         # Detect the configuration style and add the 'fields' to the
         # columns list
@@ -3938,7 +3935,9 @@ sub screen_clear_key_values {
     my $self = shift;
 
     my $page = $self->view->get_nb_current_page();
-    foreach my $key ( $self->table_key($page, 'main')->all_keys ) {
+    my $table_keys = $self->table_key($page, 'main');
+    return unless blessed $table_keys;
+    foreach my $key ( $table_keys->all_keys ) {
         $key->value(undef);
     }
 
