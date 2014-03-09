@@ -1,12 +1,11 @@
 package Tpda3::Db::Connection;
 
-use Carp;
-use DBI;
+use strict;
+use warnings;
 use Log::Log4perl qw(get_logger);
 use Scalar::Util qw(blessed);
 use Try::Tiny;
-use strict;
-use warnings;
+use DBI;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -92,6 +91,11 @@ SWITCH: for ($driver) {
         /sqlite/xi && do {
             require Tpda3::Db::Connection::Sqlite;
             $db = Tpda3::Db::Connection::Sqlite->new($model);
+            last SWITCH;
+        };
+        /odbcfb/xi && do {
+            require Tpda3::Db::Connection::OdbcFb;
+            $db = Tpda3::Db::Connection::OdbcFb->new($model);
             last SWITCH;
         };
 

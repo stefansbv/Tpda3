@@ -663,6 +663,10 @@ sub cmp_function {
             $cmp = $ignore_case ? '-LIKE' : '-LIKE';
             last SWITCH;
         };
+        /odbc/i && do {
+            $cmp = $ignore_case ? '-LIKE' : '-LIKE';
+            last SWITCH;
+        };
 
         # Default
         warn "WW: Unknown database driver name: $driver!\n";
