@@ -1644,16 +1644,17 @@ sub control_write_c {
         return;
     }
 
-    $state = $state || $control->cget ('-state');
+    my $off_value = $control->cget('-offvalue');
+    my $on_value  = $control->cget('-onvalue');
 
-    $value = 0 unless $value;
-    if ( $value == 1 ) {
+    $state = $state || $control->cget('-state');
+    $value = $off_value unless $value;
+    if ( $value eq $on_value ) {
         $control->select;
     }
     else {
         $control->deselect;
     }
-
     $control->configure( -state => $state );
 
     return;
