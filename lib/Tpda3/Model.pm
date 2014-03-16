@@ -663,8 +663,8 @@ sub cmp_function {
             $cmp = $ignore_case ? '-LIKE' : '-LIKE';
             last SWITCH;
         };
-        /odbc/i && do {
-            $cmp = $ignore_case ? '-LIKE' : '-LIKE';
+        /odbcfb/i && do {
+            $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
             last SWITCH;
         };
 
