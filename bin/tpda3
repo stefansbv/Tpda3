@@ -108,7 +108,7 @@ sub tpda3_version {
 
     my $ver = $Tpda3::VERSION;
     print
-"Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2013 Stefan Suciu\n\n";
+"Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2014 Stefan Suciu\n\n";
 }
 
 =head1 NAME
@@ -207,7 +207,7 @@ Be verbose.
 
 =head1 LICENSE
 
-Copyright (C) 2010-2013  Stefan Suciu
+Copyright (C) 2010-2014  Stefan Suciu
 This program is free software, you can redistribute it and/or
 modify it under the terms of GNU General Public License.
 

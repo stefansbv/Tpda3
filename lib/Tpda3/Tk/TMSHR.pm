@@ -237,8 +237,7 @@ sub fill_main {
     my ( $self, $record_ref, $countcol ) = @_;
 
     my $xtvar = $self->cget( -variable );
-
-    my $rows = 0;
+    my $rows  = 0;
 
     #- Scan DS and write to table
 
@@ -248,7 +247,6 @@ sub fill_main {
             my $col = $self->{columns}{$field}{id};
             $xtvar->{"$row,$col"} = $record->{$field};
         }
-
         $rows = $row;
     }
 
@@ -336,7 +334,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011-2013 Stefan Suciu.
+Copyright 2011-2014 Stefan Suciu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

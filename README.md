@@ -3,9 +3,9 @@ Tpda3 (Tiny Perl Database Application 3)
 Ștefan Suciu <stefan@s2i2.ro>
 2013-10-19
 
-Version: 0.69
+Version: 0.80
 
-Copyright (C) 2010-2013  Stefan Suciu
+Copyright (C) 2010-2014  Stefan Suciu
 GNU General Public License v3
 
 Tpda3 is a classic desktop database application framework and
@@ -67,7 +67,7 @@ https://sourceforge.net/projects/tpda/
 License And Copyright
 ---------------------
 
-Copyright (C) 2010-2013 Ștefan Suciu
+Copyright (C) 2010-2014 Ștefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
