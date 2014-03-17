@@ -7,11 +7,11 @@ use Log::Log4perl qw(get_logger :levels);
 use File::Basename;
 use File::HomeDir;
 use File::ShareDir qw(dist_dir);
-
 use File::UserConfig;
 use File::Spec::Functions;
 use File::Copy::Recursive ();
 use List::Util qw(first);
+use Try::Tiny;
 
 require Tpda3::Config::Utils;
 
@@ -647,18 +647,19 @@ sub configdir_populate {
     my $configdir = $self->configdir($new_cfname);
     my $sharedir  = $self->sharedir($cfname); # only for the Tpda3 Test app
 
-    # Alternate share directory for independent app modules
-    unless ( -d $sharedir ) {
-        # Funny algorithm to get the distribution name :)
-        my $distname = $cfname =~ m{\d} ? uc $cfname : ucfirst $cfname;
-        if ($distname) {
-            $sharedir = dist_dir( 'Tpda3-' . $distname );
-            $sharedir = catdir( $sharedir, 'apps', $cfname );
+    # Alternate share directory for independent app distributions
+    unless ( -d $sharedir and $cfname) {
+        foreach my $distname (uc $cfname, ucfirst $cfname) {
+            print "Trying distname '$distname'\n" if $self->verbose;
+            try   { $sharedir = dist_dir( 'Tpda3-' . $distname ); }
+            catch { print "Fail: $_\n" if $self->verbose;         };
+            $sharedir = catdir( $sharedir, 'apps', $cfname ) if -d $sharedir;
         }
     }
 
     # Fallback to the module source dir in CWD
     unless ( -d $sharedir ) {
+        print "Fallback to share dir in CWD\n" if $self->verbose;
         $sharedir = catdir( 'share', 'apps', $cfname);
     }
 
