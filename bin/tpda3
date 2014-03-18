@@ -30,17 +30,16 @@ my ($list, $init, $user, $pass, $default, $cfpath);
 # Process options.
 if ( @ARGV > 0 ) {
     GetOptions(
-        'help|?'    => \$help,
-        'man'       => \$man,
-        'verbose'   => \$verbose,
-        'list:s'    => \$list,
-        'user=s'    => \$user,
-        'password=s'=> \$pass,
-        'init=s'    => \$init,
-        'default=s' => \$default,
-        'cfpath=s'  => \$cfpath,
-        ),
-        or pod2usage(2);
+        'help|?'     => \$help,
+        'man'        => \$man,
+        'verbose'    => \$verbose,
+        'list:s'     => \$list,
+        'user=s'     => \$user,
+        'password=s' => \$pass,
+        'init=s'     => \$init,
+        'default=s'  => \$default,
+        'cfpath=s'   => \$cfpath,
+    ) or pod2usage(2);
 }
 if ( $man or $help or $#ARGV >= 0 ) {
     pod2usage( VERBOSE => 2 ) if $man;
@@ -130,13 +129,13 @@ tpda3 <mnemonic> -init <new-mnemonic>
 Options:
 
  -init <mnemonic>  Create a copy of a configuration with a different name
- -list                List available configuration names
- -user                User name
- -password            Password
- -help                Brief help message
- -man                 Full documentation
- -verbose             Be verbose
- -cfpath <path>       Optional absolute path to the configuration tree
+ -list             List available configuration names
+ -user             User name
+ -password         Password
+ -help             Brief help message
+ -man              Full documentation
+ -verbose          Be verbose
+ -cfpath <path>    Optional absolute path to the configuration tree
 
 =head1 DESCRIPTION
 
@@ -172,13 +171,12 @@ configuration files which are in Config::General format.
 
 =item B<-init> <mnemonic>
 
-Create a copy of a configuration with a different name.  A connection
-name is required, that exists in the I<share> directory.
+Create a copy of a configuration with a different name.  A mnemonic is
+required, a subdirectory name that exists in the I<share> directory.
 
 =item B<-list> [mnemonic]
 
-List all configuration names.  Usually a configuration name is the
-same as the database name, but this is not a requirement.
+List all mnemonics (configuration names).
 
 =item B<-user>
 
