@@ -3401,8 +3401,8 @@ sub record_save {
 Check if required data is present in the screen.
 
 There are two list used in this method, the list of the non empty
-fields from the screen and the list of the fields that require to have
-a value.
+fields from the screen and the list of the fields that must have a
+value.
 
 This lists are compared and we build a new list with those items which
 appear only in the second list, and build a message string with it.
