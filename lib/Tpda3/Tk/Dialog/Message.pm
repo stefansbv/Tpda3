@@ -70,10 +70,11 @@ sub message_dialog {
 
     my $default_buttons = [ __ 'OK' ];
     my $buttons =
-                  $type eq q{}    ?  $default_buttons
-                : $type eq 'ok'   ?  [ __ 'OK' ]
-                : $type eq 'yn'   ?  [ __ 'Yes', __ 'No' ]
-                : $type eq 'ycn'  ?  [ __ 'Yes', __ 'Cancel', __ 'No' ]
+                  $type eq q{}     ?  $default_buttons
+                : $type eq 'ok'    ?  [ __ 'OK' ]
+                : $type eq 'close' ?  [ __ 'Close' ]
+                : $type eq 'yn'    ?  [ __ 'Yes', __ 'No' ]
+                : $type eq 'ycn'   ?  [ __ 'Yes', __ 'Cancel', __ 'No' ]
                 :                    $default_buttons
                 ;
 
@@ -131,8 +132,20 @@ sub message_dialog {
 
     #-- title (optional)
 
+    #    error info question
+    my @options2 = ( N__"Error", N__"Info", N__"Question");
+    my $option_e = __( $options2[0] );
+    my $option_i = __( $options2[1] );
+    my $option_q = __( $options2[2] );
+    my $title
+        = $icon eq 'error'    ? $option_e
+        : $icon eq 'info'     ? $option_i
+        : $icon eq 'question' ? $option_q
+        :                     q{} # default
+        ;
+
     my $ltitle = $frame_top_right->Label(
-        -text => __ 'Question',
+        -text => $title,
         -fg   => 'blue',
     )->pack( -anchor => 'se', );
 

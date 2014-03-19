@@ -1,0 +1,9 @@
+
+* The name of the application distribution
+
+Tpda3-<name>
+
+Where 'name' is the mnemonic and can be 'Appname' or 'APPNAME'.
+AppName is NOT a valid name.  The mnemonic is all lower case and is
+also the name of a subdir of 'apps' where the application
+configuration are located.

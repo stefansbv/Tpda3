@@ -1150,11 +1150,6 @@ to insert, update or delete.
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
 
-    # DEBUG
-    my ($package, $filename, $line, $subroutine) = caller(3);
-    print "table_batch_update:\n $package, $line, $subroutine\n";
-
-
     my $compare_col = $depmeta->{fkcol};
 
     my $tb_data = $self->table_selectcol_as_array($depmeta);

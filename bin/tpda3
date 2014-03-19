@@ -128,13 +128,13 @@ tpda3 <mnemonic> -init <new-mnemonic>
 
 Options:
 
- -init <mnemonic>  Create a copy of a configuration with a different name
  -list             List available configuration names
  -user             User name
  -password         Password
  -help             Brief help message
  -man              Full documentation
  -verbose          Be verbose
+ -init <mnemonic>  Create a copy of a configuration with a different name
  -cfpath <path>    Optional absolute path to the configuration tree
 
 =head1 DESCRIPTION

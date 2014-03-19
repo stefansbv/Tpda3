@@ -4070,7 +4070,7 @@ sub io_exception {
         }
 
         my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
-        $dlg->message_dialog($message, $details, 'error', 'ok');
+        $dlg->message_dialog($message, $details, 'error', 'close');
     }
 
     return;
@@ -4100,7 +4100,7 @@ sub catch_db_exceptions {
         }
 
         my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
-        $dlg->message_dialog($message, $details, 'error', 'ok');
+        $dlg->message_dialog($message, $details, 'error', 'close');
     }
 
     return;
