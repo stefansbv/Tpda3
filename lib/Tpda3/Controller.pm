@@ -3325,7 +3325,7 @@ sub ask_to {
     }
 
     # Message dialog
-    return $self->view->dialog_confirm($message, $details, undef, 'ycn');
+    return $self->view->dialog_confirm($message, $details, 'question', 'ycn');
 }
 
 =head2 record_save
