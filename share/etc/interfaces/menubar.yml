@@ -29,6 +29,11 @@ menubar:
         sep: before
         key: Alt-P
       5:
+        name: mn_tt
+        underline: 0
+        sep: none
+        key: Alt-G
+      6:
         name: mn_qt
         underline: 1
         sep: before
@@ -42,6 +47,11 @@ menubar:
         underline: 5
         sep: none
         key: Alt-E
+      2:
+        name: mn_et
+        underline: 0
+        sep: none
+        key: Alt-T
   menu_admin:
     id:    5003
     underline: 1
