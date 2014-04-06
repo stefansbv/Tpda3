@@ -75,7 +75,7 @@ sub run_screen {
 
     #- id_rep (id_rep)
 
-    my $lid_rep = $frm_top->Label( -text => 'Id. report', );
+    my $lid_rep = $frm_top->Label( -text => 'ID', );
     $lid_rep->form(
         -top     => [ %0, 0 ],
         -left    => [ %0, 0 ],
