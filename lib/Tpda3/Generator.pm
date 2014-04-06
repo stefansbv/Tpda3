@@ -6,6 +6,7 @@ use warnings;
 use IPC::System::Simple 1.17 qw(capture);
 use File::Spec::Functions;
 use File::Basename;
+use File::Copy qw(mv);
 use Template;
 use Try::Tiny;
 use Log::Log4perl qw(get_logger :levels);
@@ -114,7 +115,20 @@ sub tex_from_template {
         PLUGIN_BASE  => 'Tpda3::Template::Plugin',
     });
 
-    my $rec = $record->[0]{data};    # only the data
+    my $rec;
+    if (ref $record eq 'HASH') {
+        $rec = $record;
+    }
+    elsif (ref $record eq 'ARRAY') {
+        $rec = $record->[0]{data};    # only the data
+    }
+    else {
+        die "Generator is expecting a reference!\n";
+    }
+
+    # Add images path to the record
+    # The trailing slash is requred by TeX
+    $rec->{images_path} = catdir($output_path, 'images') . '/';
 
     #- Cleanup values and prepare for LaTeX, (translate '&' in '\&')
 
@@ -148,10 +162,12 @@ sub tex_from_template {
 Generate PDF from LaTeX source using L<pdflatex>.  On success
 L<pdflatex> returns 0.
 
+Has a L<sufix> parameter.
+
 =cut
 
 sub pdf_from_latex {
-    my ($self, $tex_file, $docspath) = @_;
+    my ($self, $tex_file, $docspath, $suffix) = @_;
 
     my $pdflatex_exe;
     unless ( $pdflatex_exe = $self->find_pdflatex() ) {
@@ -194,7 +210,17 @@ sub pdf_from_latex {
         print "OUTPUT: >$output<\n" if $self->cfg->verbose;
     };
 
-    return catfile($output_path, qq{$name.pdf});
+    my $output_pdf = catfile($output_path, qq{$name.pdf});
+
+    # Rename with suffix
+    if ($suffix) {
+        my $new = catfile($output_path, qq{$name-$suffix.pdf});
+        if ( mv($output_pdf, $new) ) {
+            $output_pdf = $new;
+        }
+    }
+
+    return $output_pdf;
 }
 
 sub find_pdflatex {
