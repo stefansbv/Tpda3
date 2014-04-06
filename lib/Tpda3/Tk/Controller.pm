@@ -544,6 +544,25 @@ sub repman {
     return;
 }
 
+=head2 ttgen
+
+Generate documents dialog.
+
+=cut
+
+sub ttgen {
+    my $self = shift;
+
+    my $gui = $self->view;
+
+    require Tpda3::Tk::Dialog::TTGen;
+    my $gd = Tpda3::Tk::Dialog::TTGen->new('ttgen');
+
+    $gd->run_screen($gui);
+
+    return;
+}
+
 =head2 tmshr_fill_table
 
 Fill Table Matrix widget for I<report> style screens.
