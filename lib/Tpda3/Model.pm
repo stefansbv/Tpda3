@@ -93,7 +93,6 @@ Connect to the database.
 
 sub db_connect {
     my $self = shift;
-
     # Connect to database or retry to connect
     if (Tpda3::Db->has_instance) {
         $self->{_dbh} = Tpda3::Db->instance->db_connect($self)->dbh;
@@ -101,7 +100,6 @@ sub db_connect {
     else {
         $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
     }
-
     return;
 }
 
@@ -113,17 +111,14 @@ Return the database handler.
 
 sub dbh {
     my $self = shift;
-
     if ( Tpda3::Db->has_instance ) {
         my $db = Tpda3::Db->instance;
         return $db->dbh if $self->is_connected;
     }
-
     Exception::Db::Connect->throw(
         usermsg => 'Please restart and login',
         logmsg  => 'error#Not connected',
     );
-
     return;
 }
 
@@ -135,9 +130,7 @@ Return the Connection module handler.
 
 sub dbc {
     my $self = shift;
-
     my $db = Tpda3::Db->instance;
-
     return $db->dbc;
 }
 
@@ -487,7 +480,6 @@ sub table_batch_query {
     try {
         my $sth = $self->dbh->prepare($stmt);
         $sth->execute(@bind);
-
         while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
             push( @records, $record );
         }
