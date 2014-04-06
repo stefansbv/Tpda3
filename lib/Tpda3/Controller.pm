@@ -320,11 +320,25 @@ sub _set_event_handlers {
         sub { $self->repman; }
     );
 
+    #-- Generate PDF from TT model
+    $self->view->event_handler_for_menu(
+        'mn_tt',
+        sub { $self->ttgen; }
+    );
+
     #-- Edit RepMan report metadata
     $self->view->event_handler_for_menu(
         'mn_er',
         sub {
             $self->screen_module_load('Reports','tools');
+        }
+    );
+
+    #-- Edit Templates metadata
+    $self->view->event_handler_for_menu(
+        'mn_et',
+        sub {
+            $self->screen_module_load('Templates','tools');
         }
     );
 
