@@ -205,6 +205,7 @@ sub show_app_list {
     my $choices = [
         { -name => 'CUBRID',     -value => 'cubrid', },
         { -name => 'Firebird',   -value => 'firebird', },
+        { -name => 'ODBCFb',     -value => 'odbcfb', },
         { -name => 'PostgreSQL', -value => 'postgresql', },
         { -name => 'SQLite',     -value => 'sqlite', },
     ];
