@@ -8,6 +8,7 @@ use Log::Log4perl qw(get_logger);
 use POSIX qw (floor);
 use Data::Compare;
 use Hash::Merge qw(merge);
+use Scalar::Util qw(blessed);
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk;
 use Tk::Font;
@@ -308,7 +309,9 @@ sub get_menubar_merged_labels {
         'menu_tool' => {
             'label' => __ 'Tools',
             'popup' => {
-                '1' => { 'label' => __ 'Edit reports data' } },
+                '1' => { 'label' => __ 'Edit reports data' },
+                '2' => { 'label' => __ 'Edit templates data' },
+            },
         },
         'menu_admin' => {
             'label' => __ 'Admin',
@@ -331,7 +334,8 @@ sub get_menubar_merged_labels {
                 '2' => { 'label' => __ 'Execute search' },
                 '3' => { 'label' => __ 'Execute count' },
                 '4' => { 'label' => __ 'Preview report' },
-                '5' => { 'label' => __ 'Quit' }
+                '5' => { 'label' => __ 'Generate document' },
+                '6' => { 'label' => __ 'Quit' }
             },
         }
     };
@@ -1080,9 +1084,7 @@ Destroy window on quit.
 
 sub on_close_window {
     my $self = shift;
-
     $self->destroy();
-
     return;
 }
 
@@ -1510,7 +1512,7 @@ sub control_write_e {
 
     my $control = $control_ref->[1];
 
-    unless ( $control->isa('Tk::Entry') ) {
+    unless ( blessed $control and $control->isa('Tk::Entry') ) {
         warn qq(Widget for writing entry '$field' not found\n);
         return;
     }
@@ -1543,7 +1545,7 @@ sub control_write_t {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Frame') ) {
+    unless ( blessed $control and $control->isa('Tk::Frame') ) {
         warn qq(Widget for writing text '$field' not found\n);
         return;
     }
@@ -1574,7 +1576,7 @@ sub control_write_d {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::DateEntry') ) {
+    unless ( blessed $control and $control->isa('Tk::DateEntry') ) {
         warn qq(Widget for writing date '$field' not found\n);
         return;
     }
@@ -1609,7 +1611,7 @@ sub control_write_m {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::JComboBox') ) {
+    unless ( blessed $control and $control->isa('Tk::JComboBox') ) {
         warn qq(Widget for writing combobox '$field' not found\n);
         return;
     }
@@ -1639,7 +1641,7 @@ sub control_write_c {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Checkbutton') ) {
+    unless ( blessed $control and $control->isa('Tk::Checkbutton') ) {
         warn qq(Widget for writing checkbox '$field' not found\n);
         return;
     }
@@ -1671,7 +1673,7 @@ sub control_write_r {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::RadiobuttonGroup') ) {
+    unless ( blessed $control and $control->isa('Tk::RadiobuttonGroup') ) {
         warn qq(Widget for writing radiobutton '$field' not found\n);
         return;
     }
@@ -1703,7 +1705,7 @@ sub control_read_e {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Entry') ) {
+    unless ( blessed $control and $control->isa('Tk::Entry') ) {
         warn qq(Widget for reading entry '$field' not found\n);
         return;
     }
@@ -1722,7 +1724,7 @@ sub control_read_t {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Frame') ) {
+    unless ( blessed $control and $control->isa('Tk::Frame') ) {
         warn qq(Widget for reading text '$field' not found\n);
         return;
     }
@@ -1741,7 +1743,7 @@ sub control_read_d {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::DateEntry') ) {
+    unless ( blessed $control and $control->isa('Tk::DateEntry') ) {
         warn qq(Widget for reading date '$field' not found\n);
         return;
     }
@@ -1775,7 +1777,7 @@ sub control_read_m {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::JComboBox') ) {
+    unless ( blessed $control and $control->isa('Tk::JComboBox') ) {
         warn qq(Widget for reading combobox '$field' not found\n);
         return;
     }
@@ -1794,7 +1796,7 @@ sub control_read_c {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::Checkbutton') ) {
+    unless ( blessed $control and $control->isa('Tk::Checkbutton') ) {
         warn qq(Widget for reading checkbox '$field' not found\n);
         return;
     }
@@ -1813,7 +1815,7 @@ sub control_read_r {
 
     my $control = $control_ref->[1];
 
-    unless ( defined $control and $control->isa('Tk::RadiobuttonGroup') ) {
+    unless ( blessed $control and $control->isa('Tk::RadiobuttonGroup') ) {
         warn qq(Widget for reading radiobutton '$field' not found\n);
         return;
     }
