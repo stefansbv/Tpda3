@@ -23,7 +23,6 @@ require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
 require Tpda3::Selected;
-require Tpda3::Generator;
 require Tpda3::Tk::Dialog::Message;
 
 use Tpda3::Model::Table;
@@ -2530,7 +2529,7 @@ sub screen_document_generate {
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
         $self->view->set_status(__ 'Empty record', 'ms', 'red');
-        $self->_log->error('Generator: No data!');
+        $self->_log->error('Generator: no data!');
     }
 
     my $model_name = $self->scrcfg()->defaultdocument('file');
@@ -2549,44 +2548,16 @@ sub screen_document_generate {
         return;
     }
 
-    my $gen = Tpda3::Generator->new();
+    # Data from other sources
+    my $other_data = $self->model->other_data($model_name);
 
-    #-- Generate LaTeX document from template
+    $record = $record->[0]{data}; # only the data
+    my $rec = Hash::Merge->new->merge(
+        $record,
+        $other_data,
+    );
 
-    my $tex_file;
-    my $tex_context = __ 'Failed to generate PDF';
-    try {
-        $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
-    }
-    catch {
-        $self->io_exception($_, $tex_context);
-    };
-
-    unless ( $tex_file and ( -f $tex_file ) ) {
-        $self->view->set_status( $tex_context, 'ms', 'red' );
-        $self->_log->error($tex_context);
-        return;
-    }
-
-    #-- Generate PDF from LaTeX
-
-    my $pdf_file;
-    my $pdf_context = __ 'Failed to generate PDF';
-    try {
-        $pdf_file = $gen->pdf_from_latex($tex_file);
-    }
-    catch {
-        $self->io_exception( $_, $pdf_context );
-    };
-
-    # Check output
-    unless ( $pdf_file and Tpda3::Utils->check_file($pdf_file) ) {
-        $self->view->set_status( $pdf_context, 'ms', 'red' );
-        $self->_log->error($pdf_context);
-        return;
-    }
-
-    $self->view->set_status( "PDF: $pdf_file", 'ms', 'blue' );
+    $self->view->generate_doc( $model_file, $rec);
 
     return;
 }
@@ -3030,7 +3001,7 @@ sub controls_state_set {
         }
 
         # Allow 'bg' as bgcolor config attribute value for controls
-        $bg_color = $bg if $bg_color =~ m{bg|bground|background};
+        $bg_color = $bg if $bg_color =~ m{bg|background};
 
         # Configure controls
         my $control = $self->scrobj()->get_controls($field);
@@ -4064,32 +4035,6 @@ sub on_quit {
     $self->view->on_close_window(@_);
 }
 
-sub io_exception {
-    my ($self, $exc, $context) = @_;
-
-    my ($message, $details);
-
-    if ( my $e = Exception::Base->catch($exc) ) {
-        if ( $e->isa('Exception::IO::PathNotFound') ) {
-            $message = $context;
-            $details = $e->message .' '. $e->pathname;
-        }
-        elsif ( $e->isa('Exception::IO::FileNotFound') ) {
-            $message = $context;
-            $details = $e->message .' '. $e->filename;
-        }
-        else {
-            $self->_log->error( $e->message );
-            $e->throw;    # rethrow the exception
-        }
-
-        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
-        $dlg->message_dialog($message, $details, 'error', 'close');
-    }
-
-    return;
-}
-
 sub catch_db_exceptions {
     my ($self, $exc) = @_;
 
@@ -4104,10 +4049,10 @@ sub catch_db_exceptions {
         elsif ( $e->isa('Exception::Db::Connect') ) {
             $message = $e->usermsg;
             $details = $e->logmsg;
-            print "Exc isa Connect ($message, $details)\n";
+            print "Exception is a Connect ($message, $details)\n";
         }
         else {
-            print "Exc isa Unknown\n";
+            print "Exception is a Unknown\n";
             $self->_log->error( $e->message );
             $e->throw;    # rethrow the exception
             return;

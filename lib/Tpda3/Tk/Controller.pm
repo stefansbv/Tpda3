@@ -829,7 +829,7 @@ sub set_mnemonic {
     my $self = shift;
 
     require Tpda3::Tk::Dialog::AppList;
-    my $dal = Tpda3::Tk::Dialog::AppList->new();
+    my $dal = Tpda3::Tk::Dialog::AppList->new;
     $dal->show_app_list($self->view);
 
     return;
@@ -845,7 +845,7 @@ sub set_app_configs {
     my $self = shift;
 
     require Tpda3::Tk::Dialog::Configs;
-    my $dc = Tpda3::Tk::Dialog::Configs->new();
+    my $dc = Tpda3::Tk::Dialog::Configs->new;
     $dc->show_cfg_dialog($self->view);
 
     return;

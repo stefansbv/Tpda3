@@ -397,7 +397,7 @@ sub deaccent {
 sub check_path {
     my ($self, $path) = @_;
 
-    unless (-d $path) {
+    unless ($path and -d $path) {
         Exception::IO::PathNotFound->throw(
             pathname => $path,
             message  => 'Path not found',
@@ -410,7 +410,7 @@ sub check_path {
 sub check_file {
     my ($self, $file) = @_;
 
-    unless (-f $file) {
+    unless ($file and -f $file) {
         Exception::IO::FileNotFound->throw(
             filename => $file,
             message  => 'File not found',

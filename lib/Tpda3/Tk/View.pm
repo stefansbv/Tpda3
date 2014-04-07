@@ -10,6 +10,7 @@ use Data::Compare;
 use Hash::Merge qw(merge);
 use Scalar::Util qw(blessed);
 use Locale::TextDomain 1.20 qw(Tpda3);
+use Try::Tiny;
 use Tk;
 use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
@@ -21,6 +22,7 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
+require Tpda3::Generator;
 
 =head1 NAME
 
@@ -111,7 +113,6 @@ Return model instance
 
 sub model {
     my $self = shift;
-
     return $self->{_model};
 }
 
@@ -123,7 +124,6 @@ Return config instance variable
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -176,7 +176,7 @@ sub set_modified_record {
 =head2 update_gui_components
 
 When the application status (mode) changes, update gui components.
-Screen controls (widgets) are not handled here, but in controller
+Screen controls (widgets) are not handled here, but in the controller
 module.
 
 =cut
@@ -246,9 +246,7 @@ Set window geometry
 
 sub set_geometry {
     my ( $self, $geom ) = @_;
-
     $self->geometry($geom);
-
     return;
 }
 
@@ -262,11 +260,8 @@ TODO: get_logger only once.
 
 sub log_msg {
     my ( $self, $msg ) = @_;
-
     my $log = get_logger();
-
     $log->info($msg);
-
     return;
 }
 
@@ -354,11 +349,8 @@ menu.
 
 sub _create_app_menu {
     my $self = shift;
-
     my $attribs = $self->cfg->appmenubar;
-
     $self->make_menus( $attribs, 2 );    # Add starting with position = 2
-
     return;
 }
 
@@ -458,7 +450,6 @@ Return a menu popup by name
 
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
-
     return $self->{_menu}{$name};
 }
 
@@ -551,9 +542,7 @@ Return the status bar handler
 
 sub get_statusbar {
     my ( $self, $sb_id ) = @_;
-
     $sb_id = 'ms' unless $sb_id; # default label: 'ms'
-
     return $self->{_sb}{$sb_id};
 }
 
@@ -834,13 +823,11 @@ Create a NoteBook panel
 
 sub create_notebook_panel {
     my ( $self, $panel, $label ) = @_;
-
     $self->{_nb}{$panel} = $self->{_nb}->add(
         $panel,
         -label     => $label,
         -underline => 0,
     );
-
     return;
 }
 
@@ -852,9 +839,7 @@ Remove a NoteBook panel
 
 sub remove_notebook_panel {
     my ( $self, $panel ) = @_;
-
     $self->{_nb}->delete($panel);
-
     return;
 }
 
@@ -866,7 +851,6 @@ Return the notebook handler
 
 sub get_notebook {
     my ( $self, $page ) = @_;
-
     if ($page) {
         return $self->{_nb}{$page};
     }
@@ -883,9 +867,7 @@ Destroy existing window, before the creation of an other.
 
 sub destroy_notebook {
     my $self = shift;
-
     $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
-
     return;
 }
 
@@ -897,11 +879,8 @@ Return the current page of the Tk::NoteBook widget.
 
 sub get_nb_current_page {
     my $self = shift;
-
     my $nb = $self->get_notebook;
-
     return unless ref $nb;
-
     return $nb->raised();
 }
 
@@ -913,10 +892,8 @@ Save current notbook page.
 
 sub set_nb_current {
     my ( $self, $page ) = @_;
-
     $self->{nb_prev} = $self->{nb_curr};    # previous tab name
     $self->{nb_curr} = $page;               # current tab name
-
     return;
 }
 
@@ -928,7 +905,6 @@ NOTE: $nb->info('focusprev') doesn't work.
 
 sub get_nb_previous_page {
     my $self = shift;
-
     return $self->{nb_prev};
 }
 
@@ -940,16 +916,13 @@ Clean a page of the Tk::NoteBook widget, remove all child widgets.
 
 sub notebook_page_clean {
     my ( $self, $page ) = @_;
-
     my $frame = $self->get_notebook($page);
-
     $frame->Walk(
         sub {
             my $widget = shift;
             $widget->destroy;
         }
     );
-
     return;
 }
 
@@ -961,9 +934,7 @@ Enable/disable notebook pages.
 
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
-
     $self->get_notebook()->pageconfigure( $page, -state => $state );
-
     return;
 }
 
@@ -1012,7 +983,6 @@ Error message dialog.
 
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
-
     my $dialog_e = $self->MsgBox(
         -title   => __ 'Info',
         -type    => 'ok',
@@ -1020,7 +990,6 @@ sub dialog_error {
         -message => $message,
         -detail  => $details,
     );
-
     return $dialog_e->Show();
 }
 
@@ -1032,7 +1001,6 @@ Return a toolbar button when we know the its name
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
-
     return $self->{_tb}->get_toolbar_btn($name);
 }
 
@@ -1047,9 +1015,7 @@ State can come as 0 | 1 and normal | disabled.
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
-
     $self->{_tb}->enable_tool( $btn_name, $state );
-
     return;
 }
 
@@ -1121,7 +1087,6 @@ Return the record list handler
 
 sub get_recordlist {
     my $self = shift;
-
     return $self->{_rc};
 }
 
@@ -1209,10 +1174,8 @@ Delete the rows of the list.
 
 sub list_init {
     my $self = shift;
-
     $self->get_recordlist->selectionClear( 0, 'end' );
     $self->get_recordlist->delete( 0, 'end' );
-
     return;
 }
 
@@ -1276,10 +1239,8 @@ Raise I<List> tab and set focus to list.
 
 sub list_raise {
     my $self = shift;
-
     $self->{_nb}->raise('lst');
     $self->get_recordlist->focus;
-
     return;
 }
 
@@ -1462,9 +1423,7 @@ Configure callback for menu
 
 sub event_handler_for_menu {
     my ( $self, $name, $calllback ) = @_;
-
     $self->get_menu_popup_item($name)->configure( -command => $calllback );
-
     return;
 }
 
@@ -1478,9 +1437,7 @@ Configure callback for toolbar button.
 
 sub event_handler_for_tb_button {
     my ( $self, $name, $calllback ) = @_;
-
     $self->get_toolbar_btn($name)->configure( -command => $calllback );
-
     return;
 }
 
@@ -1492,10 +1449,8 @@ Configure choices.
 
 sub list_control_choices {
     my ($self, $control, $choices) = @_;
-
     $control->removeAllItems();
     $control->configure( -choices => $choices );
-
     return;
 }
 
@@ -1918,6 +1873,84 @@ sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
 
     $self->model->table_record_update($table, $record, $where);
+
+    return;
+}
+
+sub generate_doc {
+    my ($self, $model_file, $record, $sufix) = @_;
+
+    my $out_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
+    unless ( -d $out_path ) {
+        $self->log_msg('Generator: Output path not found');
+        $self->set_status( 'Output path not found', 'ms', 'red' );
+        return;
+    }
+
+    my $gen = Tpda3::Generator->new();
+
+    #-- Generate LaTeX document from template
+
+    my $tex_file;
+    my $tex_context = __ 'Failed to generate TeX';
+    try {
+        $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
+    }
+    catch {
+        $self->io_exception($_, $tex_context);
+    };
+
+    unless ( $tex_file and ( -f $tex_file ) ) {
+        $self->log_msg($tex_context);
+        $self->set_status( $tex_context, 'ms', 'red' );
+        return;
+    }
+
+    #-- Generate PDF from LaTeX
+
+    my $pdf_file;
+    my $pdf_context = __ 'Failed to generate PDF';
+    try {
+        $pdf_file = $gen->pdf_from_latex($tex_file, undef, $sufix);
+    }
+    catch {
+        $self->io_exception( $_, $pdf_context );
+    };
+
+    # Check output
+    unless ( $pdf_file and -f $pdf_file ) {
+        $self->log_msg($pdf_context);
+        $self->set_status( $pdf_context, 'ms', 'red' );
+        return;
+    }
+    else {
+        $self->set_status("pdf: $pdf_file", 'ms', 'darkgreen' );
+    }
+
+    return;
+}
+
+sub io_exception {
+    my ($self, $exc, $context) = @_;
+
+    my ($message, $details);
+
+    if ( my $e = Exception::Base->catch($exc) ) {
+        if ( $e->isa('Exception::IO::PathNotFound') ) {
+            $message = $context;
+            $details = $e->message .' '. $e->pathname;
+        }
+        elsif ( $e->isa('Exception::IO::FileNotFound') ) {
+            $message = $context;
+            $details = $e->message .' '. $e->filename;
+        }
+        else {
+            $self->log_msg( $e->message );
+            $e->throw;    # rethrow the exception
+        }
+
+        $self->log_msg("$message: $details");
+    }
 
     return;
 }

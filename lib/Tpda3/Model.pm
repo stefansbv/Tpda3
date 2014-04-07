@@ -1479,6 +1479,83 @@ sub report_data {
     return (\@records, \%levelmeta);
 }
 
+sub table_columns {
+    my ($self, $table_name) = @_;
+
+    my $table_info = $self->dbc->table_info_short($table_name);
+    my @fields;
+    foreach my $k ( sort { $a <=> $b } keys %{$table_info} ) {
+        my $name = $table_info->{$k}{name};
+        my $info = $table_info->{$k};
+        push @fields, $name;
+    }
+
+    return \@fields;
+}
+
+sub table_keys {
+    my ($self, $table_name) = @_;
+    return $self->dbc->table_keys($table_name);
+}
+
+sub get_template_datasources {
+    my ($self, $id_tt) = @_;
+
+    # Get datasources
+    my $args = {};
+    $args->{table}    = 'templates';
+    $args->{colslist} = [qw{table_name view_name common_data}];
+    $args->{where}    = { id_tt => $id_tt };
+    $args->{order}    = 'id_tt';
+    my $datasources = $self->table_batch_query($args);
+
+    return $datasources->[0];
+}
+
+=head2 function_name
+
+Get info about the datasources for the TT template from the templates table.
+
+=cut
+
+sub other_data {
+    my ($self, $model_name) = @_;
+
+    # Specific data for the current template
+    my $args = {};
+    $args->{table}    = 'templates';
+    $args->{colslist} = [qw{id_tt}];
+    $args->{where}    = { tt_file => $model_name };
+    my $tt_aref       = $self->table_batch_query($args);
+    my $id_tt         = $tt_aref->[0]{id_tt};
+
+    my $common_table = $self->get_template_datasources($id_tt)->{common_data};
+
+    # Common data for all templates
+    $args = {};
+    $args->{table}    = $common_table;       # ex: semnaturi
+    $args->{colslist} = [qw{var_name var_value}];
+    $args->{order}    = undef;
+    $args->{where}    = undef;
+    my $common_aref   = $self->table_batch_query($args);
+    my %common = map { $_->{var_name} => $_->{var_value} } @{$common_aref};
+
+    # Specific data for the current template
+    $args = {};
+    $args->{table}    = 'templates_det';
+    $args->{colslist} = [qw{var_name var_value}];
+    $args->{where}    = { id_tt => $id_tt };
+    $args->{order}    = 'id_tt';
+    my $specif_aref   = $self->table_batch_query($args);
+    my %specific = map { $_->{var_name} => $_->{var_value} } @{$specif_aref};
+
+    # Merge and return
+    return Hash::Merge->new->merge(
+        \%common,
+        \%specific,
+    );
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

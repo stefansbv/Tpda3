@@ -90,7 +90,7 @@ Generate LaTeX source from TT template.
 =cut
 
 sub tex_from_template {
-    my ($self, $record, $model_file, $output_path) = @_;
+    my ($self, $rec, $model_file, $output_path) = @_;
 
     Tpda3::Utils->check_file($model_file);
     Tpda3::Utils->check_path($output_path);
@@ -114,17 +114,6 @@ sub tex_from_template {
         RELATIVE     => 1,
         PLUGIN_BASE  => 'Tpda3::Template::Plugin',
     });
-
-    my $rec;
-    if (ref $record eq 'HASH') {
-        $rec = $record;
-    }
-    elsif (ref $record eq 'ARRAY') {
-        $rec = $record->[0]{data};    # only the data
-    }
-    else {
-        die "Generator is expecting a reference!\n";
-    }
 
     # Add images path to the record
     # The trailing slash is requred by TeX
