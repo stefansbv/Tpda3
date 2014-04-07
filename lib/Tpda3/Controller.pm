@@ -2551,11 +2551,16 @@ sub screen_document_generate {
     # Data from other sources
     my $other_data = $self->model->other_data($model_name);
 
-    $record = $record->[0]{data}; # only the data
+    $record = $record->[0]{data};            # only the data
     my $rec = Hash::Merge->new->merge(
         $record,
         $other_data,
     );
+
+    # Avoid UTF-8 problems in TeX
+    foreach my $key ( keys %{$rec} ) {
+        $rec->{$key} = Tpda3::Utils->decode_unless_utf( $rec->{$key} );
+    }
 
     $self->view->generate_doc( $model_file, $rec);
 
