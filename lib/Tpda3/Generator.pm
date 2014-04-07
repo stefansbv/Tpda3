@@ -118,7 +118,7 @@ sub tex_from_template {
     # Add images path to the record
     # The trailing slash is requred by TeX
     $rec->{images_path} = catdir($output_path, 'images') . '/';
-    $rec->{images_path} =~ s{\}{/}g;         # for TeX on M$Windows
+    $rec->{images_path} =~ s{\\}{/}g;        # for TeX on M$Windows
 
     #- Cleanup values and prepare for LaTeX, (translate '&' in '\&')
 
