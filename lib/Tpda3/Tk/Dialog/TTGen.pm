@@ -10,7 +10,6 @@ use Log::Log4perl qw(get_logger :levels);
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Try::Tiny;
 use Hash::Merge qw(merge);
-
 use Tk;
 
 require Tpda3::Config;
@@ -19,7 +18,6 @@ require Tpda3::Tk::TM;
 require Tpda3::Utils;
 require Tpda3::Lookup;
 require Tpda3::Db;
-require Tpda3::Generator;
 require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
@@ -105,6 +103,11 @@ sub model {
     return $self->{model};
 }
 
+sub view {
+    my $self = shift;
+    return $self->{view};
+}
+
 =head2 run_screen
 
 Define and show search dialog.
@@ -118,6 +121,7 @@ sub run_screen {
     $self->{tlw}->title('Generate documents');
     $self->{tlw}->geometry('480x520');
 
+    $self->{view}  = $view;
     $self->{model} = $view->{_model};
 
     my $f1d = 110;              # distance from left
@@ -142,15 +146,6 @@ sub run_screen {
     $self->{tb4} = $tbf1->TB();
 
     my $attribs = {
-        'tb4pr' => {
-            'tooltip' => 'Generate document',
-            'icon'    => 'fileprint16',
-            'sep'     => 'none',
-            'help'    => 'Generate document',
-            'method'  => sub { $self->preview_template(); },
-            'type'    => '_item_normal',
-            'id'      => '20101',
-        },
         'tb4qt' => {
             'tooltip' => 'Close',
             'icon'    => 'actexit16',
@@ -162,7 +157,7 @@ sub run_screen {
         }
     };
 
-    my $toolbars = [ 'tb4pr', 'tb4qt', ];
+    my $toolbars = [qw{tb4qt}];
 
     $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
 
@@ -331,7 +326,7 @@ sub run_screen {
     #-- button
     my $add1val = $frm_middle->Button(
         -image   => 'edit16',
-        -command => [\&batch_generate_doc, $self, $view],
+        -command => [\&batch_generate_doc, $self],
     );
     $add1val->form(
         -top  => [ '&', $lrange, 0 ],
@@ -437,11 +432,9 @@ Select the index and load its details.
 
 sub select_idx {
     my ($self, $sel) = @_;
-
     my $idx = $sel -1 ;
     $self->{tmx}->set_selected($sel);
     $self->load_tt_details();
-
     return;
 }
 
@@ -453,9 +446,7 @@ Quit Dialog.
 
 sub dlg_exit {
     my $self = shift;
-
     $self->{tlw}->destroy;
-
     return;
 }
 
@@ -530,17 +521,23 @@ sub load_tt_details {
     #-- main fields
 
     foreach my $field ( keys %{$eobj} ) {
-        my $start_idx = $field eq 'descr' ? "1.0" : 0; # 'descr' is Text
-        my $value = $self->{_rd}->[0]{$field};
-        $eobj->{$field}[1]->delete( $start_idx, 'end' );
-        $eobj->{$field}[1]->insert( $start_idx, $value ) if $value;
+        my $fld_cfg  = $self->scrcfg()->maintable( 'columns', $field );
+        my $state    = $fld_cfg->{state};
+        my $bg_color = $fld_cfg->{bgcolor};
+        my $control  = $eobj->{$field}[1];
+        my $start_idx = $field eq 'descr' ? "1.0" : 0;    # 'descr' is Text
+        my $value     = $self->{_rd}->[0]{$field};
+        $control->delete( $start_idx, 'end' );
+        $control->insert( $start_idx, $value ) if $value;
+        $self->view->configure_controls( $control, $state, $bg_color,
+            $fld_cfg );
     }
 
     return;
 }
 
 sub batch_generate_doc {
-    my ($self, $view) = @_;
+    my $self = shift;
 
     # Get report filename
     my $tt_file = $self->{_rd}[0]{tt_file};
@@ -554,143 +551,45 @@ sub batch_generate_doc {
     }
 
     # Read screen
-    my $id         = $self->{controls}{id_tt}[1]->get;
-    my $range_from = $self->{controls}{range_from}[1]->get || 1;
-    my $range_to   = $self->{controls}{range_to}[1]->get   || 3;
+    my $id_tt      = $self->{controls}{id_tt}[1]->get;
+    my $range_from = $self->{controls}{range_from}[1]->get;
+    my $range_to   = $self->{controls}{range_to}[1]->get;
 
-    # Get datasources
-    my $args = {};
-    $args->{table}    = $self->scrcfg->maintable('name'); # == templates
-    $args->{colslist} = [qw{table_name view_name common_data}];
-    $args->{where}    = { id_tt => $id };
-    $args->{order}    = 'id_tt';
-    my $datasources = $self->model->table_batch_query($args);
-    my $table_name  = $datasources->[0]{table_name};
-    my $view_name   = $datasources->[0]{view_name};
-    my $common      = $datasources->[0]{common_data};
-
-    # Table info - view
-    my $table_info = $self->dbc->table_info_short($view_name);
-    my $keys       = $self->dbc->table_keys($table_name);
-    my @fields;
-    foreach my $k ( sort { $a <=> $b } keys %{$table_info} ) {
-        my $name = $table_info->{$k}{name};
-        my $info = $table_info->{$k};
-        push @fields, $name;
+    unless (( $range_from and $range_to )
+        and ( $range_from <= $range_to ) )
+    {
+        my $dlg     = Tpda3::Tk::Dialog::Message->new( $self->view );
+        my $message = __ 'Range error';
+        my $details = 'A valid range is required!';
+        $dlg->message_dialog( $message, $details, 'ingo', 'close' );
+        return;
     }
-    my $key0 = $keys->[0];                   # only the first!
+
+    my $datasources = $self->model->get_template_datasources($id_tt);
+    my $table_name  = $datasources->{table_name};
+    my $view_name   = $datasources->{view_name};
 
     # Record data
-    $args = {};
+    my $fields = $self->model->table_columns($view_name);
+    my $key0   = $self->model->table_keys($table_name)->[0];
+    my $args   = {};
     $args->{table}    = $view_name;
-    $args->{colslist} = \@fields;
+    $args->{colslist} = $fields;
     $args->{order}    = $key0;
     $args->{where}    = {
         $key0 => { -between => [ $range_from, $range_to ] } };
     my $recs_aref     = $self->model->table_batch_query($args);
 
-    # Common data
-    $args = {};
-    $args->{table}    = $common;
-    $args->{colslist} = [qw{var_name var_value}];
-    $args->{order}    = undef;
-    $args->{where}    = undef;
-    my $common_aref   = $self->model->table_batch_query($args);
-    my %common = map { $_->{var_name} => $_->{var_value} } @{$common_aref};
-
-    # Specific data
-    $args = {};
-    $args->{table}    = 'templates_det';
-    $args->{colslist} = [qw{var_name var_value}];
-    $args->{where}    = { id_tt => $id };
-    $args->{order}    = 'id_tt';
-    my $specif_aref   = $self->model->table_batch_query($args);
-    my %specific = map { $_->{var_name} => $_->{var_value} } @{$specif_aref};
-
-    # Premerge
-    my $other = Hash::Merge->new->merge(
-        \%common,
-        \%specific,
-    );
+    # Data from other sources
+    my $other_data = $self->model->other_data($tt_file);
 
     # Generate
-    foreach my $rec ( @{$recs_aref} ) {
-        my $record = Hash::Merge->new->merge(
-            $rec,
-            $other,
+    foreach my $record ( @{$recs_aref} ) {
+        my $rec = Hash::Merge->new->merge(
+            $record,
+            $other_data,
         );
-        $self->generate_doc( $model_file, $record, $record->{$key0} );
-    }
-}
-
-sub generate_doc {
-    my ($self, $model_file, $record, $sufix) = @_;
-
-    my $out_path = $self->_cfg->resource_path_for(undef, 'tex', 'output');
-    unless ( -d $out_path ) {
-        $self->_log->error('Generator: Output path not found');
-        return;
-    }
-
-    my $gen = Tpda3::Generator->new();
-
-    #-- Generate LaTeX document from template
-
-    my $tex_file;
-    my $tex_context = __ 'Failed to generate PDF';
-    try {
-        $tex_file = $gen->tex_from_template( $record, $model_file, $out_path );
-    }
-    catch {
-        $self->io_exception($_, $tex_context);
-    };
-
-    unless ( $tex_file and ( -f $tex_file ) ) {
-        $self->_log->error($tex_context);
-        return;
-    }
-
-    #-- Generate PDF from LaTeX
-
-    my $pdf_file;
-    my $pdf_context = __ 'Failed to generate PDF';
-    try {
-        $pdf_file = $gen->pdf_from_latex($tex_file, undef, $sufix);
-    }
-    catch {
-        $self->io_exception( $_, $pdf_context );
-    };
-
-    # Check output
-    unless ( $pdf_file and -f $pdf_file ) {
-        $self->_log->error($pdf_context);
-        return;
-    }
-
-    return;
-}
-
-# use one in controller
-sub io_exception {
-    my ($self, $exc, $context) = @_;
-
-    my ($message, $details);
-
-    if ( my $e = Exception::Base->catch($exc) ) {
-        if ( $e->isa('Exception::IO::PathNotFound') ) {
-            $message = $context;
-            $details = $e->message .' '. $e->pathname;
-        }
-        elsif ( $e->isa('Exception::IO::FileNotFound') ) {
-            $message = $context;
-            $details = $e->message .' '. $e->filename;
-        }
-        else {
-            $self->_log->error( $e->message );
-            $e->throw;    # rethrow the exception
-        }
-
-        $self->_log->error("$message: $details");
+        $self->view->generate_doc( $model_file, $rec, $rec->{$key0} );
     }
 
     return;

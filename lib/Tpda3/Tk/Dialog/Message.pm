@@ -22,11 +22,15 @@ our $VERSION = 0.81;
 
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Dialog::Message;
+    require Tpda3::Tk::Dialog::Message;
 
-    my $fd = Tpda3::Tk::Dialog::Message->new;
+    my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
 
-    $fd->search($self);
+    $dlg->message_dialog($message, $details, 'icon', 'type');
+
+Where icon can be one of: 'error', 'info', or 'question'.
+
+Where type can be one of: 'ok', 'close', 'yn', or 'ycn'.
 
 =head1 METHODS
 
@@ -83,7 +87,7 @@ sub message_dialog {
         -buttons => $buttons,
     );
 
-    $dlg->geometry('360x280');
+    $dlg->geometry('260x180');
 
     #--- Frame top
 
