@@ -4,6 +4,7 @@
 
 use strict;
 use warnings;
+use utf8;
 
 use Cwd;
 use File::Spec::Functions;
@@ -21,14 +22,12 @@ my $model_file = catfile( $cwd, qw{t tex model test.tt} );
 my $out_path   = catdir( $cwd, qw{t tex output} );
 
 BEGIN {
-    eval {
-        require Tpda3::Generator;
-    };
+    eval { require Tpda3::Generator; };      # for M$Windows
     if ($@) {
         plan( skip_all => 'pdflatex is required for this test' );
     }
     else {
-        plan tests => 4;
+        plan tests => 5;
     }
 }
 
@@ -47,34 +46,27 @@ my $args = {
     cfpath => 'share/',
 };
 
-my $c1 = Tpda3::Config->instance($args);
-ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
+ok my $c1 = Tpda3::Config->instance($args), 'make config';
+ok $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1';
 
-ok(my $gen = Tpda3::Generator->new(), 'new Generator');
+ok my $gen = Tpda3::Generator->new(), 'new Generator';
 
 #--
 
-my $record = [
-    {   'data' => {
-            name1 => 'Muskehounds',
-            name2 => 'Top Cat',
-            init2 => 'T.C.',
-        },
-        'metadata' => {
-            'table' => 'v_contracte_imobil',
-            'where' => { 'id_contr' => '1' }
-        }
-    }
-];
+my $record = {
+    name1 => 'Muskehoundș',
+    name2 => 'Top Caț',
+    init2 => 'T.C.',
+};
 
-ok( my $tex_file = $gen->tex_from_template( $record, $model_file, $out_path ),
-    'Generate LaTeX from template' );
+ok my $tex_file = $gen->tex_from_template( $record, $model_file, $out_path ),
+    'Generate LaTeX from template';
 
 SKIP: {
     skip "pdflatex is required for this test", 1
         unless $gen->find_pdflatex();
-    ok( $gen->pdf_from_latex( $tex_file, $out_path ),
-        'Generate PDF from LaTeX' );
+    ok $gen->pdf_from_latex( $tex_file, $out_path ),
+        'Generate PDF from LaTeX';
 }
 
 # end test
