@@ -236,6 +236,8 @@ sub check_pdflatex {
 
     return unless defined $exe and -f $exe;
 
+    $exe = Win32::GetShortPathName($exe) if $^O eq 'MSWin32';
+
     my $output = q{};
     try { $output = capture("$exe -version") } catch { $exe = '' }
 
