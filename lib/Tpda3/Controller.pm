@@ -2792,23 +2792,14 @@ sub screen_write {
 
     foreach my $field ( keys %{ $cfg_ref->maintable('columns') } ) {
 
-        # Skip field if not in record or not dependent
-        next
-            unless ( exists $record->{$field}
-                         # or $self->is_dependent( $field, $cfgdeps )
-                 );
+        # Skip field if not in record
+        next unless exists $record->{$field};
 
         my $fldcfg = $cfg_ref->maintable('columns', $field);
 
         my $value = $record->{$field};
         # Defaults in columns config?
         # || ( $self->model->is_mode('add') ? $fldcfg->{default} : undef );
-
-        # # Process dependencies
-        my $state;
-        # if (exists $cfgdeps->{$field} ) {
-        #     $state = $self->dependencies($field, $cfgdeps, $record);
-        # }
 
         if (defined $value) {
             $value = Tpda3::Utils->decode_unless_utf($value);
@@ -2824,7 +2815,7 @@ sub screen_write {
             }
         }
 
-        $self->ctrl_write_to($field, $value, $state, $date_format);
+        $self->ctrl_write_to($field, $value, undef, $date_format);
     }
 
     return;

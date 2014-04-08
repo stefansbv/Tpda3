@@ -442,9 +442,6 @@ sub query_record {
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
 
-    # p $stmt;
-    # p @bind;
-
     my $hash_ref;
     try {
         $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
@@ -701,7 +698,7 @@ TODO: Change the field names
 =cut
 
 sub tbl_dict_query {
-    my ( $self, $para, $label_label, $value_label ) = @_;
+    my ( $self, $para, $label_lbl, $value_lbl ) = @_;
 
     my $where;
     if ( $para->{table} eq 'codificari' ) {
@@ -724,17 +721,11 @@ sub tbl_dict_query {
 
     my @dictrows;
     try {
-        if (@bind) {
-            $sth->execute(@bind);
-        }
-        else {
-            $sth->execute();
-        }
-
+        @bind ? $sth->execute(@bind) : $sth->execute();
         while ( my $row_rf = $sth->fetchrow_arrayref() ) {
             push @dictrows, {
-                $label_label => $row_rf->[1],
-                $value_label => $row_rf->[0],
+                $label_lbl => Tpda3::Utils->decode_unless_utf( $row_rf->[1] ),
+                $value_lbl => Tpda3::Utils->decode_unless_utf( $row_rf->[0] ),
             };
         }
     }
@@ -770,13 +761,7 @@ sub tbl_lookup_query {
 
     my $row_rf;
     try {
-        if (@bind) {
-            $sth->execute(@bind);
-        }
-        else {
-            $sth->execute();
-        }
-
+        @bind ? $sth->execute(@bind) : $sth->execute();
         $row_rf = $sth->fetchrow_arrayref();
     }
     catch {
