@@ -2559,9 +2559,21 @@ sub screen_document_generate {
         $other_data,
     );
 
+    # Change the date format from ISO to configured (required!: ISO from DB)
+    # TODO: is there a looks_like_a_date function?
     # Avoid UTF-8 problems in TeX
+    my $date_format = $self->scrcfg->app_dateformat();
     foreach my $key ( keys %{$rec} ) {
-        $rec->{$key} = Tpda3::Utils->decode_unless_utf( $rec->{$key} );
+        my $val = $rec->{$key};
+        next unless $val;
+        if ($rec->{$key} =~ m{[0-9]{4}\-[0-9]{2}\-[0-9]{2}}) {
+            my @d = Tpda3::Utils->dateentry_parse_date('iso', $val);
+            $val  = Tpda3::Utils->dateentry_format_date( $date_format, @d );
+        }
+        else {
+            $val = Tpda3::Utils->decode_unless_utf($val);
+        }
+        $rec->{$key} = $val;
     }
 
     $self->view->generate_doc( $model_file, $rec);
