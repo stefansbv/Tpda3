@@ -189,7 +189,7 @@ sub table_list {
 
     $log->info('Geting list of tables');
 
-    my $sql = q{SELECT LOWER(RDB$RELATION_NAME)
+    my $sql = q{SELECT TRIM(LOWER(RDB$RELATION_NAME))
                    FROM RDB$RELATIONS
                     WHERE RDB$SYSTEM_FLAG=0
                       AND RDB$VIEW_BLR IS NULL
@@ -305,7 +305,7 @@ sub table_keys {
 
     $table = uc $table;
 
-    my $sql = qq( SELECT LOWER(s.RDB\$FIELD_NAME) AS column_name
+    my $sql = qq( SELECT TRIM(LOWER(s.RDB\$FIELD_NAME)) AS column_name
                      FROM RDB\$INDEX_SEGMENTS s
                         LEFT JOIN RDB\$INDICES i
                           ON i.RDB\$INDEX_NAME = s.RDB\$INDEX_NAME
@@ -328,16 +328,16 @@ sub table_keys {
     $self->{_dbh}{AutoCommit} = 1;    # disable transactions
     $self->{_dbh}{RaiseError} = 0;
 
-    my $pkf;
+    my $pkf_aref;
     try {
-        $pkf = $self->{_dbh}->selectcol_arrayref($sql);
+        $pkf_aref = $self->{_dbh}->selectcol_arrayref($sql);
     }
     catch {
         $log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
-    return $pkf;
+    return $pkf_aref;
 }
 
 =head2 table_exists
@@ -373,6 +373,39 @@ sub table_exists {
     };
 
     return $val_ret;
+}
+
+=head2 sequences_list
+
+Return list of sequences from the database.
+
+=cut
+
+sub sequences_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of generators');
+
+    my $sql = q{SELECT TRIM(RDB$GENERATOR_NAME)
+                    FROM RDB$GENERATORS
+                    WHERE RDB$SYSTEM_FLAG=0;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $seq_list;
+    try {
+        $seq_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $seq_list;
 }
 
 =head2 has_feature_returning
