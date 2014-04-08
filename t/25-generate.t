@@ -57,6 +57,7 @@ my $record = {
     name1 => 'Muskehoundș',
     name2 => 'Top Caț',
     init2 => 'T.C.',
+    adate => '2014-04-08',
 };
 
 ok my $tex_file = $gen->tex_from_template( $record, $model_file, $out_path ),

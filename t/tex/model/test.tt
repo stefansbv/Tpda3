@@ -61,6 +61,8 @@ Sample text from Text|Generator: http://www.malevole.com/mv/misc/text/
 
 Acesta este o propoziție în limba română.
 
+Redactat astăzi: [% r.adate %]
+
 \end{document}
 
 %% End - template
