@@ -18,11 +18,11 @@ Tpda3::Db::Connection::Sqlite - Connect to a SQLite database.
 
 =head1 VERSION
 
-Version 0.81
+Version 0.82
 
 =cut
 
-our $VERSION = 0.81;
+our $VERSION = 0.82;
 
 =head1 SYNOPSIS
 
