@@ -462,7 +462,8 @@ sub calculate_order {
     );
 
     # Update controls
-    while ( my ( $c, $v ) = each %fields ) {
+    foreach my $c ( keys %fields ) {
+        my $v = $fields{$c};
         $self->{controls}{$c}[1]->delete( 0, 'end' );
         $self->{controls}{$c}[1]->insert( 0, $v );
         $self->{controls}{$c}[1]->xview('end');

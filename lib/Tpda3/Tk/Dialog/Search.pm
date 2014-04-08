@@ -267,11 +267,12 @@ sub search_dialog {
 
     if ( ref $filter ) {
         my $message;
-        while ( my ( $key, $value ) = each( %{$filter} ) ) {
+        foreach my $key ( keys %{$filter} ) {
+            my $value = $filter->{$key};
             unless ($value) {
                 $message = "disabled == NO value for $key == disabled";
                 $self->refresh_filter_message( $message, 'darkred' );
-                $filter = undef;             # disable filter
+                $filter = undef;    # disable filter
             }
             else {
                 $message .= "filter == $key : $value == filter";

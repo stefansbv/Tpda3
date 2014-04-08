@@ -810,7 +810,8 @@ sub log_config_options {
     my $cfg  = Tpda3::Config->instance();
     my $path = $cfg->output;
 
-    while ( my ( $key, $value ) = each( %{$path} ) ) {
+    foreach my $key ( keys %{$path} ) {
+        my $value = $path->{$key};
         $self->log_msg("II Config: '$key' set to '$value'");
     }
 }
@@ -1375,8 +1376,9 @@ sub list_read_selected {
     @returned = Tpda3::Utils->trim(@returned) if @returned;
 
     my %selected;
-    foreach (@{ $self->{lookup} }) {
-        while (my ($idx, $field) = each (%{$_})) {
+    foreach my $lookup ( @{ $self->{lookup} } ) {
+        foreach my $idx ( keys %{$lookup} ) {
+            my $field = $lookup->{$idx};
             $selected{$field} = $returned[$idx];
         }
     }

@@ -1320,8 +1320,9 @@ sub list_read_selected {
     }
 
     my %selected;
-    foreach (@{ $self->{lookup} }) {
-        while (my ($idx, $field) = each (%{$_})) {
+    foreach my $lookup ( @{ $self->{lookup} } ) {
+        foreach my $idx ( keys %{$lookup} ) {
+            my $field = $lookup->{$idx};
             $selected{$field} = $returned[$idx];
         }
     }

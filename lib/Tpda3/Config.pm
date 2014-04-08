@@ -445,7 +445,8 @@ sub list_mnemonic_details_for {
 
     print "Configuration ($v):\n";
     print "  > mnemonic: $mnemonic\n";
-    while ( my ( $key, $value ) = each( %{ $conn_ref->{connection} } ) ) {
+    foreach my $key (keys %{ $conn_ref->{connection} }) {
+        my $value = $conn_ref->{connection}{$key};
         print sprintf( "%*s", 11, $key ), ' = ';
         print $value if defined $value;
         print "\n";

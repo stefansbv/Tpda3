@@ -412,8 +412,8 @@ sub alter_toolbar {
 
     foreach my $tb ( keys %{$tb_a} ) {
         foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
-            while ( my ( $k, $v ) = each( %{ $tb_a->{$tb}{state}{$pg} } ) ) {
-                $tb_m->{$tb}{state}{$pg}{$k} = $v;
+            foreach my $k ( keys %{ $tb_a->{$tb}{state}{$pg} } ) {
+                $tb_m->{$tb}{state}{$pg}{$k} = $tb_a->{$tb}{state}{$pg}{$k};
             }
         }
     }

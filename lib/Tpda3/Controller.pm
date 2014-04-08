@@ -2341,7 +2341,8 @@ sub record_find_execute {
     my $columns = $self->scrcfg('rec')->maintable('columns');
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
+    foreach my $field ( keys %{ $self->{_scrdata} } ) {
+        my $value = $self->{_scrdata}{$field};
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
@@ -2420,7 +2421,8 @@ sub record_find_count {
     my $params = {};
 
     # Add findtype info to screen data
-    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
+    foreach my $field ( keys %{ $self->{_scrdata} } ) {
+        my $value = $self->{_scrdata}{$field};
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
@@ -3676,8 +3678,8 @@ sub get_screen_data_record {
     $record->{data}     = {};
 
     #-- Data
-    while ( my ( $field, $value ) = each( %{ $self->{_scrdata} } ) ) {
-        $record->{data}{$field} = $value;
+    foreach my $field ( keys %{ $self->{_scrdata} } ) {
+        $record->{data}{$field} = $self->{_scrdata}{$field};
     }
 
     push @record, $record;    # rec data at index 0
@@ -3908,8 +3910,9 @@ sub screen_store_key_values {
 
     my $page = $self->view->get_nb_current_page();
 
-    while ( my ( $field, $value ) = each( %{$record_href} ) ) {
-        $self->table_key($page, 'main')->update_field( $field, $value );
+    foreach my $field ( keys %{$record_href} ) {
+        my $value = $record_href->{$field};
+        $self->table_key( $page, 'main' )->update_field( $field, $value );
     }
 
     return;
@@ -3961,17 +3964,13 @@ TODO
 
 sub flatten_cfg {
     my ( $self, $level, $attribs ) = @_;
-
     my %flatten;
-    while ( my ( $key, $value ) = each( %{$attribs} ) ) {
-        if ( ref $value eq 'HASH' ) {
-            $flatten{$key} = $value->{"level$level"};
-        }
-        else {
-            $flatten{$key} = $value;
-        }
+    foreach my $key ( keys %{$attribs} ) {
+        my $value = $attribs->{$key};
+        ( ref $value eq 'HASH' )
+            ? ( $flatten{$key} = $value->{"level$level"} )
+            : ( $flatten{$key} = $value );
     }
-
     return \%flatten;
 }
 

@@ -558,8 +558,8 @@ sub build_sql_where {
 
     my $where = {};
 
-    while ( my ( $field, $attrib ) = each( %{ $opts->{where} } ) ) {
-
+    foreach my $field ( keys %{ $opts->{where} } ) {
+        my $attrib    = $opts->{where}{$field};
         my $searchstr = $attrib->[0];
         my $find_type = $attrib->[1];
 

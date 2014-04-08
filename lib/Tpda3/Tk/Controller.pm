@@ -659,9 +659,11 @@ sub tmshr_process_level {
     my $nodebasename = $metadata->{pkcol};
 
     my $newleveldata = {};
-    while ( my ( $parent_row, $uplevelrecord ) = each( %{$uplevelds} ) ) {
+    foreach my $parent_row (keys %{$uplevelds} ) {
+        my $uplevelrecord = $uplevelds->{$parent_row};
         foreach my $uprec ( @{$uplevelrecord} ) {
-            while ( my ( $row, $mdrec ) = each( %{$uprec} ) ) {
+            foreach my $row ( keys %{$uprec} ) {
+                my $mdrec = $uprec->{$row};
                 $metadata->{where} = $mdrec;
                 my ( $records, $leveldata )
                     = $self->model->report_data( $metadata, $row );
