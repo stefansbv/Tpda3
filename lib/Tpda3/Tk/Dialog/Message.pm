@@ -87,8 +87,6 @@ sub message_dialog {
         -buttons => $buttons,
     );
 
-    $dlg->geometry('260x180');
-
     #--- Frame top
 
     my $frame_top = $dlg->Frame(
