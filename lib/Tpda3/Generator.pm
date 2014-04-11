@@ -11,6 +11,7 @@ use Template;
 use Try::Tiny;
 use Log::Log4perl qw(get_logger :levels);
 use File::Which;
+use Regexp::Common qw/balanced/;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -79,7 +80,6 @@ Return config instance variable.
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -243,6 +243,46 @@ sub check_pdflatex {
     try { $output = capture("$exe -version") } catch { $exe = '' }
 
     return $exe;
+}
+
+sub extract_tt_fields {
+    my ($self, $model_file) = @_;
+
+    open my $file_fh, '<', $model_file
+        or die "Can't open file ", $model_file, ": $!";
+
+    my @unique = ();
+    my %seen   = ();
+    while ( my $line = <$file_fh> ) {
+        my (@fields)
+            = $line =~ /$RE{balanced}{-begin => "[%"}{-end => "%]"}/gms;
+
+        next unless @fields;
+
+        foreach my $field (@fields) {
+
+            # Trim spaces
+            $field =~ s/^\s+//;
+            $field =~ s/\s+$//;
+
+            # Clean
+            $field =~ s/^\[%\-?\s+//g;
+            $field =~ s/\s+\-?%\]$//g;
+            $field =~ s/\s*(IF|ELSIF|ELSE|END)\s*//i;
+            $field =~ s/\s*(==.+)\s*//i;
+            $field =~ s/^r\.//;
+
+            if ($field) {
+                # Store unique name
+                next if $seen{$field}++;
+                push @unique, $field;
+            }
+        }
+    }
+
+    close $file_fh;
+
+    return \@unique;
 }
 
 =head1 AUTHOR
