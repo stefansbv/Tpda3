@@ -60,6 +60,7 @@ sub new {
     $self->{tmx}  = undef;    # TableMatrix
     $self->{_rl}  = undef;    # template titles list
     $self->{_cfg} = Tpda3::Config->instance();
+    $self->{_db}  = Tpda3::Db->instance;
     $self->{_log} = get_logger();
 
     return $self;
@@ -73,14 +74,12 @@ Return the Connection module handler.
 
 sub dbc {
     my $self = shift;
-    my $db = Tpda3::Db->instance;
-    return $db->dbc;
+    return $self->{_db}->dbc;
 }
 
 sub dbh {
     my $self = shift;
-    my $db = Tpda3::Db->instance;
-    return $db->dbh;
+    return $self->{_db}->dbh;
 }
 
 sub _cfg {
@@ -490,7 +489,7 @@ sub load_template_list {
 =head2 load_tt_details
 
 On selected template, load the configuration details from the
-L<templates_det> table.
+L<templates_var> table.
 
 =cut
 
@@ -561,7 +560,7 @@ sub batch_generate_doc {
         my $dlg     = Tpda3::Tk::Dialog::Message->new( $self->view );
         my $message = __ 'Range error';
         my $details = 'A valid range is required!';
-        $dlg->message_dialog( $message, $details, 'ingo', 'close' );
+        $dlg->message_dialog( $message, $details, 'info', 'close' );
         return;
     }
 
@@ -582,6 +581,15 @@ sub batch_generate_doc {
 
     # Data from other sources
     my $other_data = $self->model->other_data($tt_file);
+
+    my $rec_no = scalar @{$recs_aref};
+    if ($rec_no <= 0 ) {
+        my $dlg     = Tpda3::Tk::Dialog::Message->new( $self->view );
+        my $message = __ 'Range error';
+        my $details = 'No records to proces, the table is empty!';
+        $dlg->message_dialog( $message, $details, 'info', 'close' );
+        return;
+    }
 
     # Generate
     foreach my $record ( @{$recs_aref} ) {
