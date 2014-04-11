@@ -1527,7 +1527,7 @@ sub other_data {
 
     # Specific data for the current template
     $args = {};
-    $args->{table}    = 'templates_det';
+    $args->{table}    = 'templates_var';
     $args->{colslist} = [qw{var_name var_value}];
     $args->{where}    = { id_tt => $id_tt };
     $args->{order}    = 'id_tt';
