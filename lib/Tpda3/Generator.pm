@@ -275,7 +275,7 @@ sub extract_tt_fields {
             if ($field) {
                 # Store unique name
                 next if $seen{$field}++;
-                push @unique, $field;
+                push @unique, $field unless $field eq 'images_path';
             }
         }
     }
