@@ -455,7 +455,7 @@ sub query_record {
 
 =head2 table_batch_query
 
-Query records.
+Query records and return an AoH.
 
 Option to add row count field to the returned data structure.
 

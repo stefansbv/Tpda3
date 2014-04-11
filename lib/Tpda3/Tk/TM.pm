@@ -719,7 +719,6 @@ as selectors.
 
 sub get_selected {
     my $self = shift;
-
     return $self->{tm_sel};
 }
 
@@ -751,7 +750,6 @@ Return selector column.
 
 sub get_selector {
     my $self = shift;
-
     return $self->{selectorcol};
 }
 
