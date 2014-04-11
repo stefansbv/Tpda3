@@ -42,7 +42,8 @@ sub new {
 
     bless $self, $class;
 
-    $self->{scrcfg} = Tpda3::Config::Screen->new($args);
+    $self->{scrcfg}  = Tpda3::Config::Screen->new($args);
+    $self->{toolscr} = $args->{toolscr};
 
     return $self;
 }
@@ -128,7 +129,6 @@ Return a toolbar button when we know its name.
 
 sub get_toolbar_btn {
     my ( $self, $tm_ds, $name ) = @_;
-
     return $self->{tb}{$tm_ds}->get_toolbar_btn($name);
 }
 
@@ -163,7 +163,6 @@ Must be setup like this in run_screen method of every screen
 
 sub get_bgcolor {
     my $self = shift;
-
     return $self->{bg};
 }
 
@@ -253,8 +252,12 @@ methods.
 
 sub screen_update {
     my $self = shift;
-
     return;
+}
+
+sub isa_toolscr {
+    my $self = shift;
+    return $self->{toolscr};
 }
 
 =head1 AUTHOR
