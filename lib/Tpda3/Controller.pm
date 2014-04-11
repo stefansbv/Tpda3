@@ -27,6 +27,8 @@ require Tpda3::Tk::Dialog::Message;
 
 use Tpda3::Model::Table;
 
+use Data::Printer;
+
 =head1 NAME
 
 Tpda3::Controller - The Controller
@@ -506,12 +508,13 @@ sub toggle_detail_tab {
     my $self = shift;
 
     my $sel = $self->tmatrix_get_selected;
-
-    if ( $sel and !$self->model->is_modified ) {
-        $self->view->nb_set_page_state( 'det', 'normal');
-    }
-    else {
-        $self->view->nb_set_page_state( 'det', 'disabled');
+    if ( defined $sel ) {
+        if ( $sel and !$self->model->is_modified ) {
+            $self->view->nb_set_page_state( 'det', 'normal' );
+        }
+        else {
+            $self->view->nb_set_page_state( 'det', 'disabled' );
+        }
     }
 
     return;
@@ -617,6 +620,25 @@ sub on_page_det_activate {
 
 Detail screen module name from screen configuration.
 
+Configuration:
+
+    details             = Cursuri
+
+or
+
+    <details>
+        match           = cod_tip
+        filter          = id_act
+        <detail>
+            value       = CS
+            name        = Cursuri
+        </detail>
+        <detail>
+            value       = CT
+            name        = Consult
+        </detail>
+    </details>
+
 =cut
 
 sub screen_detail_name {
@@ -625,8 +647,10 @@ sub screen_detail_name {
     my $screen = $self->scrcfg('rec')->screen('details');
 
     my $dsm;
-    if ( ref $screen->{detail} eq 'ARRAY' ) {
-        $dsm = $self->get_dsm_name($screen);
+    if ( ref $screen ) {
+        if ( ref $screen->{detail} eq 'ARRAY' ) {
+            $dsm = $self->get_dsm_name($screen);
+        }
     }
     else {
         $dsm = $screen;
@@ -650,18 +674,20 @@ Only one table can have a selector column: I<tm1>.
 sub get_selected_and_store_key {
     my $self = shift;
 
-    my $row = $self->tmatrix_get_selected;
-
-    return unless defined $row and $row > 0;
+    print "get_selected_and_store_key:\n";
 
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen('details');
     my $tmx    = $self->scrobj('rec')->get_tm_controls('tm1');
 
-    my $rec_params = $self->table_key('rec','main')->get_key(0)->get_href;
+    my $rec_params = $self->table_key( 'rec', 'main' )->get_key(0)->get_href;
     $self->screen_store_key_values($rec_params);
-    my $det_params = $tmx->cell_read( $row, $screen->{filter} );
-    $self->screen_store_key_values($det_params);
+
+    my $row = $self->tmatrix_get_selected;
+    if ( defined $row and $row > 0 ) {
+        my $det_params = $tmx->cell_read( $row, $screen->{filter} );
+        $self->screen_store_key_values($det_params);
+    }
 
     return;
 }
@@ -1733,7 +1759,11 @@ sub screen_module_load {
     }
 
     # New screen instance
-    $self->{_rscrobj} = $class->new($rscrstr);
+    $self->{_rscrobj} = $class->new(
+        {   scrcfg  => $rscrstr,
+            toolscr => $from_tools
+        },
+    );
     $self->_log->trace("New screen instance: $module");
 
     return unless $self->check_cfg_version;  # current version is 5
@@ -1944,7 +1974,9 @@ sub screen_module_detail_load {
 
     $self->_set_event_handler_nb('det');
 
-    my ( $class, $module_file ) = $self->screen_module_class($module);
+    my $from_tools = $self->{_rscrobj}->isa_toolscr;
+    my ( $class, $module_file )
+        = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };
     if ($@) {
         die "EE: Can't load '$module_file'";
@@ -1959,7 +1991,7 @@ sub screen_module_detail_load {
     }
 
     # New screen instance
-    $self->{_dscrobj} = $class->new($dscrstr);
+    $self->{_dscrobj} = $class->new( { scrcfg  => $dscrstr } );
     $self->_log->trace("New screen instance: $module");
 
     # Show screen

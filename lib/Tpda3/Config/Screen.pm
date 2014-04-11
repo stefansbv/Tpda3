@@ -45,7 +45,7 @@ sub new {
 
     bless $self, $class;
 
-    $self->{_scr} = $self->load_conf($args);
+    $self->{_scr} = $self->load_conf( $args->{scrcfg} );
 
     $self->alter_toolbar();
 

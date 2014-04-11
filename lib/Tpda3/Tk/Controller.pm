@@ -537,7 +537,7 @@ sub repman {
     my $gui = $self->view;
 
     require Tpda3::Tk::Dialog::Repman;
-    my $gd = Tpda3::Tk::Dialog::Repman->new('repman');
+    my $gd = Tpda3::Tk::Dialog::Repman->new( { scrcfg => 'repman' } );
 
     $gd->run_screen($gui);
 
@@ -556,7 +556,7 @@ sub ttgen {
     my $gui = $self->view;
 
     require Tpda3::Tk::Dialog::TTGen;
-    my $gd = Tpda3::Tk::Dialog::TTGen->new('ttgen');
+    my $gd = Tpda3::Tk::Dialog::TTGen->new( { scrcfg => 'ttgen' } );
 
     $gd->run_screen($gui);
 

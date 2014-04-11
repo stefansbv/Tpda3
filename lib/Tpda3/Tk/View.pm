@@ -3,10 +3,11 @@ package Tpda3::Tk::View;
 use strict;
 use warnings;
 
-use File::Spec::Functions qw(abs2rel catfile);
+use File::Spec::Functions qw(abs2rel catfile splitpath);
 use Log::Log4perl qw(get_logger);
 use POSIX qw (floor);
 use Data::Compare;
+use List::Compare;
 use Hash::Merge qw(merge);
 use Scalar::Util qw(blessed);
 use Locale::TextDomain 1.20 qw(Tpda3);
@@ -23,6 +24,8 @@ require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
+
+use Data::Printer;
 
 =head1 NAME
 
@@ -1886,6 +1889,44 @@ sub generate_doc {
         $self->log_msg('Generator: Output path not found');
         $self->set_status( 'Output path not found', 'ms', 'red' );
         return;
+    }
+
+    # Get the id_tt when we know the model file name
+    my ( undef, undef, $model_name ) = File::Spec->splitpath($model_file);
+    my $args = {};
+    $args->{table}    = 'templates';
+    $args->{colslist} = [qw{id_tt}];
+    $args->{where}    = { tt_file => $model_name };
+    $args->{order}    = 'id_tt';
+    my $id_tt_aref = $self->model->table_batch_query($args);
+    my $id_tt =  $id_tt_aref->[0]{id_tt};
+
+    # Required fields list from table
+    $args = {};
+    $args->{table}    = 'templates_req';
+    $args->{colslist} = [qw{var_name}];
+    $args->{where}    = { id_tt => $id_tt, required => 1 };
+    $args->{order}    = 'var_name';
+    my $required = $self->model->table_batch_query($args);
+
+    # List of the fields with values from the screen
+    my @rec_cmp;
+    foreach my $field ( keys %{$record} ) {
+        push @rec_cmp, $field
+            if defined( $record->{$field} )
+                and $record->{$field} =~ m{\S+};
+    }
+    my @req_cmp = map { $_->{var_name} } @{$required};
+    if ( @{$required} ) {
+
+        # Compare fields
+        my $lc = List::Compare->new( '--unsorted', \@rec_cmp, \@req_cmp );
+        my @list = $lc->get_complement;    # required except fields with data
+        print "Must have:\n";
+        print " @list\n";;
+    }
+    else {
+        print "All good\n";
     }
 
     my $gen = Tpda3::Generator->new();
