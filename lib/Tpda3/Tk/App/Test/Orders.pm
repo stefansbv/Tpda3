@@ -365,7 +365,7 @@ sub run_screen {
     };
 
     # TableMatrix objects; just one for now :)
-    $self->{tm_controls} = { rec => { tm1 => \$xtable, }, };
+    $self->{tm_controls} = { tm1 => \$xtable };
 
     # Required fields: fld_name => [#, Label]
     # If there is no value in the screen for this fields show a dialog message
@@ -376,7 +376,7 @@ sub run_screen {
     };
 
     # Prepare screen configuration data for tables
-    foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
+    foreach my $tm_ds ( keys %{ $self->{tm_controls} } ) {
         $validation->init_cfgdata($tm_ds);
     }
 

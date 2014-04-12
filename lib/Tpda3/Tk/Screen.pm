@@ -96,10 +96,10 @@ sub get_tm_controls {
     return {} if !exists $self->{tm_controls};
 
     if ($tm_ds) {
-        return ${ $self->{tm_controls}{rec}{$tm_ds} };
+        return ${ $self->{tm_controls}{$tm_ds} };
     }
     else {
-        return $self->{tm_controls}{rec};
+        return $self->{tm_controls};
     }
 }
 
@@ -194,7 +194,7 @@ Add new row to the Tk::TableMatrix widget.
 
 sub tmatrix_add_row {
     my ( $self, $tm_ds ) = @_;
-
+print " add row\n";
     my $tmx = $self->get_tm_controls($tm_ds);
 
     $tmx->add_row();

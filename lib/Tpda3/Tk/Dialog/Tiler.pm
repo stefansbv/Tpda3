@@ -1,16 +1,17 @@
-package Tpda3::Tk::Dialog::Message;
+package Tpda3::Tk::Dialog::Tiler;
 
 use strict;
 use warnings;
 use utf8;
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk::DialogBox;
+use Tk::Tiler;
 
 require Tpda3::Utils;
 
 =head1 NAME
 
-Tpda3::Tk::Dialog::Message - Dialog for messages.
+Tpda3::Tk::Dialog::Tiler - Dialog for messages.
 
 =head1 VERSION
 
@@ -22,15 +23,11 @@ our $VERSION = 0.82;
 
 =head1 SYNOPSIS
 
-    require Tpda3::Tk::Dialog::Message;
+    require Tpda3::Tk::Dialog::Tiler;
 
-    my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
+    my $dlg = Tpda3::Tk::Dialog::Tiler->new($self->view);
 
-    $dlg->message_dialog($message, $details, 'icon', 'type');
-
-Where icon can be one of: 'error', 'info', or 'question'.
-
-Where type can be one of: 'ok', 'close', 'yn', or 'ycn'.
+    $dlg->message_tiler($message, $details);
 
 =head1 METHODS
 
@@ -60,31 +57,14 @@ button labels.
 
 =cut
 
-sub message_dialog {
-    my ( $self, $message, $details, $icon, $type ) = @_;
+sub message_tiler {
+    my ( $self, $message, $record ) = @_;
 
     #--- Dialog Box
 
-    # # Make all buttons same width
-    # my $len = max map { length } ($b_yes, $b_cancel, $b_no);
-    # my $len_l = int($len / 2);
-    # my $len_r = $len - $len_l;
-    # $padded = sprintf("%*s", $len_l, $text);
-    # $padded = sprintf("%-*s", $len_r, $text);
-
-    my $default_buttons = [ __ 'OK' ];
-    my $buttons =
-                  $type eq q{}     ?  $default_buttons
-                : $type eq 'ok'    ?  [ __ 'OK' ]
-                : $type eq 'close' ?  [ __ 'Close' ]
-                : $type eq 'yn'    ?  [ __ 'Yes', __ 'No' ]
-                : $type eq 'ycn'   ?  [ __ 'Yes', __ 'Cancel', __ 'No' ]
-                :                     $default_buttons
-                ;
-
     my $dlg = $self->{view}->DialogBox(
         -title   => __ 'Dialog',
-        -buttons => $buttons,
+        -buttons => [ __ 'Close' ],
     );
 
     #--- Frame top
@@ -130,54 +110,34 @@ sub message_dialog {
         -background         => $bg,
     )->pack();
 
-    $self->make_icon($w_bitmap, $icon);
+    $self->make_icon($w_bitmap, 'info');
 
     #-- title (optional)
 
-    #    error info question
-    my @options2 = ( N__"Error", N__"Info", N__"Question");
-    my $option_e = __( $options2[0] );
-    my $option_i = __( $options2[1] );
-    my $option_q = __( $options2[2] );
-    my $title
-        = $icon eq 'error'    ? $option_e
-        : $icon eq 'info'     ? $option_i
-        : $icon eq 'question' ? $option_q
-        :                     q{} # default
-        ;
-
     my $ltitle = $frame_top_right->Label(
-        -text => $title,
+        -text => 'Info',
         -fg   => 'blue',
     )->pack( -anchor => 'se', );
 
     #-- label
 
-    my ( $text, $color )
-        = $details ? Tpda3::Utils->parse_message($details) : q{};
-    $color ||= 'black';
-
     my $lmessage = $mid_frame->Label( -text => $message )->pack;
-    my $ldetails = $mid_frame->Label( -text => $text, -fg => $color )->pack;
 
-    #---
+    my $tiler = $mid_frame->Scrolled('Tiler', -columns => 3, -rows => 5);
+    foreach my $label ( @{$record} ) {
+        $tiler->Manage(
+            $tiler->Label(
+                -text   => $label,
+                -fg     => 'RoyalBlue3',
+                -relief => 'raised',
+            ),
+        );
+    }
+    $tiler->pack(qw/-expand yes -fill both/);
 
     my $result = $dlg->Show;
 
-    my @options  = ( N__"Yes", N__"Cancel", N__"No");
-    my $option_y = __( $options[0] );
-    my $option_c = __( $options[1] );
-    my $option_n = __( $options[2] );
-
-    my $answer
-        # button       label        answer
-        = $result =~ /^$option_y$/i ? q{yes}
-        : $result =~ /^$option_n$/i ? q{no}
-        : $result =~ /^$option_c$/i ? q{cancel}
-        :                           undef # default
-        ;
-
-    return $answer;
+    return;
 }
 
 =head2 make_icon
@@ -382,4 +342,4 @@ by the Free Software Foundation.
 
 =cut
 
-1;    # End of Tpda3::Tk::Dialog::Message
+1;    # End of Tpda3::Tk::Dialog::Tiler

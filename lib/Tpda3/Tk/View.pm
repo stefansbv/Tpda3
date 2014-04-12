@@ -25,7 +25,7 @@ require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
 
-use Data::Printer;
+require Tpda3::Tk::Dialog::Tiler;
 
 =head1 NAME
 
@@ -1910,23 +1910,21 @@ sub generate_doc {
     my $required = $self->model->table_batch_query($args);
 
     # List of the fields with values from the screen
-    my @rec_cmp;
+    my @record_cmp;
     foreach my $field ( keys %{$record} ) {
-        push @rec_cmp, $field
+        push @record_cmp, $field
             if defined( $record->{$field} )
                 and $record->{$field} =~ m{\S+};
     }
-    my @req_cmp = map { $_->{var_name} } @{$required};
-    if ( @{$required} ) {
-
-        # Compare fields
-        my $lc = List::Compare->new( '--unsorted', \@rec_cmp, \@req_cmp );
-        my @list = $lc->get_complement;    # required except fields with data
-        print "Must have:\n";
-        print " @list\n";;
-    }
-    else {
-        print "All good\n";
+    my @required = map { $_->{var_name} } @{$required};
+    # Compare fields
+    my $lc = List::Compare->new( '--unsorted', \@record_cmp, \@required );
+    my @list = $lc->get_complement;    # required except fields with data
+    if ( @list ) {
+        my $message = __ 'Please, fill in data for:';
+        my $dlg = Tpda3::Tk::Dialog::Tiler->new($self);
+        $dlg->message_tiler($message, \@list);
+        return;
     }
 
     my $gen = Tpda3::Generator->new();

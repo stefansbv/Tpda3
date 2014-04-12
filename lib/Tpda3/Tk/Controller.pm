@@ -11,6 +11,8 @@ use Hash::Merge qw(merge);
 use Log::Log4perl qw(get_logger :levels);
 
 require Tpda3::Tk::View;
+require Tpda3::Tk::Dialog::Message;
+require Tpda3::Tk::Dialog::Tiler;
 
 use base qw{Tpda3::Controller};
 
@@ -281,11 +283,11 @@ sub set_event_handler_screen {
         # Check current screen if 'can' method, or fallback to methods
         # in controlller
         my $scrobj
-            = $self->scrobj('rec')->can($method)
-            ? $self->scrobj('rec')
+            = $self->scrobj()->can($method)
+            ? $self->scrobj()
             : $self;
 
-        $self->scrobj('rec')->get_toolbar_btn( $btn_group, $tb_btn )->bind(
+        $self->scrobj()->get_toolbar_btn( $btn_group, $tb_btn )->bind(
             '<ButtonRelease-1>' => sub {
                 return
                     unless $self->model->is_mode('add')
@@ -333,9 +335,9 @@ with the results.  The second can call a method in the current screen.
 sub setup_bindings_table {
     my $self = shift;
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls } ) {
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls } ) {
 
-        my $bindings = $self->scrcfg('rec')->tablebindings->{$tm_ds};
+        my $bindings = $self->scrcfg()->tablebindings->{$tm_ds};
 
         my $dispatch = {};
         foreach my $bind_type ( keys %{$bindings} ) {
@@ -368,7 +370,7 @@ sub setup_bindings_table {
         }
 
         # Bindings:
-        my $tm = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        my $tm = $self->scrobj()->get_tm_controls($tm_ds);
 
         $tm->bind(
             'Tpda3::Tk::TM',
@@ -578,7 +580,7 @@ C<Tree::DAG_Node>.
 sub tmshr_fill_table {
     my $self = shift;
 
-    my $header = $self->scrcfg('rec')->repo_table_header_info;
+    my $header = $self->scrcfg()->repo_table_header_info;
 
     #- Make a tree
 
@@ -586,7 +588,7 @@ sub tmshr_fill_table {
     my $tree = Tpda3::Tree->new({});
     $tree->name('root');
 
-    my $columns  = $self->scrcfg('rec')->repotable('columns');
+    my $columns  = $self->scrcfg()->repotable('columns');
     my $colnames = Tpda3::Utils->sort_hash_by_id($columns);
     $tree->set_header($colnames);
 
@@ -594,10 +596,10 @@ sub tmshr_fill_table {
 
     my $level = 0;                           # maintable level
 
-    my $levels = $self->scrcfg('rec')->repotable( 'datasources', 'level' );
+    my $levels = $self->scrcfg()->repotable( 'datasources', 'level' );
     my $last_level = $#{$levels};
 
-    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $tmx = $self->scrobj()->get_tm_controls('tm1');
 
     my $mainmeta = $self->report_table_metadata($level);
     my $nodename = $mainmeta->{pkcol};
@@ -807,7 +809,7 @@ sub tmshr_check_varnames {
     my ( $self, $vars ) = @_;
 
     my $tm_ds = 'tm1';
-    my $header = $self->scrcfg('rec')->repo_table_header_info($tm_ds);
+    my $header = $self->scrcfg()->repo_table_header_info($tm_ds);
 
     my $check = 1;
     foreach my $field ( @{$vars} ) {
@@ -850,6 +852,20 @@ sub set_app_configs {
     my $dc = Tpda3::Tk::Dialog::Configs->new;
     $dc->show_cfg_dialog($self->view);
 
+    return;
+}
+
+sub message_dialog {
+    my ($self, $message, $details, $icon, $type) = @_;
+    my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
+    $dlg->message_dialog($message, $details, $icon, $type);
+    return;
+}
+
+sub message_tiler {
+    my ($self, $message, $record);
+    my $dlg = Tpda3::Tk::Dialog::Tiler->new($self->view);
+    $dlg->message_tiler($message, $record);
     return;
 }
 

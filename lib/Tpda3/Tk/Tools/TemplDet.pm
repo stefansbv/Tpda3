@@ -15,9 +15,6 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
-use Data::Dumper;
-use Data::Printer;
-
 =head1 NAME
 
 Tpda3::Tk::Tools::TemplDet screen

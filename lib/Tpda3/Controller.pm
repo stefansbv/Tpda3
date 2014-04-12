@@ -23,11 +23,8 @@ require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
 require Tpda3::Selected;
-require Tpda3::Tk::Dialog::Message;
 
 use Tpda3::Model::Table;
-
-use Data::Printer;
 
 =head1 NAME
 
@@ -130,7 +127,7 @@ sub start {
 =head2 connect_dialog
 
 Show login dialog until connected or canceled.  Called with delay from
-Tk::Controller.
+XX::Controller.
 
 =cut
 
@@ -178,7 +175,6 @@ Return model instance variable
 
 sub model {
     my $self = shift;
-
     return $self->{_model};
 }
 
@@ -238,9 +234,19 @@ Login dialog.
 
 sub dialog_login {
     my $self = shift;
-
     print 'dialog_login not implemented in ', __PACKAGE__, "\n";
+    return;
+}
 
+sub message_dialog {
+    my ($message, $details, $icon, $type) = @_;
+    print 'message_tiler not implemented in ', __PACKAGE__, "\n";
+    return;
+}
+
+sub message_tiler {
+    my ($self, $message, $record);
+    print 'message_tiler not implemented in ', __PACKAGE__, "\n";
     return;
 }
 
@@ -674,11 +680,9 @@ Only one table can have a selector column: I<tm1>.
 sub get_selected_and_store_key {
     my $self = shift;
 
-    print "get_selected_and_store_key:\n";
-
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen('details');
-    my $tmx    = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $tmx    = $self->scrobj()->get_tm_controls('tm1');
 
     my $rec_params = $self->table_key( 'rec', 'main' )->get_key(0)->get_href;
     $self->screen_store_key_values($rec_params);
@@ -743,7 +747,7 @@ sub get_dsm_name {
 
     my $col_name = $detscr->{match};
 
-    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
+    my $tmx = $self->scrobj()->get_tm_controls('tm1');
     my $rec = $tmx->cell_read( $row, $col_name );
 
     my $col_value = $rec->{$col_name};
@@ -886,7 +890,7 @@ sub setup_lookup_bindings_entry {
             : $search;
 
         # Add the search field to the columns list
-        my $field_cfg = $self->scrcfg('rec')->maintable('columns', $column);
+        my $field_cfg = $self->scrcfg()->maintable('columns', $column);
 
         my @cols;
         my $rec = {};
@@ -1054,7 +1058,7 @@ sub setup_select_bindings_entry {
                     my $records = $dict->selected( $self->view, $para );
 
                     # Insert into TM
-                    my $xtable  = $self->scrobj('rec')->get_tm_controls($tm_ds);
+                    my $xtable  = $self->scrobj()->get_tm_controls($tm_ds);
                     $xtable->clear_all();
                     $xtable->fill($records);     # insert records in table
 
@@ -1137,7 +1141,7 @@ with the results.
 sub lookup_call {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
 
-    my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+    my $tmx = $self->scrobj()->get_tm_controls($tm_ds);
 
     my $lk_para = $self->get_lookup_setings( $bnd, $r, $c, $tm_ds );
 
@@ -1146,7 +1150,7 @@ sub lookup_call {
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
         my $col
-            = $self->scrcfg('rec')->deptable( $tm_ds, 'columns', $fld, 'id' );
+            = $self->scrcfg()->deptable( $tm_ds, 'columns', $fld, 'id' );
         $filter = $tmx->cell_read( $r, $col );
     }
 
@@ -1175,8 +1179,8 @@ sub method_call {
     my $bindings = $bnd->{method}{ $names[0] };
 
     my $method = $bindings->{subname};       # TODO: rename to method?
-    if ( $self->scrobj('rec')->can($method) ) {
-        $self->scrobj('rec')->$method($r);
+    if ( $self->scrobj()->can($method) ) {
+        $self->scrobj()->$method($r);
     }
     else {
         print "WW: '$method' not implemented!\n";
@@ -1286,7 +1290,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->scrcfg('rec')->deptable($tm_ds, 'columns', $column);
+    my $field_cfg = $self->scrcfg()->deptable($tm_ds, 'columns', $column);
 
     my @cols;
     my $rec = {};
@@ -1336,12 +1340,12 @@ sub fields_cfg_array {
     foreach my $lookup_field ( @{ $bindings->{field} } ) {
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->scrcfg('rec')
+            $field_cfg = $self->scrcfg()
                 ->deptable( $tm_ds, 'columns', $lookup_field );
         }
         else {
             $field_cfg
-                = $self->scrcfg('rec')->maintable( 'columns', $lookup_field );
+                = $self->scrcfg()->maintable( 'columns', $lookup_field );
         }
         my $rec = {};
         $rec->{$lookup_field} = {
@@ -1371,12 +1375,12 @@ sub fields_cfg_hash {
         my $scr_field = $bindings->{field}{$lookup_field};
         my $field_cfg;
         if ($tm_ds) {
-            $field_cfg = $self->scrcfg('rec')
+            $field_cfg = $self->scrcfg()
                 ->deptable( $tm_ds, 'columns', $scr_field );
         }
         else {
             $field_cfg
-                = $self->scrcfg('rec')->maintable( 'columns', $scr_field );
+                = $self->scrcfg()->maintable( 'columns', $scr_field );
         }
 
         my $rec = {};
@@ -1447,8 +1451,8 @@ sub on_screen_mode_idle {
 
     $self->record_clear;
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
+        $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('off');
@@ -1482,8 +1486,8 @@ sub on_screen_mode_add {
     $self->record_clear;              # empty the main controls and TM
     $self->tmatrix_set_selected();    # initialize selector
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
+        $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('edit');
@@ -1520,8 +1524,8 @@ sub on_screen_mode_find {
 
     $self->record_clear;
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        $self->scrobj('rec')->get_tm_controls($tm_ds)->clear_all();
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
+        $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
 
     $self->controls_state_set('find');
@@ -1632,7 +1636,7 @@ sub scrcfg {
 
     my $scrobj = $self->scrobj($page);
 
-    if ( $scrobj and ( exists $scrobj->{scrcfg} ) ) {
+    if ( blessed $scrobj and ( exists $scrobj->{scrcfg} ) ) {
         return $scrobj->{scrcfg};
     }
 
@@ -1646,27 +1650,22 @@ the required page unless the current page is L<lst>.
 
 =cut
 
-sub scrobj {
+ sub scrobj {
     my ( $self, $page ) = @_;
 
     $page ||= $self->view->get_nb_current_page();
 
-    return if $page eq 'lst';
-
     return $self->{_rscrobj}
-        if ( $page eq 'rec' )
-        and ( exists $self->{_rscrobj} );
+        if $page eq 'rec'
+        and exists $self->{_rscrobj}
+        and blessed $self->{_rscrobj};
 
     return $self->{_dscrobj}
-        if ( $page eq 'det' )
-        and ( exists $self->{_dscrobj} );
+        if $page eq 'det'
+        and exists $self->{_dscrobj}
+        and blessed $self->{_dscrobj};
 
-    if ($page eq 'det') {
-        warn "Wrong page (scrobj): $page!\n";
-    }
-    else {
-        die 'No screen object!';
-    }
+    die "Wrong call to 'scrobj'" unless $page;
 
     return;
 }
@@ -1708,7 +1707,7 @@ Load screen chosen from the menu.
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
 
-    #print "Loading $module\n";
+    print "Loading $module\n";
 
     my $rscrstr = lc $module;
 
@@ -1812,9 +1811,9 @@ sub screen_module_load {
     }
 
     #- Event handlers
-
     my $group_labels = $self->scrcfg()->scr_toolbar_groups();
     foreach my $label ( @{$group_labels} ) {
+        print "event handler  $label\n";
         $self->set_event_handler_screen($label);
     }
 
@@ -2001,13 +2000,18 @@ sub screen_module_detail_load {
     # Store currently loaded screen class
     $self->{_dscrcls} = $class;
 
-    # Event handlers
-
     #-- Lookup bindings for Entry widgets
     $self->setup_lookup_bindings_entry('det');
+    $self->setup_select_bindings_entry('det');
 
     #-- Lookup bindings for tables (TableMatrix)
     $self->setup_bindings_table();
+
+    # Event handlers
+    my $group_labels = $self->scrcfg()->scr_toolbar_groups();
+    foreach my $label ( @{$group_labels} ) {
+        $self->set_event_handler_screen($label);
+    }
 
     # Load lists into ComboBox like widgets
     $self->screen_load_lists();
@@ -3168,10 +3172,8 @@ sub record_load {
     $self->screen_write($record);
 
     #- Dependent table(s), (if any)
-
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
         my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
-
         my $records;
         try {
             $records = $self->model->table_batch_query($tm_params);
@@ -3179,15 +3181,12 @@ sub record_load {
         catch {
             $self->catch_db_exceptions($_);
         };
-
-        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        my $tmx = $self->scrobj($page)->get_tm_controls($tm_ds);
         $tmx->clear_all();
         $tmx->fill($records);
 
-        my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol($tm_ds);
-        if ($sc) {
-            $tmx->tmatrix_make_selector($sc);
-        }
+        my $sc = $self->scrcfg($page)->dep_table_has_selectorcol($tm_ds);
+        $tmx->tmatrix_make_selector($sc) if $sc;
     }
 
     # Save record as witness reference for comparison
@@ -3246,9 +3245,7 @@ sub record_delete {
     #-  Dependent table(s), if any
 
     my $deprec = {};
-    my $tm_dss = $self->scrobj->get_tm_controls();    #
-
-    foreach my $tm_ds ( keys %{$tm_dss} ) {
+    foreach my $tm_ds ( keys %{ $self->scrobj->get_tm_controls } ) {
         $deprec->{$tm_ds}{metadata}
             = $self->dep_table_metadata( $tm_ds, 'del' );
     }
@@ -3523,8 +3520,7 @@ sub check_required_data {
 
     if ( !$ok_to_save ) {
         my $message = __ 'Please, fill in data for:';
-        my $details = join( "\n", @message );
-        $self->view->dialog_info($message, $details);
+        $self->message_tiler($message, \@message);
     }
 
     return $ok_to_save;
@@ -3722,12 +3718,10 @@ sub get_screen_data_record {
     #-  Dependent table(s), if any
 
     my $deprec = {};
-    my $tm_dss = $self->scrobj->get_tm_controls();    #
-
-    foreach my $tm_ds ( keys %{$tm_dss} ) {
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls } ) {
         $deprec->{$tm_ds}{metadata}
             = $self->dep_table_metadata( $tm_ds, $for_sql );
-        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+        my $tmx = $self->scrobj()->get_tm_controls($tm_ds);
         ( $deprec->{$tm_ds}{data}, undef ) = $tmx->data_read();
 
         # TableMatrix data doesn't contain pk_col=>pk_val, add it
@@ -3925,8 +3919,8 @@ sub restore_screendata {
 
     my $deprec = $rec->[1];     # dependent records follow
 
-    foreach my $tm_ds ( keys %{ $self->scrobj('rec')->get_tm_controls() } ) {
-        my $tmx = $self->scrobj('rec')->get_tm_controls($tm_ds);
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
+        my $tmx = $self->scrobj()->get_tm_controls($tm_ds);
         $tmx->clear_all();
         $tmx->fill( $deprec->{$tm_ds}{data} );
     }
@@ -4097,8 +4091,7 @@ sub catch_db_exceptions {
             return;
         }
 
-        my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
-        $dlg->message_dialog($message, $details, 'error', 'close');
+        $self->message_dialog($message, $details, 'error', 'close');
     }
 
     return;

@@ -276,9 +276,7 @@ This method returns the labels.
 
 sub scr_toolbar_groups {
     my $self = shift;
-
     my @group_labels = keys %{ $self->scrtoolbar };
-
     return \@group_labels;
 }
 
