@@ -14,11 +14,11 @@ Tpda3::Tk::Entry - Subclass of Tk::Entry.
 
 =head1 VERSION
 
-Version 0.82
+Version 0.83
 
 =cut
 
-our $VERSION = 0.82;
+our $VERSION = 0.83;
 
 =head1 SYNOPSIS
 
