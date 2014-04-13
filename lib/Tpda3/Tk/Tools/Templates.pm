@@ -271,10 +271,10 @@ sub run_screen {
 
     $xtable->init($frm_m, $header);
 
-    $self->{tm_controls} = { rec => { tm1 => \$xtable, } };
+    $self->{tm_controls} = { tm1 => \$xtable };
 
     # Prepare screen configuration data for tables
-    foreach my $tm_ds ( keys %{ $self->{tm_controls}{rec} } ) {
+    foreach my $tm_ds ( keys %{ $self->{tm_controls} } ) {
         $validation->init_cfgdata($tm_ds);
     }
 

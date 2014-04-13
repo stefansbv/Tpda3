@@ -38,20 +38,6 @@ menubar:
         underline: 1
         sep: before
         key: Ctrl+Q
-  menu_tool:
-    id:    5002
-    underline: 0
-    popup:
-      1:
-        name: mn_er
-        underline: 5
-        sep: none
-        key: Alt-E
-      2:
-        name: mn_et
-        underline: 0
-        sep: none
-        key: Alt-T
   menu_admin:
     id:    5003
     underline: 1
@@ -59,13 +45,23 @@ menubar:
       1:
         name: mn_mn
         underline: 4
-        sep: before
-        key: Alt-D
+        sep: none
+        key:
       2:
         name: mn_cf
         underline: 0
         sep: none
-        key: Alt-C
+        key:
+      3:
+        name: mn_er
+        underline: 5
+        sep: before
+        key:
+      4:
+        name: mn_et
+        underline: 0
+        sep: none
+        key:
   menu_help:
     id:    5004
     underline: 0

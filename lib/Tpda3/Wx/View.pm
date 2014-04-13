@@ -228,23 +228,20 @@ sub get_menubar_merged_labels {
     my $self = shift;
 
     my $labels = {
-        'menu_tool' => {
-            'label' => __ 'Tools',
-            'popup' => {
-                '1' => { 'label' => __ 'Edit reports data' } },
-        },
         'menu_admin' => {
             'label' => __ 'Admin',
             'popup' => {
                 '1' => { 'label' => __ 'Set default app' },
-                '2' => { 'label' => __ 'Configurations' }
+                '2' => { 'label' => __ 'Configurations' },
+                '3' => { 'label' => __ 'Edit reports data' },
+                '4' => { 'label' => __ 'Edit templates data' },
             },
         },
         'menu_help' => {
             'label' => __ 'Help',
             'popup' => {
                 '1' => { 'label' => __ 'Guide' },
-                '2' => { 'label' => __ 'About' }
+                '2' => { 'label' => __ 'About' },
             },
         },
         'menu_app' => {
@@ -254,7 +251,8 @@ sub get_menubar_merged_labels {
                 '2' => { 'label' => __ 'Execute search' },
                 '3' => { 'label' => __ 'Execute count' },
                 '4' => { 'label' => __ 'Preview report' },
-                '5' => { 'label' => __ 'Quit' }
+                '5' => { 'label' => __ 'Generate document' },
+                '6' => { 'label' => __ 'Quit' },
             },
         }
     };
@@ -368,8 +366,12 @@ sub make_popup_item {
     $label .= "\t" . $item->{key} if $item->{key};    # add shortcut key
 
     $self->{ $item->{name} }
-        = $menu->Append( $id,
-        Tpda3::Utils->ins_underline_mark( $label, $item->{underline}, ),
+        = $menu->Append(
+            $id,
+            Tpda3::Utils->ins_underline_mark(
+                $label,
+                $item->{underline},
+            ),
         );
 
     $menu->AppendSeparator() if $item->{sep} eq 'after';
