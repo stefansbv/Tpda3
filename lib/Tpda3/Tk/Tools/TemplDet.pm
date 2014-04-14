@@ -8,12 +8,15 @@ use Tk::widgets qw(Table Checkbutton);
 use File::Spec::Functions;
 use List::Compare;
 use Scalar::Util qw(blessed);
-#use Locale::TextDomain 1.20 qw(Tpda3);
+use List::MoreUtils qw(any);
+#use Locale::TextDomain 1.20 qw(Tpda3); # has problems on page change
 use POSIX qw (strftime);
 
 require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
+
+use Data::Printer;
 
 =head1 NAME
 
@@ -391,8 +394,6 @@ sub list_of_variables {
     }
 
     my $gen = Tpda3::Generator->new();
-
-    # Check fields
     my $fields_aref = $gen->extract_tt_fields($model_file);
     return $fields_aref;
 }
@@ -403,23 +404,10 @@ sub on_load_record {
     return;
 }
 
-=head2 load_data
-
-Add the data from the database table.
-
-=cut
-
 sub load_data {
     my $self = shift;
-
-    my $db_data = $self->read_table();
-    my @fields  = map { $_->{var_name} } @{$db_data};
-    my @insert  = map { [ $_, 'rec' ] } @fields;
-    my $max_cnt = scalar @insert;
-    if ($max_cnt > 0) {
-        $self->add_table_widgets( \@insert );
-    }
-
+    my $db_data = $self->read_db_table();
+    $self->add_table_widgets($db_data);
     return;
 }
 
@@ -433,12 +421,13 @@ sub read_table_widget {
     foreach my $widget ( @{ $self->{widgets} } ) {
         my $crt_no   = $widget->{crt_label}->cget('-text');
         my $field    = $widget->{field};
-        my $required = ${ $widget->{requires} };
+        my $required = ${ $widget->{required} } // 0;
+        my $state    = $widget->{state_label}->cget('-text');
         push @records, {
             id_tt    => $id_tt,
             id_art   => $crt_no,
             var_name => $field,
-            required => $required
+            required => $required,
         };
     }
 
@@ -461,15 +450,15 @@ sub save_fields {
     $self->model->table_record_delete( $table, $where );
     $self->model->table_batch_insert( $table, $records );
 
-    $self->{btn_update}->configure('-state' => 'normal');
-    $self->{btn_save}->configure('-state' => 'disabled');
+    $self->{btn_update}->configure(-state => 'normal');
+    $self->{btn_save}->configure(  -state => 'disabled');
 
-    $self->upd_table_widgets_state();
+    $self->upd_table_widgets_state_all('rec');
 
     return;
 }
 
-sub read_table {
+sub read_db_table {
     my $self = shift;
 
     my $id_tt = $self->{controls}{id_tt}[1]->get;
@@ -485,18 +474,25 @@ sub read_table {
     return $db_data;
 }
 
+=head2 get_data_diff
+
+Diference between databse table and file
+
+=cut
+
 sub get_data_diff {
     my $self = shift;
 
-    my $db_data = $self->read_table();
+    my $db_data = $self->read_db_table();
     my $tt_data = $self->list_of_variables();
+    #my $tw_data = $self->read_table_widget;
 
     my @fields = map { $_->{var_name} } @{$db_data};
 
     my $lc = List::Compare->new( $tt_data, \@fields );
-    my @update = map { [ $_, 'upd' ] } $lc->get_intersection;
-    my @insert = map { [ $_, 'new' ] } $lc->get_unique;
-    my @delete = map { [ $_, 'del' ] } $lc->get_complement;
+    my @update = $lc->get_intersection;
+    my @insert = map { { var_name => $_ } } $lc->get_unique;
+    my @delete = $lc->get_complement;
 
     return (\@update, \@delete, \@insert);
 }
@@ -515,26 +511,23 @@ sub get_col_width {
 sub update_table_widget {
     my $self = shift;
 
-    print "Update data...\n";
-
     my ($to_update, $to_delete, $to_insert ) = $self->get_data_diff();
 
-    print "to Delete:\n";
     my $no_to_del = scalar @{$to_delete};
-    if ($no_to_del > 0) {
-        # Delete all and reinsert
-        $self->{table}->clear;
-    }
-    else {
-        my $no_to_upd = scalar @{$to_update};
-        print "to Update [$no_to_upd]:\n";
-        p $to_update;
+    print "to Delete [$no_to_del]:\n";
+    p $to_delete;
+    $self->upd_table_widgets_state($to_delete, 'del');
+    # Delete all and reinsert?
+    # $self->{table}->clear;
 
-        my $no_to_ins = scalar @{$to_insert};
-        print "to Insert [$no_to_ins]:\n";
-        p $to_insert;
-        $self->add_table_widgets($to_insert);
-    }
+    my $no_to_upd = scalar @{$to_update};
+    print "to Update [$no_to_upd]:\n";
+    # p $to_update;
+
+    my $no_to_ins = scalar @{$to_insert};
+    print "to Insert [$no_to_ins]:\n";
+    p $to_insert;
+    $self->add_table_widgets($to_insert, 'new');
 
     $self->{btn_update}->configure('-state' => 'disabled');
     $self->{btn_save}->configure('-state' => 'normal');
@@ -554,21 +547,39 @@ sub select_req {
 }
 
 sub upd_table_widgets_state {
-    my $self = shift;
-    my $rows = $self->{table}->totalRows;
+    my ( $self, $where, $state ) = @_;
+    my $rows    = $self->{table}->totalRows;
     my $max_idx = $rows ? $rows - 2 : 0;
-    foreach my $i ( 0..$max_idx ) {
+    foreach my $i ( 0 .. $max_idx ) {
         my $w = $self->{widgets}[$i]{state_label};
-        $w->configure( '-text' => 'rec' ) if blessed $w;
+        next unless blessed $w;
+        my $field = $self->{widgets}[$i]{field};
+        if ( any { $field eq $_ } @{ $where } ) {
+            my $fg = $self->get_color($state) || 'black';
+            $w->configure( -text => $state, -fg => $fg );
+        }
+    }
+    return;
+}
+
+sub upd_table_widgets_state_all {
+    my ( $self, $state ) = @_;
+    my $rows    = $self->{table}->totalRows;
+    my $max_idx = $rows ? $rows - 2 : 0;
+    foreach my $i ( 0 .. $max_idx ) {
+        my $w = $self->{widgets}[$i]{state_label};
+        next unless blessed $w;
+        $w->configure( -text => $state );
     }
     return;
 }
 
 sub add_table_widgets {
-    my ($self, $records) = @_;
+    my ($self, $records, $state) = @_;
 
     my $recno = scalar @{$records};
     my $rows  = $self->{table}->totalRows;
+    $state  //= 'rec';
 
     print "Add table widgets\n";
     print " table has $rows rows\n";
@@ -576,47 +587,26 @@ sub add_table_widgets {
 
     my $ri = $rows;             #  row index
     foreach my $rec ( @{$records} ) {
-        my $ai = $ri ? $ri - 1 : 0;           #  array index
+        my $ai = $ri ? $ri - 1 : 0; #  array index
 
-        my $field = $rec->[0];
-        my $state = $rec->[1];
+        my $field    = $rec->{var_name};
+        my $required = $rec->{required};
 
-        # Label - row number
-        my $crt_label = $self->{table}->Label(
-            -text   => $ri,
-            -width  => get_col_width('crt_label'),
-            -relief => 'sunken',
-        );
-
-        # Label - field label
-        my $fld_label = $self->{table}->Label(
-            -text   => $field,
-            -width  => get_col_width('fld_label'),
-            -relief => 'sunken',
-            -anchor => 'w',
-            -bg     => 'white',
-        );
+        my $crt_label   = $self->add_label($ri, 'crt_label');
+        my $fld_label   = $self->add_label($field, 'fld_label', 'sunken', 'w');
+        my $state_label = $self->add_label($state, 'state_label');
 
         # Require - checkbox
-        my $v_require   = 0;
+        my $v_required   = $required;
         my $cbx_require = $self->{table}->Checkbutton(
             -text        => 'yes',
             -indicatoron => 0,
-            -selectcolor => 'pink',
+            -selectcolor => 'LemonChiffon1',
             -state       => 'normal',
-            -variable    => \$v_require,
+            -variable    => \$v_required,
             -relief      => 'raised',
             -width       => get_col_width('cbx_require'),
             -command     => sub { $self->req_state_change },
-        );
-
-        # Label - state
-        my $state_label = $self->{table}->Label(
-            -text   => $state,
-            -width  => get_col_width('state_label'),
-            -bg     => 'white',
-            -relief => 'sunken',
-            -fg     => $self->get_color($state) || 'black',
         );
 
         $self->{table}->put( $ri, 0, $crt_label );
@@ -630,12 +620,25 @@ sub add_table_widgets {
             fld_label   => $fld_label,
             state_label => $state_label,
             cbx_require => $cbx_require,
-            requires    => \$v_require,
+            required    => \$v_required,
         };
         $ri++;
     }
 
     return;
+}
+
+sub add_label {
+    my ($self, $label, $column, $relief, $anchor) = @_;
+
+    # Label - field label
+    return $self->{table}->Label(
+        -text   => $label,
+        -width  => get_col_width($column),
+        -relief => $relief // 'sunken',
+        -anchor => $anchor // 'c',
+        -bg     => 'white',
+    );
 }
 
 sub req_state_change {

@@ -8,7 +8,7 @@ use IPC::System::Simple 1.17 qw(capture);
 use Class::Unload;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
-use List::MoreUtils qw(uniq any);
+use List::MoreUtils qw(uniq);
 use Log::Log4perl qw(get_logger :levels);
 use Math::Symbolic;
 use Scalar::Util qw(blessed looks_like_number);
