@@ -307,10 +307,10 @@ sub get_menubar_merged_labels {
         'menu_admin' => {
             'label' => __ 'Admin',
             'popup' => {
-                '1' => { 'label' => __ 'Set default app' },
+                '1' => { 'label' => __ 'Default app' },
                 '2' => { 'label' => __ 'Configurations' },
-                '3' => { 'label' => __ 'Edit reports data' },
-                '4' => { 'label' => __ 'Edit templates data' },
+                '3' => { 'label' => __ 'Reports data' },
+                '4' => { 'label' => __ 'Templates data' },
             },
         },
         'menu_help' => {
@@ -1911,9 +1911,11 @@ sub generate_doc {
             if defined( $record->{$field} )
                 and $record->{$field} =~ m{\S+};
     }
+    # List of the required fields from the template
     my @required = map { $_->{var_name} } @{$required};
-    # Compare fields
-    my $lc = List::Compare->new( '--unsorted', \@record_cmp, \@required );
+
+    # Compare field lists
+    my $lc = List::Compare->new( \@record_cmp, \@required );
     my @list = $lc->get_complement;    # required except fields with data
     if ( @list ) {
         my $message = __ 'Please, fill in data for:';

@@ -44,7 +44,7 @@ menubar:
     popup:
       1:
         name: mn_mn
-        underline: 4
+        underline: 0
         sep: none
         key:
       2:
@@ -54,7 +54,7 @@ menubar:
         key:
       3:
         name: mn_er
-        underline: 5
+        underline: 0
         sep: before
         key:
       4:
