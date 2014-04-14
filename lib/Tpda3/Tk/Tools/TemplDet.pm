@@ -16,8 +16,6 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
-use Data::Printer;
-
 =head1 NAME
 
 Tpda3::Tk::Tools::TemplDet screen
@@ -515,7 +513,7 @@ sub update_table_widget {
 
     my $no_to_del = scalar @{$to_delete};
     print "to Delete [$no_to_del]:\n";
-    p $to_delete;
+    # p $to_delete;
     $self->upd_table_widgets_state($to_delete, 'del');
     # Delete all and reinsert?
     # $self->{table}->clear;
@@ -526,7 +524,7 @@ sub update_table_widget {
 
     my $no_to_ins = scalar @{$to_insert};
     print "to Insert [$no_to_ins]:\n";
-    p $to_insert;
+    # p $to_insert;
     $self->add_table_widgets($to_insert, 'new');
 
     $self->{btn_update}->configure('-state' => 'disabled');
