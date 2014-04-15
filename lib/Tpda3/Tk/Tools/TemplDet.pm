@@ -16,6 +16,8 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
+use Data::Printer;
+
 =head1 NAME
 
 Tpda3::Tk::Tools::TemplDet screen
@@ -50,6 +52,7 @@ sub _init {
     $self->{_cfg} = Tpda3::Config->instance;
     $self->{_db}  = Tpda3::Db->instance;
     $self->{widgets} = [];
+    $self->{req_no}  = 0;
 
     return;
 }
@@ -195,16 +198,15 @@ sub run_screen {
         -labelside  => 'acrosstop',
     )->pack(
         -side   => 'top',
-        -expand => 1,
+        -expand => 0,
         -fill   => 'both',
-        -ipady  => 5,
+        -ipady  => 10,
     );
 
-    ##
-    #-- Filtru
+    #-- Required
 
     $statis_fr->Label(
-        -text   => 'Req',
+        -text   => 'Req.',
         -anchor => 'w',
     )->grid(
         -row    => 0,
@@ -213,10 +215,10 @@ sub run_screen {
         -padx   => 3,
     );
 
-    $self->{sel_count_filt} = $statis_fr->Label(
+    $self->{req_fields_no} = $statis_fr->Label(
         -text   => '0',
-        -width  => 2,
-        -relief => 'sunken',
+        -width  => 3,
+        -relief => 'ridge',
         -anchor => 'e',
         -fg     => 'blue',
     )->grid(
@@ -232,10 +234,10 @@ sub run_screen {
         -column => 2,
     );
 
-    $self->{tot_count_filt} = $statis_fr->Label(
+    $self->{tot_fields_no} = $statis_fr->Label(
         -text   => '0',
-        -width  => 2,
-        -relief => 'sunken',
+        -width  => 3,
+        -relief => 'ridge',
         -anchor => 'e',
         -fg     => 'blue',
     )->grid(
@@ -243,40 +245,51 @@ sub run_screen {
         -column => 3,
     );
 
-    #-- Frame Select
+    # #-- Frame Select
 
-    my $frm_bs = $frm_br->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Select',
-        -labelside  => 'acrosstop'
-    )->pack(
-        -expand => 1,
-        -fill   => 'both',
-    );
+    # my $frm_bs = $frm_br->LabFrame(
+    #     -foreground => 'blue',
+    #     -label      => 'Select',
+    #     -labelside  => 'acrosstop'
+    # )->pack(
+    #     -expand => 1,
+    #     -fill   => 'both',
+    # );
 
-    #--- Buttons select / deselect
+    # #--- Buttons select / deselect
 
-    $self->{btn_selall} = $frm_bs->Button(
-        -text  => 'All',
-        -font  => 'small',
-        -width => 9,
-        -command => sub { $self->select_req(1) }, # all
-    )->grid(
-        -row    => 0,
-        -column => 0,
-        -pady   => 2,
-    );
+    # $self->{btn_selall} = $frm_bs->Button(
+    #     -text  => 'All',
+    #     -font  => 'small',
+    #     -width => 9,
+    #     -command => sub { $self->select_req(1) }, # all
+    # )->grid(
+    #     -row    => 0,
+    #     -column => 0,
+    #     -pady   => 2,
+    # );
 
-    $self->{btn_selnone} = $frm_bs->Button(
-        -text => 'None',
-        -font => 'small',
-        -width  => 9,
-        -command => sub { $self->select_req(0) }, # none
-    )->grid(
-        -row    => 1,
-        -column => 0,
-        -pady   => 2,
-    );
+    # $self->{btn_selnone} = $frm_bs->Button(
+    #     -text => 'None',
+    #     -font => 'small',
+    #     -width  => 9,
+    #     -command => sub { $self->select_req(0) }, # none
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 0,
+    #     -pady   => 2,
+    # );
+
+    # $self->{btn_inverse} = $frm_bs->Button(
+    #     -text => 'Inverse',
+    #     -font => 'small',
+    #     -width  => 9,
+    #     -command => sub { $self->select_req() }, # inverse
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 0,
+    #     -pady   => 2,
+    # );
 
     #-- Frame toolbar
 
@@ -285,6 +298,7 @@ sub run_screen {
         -label      => 'Save/Update',
         -labelside  => 'acrosstop'
     )->pack(
+        -side   => 'bottom',
         -expand => 1,
         -fill   => 'both',
     );
@@ -296,7 +310,7 @@ sub run_screen {
         -font  => 'small',
         -width => 9,
         -state => 'disabled',
-        -command => sub { $self->save_fields() },
+        -command => sub { $self->update_db_table() },
     )->grid(
         -row    => 0,
         -column => 0,
@@ -346,7 +360,7 @@ sub colors {
 sub widths {
     return {
         crt_label   => 3,
-        fld_label   => 30,
+        fld_label   => 25,
         state_label => 5,
         cbx_require => 5,
     };
@@ -398,12 +412,6 @@ sub list_of_variables {
 
 sub on_load_record {
     my $self = shift;
-    $self->load_data;
-    return;
-}
-
-sub load_data {
-    my $self = shift;
     my $db_data = $self->read_db_table();
     $self->add_table_widgets($db_data);
     return;
@@ -432,7 +440,7 @@ sub read_table_widget {
     return \@records;
 }
 
-sub save_fields {
+sub update_db_table {
     my $self = shift;
 
     my $id_tt   = $self->{controls}{id_tt}[1]->get;
@@ -453,6 +461,12 @@ sub save_fields {
 
     $self->upd_table_widgets_state_all('rec');
 
+    return;
+}
+
+sub update_labels {
+    my ($self, $name, $value) = @_;
+    $self->{$name}->configure(-text => $value) if defined $value;
     return;
 }
 
@@ -533,16 +547,20 @@ sub update_table_widget {
     return;
 }
 
-sub select_req {
-    my ($self, $state) = @_;
-    my $rows = $self->{table}->totalRows;
-    my $max_idx = $rows ? $rows - 2 : 0;
-    foreach my $i ( 0..$max_idx ) {
-        my $w = $self->{widgets}[$i]{cbx_require};
-        $state ? $w->select : $w->deselect if blessed $w;
-    }
-    return;
-}
+# sub select_req {
+#     my ($self, $state) = @_;
+#     my $inverse = defined $state ? 0 : 1;
+#     my $rows = $self->{table}->totalRows;
+#     my $max_idx = $rows ? $rows - 2 : 0;
+#     foreach my $i ( 0..$max_idx ) {
+#         my $w = $self->{widgets}[$i]{cbx_require};
+#         next unless blessed $w;
+#         $inverse
+#             ? $w->toggle
+#             : ( $state ? $w->select : $w->deselect );
+#     }
+#     return;
+# }
 
 sub upd_table_widgets_state {
     my ( $self, $where, $state ) = @_;
@@ -575,14 +593,15 @@ sub upd_table_widgets_state_all {
 sub add_table_widgets {
     my ($self, $records, $state) = @_;
 
-    my $recno = scalar @{$records};
-    my $rows  = $self->{table}->totalRows;
-    $state  //= 'rec';
+    my $rec_no = scalar @{$records};
+    my $rows   = $self->{table}->totalRows;
+    $state   //= 'rec';
 
     print "Add table widgets\n";
     print " table has $rows rows\n";
-    print " add $recno records\n";
+    print " add $rec_no records\n";
 
+    my $req_no = 0;
     my $ri = $rows;             #  row index
     foreach my $rec ( @{$records} ) {
         my $ai = $ri ? $ri - 1 : 0; #  array index
@@ -604,7 +623,7 @@ sub add_table_widgets {
             -variable    => \$v_required,
             -relief      => 'raised',
             -width       => get_col_width('cbx_require'),
-            -command     => sub { $self->req_state_change },
+            -command     => sub { $self->req_state_change($v_required) },
         );
 
         $self->{table}->put( $ri, 0, $crt_label );
@@ -621,7 +640,13 @@ sub add_table_widgets {
             required    => \$v_required,
         };
         $ri++;
+
+        $req_no++ if $required;
     }
+
+    $self->update_labels('req_fields_no', $req_no);
+    $self->update_labels('tot_fields_no', $rec_no);
+    $self->{req_no} = $req_no;
 
     return;
 }
@@ -640,9 +665,17 @@ sub add_label {
 }
 
 sub req_state_change {
-    my $self = shift;
-    $self->{btn_update}->configure('-state' => 'disabled');
-    $self->{btn_save}->configure('-state' => 'normal');
+    my ($self, $check) = @_;
+
+    $self->{btn_update}->configure(-state => 'disabled');
+    $self->{btn_save}->configure(  -state => 'normal');
+
+    # Update label
+    $check
+        ? $self->{req_no}++
+        : $self->{req_no}--;
+    $self->update_labels('req_fields_no', $self->{req_no});
+
     return;
 }
 
