@@ -1816,7 +1816,6 @@ sub screen_module_load {
     #- Event handlers
     my $group_labels = $self->scrcfg()->scr_toolbar_groups();
     foreach my $label ( @{$group_labels} ) {
-        print "event handler  $label\n";
         $self->set_event_handler_screen($label);
     }
 
