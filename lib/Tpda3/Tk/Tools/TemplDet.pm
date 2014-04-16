@@ -26,11 +26,11 @@ Tpda3::Tk::Tools::TemplDet screen
 
 =head1 VERSION
 
-Version 0.83
+Version 0.84
 
 =cut
 
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 
 =head1 SYNOPSIS
 
