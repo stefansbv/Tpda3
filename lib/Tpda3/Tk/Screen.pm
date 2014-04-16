@@ -2,6 +2,7 @@ package Tpda3::Tk::Screen;
 
 use strict;
 use warnings;
+use Carp;
 
 use Tpda3::Tk::Entry;
 
@@ -96,7 +97,9 @@ sub get_tm_controls {
     return {} if !exists $self->{tm_controls};
 
     if ($tm_ds) {
-        return ${ $self->{tm_controls}{$tm_ds} };
+        ( exists $self->{tm_controls}{$tm_ds} )
+            ? ( return ${ $self->{tm_controls}{$tm_ds} } )
+            : ( croak "No TM $tm_ds in screen!" );
     }
     else {
         return $self->{tm_controls};
@@ -194,11 +197,9 @@ Add new row to the Tk::TableMatrix widget.
 
 sub tmatrix_add_row {
     my ( $self, $tm_ds ) = @_;
-print " add row\n";
+
     my $tmx = $self->get_tm_controls($tm_ds);
-
     $tmx->add_row();
-
     $self->screen_update();
 
     return;
@@ -214,11 +215,8 @@ sub tmatrix_remove_row {
     my ( $self, $tm_ds ) = @_;
 
     my $tmx = $self->get_tm_controls($tm_ds);
-
     my $row = $tmx->get_active_row();
-
     $tmx->remove_row($row) if $row;
-
     $self->screen_update();
 
     return;

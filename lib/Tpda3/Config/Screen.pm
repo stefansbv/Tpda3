@@ -358,10 +358,7 @@ sub dep_table_has_selectorcol {
     my ( $self, $tm_ds ) = @_;
 
     die "TM parameter missing!" unless $tm_ds;
-
     my $sc = $self->deptable($tm_ds, 'selectorcol');
-
-    return if $sc eq 'none';
 
     return $sc;
 }

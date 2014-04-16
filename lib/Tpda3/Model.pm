@@ -1541,6 +1541,38 @@ sub other_data {
     );
 }
 
+sub update_or_insert {
+    my ($self, $table, $columns, $matching, $records) = @_;
+
+    my $cols_list  = join ",", @{$columns};
+    my $match_list = join ",", @{$matching};
+    my $sql = qq{UPDATE OR INSERT INTO $table
+                            ($cols_list)
+                     VALUES (?, ?, ?, ?)
+                     MATCHING ($match_list)
+    };
+
+    my $sth;
+    try {
+        $sth = $self->dbh->prepare($sql);
+    }
+    catch {
+        $self->db_exception( $_, "'update_or_insert' prepare failed" );
+    };
+
+    foreach my $rec ( @{$records} ) {
+        my @bind = @$rec{ @{$columns} };     # hash slice
+        try {
+            $sth->execute(@bind);
+        }
+        catch {
+            $self->db_exception( $_, "'update_or_insert' failed" );
+        };
+    }
+
+    return;
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>

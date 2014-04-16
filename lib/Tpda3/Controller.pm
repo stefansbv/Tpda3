@@ -682,15 +682,18 @@ sub get_selected_and_store_key {
 
     # Detail screen module name from config
     my $screen = $self->scrcfg('rec')->screen('details');
-    my $tmx    = $self->scrobj()->get_tm_controls('tm1');
 
     my $rec_params = $self->table_key( 'rec', 'main' )->get_key(0)->get_href;
     $self->screen_store_key_values($rec_params);
 
-    my $row = $self->tmatrix_get_selected;
-    if ( defined $row and $row > 0 ) {
-        my $det_params = $tmx->cell_read( $row, $screen->{filter} );
-        $self->screen_store_key_values($det_params);
+    my $sc = $self->scrcfg()->dep_table_has_selectorcol('tm1');
+    if ( defined $sc ) {
+        my $tmx = $self->scrobj()->get_tm_controls('tm1');
+        my $row = $self->tmatrix_get_selected;
+        if ( defined $row and $row > 0 ) {
+            my $det_params = $tmx->cell_read( $row, $screen->{filter} );
+            $self->screen_store_key_values($det_params);
+        }
     }
 
     return;

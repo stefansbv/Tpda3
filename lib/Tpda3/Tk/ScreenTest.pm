@@ -94,12 +94,12 @@ sub test_screen {
     $ctrl->{_view}->after(
         $delay * 100,
         sub {
-            my $obj_rec = $ctrl->scrobj('rec');
+            my $obj_rec = $ctrl->scrobj();
             ok( $obj_rec->isa($screen_module_package),
                 "created $screen_name instance"
             );
             ok( $ctrl->can('scrcfg'), 'scrcfg loaded' );
-            my $cfg_rec = $ctrl->scrcfg('rec');
+            my $cfg_rec = $ctrl->scrcfg();
             ok( $cfg_rec->can('screen'),          'screen' );
             ok( $cfg_rec->can('defaultreport'),   'defaultreport' );
             ok( $cfg_rec->can('defaultdocument'), 'defaultdocument' );

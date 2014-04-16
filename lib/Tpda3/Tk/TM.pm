@@ -391,7 +391,7 @@ Read data from widget.
 =cut
 
 sub data_read {
-    my $self = shift;
+    my ($self, $with_sel_name) = @_;
 
     my $xtvar = $self->cget( -variable );
 
@@ -406,7 +406,7 @@ sub data_read {
     # Get selectorcol index, if any
     my $sc = $self->{selectorcol};
 
-    # # Read table data and create an AoH
+    # Read table data and create an AoH
     my @tabledata;
 
     # The first row is the header
@@ -415,7 +415,12 @@ sub data_read {
         my $rowdata = {};
         for my $col ( 0 .. $cols_idx ) {
 
-            next if $sc and ( $col == $sc );    # skip selectorcol
+            if ( $sc and ( $col == $sc ) ) {    # selectorcol
+                $rowdata->{$with_sel_name}
+                    = $self->is_checked( $row, $sc ) ? 1 : 0
+                    if $with_sel_name;
+                next;
+            }
 
             my $cell_value = $self->get("$row,$col");
             my $col_name   = $cols_ref->[$col];
@@ -551,7 +556,7 @@ sub add_row {
     $self->activate("$new_r,1");
     $self->see("$new_r,1");
 
-    return;
+    return $new_r;
 }
 
 =head2 remove_row

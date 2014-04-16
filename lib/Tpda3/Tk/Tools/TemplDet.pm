@@ -4,19 +4,21 @@ use strict;
 use warnings;
 use utf8;
 
-use Tk::widgets qw(Table Checkbutton);
+use Tk::widgets qw(DateEntry JComboBox Checkbutton RadiobuttonGroup);
+use POSIX qw (strftime);
+use Date::Calc qw(check_date);
 use File::Spec::Functions;
 use List::Compare;
-use Scalar::Util qw(blessed);
 use List::MoreUtils qw(any);
 #use Locale::TextDomain 1.20 qw(Tpda3); # has problems on page change
-use POSIX qw (strftime);
+
+use Tpda3::Utils;
+#use Tpda3::Config;
+use Tpda3::Tk::TM;
 
 require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
-
-use Data::Printer;
 
 =head1 NAME
 
@@ -50,11 +52,19 @@ sub _init {
     my ($self) = @_;
 
     $self->{_cfg} = Tpda3::Config->instance;
-    $self->{_db}  = Tpda3::Db->instance;
-    $self->{widgets} = [];
-    $self->{req_no}  = 0;
+    $self->{_sc}  = $self->{scrcfg}->dep_table_has_selectorcol('tm2');
 
     return;
+}
+
+sub cfg {
+    my $self = shift;
+    return $self->{_cfg};
+}
+
+sub model {
+    my $self = shift;
+    return $self->{model};
 }
 
 =head2 run_screen
@@ -94,14 +104,6 @@ sub run_screen {
     )->pack(
         -expand => 0,
         -fill   => 'x',
-    );
-
-    #-  Bottom frame
-
-    my $frm_bott = $det_page->Frame()->pack(
-        -side   => 'bottom',
-        -expand => 1,
-        -fill   => 'both',
     );
 
     my $f1d = 110;              # distance from left
@@ -149,64 +151,22 @@ sub run_screen {
         }
     );
 
-    #-- Bottom left
+    #-- Middle frame
 
-    my $frm_tl = $frm_bott->LabFrame(
-        -foreground => 'blue',
-        -label      => 'Template variables',
-        -labelside  => 'acrosstop'
-    )->pack(
-        -side   => 'left',
-        -expand => 0,
-        -fill   => 'both',
-    );
-
-    $self->{table} = $frm_tl->Table(
-        -columns    => 4,
-        -rows       => 8,
-        -fixedrows  => 1,
-        -scrollbars => 'oe',
-        -relief     => 'raised',
-        -background => $self->{bg},
-    );
-
-    $self->{table}->pack(
-        -expand => 1,
-        -fill   => 'both',
-        -padx   => 5,
-        -pady   => 5,
-    );
-
-    # Header (inspired from: http://www.perltk.de/tk_widgets/wtk_table.html)
-    $self->{table}->put( 0, 0, $self->header_label('#', 'crt_label') );
-    $self->{table}->put( 0, 1, $self->header_label('Variable', 'fld_label') );
-    $self->{table}->put( 0, 2, $self->header_label('Req', 'state_label') );
-    $self->{table}->put( 0, 3, $self->header_label('State', 'cbx_require') );
-
-    #-- Bottom right
-
-    my $frm_br = $frm_bott->Frame(
-    )->pack(
-        -side   => 'right',
-        -expand => 1,
-        -fill   => 'both',
-    );
-
-    my $statis_fr = $frm_br->LabFrame(
+    my $frm_mid = $det_page->LabFrame(
         -foreground => 'blue',
         -label      => 'Statistics',
         -labelside  => 'acrosstop',
     )->pack(
-        -side   => 'top',
         -expand => 0,
         -fill   => 'both',
-        -ipady  => 10,
+        -ipady  => 5,
     );
 
     #-- Required
 
-    $statis_fr->Label(
-        -text   => 'Req.',
+    $frm_mid->Label(
+        -text   => 'Required',
         -anchor => 'w',
     )->grid(
         -row    => 0,
@@ -215,7 +175,7 @@ sub run_screen {
         -padx   => 3,
     );
 
-    $self->{req_fields_no} = $statis_fr->Label(
+    $self->{req_fields_no} = $frm_mid->Label(
         -text   => '0',
         -width  => 3,
         -relief => 'ridge',
@@ -226,15 +186,15 @@ sub run_screen {
         -column => 1,
     );
 
-    $statis_fr->Label(
-        -text   => '/',
-        -width  => 1,
-    )->grid(
+    $frm_mid->Label(
+        -text   => 'of',
+    )->Tk::grid(
         -row    => 0,
         -column => 2,
+        -ipadx  => 3,
     );
 
-    $self->{tot_fields_no} = $statis_fr->Label(
+    $self->{tot_fields_no} = $frm_mid->Label(
         -text   => '0',
         -width  => 3,
         -relief => 'ridge',
@@ -245,88 +205,67 @@ sub run_screen {
         -column => 3,
     );
 
-    # #-- Frame Select
+    #---
+    #- Tabel (TM)
+    #---
 
-    # my $frm_bs = $frm_br->LabFrame(
-    #     -foreground => 'blue',
-    #     -label      => 'Select',
-    #     -labelside  => 'acrosstop'
-    # )->pack(
-    #     -expand => 1,
-    #     -fill   => 'both',
-    # );
-
-    # #--- Buttons select / deselect
-
-    # $self->{btn_selall} = $frm_bs->Button(
-    #     -text  => 'All',
-    #     -font  => 'small',
-    #     -width => 9,
-    #     -command => sub { $self->select_req(1) }, # all
-    # )->grid(
-    #     -row    => 0,
-    #     -column => 0,
-    #     -pady   => 2,
-    # );
-
-    # $self->{btn_selnone} = $frm_bs->Button(
-    #     -text => 'None',
-    #     -font => 'small',
-    #     -width  => 9,
-    #     -command => sub { $self->select_req(0) }, # none
-    # )->grid(
-    #     -row    => 1,
-    #     -column => 0,
-    #     -pady   => 2,
-    # );
-
-    # $self->{btn_inverse} = $frm_bs->Button(
-    #     -text => 'Inverse',
-    #     -font => 'small',
-    #     -width  => 9,
-    #     -command => sub { $self->select_req() }, # inverse
-    # )->grid(
-    #     -row    => 2,
-    #     -column => 0,
-    #     -pady   => 2,
-    # );
-
-    #-- Frame toolbar
-
-    my $frm_tb = $frm_br->LabFrame(
+    my $frm_t = $det_page->LabFrame(
         -foreground => 'blue',
-        -label      => 'Save/Update',
+        -label      => 'Template variables',
         -labelside  => 'acrosstop'
     )->pack(
-        -side   => 'bottom',
         -expand => 1,
-        -fill   => 'both',
+        -fill   => 'both'
     );
 
-    #--- Buttons
+    #-- Toolbar
+    $self->make_toolbar_for_table('tm2', $frm_t);
 
-    $self->{btn_save} = $frm_tb->Button(
-        -text  => 'Save',
-        -font  => 'small',
-        -width => 9,
-        -state => 'disabled',
-        -command => sub { $self->update_db_table() },
-    )->grid(
-        -row    => 0,
-        -column => 0,
-        -pady   => 2,
-    );
+    #- TableMatrix
 
-    $self->{btn_update} = $frm_tb->Button(
-        -text => 'Update',
-        -font => 'small',
-        -width  => 9,
-        -command => sub { $self->update_table_widget() },
-    )->grid(
-        -row    => 1,
-        -column => 0,
-        -pady   => 2,
+    my $header = $self->{scrcfg}->dep_table_header_info('tm2');
+    my $xtvar = {};
+
+    my $xtable = $frm_t->Scrolled(
+        'TM',
+        -rows           => 6,
+        -cols           => 1,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -validate       => 1,
+        -variable       => $xtvar,
+        -selectmode     => 'single',
+        -colstretchmode => 'unset',
+        -resizeborders  => 'none',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
+        -vcmd           => sub { $self->update_statistics() },
     );
+    $xtable->pack( -expand => 1, -fill => 'both' );
+
+    # Tags
+    $xtable->tagConfigure( 'ro_center_del', -fg => 'red', );
+    $xtable->tagConfigure( 'ro_center_new', -fg => 'orange', );
+    $xtable->tagConfigure( 'ro_center_rec', -fg => 'green', );
+
+    $xtable->init($frm_t, $header);
+    $xtable->clear_all;
+
+    #--  begin TableMatrix objects
+
+    $self->{tm_controls} = { tm2 => \$xtable };
+
+    # Prepare screen configuration data for tables
+    foreach my $tm_ds ( keys %{ $self->{tm_controls} } ) {
+        $validation->init_cfgdata( 'deptable', $tm_ds );
+    }
+
+    # This makes TableMatrix expand
+    $xtable->update;
+
+    #--  end Table Matrix
 
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
@@ -335,61 +274,41 @@ sub run_screen {
         tt_file => [ undef, $ett_file ],
     };
 
+    $self->{tmx} = $self->get_tm_controls('tm2');
+
     return;
 }
 
-sub header_label {
-    my ($self, $text, $name) = @_;
-    my $label = $self->{table}->Label(
-        -text   => $text,
-        -relief => 'raised',
-        -width  => get_col_width($name),
-        -bg     => 'tan',
-    );
-    return $label;
+sub update_labels {
+    my ($self, $name, $value) = @_;
+    $self->{$name}->configure(-text => $value) if defined $value;
+    return;
 }
 
-sub colors {
-    return {
-        new => 'darkgreen',
-        upd => 'black',
-        del => 'darkred',
-    };
-}
-
-sub widths {
-    return {
-        crt_label   => 3,
-        fld_label   => 25,
-        state_label => 5,
-        cbx_require => 5,
-    };
-}
-
-=head2 dbc
-
-Return the Connection module handler.
-
-=cut
-
-sub dbc {
+sub update_statistics {
     my $self = shift;
-    return $self->{_db}->dbc;
+
+    my $req_fields_no = $self->{tmx}->count_is_checked($self->{_sc});
+    my $tot_fields_no = $self->{tmx}->get_row_count();
+
+    $self->update_labels( 'req_fields_no', $req_fields_no);
+    $self->update_labels( 'tot_fields_no', $tot_fields_no);
+
+    return;
 }
 
-sub dbh {
+sub update_column_required {
     my $self = shift;
-    return $self->{_db}->dbh;
-}
 
-sub cfg {
-    my $self = shift;
-    return $self->{_cfg};
-}
+    my $rows_idx = $self->{tmx}->get_row_count();
+    my $db_data  = $self->read_db_table;
+    my %arts = map { $_->{id_art} => $_->{required} } @{$db_data};
+    for my $r ( 1..$rows_idx ) {
+            my $id_art = $self->{tmx}->cell_read( $r, 0 )->{id_art};
+            $self->{tmx}->toggle_ckbutton( $r, $self->{_sc}, $arts{$id_art} );
+    }
 
-sub model {
-    my $self = shift;
-    return $self->{model};
+    return;
 }
 
 sub list_of_variables {
@@ -412,61 +331,8 @@ sub list_of_variables {
 
 sub on_load_record {
     my $self = shift;
-    my $db_data = $self->read_db_table();
-    $self->add_table_widgets($db_data);
-    return;
-}
-
-sub read_table_widget {
-    my $self = shift;
-
-    my $rows  = $self->{table}->totalRows;
-    my $id_tt = $self->{controls}{id_tt}[1]->get;
-
-    my @records;
-    foreach my $widget ( @{ $self->{widgets} } ) {
-        my $crt_no   = $widget->{crt_label}->cget('-text');
-        my $field    = $widget->{field};
-        my $required = ${ $widget->{required} } // 0;
-        my $state    = $widget->{state_label}->cget('-text');
-        push @records, {
-            id_tt    => $id_tt,
-            id_art   => $crt_no,
-            var_name => $field,
-            required => $required,
-        };
-    }
-
-    return \@records;
-}
-
-sub update_db_table {
-    my $self = shift;
-
-    my $id_tt   = $self->{controls}{id_tt}[1]->get;
-    my $records = $self->read_table_widget;
-    # print "to Save:\n";
-    # p $records;
-
-    # Table metadata
-    my $table = 'templates_req';
-    my $where = { id_tt => $id_tt };
-
-    # Delete all articles and reinsert
-    $self->model->table_record_delete( $table, $where );
-    $self->model->table_batch_insert( $table, $records );
-
-    $self->{btn_update}->configure(-state => 'normal');
-    $self->{btn_save}->configure(  -state => 'disabled');
-
-    $self->upd_table_widgets_state_all('rec');
-
-    return;
-}
-
-sub update_labels {
-    my ($self, $name, $value) = @_;
-    $self->{$name}->configure(-text => $value) if defined $value;
+    $self->update_column_required;
+    $self->update_statistics;
     return;
 }
 
@@ -478,7 +344,7 @@ sub read_db_table {
     # From table
     my $args = {};
     $args->{table}    = 'templates_req';
-    $args->{colslist} = [qw{var_name required}];
+    $args->{colslist} = [qw{id_art required}];
     $args->{where}    = {id_tt => $id_tt};
     $args->{order}    = 'var_name';
     my $db_data = $self->model->table_batch_query($args);
@@ -486,195 +352,119 @@ sub read_db_table {
     return $db_data;
 }
 
+=head2 read_table_widget
+
+Fetch and return the TM widget data.  Include the L<selectorcol> as
+L<$with_sel_name>.
+
+=cut
+
+sub read_table_widget {
+    my ($self, $with_sel_name) = @_;
+    my ($data) = $self->{tmx}->data_read($with_sel_name);
+    return $data;
+}
+
 =head2 get_data_diff
 
-Diference between databse table and file
+Diference between databse template file and table widget.
 
 =cut
 
 sub get_data_diff {
     my $self = shift;
 
-    my $db_data = $self->read_db_table();
-    my $tt_data = $self->list_of_variables();
-    #my $tw_data = $self->read_table_widget;
+    my $tt_data = $self->list_of_variables;
+    my $tw_data = $self->read_table_widget;
+    my @tw_fields = map { $_->{var_name} } @{$tw_data};
+    my $lc = List::Compare->new( $tt_data, \@tw_fields );
+    my @to_insert = map { { var_name => $_ } } $lc->get_unique;
+    my @to_delete = map { { var_name => $_ } } $lc->get_complement;
 
-    my @fields = map { $_->{var_name} } @{$db_data};
-
-    my $lc = List::Compare->new( $tt_data, \@fields );
-    my @update = $lc->get_intersection;
-    my @insert = map { { var_name => $_ } } $lc->get_unique;
-    my @delete = $lc->get_complement;
-
-    return (\@update, \@delete, \@insert);
-}
-
-sub get_color {
-    my ($self, $state) = @_;
-    return unless defined $state;
-    return $self->colors->{$state};
-}
-
-sub get_col_width {
-    my $name = shift;
-    return widths->{$name};
+    return (\@to_delete, \@to_insert);
 }
 
 sub update_table_widget {
     my $self = shift;
 
-    my ($to_update, $to_delete, $to_insert ) = $self->get_data_diff();
+    my ($to_delete, $to_insert ) = $self->get_data_diff();
 
-    my $no_to_del = scalar @{$to_delete};
-    print "to Delete [$no_to_del]:\n";
-    # p $to_delete;
-    $self->upd_table_widgets_state($to_delete, 'del');
-    # Delete all and reinsert?
-    # $self->{table}->clear;
-
-    my $no_to_upd = scalar @{$to_update};
-    print "to Update [$no_to_upd]:\n";
-    # p $to_update;
-
-    my $no_to_ins = scalar @{$to_insert};
-    print "to Insert [$no_to_ins]:\n";
-    # p $to_insert;
-    $self->add_table_widgets($to_insert, 'new');
-
-    $self->{btn_update}->configure('-state' => 'disabled');
-    $self->{btn_save}->configure('-state' => 'normal');
-
-    return;
-}
-
-# sub select_req {
-#     my ($self, $state) = @_;
-#     my $inverse = defined $state ? 0 : 1;
-#     my $rows = $self->{table}->totalRows;
-#     my $max_idx = $rows ? $rows - 2 : 0;
-#     foreach my $i ( 0..$max_idx ) {
-#         my $w = $self->{widgets}[$i]{cbx_require};
-#         next unless blessed $w;
-#         $inverse
-#             ? $w->toggle
-#             : ( $state ? $w->select : $w->deselect );
-#     }
-#     return;
-# }
-
-sub upd_table_widgets_state {
-    my ( $self, $where, $state ) = @_;
-    my $rows    = $self->{table}->totalRows;
-    my $max_idx = $rows ? $rows - 2 : 0;
-    foreach my $i ( 0 .. $max_idx ) {
-        my $w = $self->{widgets}[$i]{state_label};
-        next unless blessed $w;
-        my $field = $self->{widgets}[$i]{field};
-        if ( any { $field eq $_ } @{ $where } ) {
-            my $fg = $self->get_color($state) || 'black';
-            $w->configure( -text => $state, -fg => $fg );
+    # To delete
+    my $rows_idx = $self->{tmx}->get_row_count();
+    for my $r ( 1..$rows_idx ) {
+        my $field = $self->{tmx}->cell_read( $r, 1 )->{var_name};
+        if ( any { $field eq $_->{var_name} } @{ $to_delete } ) {
+            $self->set_row_status($r, 'del');
         }
     }
-    return;
-}
 
-sub upd_table_widgets_state_all {
-    my ( $self, $state ) = @_;
-    my $rows    = $self->{table}->totalRows;
-    my $max_idx = $rows ? $rows - 2 : 0;
-    foreach my $i ( 0 .. $max_idx ) {
-        my $w = $self->{widgets}[$i]{state_label};
-        next unless blessed $w;
-        $w->configure( -text => $state );
+    # To insert
+    foreach my $row ( @{$to_insert} ) {
+        my $r = $self->{tmx}->add_row;
+        $self->{tmx}->cell_write($r, 'var_name', $row->{var_name} );
+        $self->set_row_status($r, 'new');
     }
+
+    $self->update_statistics;
+
     return;
 }
 
-sub add_table_widgets {
-    my ($self, $records, $state) = @_;
+sub save_table_widget {
+    my $self = shift;
 
-    my $rec_no = scalar @{$records};
-    my $rows   = $self->{table}->totalRows;
-    $state   //= 'rec';
+    # Table metadata
+    my $table = 'templates_req';
+    my $id_tt = $self->{controls}{id_tt}[1]->get;
 
-    print "Add table widgets\n";
-    print " table has $rows rows\n";
-    print " add $rec_no records\n";
-
-    my $req_no = 0;
-    my $ri = $rows;             #  row index
+    # Add the id_tt field
+    my $records = $self->read_table_widget('required');
+    my (@to_updins, @to_delete);
     foreach my $rec ( @{$records} ) {
-        my $ai = $ri ? $ri - 1 : 0; #  array index
-
-        my $field    = $rec->{var_name};
-        my $required = $rec->{required};
-
-        my $crt_label   = $self->add_label($ri, 'crt_label');
-        my $fld_label   = $self->add_label($field, 'fld_label', 'sunken', 'w');
-        my $state_label = $self->add_label($state, 'state_label');
-
-        # Require - checkbox
-        my $v_required   = $required;
-        my $cbx_require = $self->{table}->Checkbutton(
-            -text        => 'yes',
-            -indicatoron => 0,
-            -selectcolor => 'LemonChiffon1',
-            -state       => 'normal',
-            -variable    => \$v_required,
-            -relief      => 'raised',
-            -width       => get_col_width('cbx_require'),
-            -command     => sub { $self->req_state_change($v_required) },
-        );
-
-        $self->{table}->put( $ri, 0, $crt_label );
-        $self->{table}->put( $ri, 1, $fld_label );
-        $self->{table}->put( $ri, 2, $cbx_require );
-        $self->{table}->put( $ri, 3, $state_label );
-
-        $self->{widgets}[$ai] = {
-            field       => $field,
-            crt_label   => $crt_label,
-            fld_label   => $fld_label,
-            state_label => $state_label,
-            cbx_require => $cbx_require,
-            required    => \$v_required,
-        };
-        $ri++;
-
-        $req_no++ if $required;
+        $rec->{id_tt} = $id_tt;
+        if ( $rec->{state} and $rec->{state} eq 'del' ) {
+            push @to_delete, @$rec{qw(id_art)};
+        }
+        else {
+            push @to_updins, $rec;
+        }
     }
 
-    $self->update_labels('req_fields_no', $req_no);
-    $self->update_labels('tot_fields_no', $rec_no);
-    $self->{req_no} = $req_no;
+    # Delete
+    my $where  = {
+        id_tt  => $id_tt,
+        id_art => { -in => \@to_delete },
+    };
+    $self->model->table_record_delete( $table, $where );
+
+    # Update or Insert
+    my @columns  = (qw{id_tt id_art var_name required});
+    my @matching = (qw{var_name});
+    $self->model->update_or_insert( $table, \@columns, \@matching,
+        \@to_updins );
 
     return;
 }
 
-sub add_label {
-    my ($self, $label, $column, $relief, $anchor) = @_;
+=head2 set_row_status
 
-    # Label - field label
-    return $self->{table}->Label(
-        -text   => $label,
-        -width  => get_col_width($column),
-        -relief => $relief // 'sunken',
-        -anchor => $anchor // 'c',
-        -bg     => 'white',
-    );
-}
+Update the status field of the row.
 
-sub req_state_change {
-    my ($self, $check) = @_;
+=cut
 
-    $self->{btn_update}->configure(-state => 'disabled');
-    $self->{btn_save}->configure(  -state => 'normal');
+sub set_row_status {
+    my ($self, $r, $cell_text) = @_;
 
-    # Update label
-    $check
-        ? $self->{req_no}++
-        : $self->{req_no}--;
-    $self->update_labels('req_fields_no', $self->{req_no});
+    $self->{tmx}->cell_write($r, 'state', $cell_text);
+    if ( $cell_text =~ m{succes|ignorat} ) {
+        $self->{tmx}->toggle_ckbutton($r, $self->{_sc}, 0);
+    }
+
+    my $tag_name = 'ro_center_rec';
+    $tag_name = 'ro_center_del' if $cell_text eq 'del';
+    $tag_name = 'ro_center_new' if $cell_text eq 'new';
+
+    $self->{tmx}->tagCell($tag_name, "$r,2");
 
     return;
 }
