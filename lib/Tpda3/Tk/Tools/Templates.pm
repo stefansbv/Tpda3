@@ -292,8 +292,10 @@ sub run_screen {
 
     # Required fields: fld_name => [#, Label]
     $self->{rq_controls} = {
-        tt_file => [ 0, '  Template file' ],
-        title   => [ 1, '  Title' ],
+        tt_file    => [ 0, '  Template file' ],
+        title      => [ 1, '  Title' ],
+        table_name => [ 2, '  Table name' ],
+        view_name  => [ 3, '  View name (or the table name again)' ],
     };
 
     return;
