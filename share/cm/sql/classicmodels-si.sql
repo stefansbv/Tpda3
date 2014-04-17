@@ -20,7 +20,9 @@
  * The sample database is provided under the terms Eclipse.org
  * Software User Agreement.
  *
- * Adapted for Firebird and TPDA by Stefan Suciu, 2009
+ * Adapted for Firebird and TPDA by Stefan Suciu, 2009, 2014
+ * Add new "system" tables reports and reports_det
+ * Add new "system" tables templates, templates_var and templates_req
  * New view V_PRODUCTS
  * Added productlinecode to PRODUCTLINES table
  * Replaced productline with productlinecode in PRODUCTS table
@@ -73,7 +75,106 @@ DROP TABLE offices;
 DROP TABLE country;
 */
 
+-- Tpda3 system tables
+
+--- Reports
+
+/*
+ * Name : reports
+ * Type : table
+ * Desc : Report Manager reports metadata
+ * Deps :
+ */
+CREATE TABLE reports (
+   id_rep       INTEGER NOT NULL
+ , id_user      INTEGER
+ , repofile     VARCHAR(150)
+ , title        VARCHAR(50)
+ , descr        VARCHAR(250)
+ , CONSTRAINT pk_reports_id_rep PRIMARY KEY (id_rep)
+);
+
+/*
+ * Name : reports_det
+ * Type : table
+ * Desc : Report Manager reports metadata details
+ * Deps :
+ */
+CREATE TABLE reports_det (
+   id_rep       INTEGER      NOT NULL
+ , id_art       INTEGER      NOT NULL
+ , hint         VARCHAR(15)  NOT NULL
+ , tablename    VARCHAR(25)  NOT NULL
+ , searchfield  VARCHAR(25)  NOT NULL
+ , resultfield  VARCHAR(25)  NOT NULL
+ , headerlist   VARCHAR(50)  NOT NULL
+ , CONSTRAINT pk_reports_det_id_rep PRIMARY KEY (id_rep, id_art)
+ , CONSTRAINT fk_reports_det_id_rep FOREIGN KEY (id_rep)
+       REFERENCES reports (id_rep)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+);
+
+--- Templates
+
+/*
+ * Name : templates
+ * Type : table
+ * Desc : Template Toolkit documents metadata
+ * Deps :
+ */
+CREATE TABLE templates (
+   id_tt        INTEGER NOT NULL
+ , tt_file      VARCHAR(150)
+ , title        VARCHAR(50)
+ , table_name   VARCHAR(100)
+ , view_name    VARCHAR(100)
+ , common_data  VARCHAR(100)
+ , descr        VARCHAR(250)
+ , datasource   VARCHAR(100)
+ , CONSTRAINT pk_templates_id_tt PRIMARY KEY (id_tt)
+);
+
+/*
+ * Name : templates_req
+ * Type : table
+ * Desc : Template Toolkit documents required fields
+ * Deps : templates
+ */
+CREATE TABLE templates_req (
+   id_tt        INTEGER       NOT NULL
+ , id_art       INTEGER       NOT NULL
+ , var_name     VARCHAR(50)   NOT NULL
+ , state        VARCHAR(10)               -- Not used, only for TM display
+ , required     SMALLINT      NOT NULL
+ , CONSTRAINT pk_templates_req_id_tt PRIMARY KEY (id_tt, id_art)
+ , CONSTRAINT fk_templates_req_id_tt FOREIGN KEY (id_tt)
+       REFERENCES templates (id_tt)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+ , UNIQUE (var_name)
+);
+
+/*
+ * Name : templates_var
+ * Type : table
+ * Desc : Template Toolkit documents global variables
+ * Deps :
+ */
+CREATE TABLE templates_var (
+   id_tt        INTEGER       NOT NULL
+ , id_art       INTEGER       NOT NULL
+ , var_name     VARCHAR(50)   NOT NULL
+ , var_value    VARCHAR(250)  NOT NULL
+ , CONSTRAINT pk_templates_var_id_tt PRIMARY KEY (id_tt, id_art)
+ , CONSTRAINT fk_templates_var_id_tt FOREIGN KEY (id_tt)
+       REFERENCES templates (id_tt)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+);
+
 -- Tables
+
 
 CREATE TABLE status (
     code        VARCHAR(5) NOT NULL,
@@ -219,32 +320,6 @@ CREATE TABLE payments (
                     REFERENCES customers (customernumber)
                         ON DELETE NO ACTION
                         ON UPDATE NO ACTION
-);
-
--- Tpda3 specific tables
-
-CREATE TABLE reports (
-   id_rep       INTEGER PRIMARY KEY
- , id_user      INTEGER
- , repofile     VARCHAR(150)
- , title        VARCHAR(50)
- , descr        TEXT
-);
-
-
-CREATE TABLE reports_det (
-   id_rep       INTEGER      NOT NULL
- , id_art       INTEGER      NOT NULL
- , hint         VARCHAR(15)  NOT NULL
- , tablename    VARCHAR(25)  NOT NULL
- , searchfield  VARCHAR(25)  NOT NULL
- , resultfield  VARCHAR(25)  NOT NULL
- , headerlist   VARCHAR(50)  NOT NULL
- , CONSTRAINT pk_reports_det_id_rep PRIMARY KEY (id_rep, id_art)
- , CONSTRAINT fk_reports_det_id_rep FOREIGN KEY (id_rep)
-       REFERENCES reports (id_rep)
-           ON DELETE CASCADE
-           ON UPDATE CASCADE
 );
 
 -- Views

@@ -20,7 +20,9 @@
  * The sample database is provided under the terms Eclipse.org
  * Software User Agreement.
  *
- * Adapted for Firebird and TPDA by Stefan Suciu, 2009
+ * Adapted for Firebird and TPDA by Stefan Suciu, 2009, 2014
+ * Add new "system" tables reports and reports_det
+ * Add new "system" tables templates, templates_var and templates_req
  * New view V_PRODUCTS
  * Added productlinecode to PRODUCTLINES table
  * Replaced productline with productlinecode in PRODUCTS table
@@ -60,6 +62,12 @@ DROP VIEW v_orders;
 DROP VIEW v_orderdetails;
 DROP VIEW v_country;
 
+DROP TABLE reports_det;
+DROP TABLE reports;
+DROP TABLE templates_req;
+DROP TABLE templates_var;
+DROP TABLE templates;
+
 DROP TABLE status;
 DROP TABLE payments;
 DROP TABLE orderdetails;
@@ -73,7 +81,10 @@ DROP TABLE offices;
 DROP TABLE country;
 */
 
--- Tables
+
+-- Tpda3 system tables
+
+--- Reports
 
 /*
  * Name : reports
@@ -82,7 +93,7 @@ DROP TABLE country;
  * Deps :
  */
 CREATE TABLE reports (
-   id_rep       SERIAL
+   id_rep       INTEGER NOT NULL
  , id_user      INTEGER
  , repofile     VARCHAR(150)
  , title        VARCHAR(50)
@@ -110,6 +121,67 @@ CREATE TABLE reports_det (
            ON DELETE CASCADE
            ON UPDATE CASCADE
 );
+
+--- Templates
+
+/*
+ * Name : templates
+ * Type : table
+ * Desc : Template Toolkit documents metadata
+ * Deps :
+ */
+CREATE TABLE templates (
+   id_tt        INTEGER NOT NULL
+ , tt_file      VARCHAR(150)
+ , title        VARCHAR(50)
+ , table_name   VARCHAR(100)
+ , view_name    VARCHAR(100)
+ , common_data  VARCHAR(100)
+ , descr        TEXT
+ , datasource   VARCHAR(100)
+ , CONSTRAINT pk_templates_id_tt PRIMARY KEY (id_tt)
+);
+
+/*
+ * Name : templates_req
+ * Type : table
+ * Desc : Template Toolkit documents required fields
+ * Deps : templates
+ */
+CREATE TABLE templates_req (
+   id_tt        INTEGER       NOT NULL
+ , id_art       INTEGER       NOT NULL
+ , var_name     VARCHAR(50)   NOT NULL
+ , state        VARCHAR(10)               -- Not used, only for TM display
+ , required     SMALLINT      NOT NULL
+ , CONSTRAINT pk_templates_req_id_tt PRIMARY KEY (id_tt, id_art)
+ , CONSTRAINT fk_templates_req_id_tt FOREIGN KEY (id_tt)
+       REFERENCES templates (id_tt)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+ , UNIQUE (var_name)
+);
+
+/*
+ * Name : templates_var
+ * Type : table
+ * Desc : Template Toolkit documents global variables
+ * Deps :
+ */
+CREATE TABLE templates_var (
+   id_tt        INTEGER       NOT NULL
+ , id_art       INTEGER       NOT NULL
+ , var_name     VARCHAR(50)   NOT NULL
+ , var_value    VARCHAR(250)  NOT NULL
+ , CONSTRAINT pk_templates_var_id_tt PRIMARY KEY (id_tt, id_art)
+ , CONSTRAINT fk_templates_var_id_tt FOREIGN KEY (id_tt)
+       REFERENCES templates (id_tt)
+           ON DELETE CASCADE
+           ON UPDATE CASCADE
+);
+
+-- Tables
+
 
 CREATE TABLE status (
     code        VARCHAR(5) NOT NULL,
