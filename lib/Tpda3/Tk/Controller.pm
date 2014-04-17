@@ -863,7 +863,7 @@ sub message_dialog {
 }
 
 sub message_tiler {
-    my ($self, $message, $record);
+    my ($self, $message, $record) = @_;
     my $dlg = Tpda3::Tk::Dialog::Tiler->new($self->view);
     $dlg->message_tiler($message, $record);
     return;
