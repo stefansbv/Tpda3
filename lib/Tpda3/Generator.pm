@@ -265,10 +265,11 @@ sub extract_tt_fields {
             $field =~ s/^\s+//;
             $field =~ s/\s+$//;
 
-            # Clean
-            $field =~ s/^\[%\-?\s+//g;
-            $field =~ s/\s+\-?%\]$//g;
-            $field =~ s/\s*(IF|ELSIF|ELSE|END)\s*//i;
+            # Clean (TODO: refactor)
+            $field =~ s/^\[%\-?\s*//g;
+            $field =~ s/\s*\-?%\]$//g;
+            $field =~ s/\s*(IF|ELSIF|ELSE|END|FOREACH|FOR)\s*//i;
+            $field =~ s/\s*USE.*//i;
             $field =~ s/\s*(==.+)\s*//i;
             $field =~ s/^r\.//;
 
