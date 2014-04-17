@@ -240,7 +240,7 @@ sub get_menubar_merged_labels {
         'menu_help' => {
             'label' => __ 'Help',
             'popup' => {
-                '1' => { 'label' => __ 'Guide' },
+                '1' => { 'label' => __ 'Manual' },
                 '2' => { 'label' => __ 'About' },
             },
         },

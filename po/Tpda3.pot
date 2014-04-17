@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Tpda3 0.83\n"
+"Project-Id-Version: Tpda3 0.84\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-13 19:17+0300\n"
+"POT-Creation-Date: 2014-04-17 13:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,120 +26,120 @@ msgstr ""
 msgid "Record loaded (d)"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:1773 blib/lib/Tpda3/Controller.pm:1733
+#: lib/Tpda3/Controller.pm:1776 blib/lib/Tpda3/Controller.pm:1733
 msgid "Details"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2413 blib/lib/Tpda3/Controller.pm:2365
+#: lib/Tpda3/Controller.pm:2415 blib/lib/Tpda3/Controller.pm:2365
 msgid "record"
 msgid_plural "records"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/Tpda3/Controller.pm:2415 blib/lib/Tpda3/Controller.pm:2367
+#: lib/Tpda3/Controller.pm:2417 blib/lib/Tpda3/Controller.pm:2367
 msgid "first"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2419 blib/lib/Tpda3/Controller.pm:2371
+#: lib/Tpda3/Controller.pm:2421 blib/lib/Tpda3/Controller.pm:2371
 #, perl-brace-format
 msgid "{pre} {count} {post}"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2486 blib/lib/Tpda3/Controller.pm:2437
+#: lib/Tpda3/Controller.pm:2488 blib/lib/Tpda3/Controller.pm:2437
 msgid "records"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2511 blib/lib/Tpda3/Controller.pm:2462
+#: lib/Tpda3/Controller.pm:2513 blib/lib/Tpda3/Controller.pm:2462
 msgid "Load a record, first"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2569 lib/Tpda3/Controller.pm:3168
-#: lib/Tpda3/Controller.pm:3390 lib/Tpda3/Controller.pm:3454
+#: lib/Tpda3/Controller.pm:2571 lib/Tpda3/Controller.pm:3170
+#: lib/Tpda3/Controller.pm:3392 lib/Tpda3/Controller.pm:3456
 #: blib/lib/Tpda3/Controller.pm:2520 blib/lib/Tpda3/Controller.pm:3139
 #: blib/lib/Tpda3/Controller.pm:3368 blib/lib/Tpda3/Controller.pm:3432
 msgid "Empty record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2577 blib/lib/Tpda3/Controller.pm:2528
+#: lib/Tpda3/Controller.pm:2579 blib/lib/Tpda3/Controller.pm:2528
 msgid "Report failed!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2584 blib/lib/Tpda3/Controller.pm:2535
+#: lib/Tpda3/Controller.pm:2586 blib/lib/Tpda3/Controller.pm:2535
 msgid "Output path not found"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3114 blib/lib/Tpda3/Controller.pm:3085
+#: lib/Tpda3/Controller.pm:3116 blib/lib/Tpda3/Controller.pm:3085
 msgid "Record loaded (r)"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3136 blib/lib/Tpda3/Controller.pm:3107
+#: lib/Tpda3/Controller.pm:3138 blib/lib/Tpda3/Controller.pm:3107
 msgid "Reloaded"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3222 blib/lib/Tpda3/Controller.pm:3198
+#: lib/Tpda3/Controller.pm:3224 blib/lib/Tpda3/Controller.pm:3198
 msgid "Deleted"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3313 blib/lib/Tpda3/Controller.pm:3291
+#: lib/Tpda3/Controller.pm:3315 blib/lib/Tpda3/Controller.pm:3291
 msgid "Not saved"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3316 blib/lib/Tpda3/Controller.pm:3294
+#: lib/Tpda3/Controller.pm:3318 blib/lib/Tpda3/Controller.pm:3294
 msgid "Canceled"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3339 blib/lib/Tpda3/Controller.pm:3317
+#: lib/Tpda3/Controller.pm:3341 blib/lib/Tpda3/Controller.pm:3317
 msgid "Record changed"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3340 lib/Tpda3/Controller.pm:3344
+#: lib/Tpda3/Controller.pm:3342 lib/Tpda3/Controller.pm:3346
 #: blib/lib/Tpda3/Controller.pm:3318 blib/lib/Tpda3/Controller.pm:3322
 msgid "Save record?"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3343 blib/lib/Tpda3/Controller.pm:3321
+#: lib/Tpda3/Controller.pm:3345 blib/lib/Tpda3/Controller.pm:3321
 msgid "New record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3347 blib/lib/Tpda3/Controller.pm:3325
+#: lib/Tpda3/Controller.pm:3349 blib/lib/Tpda3/Controller.pm:3325
 msgid "Delete record"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3348 blib/lib/Tpda3/Controller.pm:3326
+#: lib/Tpda3/Controller.pm:3350 blib/lib/Tpda3/Controller.pm:3326
 msgid "Confirm record delete?"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3381 lib/Tpda3/Controller.pm:3405
+#: lib/Tpda3/Controller.pm:3383 lib/Tpda3/Controller.pm:3407
 #: blib/lib/Tpda3/Controller.pm:3359 blib/lib/Tpda3/Controller.pm:3383
 msgid "Saved"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3408 blib/lib/Tpda3/Controller.pm:3386
+#: lib/Tpda3/Controller.pm:3410 blib/lib/Tpda3/Controller.pm:3386
 msgid "Not in edit|add mode!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3522 lib/Tpda3/Tk/View.pm:1921
+#: lib/Tpda3/Controller.pm:3524 lib/Tpda3/Tk/View.pm:1921
 #: blib/lib/Tpda3/Controller.pm:3500
 msgid "Please, fill in data for:"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3614 blib/lib/Tpda3/Controller.pm:3593
+#: lib/Tpda3/Controller.pm:3616 blib/lib/Tpda3/Controller.pm:3593
 msgid "Changed record check failed!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3637 blib/lib/Tpda3/Controller.pm:3616
+#: lib/Tpda3/Controller.pm:3639 blib/lib/Tpda3/Controller.pm:3616
 msgid "Record copied"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3638 blib/lib/Tpda3/Controller.pm:3617
+#: lib/Tpda3/Controller.pm:3640 blib/lib/Tpda3/Controller.pm:3617
 msgid "Record copy failed"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3657 blib/lib/Tpda3/Controller.pm:3636
+#: lib/Tpda3/Controller.pm:3659 blib/lib/Tpda3/Controller.pm:3636
 msgid "Record restored"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:3658 blib/lib/Tpda3/Controller.pm:3637
+#: lib/Tpda3/Controller.pm:3660 blib/lib/Tpda3/Controller.pm:3637
 msgid "Record restore failed"
 msgstr ""
 
@@ -173,8 +173,7 @@ msgid "Help"
 msgstr ""
 
 #: lib/Tpda3/Wx/View.pm:243 lib/Tpda3/Tk/View.pm:319
-#: blib/lib/Tpda3/Wx/View.pm:246 blib/lib/Tpda3/Tk/View.pm:324
-msgid "Guide"
+msgid "Manual"
 msgstr ""
 
 #: lib/Tpda3/Wx/View.pm:244 lib/Tpda3/Tk/View.pm:320
@@ -454,4 +453,8 @@ msgstr ""
 
 #: blib/lib/Tpda3/Wx/View.pm:232 blib/lib/Tpda3/Tk/View.pm:310
 msgid "Tools"
+msgstr ""
+
+#: blib/lib/Tpda3/Wx/View.pm:246 blib/lib/Tpda3/Tk/View.pm:324
+msgid "Guide"
 msgstr ""

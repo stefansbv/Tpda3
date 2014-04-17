@@ -80,10 +80,10 @@ sub help_dialog {
 
     my $attribs = {
         'tb3gd' => {
-            'tooltip' => 'Show User Guide',
+            'tooltip' => 'Show User Manual',
             'icon'    => 'appbook16',
             'sep'     => 'none',
-            'help'    => 'Show User Guide',
+            'help'    => 'Show User Manual',
             'method'  => sub { $self->toggle_load('ugd'); },
             'type'    => '_item_check',
             'id'      => '20001',
@@ -241,7 +241,7 @@ sub load_ugd_text {
     $self->{ttext}->configure( -state => 'normal' );
     $self->{ttext}->delete( '1.0', 'end' );
 
-    my $title = "\n Ghid de utilizare \n\n";
+    my $title = "\n Manual de utilizare \n\n";
 
     my $txt = get_help_ro();
 
