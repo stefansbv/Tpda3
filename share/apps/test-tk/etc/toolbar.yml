@@ -44,3 +44,43 @@ toolbar2:
         edit: normal
         find: disabled
         sele: disabled
+  tb2rr:
+    id      : 2003
+    type    : _item_normal
+    icon    : actreload16
+    tooltip : Remove row
+    help    : Remove row from table
+    sep     : none
+    state:
+      rec:
+        idle: disabled
+        add : normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add : normal
+        edit: normal
+        find: disabled
+        sele: disabled
+  tb2sv:
+    id      : 2004
+    type    : _item_normal
+    icon    : filesave16
+    tooltip : Remove row
+    help    : Remove row from table
+    sep     : none
+    state:
+      rec:
+        idle: disabled
+        add : normal
+        edit: normal
+        find: disabled
+        sele: disabled
+      det:
+        idle: disabled
+        add : normal
+        edit: normal
+        find: disabled
+        sele: disabled
