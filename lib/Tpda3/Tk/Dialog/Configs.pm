@@ -617,7 +617,7 @@ sub update_path_field {
     return unless $field and $value;
 
     eval {
-        my $state = $self->{controls}{$field}[1]->cget( -state );
+        my $state = $self->{controls}{$field}[1]->cget('-state');
         $self->{controls}{$field}[1]->configure( -state => 'normal' );
         $self->{controls}{$field}[1]->delete( 0, 'end' );
         $self->{controls}{$field}[1]->insert( 0, $value );

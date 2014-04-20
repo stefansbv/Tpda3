@@ -330,7 +330,7 @@ sub template_file {
     my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
 
     eval {
-        my $state = $self->{controls}{tt_file}[1]->cget(-state);
+        my $state = $self->{controls}{tt_file}[1]->cget('-state');
         $self->{controls}{tt_file}[1]->configure( -state => 'normal' );
         $self->{controls}{tt_file}[1]->delete( 0, 'end' );
         $self->{controls}{tt_file}[1]->insert( 0, $file );

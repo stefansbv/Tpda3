@@ -101,7 +101,7 @@ sub message_tiler {
 
     #-- icon
 
-    my $bg = $frame_top_left->cget(-background);
+    my $bg = $frame_top_left->cget('-background');
     my $w_bitmap = $frame_top_left->Canvas(
         Name                => "bitmap",
         -width              => 32,

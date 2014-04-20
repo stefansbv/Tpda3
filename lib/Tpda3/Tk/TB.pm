@@ -196,7 +196,7 @@ sub enable_tool {
         }
     }
     else {
-        $state = $tb_btn->cget( -state );
+        $state = $tb_btn->cget('-state');
         $other = $state eq 'normal' ? 'disabled' : 'normal';
     }
 

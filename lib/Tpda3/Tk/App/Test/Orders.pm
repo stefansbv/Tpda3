@@ -418,7 +418,7 @@ sub calculate_order_line {
     }
 
     # Refreshing the table...
-    $xt->configure( -padx => $xt->cget( -padx ) );
+    $xt->configure( -padx => $xt->cget('-padx') );
 
     $self->calculate_order($xt);
 
@@ -436,7 +436,7 @@ sub calculate_order {
 
     $self->{view}->set_status( '', 'ms'); # clear status message
 
-    my $rows_no  = $xt->cget( -rows );
+    my $rows_no  = $xt->cget('-rows');
     my $rows_idx = --$rows_no;
 
     my $row            = 1;

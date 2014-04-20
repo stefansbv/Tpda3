@@ -263,7 +263,7 @@ sub report_file {
     my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
 
     eval {
-        my $state = $self->{controls}{repofile}[1]->cget(-state);
+        my $state = $self->{controls}{repofile}[1]->cget('-state');
         $self->{controls}{repofile}[1]->configure( -state => 'normal' );
         $self->{controls}{repofile}[1]->delete( 0, 'end' );
         $self->{controls}{repofile}[1]->insert( 0, $file );

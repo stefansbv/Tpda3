@@ -384,7 +384,7 @@ sub setup_bindings_table {
                 $tm->activate("$r,$c");
                 $tm->reread();
 
-                my $ci = $tm->cget( -cols ) - 1;    # max col index
+                my $ci = $tm->cget('-cols') - 1;    # max col index
                 my $sc = $self->method_for( $dispatch, $bindings, $r, $c,
                     $tm_ds );
                 my $ac = $c;

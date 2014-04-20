@@ -214,7 +214,7 @@ Clear all data from the Tk::TableMatrix widget, but preserve the header.
 sub clear_all {
     my $self = shift;
 
-    my $rows_no  = $self->cget( -rows );
+    my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
     my $r;
 
@@ -236,7 +236,7 @@ Fill TableMatrix widget with data from the main table.
 sub fill_main {
     my ( $self, $record_ref, $countcol ) = @_;
 
-    my $xtvar = $self->cget( -variable );
+    my $xtvar = $self->cget('-variable');
     my $rows  = 0;
 
     #- Scan DS and write to table
@@ -278,10 +278,10 @@ Read main data from the widget.
 sub get_main_data {
     my $self = shift;
 
-    my $xtvar = $self->cget( -variable );
+    my $xtvar = $self->cget('-variable');
 
-    my $rows_no  = $self->cget( -rows );
-    my $cols_no  = $self->cget( -cols );
+    my $rows_no  = $self->cget('-rows');
+    my $cols_no  = $self->cget('-cols');
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
@@ -319,7 +319,7 @@ Get I<expandData> variable value;
 sub get_expdata {
     my $self = shift;
 
-    return $self->cget( -expandData );
+    return $self->cget('-expandData');
 }
 
 =head1 AUTHOR

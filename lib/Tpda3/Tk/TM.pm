@@ -133,7 +133,7 @@ Return number of rows in TM, without the header row.
 sub get_row_count {
     my $self = shift;
 
-    my $rows_no  = $self->cget( -rows );
+    my $rows_no  = $self->cget('-rows');
     my $rows_count = $rows_no - 1;
 
     return $rows_count;
@@ -276,7 +276,7 @@ Clear all data from the Tk::TableMatrix widget, but preserve the header.
 sub clear_all {
     my $self = shift;
 
-    my $rows_no  = $self->cget( -rows );
+    my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
     my $r;
 
@@ -296,7 +296,7 @@ Fill TableMatrix widget with data.
 sub fill {
     my ( $self, $record_ref ) = @_;
 
-    my $xtvar = $self->cget( -variable );
+    my $xtvar = $self->cget('-variable');
 
     my $row = 1;
 
@@ -353,7 +353,7 @@ sub write_row {
 
     return unless ref $record_ref;    # No results
 
-    my $xtvar = $self->cget( -variable );
+    my $xtvar = $self->cget('-variable');
 
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
@@ -393,10 +393,10 @@ Read data from widget.
 sub data_read {
     my ($self, $with_sel_name) = @_;
 
-    my $xtvar = $self->cget( -variable );
+    my $xtvar = $self->cget('-variable');
 
-    my $rows_no  = $self->cget( -rows );
-    my $cols_no  = $self->cget( -cols );
+    my $rows_no  = $self->cget('-rows');
+    my $cols_no  = $self->cget('-cols');
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
 
@@ -643,7 +643,7 @@ Make TableMatrix selector.
 sub tmatrix_make_selector {
     my ( $self, $c ) = @_;
 
-    my $rows_no  = $self->cget( -rows );
+    my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
 
     foreach my $r ( 1 .. $rows_idx ) {
@@ -837,7 +837,7 @@ Return how many buttons are checked.
 sub count_is_checked {
     my ($self, $c) = @_;
 
-    my $rows_no  = $self->cget( -rows );
+    my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
 
     my $count = 0;
