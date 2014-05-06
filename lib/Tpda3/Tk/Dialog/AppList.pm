@@ -337,6 +337,8 @@ sub load_mnemonics {
     foreach my $mnemonic ( @{$mnemonics_ref} ) {
         next if $mnemonic eq 'test-wx';      # skip Wx apps
 
+        next unless $self->cfg->validate_config($mnemonic); # without app
+
         my $record = {
             id_rep => $cnt,
             title  => $mnemonic,
