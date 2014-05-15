@@ -21,11 +21,11 @@ Requirements
 
 - Perl v5.8.9 or newer. For full UTF support is recomended at least v5.10.1
 
-- PostgreSQL version 8.2 or greater or
+- SQLite (required for testing);
+- PostgreSQL version 8.2 or greater;
 - Firebird version 2.1 or greater
-  (Because of the "INSERT ... RETURNING" SQL statement, feature).
-- CUBRID version 8.4
-- SQLite
+  (Because of the "INSERT ... RETURNING" SQL statement, feature);
+- CUBRID version 8.4;
 
 - Operating System
 
@@ -40,6 +40,16 @@ of Tpda3 is almost the same as of TPDA, with some minor improvements.
 
 The configuration files formats are new and are in YAML (YAML::Tiny)
 and Apache format (Config::General).
+
+
+Installation
+------------
+
+Because Tpda3 uses a few modules that need to be patched, the best way
+to install is from Stratopan.  This is a good time to say to the
+Stratopan team: thank you for a great service!
+
+cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only Tpda3
 
 
 Troubleshooting
