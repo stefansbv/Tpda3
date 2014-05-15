@@ -520,12 +520,12 @@ sub update_value {
         if ($strict) {
             my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
             unless ( $self->{$field} eq $file ) {
-                $self->_set_status( "Error, wrong file '$file'", 'red' );
+                $self->_set_status( "Wrong file '$file'!", 'blue' );
             }
         }
         else {
-            unless ( -x $path ) {
-                $self->_set_status( "Error, wrong path '$path'", 'red' );
+            unless ( $path and -x $path ) {
+                $self->_set_status( "No file!", 'blue' );
             }
         }
     }
@@ -544,15 +544,21 @@ sub dialog_file {
 
     my $initialdir = $self->get_init_dir($field);
 
-    my $file_dlg = $self->{tlw}->JFileDialog(
-        -Title  => 'Alegeti fisierul',
-        -Create => 0,
-        -Path   => $initialdir,
-        -FPat    => '*',
-        -ShowAll => 'NO',
+    my $types = [ [ 'Executable', $self->{$field} ], [ 'All Files', '*', ], ];
+    my $path = $self->{tlw}->getOpenFile(
+        -filetypes  => $types,
+        -initialdir => $initialdir,
     );
 
-    my $path = $file_dlg->Show(-Horiz => 1);
+    # my $file_dlg = $self->{tlw}->JFileDialog(
+    #     -Title  => 'Select file',
+    #     -Create => 0,
+    #     -Path   => $initialdir,
+    #     -FPat    => '*',
+    #     -ShowAll => 'NO',
+    # );
+    # my $path = $file_dlg->Show(-Horiz => 1);
+
     unless ($path and -f $path) {
         $self->_set_status('Error, file not found', 'red');
     }
@@ -571,13 +577,18 @@ sub dialog_path {
 
     my $initialdir = $self->get_init_dir($field);
 
-    my $path = $self->{tlw}->chooseDirectory(
+    my $path = $self->{tlw}->Tk::chooseDirectory(
         -initialdir => '~',
-        -title      => 'Choose a folder',
+        -title      => 'Select folder',
     );
 
-    unless ($path and -d $path) {
-        $self->_set_status('Error, path not found', 'red');
+    if ( !defined $path ) {
+        $self->_set_status( 'Canceled.', 'blue' );
+        return;
+    }
+    if ( !-d $path ) {
+        $self->_set_status( 'Error, path not found', 'orange' );
+        return;
     }
 
     return $path;
