@@ -14,11 +14,11 @@ Tpda3::Tk::Text - Subclass of Tk::Text.
 
 =head1 VERSION
 
-Version 0.84
+Version 0.85
 
 =cut
 
-our $VERSION = 0.84;
+our $VERSION = 0.85;
 
 =head1 SYNOPSIS
 

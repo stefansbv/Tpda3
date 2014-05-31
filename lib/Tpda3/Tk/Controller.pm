@@ -3,8 +3,8 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 use utf8;
-use English;
 
+use Data::Dumper;
 use Tk;
 use Tk::Font;
 use Hash::Merge qw(merge);
@@ -22,11 +22,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.84
+Version 0.85
 
 =cut
 
-our $VERSION = 0.84;
+our $VERSION = 0.85;
 
 =head1 SYNOPSIS
 
