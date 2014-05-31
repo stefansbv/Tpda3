@@ -806,6 +806,19 @@ sub resource_path_for {
     }
 }
 
+=head2 resource_data_for
+
+Return a configuration datastructure loaded from a .yaml or a .conf
+file from a path in configdir.
+
+=cut
+
+sub resource_data_for {
+    my ($self, $file_name, $resource_path) = @_;
+    my $cfg_file = $self->resource_path_for($file_name, $resource_path);
+    return $self->config_data_from($cfg_file);
+}
+
 =head1 AUTHOR
 
 Stefan Suciu, C<< <stefan@s2i2.ro> >>
