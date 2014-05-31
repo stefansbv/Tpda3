@@ -3,6 +3,7 @@ package Tpda3::Tk::Controller;
 use strict;
 use warnings;
 use utf8;
+use English;                                 # for $PERL_VERSION
 
 use Data::Dumper;
 use Tk;
@@ -22,11 +23,11 @@ Tpda3::Tk::Controller - The Controller
 
 =head1 VERSION
 
-Version 0.85
+Version 0.86
 
 =cut
 
-our $VERSION = 0.85;
+our $VERSION = 0.86;
 
 =head1 SYNOPSIS
 
