@@ -17,6 +17,8 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
+#use Data::Dumper;
+
 =head1 NAME
 
 Tpda3::Model - The Model
@@ -468,6 +470,12 @@ sub table_batch_query {
     my $colslist = $opts->{colslist};
     my $where    = $opts->{where};
     my $order    = $opts->{order};
+
+    # TODO; add validation for the parameteres
+    # print "Table:\n", Dumper($table);
+    # print "Cols :\n", Dumper($colslist);
+    # print "Where:\n", Dumper($where);
+    # print "Order:\n", Dumper($order);
 
     my $sql = SQL::Abstract->new();
 

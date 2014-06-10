@@ -6,10 +6,11 @@ use utf8;
 use English;                                 # for $PERL_VERSION
 
 use Data::Dumper;
-use Tk;
-use Tk::Font;
+use Math::Symbolic;
 use Hash::Merge qw(merge);
 use Log::Log4perl qw(get_logger :levels);
+use Tk;
+use Tk::Font;
 
 require Tpda3::Tk::View;
 require Tpda3::Tk::Dialog::Message;
