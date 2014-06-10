@@ -513,23 +513,23 @@ sub load_tt_details {
 
     $self->{_rd} = $self->model->table_batch_query($args);
 
-    my $eobj = $self->get_controls();
-
     #- Write template detail data to controls
 
-    #-- main fields
-
-    foreach my $field ( keys %{$eobj} ) {
-        my $fld_cfg  = $self->scrcfg()->maintable( 'columns', $field );
-        my $state    = $fld_cfg->{state};
-        my $bg_color = $fld_cfg->{bgcolor};
-        my $control  = $eobj->{$field}[1];
-        my $start_idx = $field eq 'descr' ? "1.0" : 0;    # 'descr' is Text
+    foreach my $field ( qw{id_tt tt_file descr} ) {
+        #my $fld_cfg  = $self->scrcfg()->maintable( 'columns', $field );
+        #my $state    = $fld_cfg->{state};
+        #my $bg_color = $fld_cfg->{bgcolor};
         my $value     = $self->{_rd}->[0]{$field};
-        $control->delete( $start_idx, 'end' );
-        $control->insert( $start_idx, $value ) if $value;
-        $self->view->configure_controls( $control, $state, $bg_color,
-            $fld_cfg );
+        if ( $field eq 'descr' ) {
+            $self->view->control_write_t( $field, $self->{controls}{$field},
+                $value );
+        }
+        else {
+            $self->view->control_write_e( $field, $self->{controls}{$field},
+                $value );
+        }
+        # $self->view->configure_controls( $control, $state, $bg_color,
+        #     $fld_cfg );
     }
 
     return;
