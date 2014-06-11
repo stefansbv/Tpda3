@@ -24,7 +24,6 @@ require Tpda3::Config;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
-
 require Tpda3::Tk::Dialog::Tiler;
 
 =head1 NAME
@@ -65,6 +64,7 @@ sub new {
     $self->{_model} = $model;
 
     $self->{_cfg} = Tpda3::Config->instance();
+    $self->{_log} = get_logger();
 
     $self->title(" Tpda3 ");
 
@@ -253,18 +253,26 @@ sub set_geometry {
     return;
 }
 
+=head2 logger
+
+Return logger.
+
+=cut
+
+sub logger {
+    my $self = shift;
+    return $self->{_log};
+}
+
 =head2 log_msg
 
 Log messages.
-
-TODO: get_logger only once.
 
 =cut
 
 sub log_msg {
     my ( $self, $msg ) = @_;
-    my $log = get_logger();
-    $log->info($msg);
+    $self->logger->info($msg);
     return;
 }
 

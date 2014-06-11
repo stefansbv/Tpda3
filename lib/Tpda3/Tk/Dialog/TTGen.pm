@@ -297,7 +297,7 @@ sub run_screen {
 
     #-- range from
     my $erange_from = $frm_middle->Entry(
-        -width   => 10,
+        -width   => 6,
         -justify => 'right',
     );
     $erange_from->form(
@@ -314,7 +314,7 @@ sub run_screen {
 
     #-- range to
     my $erange_to = $frm_middle->Entry(
-        -width   => 10,
+        -width   => 6,
         -justify => 'right',
     );
     $erange_to->form(
@@ -515,11 +515,11 @@ sub load_tt_details {
 
     #- Write template detail data to controls
 
-    foreach my $field ( qw{id_tt tt_file descr} ) {
-        #my $fld_cfg  = $self->scrcfg()->maintable( 'columns', $field );
-        #my $state    = $fld_cfg->{state};
-        #my $bg_color = $fld_cfg->{bgcolor};
-        my $value     = $self->{_rd}->[0]{$field};
+    foreach my $field ( qw{id_tt tt_file descr range_from range_to} ) {
+        my $fld_cfg = $self->scrcfg()->maintable( 'columns', $field );
+        my $state   = $fld_cfg->{state};
+        my $bg      = $fld_cfg->{bgcolor};
+        my $value   = $self->{_rd}->[0]{$field};
         if ( $field eq 'descr' ) {
             $self->view->control_write_t( $field, $self->{controls}{$field},
                 $value );
@@ -528,8 +528,8 @@ sub load_tt_details {
             $self->view->control_write_e( $field, $self->{controls}{$field},
                 $value );
         }
-        # $self->view->configure_controls( $control, $state, $bg_color,
-        #     $fld_cfg );
+        my $control = $self->get_controls($field);
+        $self->view->configure_controls( $control->[1], $state, $bg, $fld_cfg );
     }
 
     return;
@@ -559,7 +559,7 @@ sub batch_generate_doc {
     {
         my $dlg     = Tpda3::Tk::Dialog::Message->new( $self->view );
         my $message = __ 'Range error';
-        my $details = 'A valid range is required!';
+        my $details = __ 'A valid range is required!';
         $dlg->message_dialog( $message, $details, 'info', 'close' );
         return;
     }
@@ -586,7 +586,7 @@ sub batch_generate_doc {
     if ($rec_no <= 0 ) {
         my $dlg     = Tpda3::Tk::Dialog::Message->new( $self->view );
         my $message = __ 'Range error';
-        my $details = 'No records to proces, the table is empty!';
+        my $details = __ 'No records to proces, the table is empty!';
         $dlg->message_dialog( $message, $details, 'info', 'close' );
         return;
     }
