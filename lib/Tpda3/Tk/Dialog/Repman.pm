@@ -23,11 +23,11 @@ Tpda3::Tk::Dialog::RepMan - Dialog for preview and print RepMan reports.
 
 =head1 VERSION
 
-Version 0.86
+Version 0.87
 
 =cut
 
-our $VERSION = 0.86;
+our $VERSION = 0.87;
 
 =head1 SYNOPSIS
 

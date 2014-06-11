@@ -23,11 +23,11 @@ Tpda3::Generator - The Generator
 
 =head1 VERSION
 
-Version 0.86
+Version 0.87
 
 =cut
 
-our $VERSION = 0.86;
+our $VERSION = 0.87;
 
 =head1 SYNOPSIS
 

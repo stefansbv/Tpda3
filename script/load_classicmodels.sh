@@ -3,7 +3,7 @@
 # Load Classic Models data into tables for Firebird, PostgreSQL,
 # or SQLite
 #
-# Version: 0.86
+# Version: 0.87
 # Author: Stefan Suciu, (C) 2009-2012
 
 # With help from:
