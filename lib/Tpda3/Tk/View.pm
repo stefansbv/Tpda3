@@ -284,19 +284,10 @@ Create the menu
 
 sub _create_menu {
     my $self = shift;
-
-    #- Menu bar
-
     $self->{_menu} = $self->Menu();
-
-    # Get MenuBar atributes
-
     my $attribs = $self->get_menubar_merged_labels;
-
     $self->make_menus($attribs);
-
     $self->configure( -menu => $self->{_menu} );
-
     return;
 }
 
@@ -354,15 +345,15 @@ menu.
 =cut
 
 sub _create_app_menu {
-    my $self = shift;
+    my $self    = shift;
     my $attribs = $self->cfg->appmenubar;
-    $self->make_menus( $attribs, 2 );    # Add starting with position = 2
+    $self->make_menus( $attribs, 2 ); # add it starting with position=2
     return;
 }
 
 =head2 make_menus
 
-Make menus
+Make menus.
 
 =cut
 
@@ -450,7 +441,7 @@ sub make_popup_item {
 
 =head2 get_menu_popup_item
 
-Return a menu popup by name
+Return a menu popup by name.
 
 =cut
 
@@ -467,9 +458,7 @@ Enable / disable menus.
 
 sub set_menu_enable {
         my ( $self, $menu, $state ) = @_;
-
         $self->get_menu_popup_item($menu)->configure( -state => $state );
-
         return;
 }
 

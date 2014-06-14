@@ -768,7 +768,6 @@ Disable some menus at start.
 
 sub _set_menus_enable {
     my ( $self, $state ) = @_;
-
     foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
         $self->view->set_menu_enable($menu, $state);
     }
