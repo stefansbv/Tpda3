@@ -18,11 +18,11 @@ Tpda3::Tk::TMSHR - Create a table matrix SpreadsheetHideRows widget.
 
 =head1 VERSION
 
-Version 0.87
+Version 0.88
 
 =cut
 
-our $VERSION = 0.87;
+our $VERSION = 0.88;
 
 =head1 SYNOPSIS
 
