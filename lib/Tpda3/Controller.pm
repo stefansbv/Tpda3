@@ -760,17 +760,24 @@ sub get_dsm_name {
     return $dsm[0]{name};
 }
 
-=head2 _set_menus_enable
+=head2 _set_menus_state
 
 Disable some menus at start.
 
 =cut
 
-sub _set_menus_enable {
+sub _set_menus_state {
     my ( $self, $state ) = @_;
     foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
-        $self->view->set_menu_enable($menu, $state);
+        $self->view->set_menu_state($menu, $state);
     }
+
+    return unless $self->cfg->can('disabled_menus');
+    foreach my $menu ( @{ $self->cfg->disabled_menus } ) {
+        $self->view->set_menu_state($menu, 'disabled');
+    }
+
+    return;
 }
 
 =head2 _check_app_menus
@@ -790,7 +797,7 @@ sub _check_app_menus {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
         try { require $module_file }
         catch {
-            $self->view->set_menu_enable($menu_item, 'disabled');
+            $self->view->set_menu_state($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
             print "Reason: $_" if $self->cfg->verbose;
         }
@@ -1823,7 +1830,7 @@ sub screen_module_load {
         = $self->scrcfg()->screen('style') eq 'report'
         ? 'disabled'
         : 'normal';
-    $self->_set_menus_enable($menus_state);
+    $self->_set_menus_state($menus_state);
 
     $self->view->set_status( '', 'ms' );
 

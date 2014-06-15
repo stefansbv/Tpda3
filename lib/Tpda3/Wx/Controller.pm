@@ -58,7 +58,7 @@ sub new {
 
     $self->_set_event_handlers();
 
-    $self->_set_menus_enable('disabled');    # disable find mode menus
+    $self->_set_menus_state('disabled');    # disable find mode menus
 
     $self->_check_app_menus();               # disable if no screen
 

@@ -72,6 +72,9 @@ sub _new_instance {
 
         # Application configs
         $self->config_runtime_load();
+
+        # Load administrator configs
+        $self->config_load_administrator();
     }
 
     return $self;
@@ -507,8 +510,18 @@ Return the absolute path to the instance.yaml configuration file.
 
 sub instance_file {
     my $self = shift;
-
     return catfile( $self->configdir, 'etc', 'instance.yml' );
+}
+
+=head2 administrator_file
+
+Return the absolute path to the administrator.yaml configuration file.
+
+=cut
+
+sub administrator_file {
+    my $self = shift;
+    return catfile( $self->configdir, 'etc', 'administrator.yml' );
 }
 
 =head2 config_save_instance
@@ -529,16 +542,29 @@ sub config_save_instance {
 =head2 config_load_instance
 
 Load instance configurations.  User window geometry configuration.
+This configuration file is optional.
 
 =cut
 
 sub config_load_instance {
     my $self = shift;
-
     my $cfg_hr = $self->config_data_from( $self->instance_file, 'notfatal' );
-
     $self->make_accessors($cfg_hr);
+    return;
+}
 
+=head2 config_load_administrator
+
+Load administrator configurations.  Disabled menu configurations, for
+example for the Admin menu.  This configuration file is optional.
+
+=cut
+
+sub config_load_administrator {
+    my $self = shift;
+    my $cfg_hr
+        = $self->config_data_from( $self->administrator_file, 'notfatal' );
+    $self->make_accessors($cfg_hr);
     return;
 }
 
@@ -611,9 +637,7 @@ application config name.
 
 sub sharedir {
     my ( $self, $cfname ) = @_;
-
     $cfname ||= $self->cfname;
-
     return catdir( dist_dir('Tpda3'), 'apps', $cfname );
 }
 

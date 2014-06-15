@@ -450,13 +450,13 @@ sub get_menu_popup_item {
     return $self->{_menu}{$name};
 }
 
-=head2 set_menu_enable
+=head2 set_menu_state
 
 Enable / disable menus.
 
 =cut
 
-sub set_menu_enable {
+sub set_menu_state {
         my ( $self, $menu, $state ) = @_;
         $self->get_menu_popup_item($menu)->configure( -state => $state );
         return;

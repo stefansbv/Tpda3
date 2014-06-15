@@ -403,7 +403,7 @@ sub get_menubar {
     return $self->{_menu};
 }
 
-sub set_menu_enable {
+sub set_menu_state {
     my ( $self, $menu, $state ) = @_;
 
     $state = $state eq 'normal' ? 1 : 0;
