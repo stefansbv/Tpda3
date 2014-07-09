@@ -198,7 +198,6 @@ Return config instance variable
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -222,7 +221,6 @@ Return log instance variable
 
 sub _log {
     my $self = shift;
-
     return $self->{_log};
 }
 
@@ -3297,8 +3295,8 @@ sub record_clear {
 
 =head2 ask_to_save
 
-If in I<add> or I<edit> mode show dialog and ask to save or
-cancel. Reset modified status.
+If in I<add> or I<edit> mode show dialog and ask to save or to cancel.
+Reset modified status.
 
 =cut
 
@@ -3431,7 +3429,7 @@ sub record_save {
 
 =head2 check_required_data
 
-Check if required data is present in the screen.
+Check if all the required data is present in the screen.
 
 There are two list used in this method, the list of the non empty
 fields from the screen and the list of the fields that must have a
@@ -3525,8 +3523,7 @@ sub check_required_data {
         $ok_to_save = 0;
     }
 
-    my @message = grep { defined } @{$messages};    # remove undef elements
-
+    my @message = grep { defined } @{$messages}; # ignore undef elements
     if ( !$ok_to_save ) {
         my $message = __ 'Please, fill in data for:';
         $self->message_tiler($message, \@message);
@@ -3610,7 +3607,8 @@ sub list_remove {
 =head2 record_changed
 
 Retrieve the witness data structure from disk and the current data
-structure read from the screen widgets and compare them.
+structure read from the screen widgets and compare them.  If they
+differ than return true, else false.
 
 =cut
 

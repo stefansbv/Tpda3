@@ -71,7 +71,6 @@ Return config instance variable
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -83,7 +82,6 @@ Return log instance variable.
 
 sub _log {
     my $self = shift;
-
     return $self->{_log};
 }
 
@@ -146,7 +144,6 @@ TODO: What if the connection is lost?
 
 sub is_connected {
     my $self = shift;
-
     return $self->get_connection_observable->get;
 }
 
@@ -158,7 +155,6 @@ Get connection observable status
 
 sub get_connection_observable {
     my $self = shift;
-
     return $self->{_connected};
 }
 
@@ -170,7 +166,6 @@ Get STDOUT observable status
 
 sub get_stdout_observable {
     my $self = shift;
-
     return $self->{_stdout};
 }
 
@@ -182,9 +177,7 @@ Put a message on a text controll
 
 sub _print {
     my ( $self, $data ) = @_;
-
     $self->get_stdout_observable->set($data);
-
     return;
 }
 
@@ -196,9 +189,7 @@ Set mode
 
 sub set_mode {
     my ( $self, $mode ) = @_;
-
     $self->get_appmode_observable->set($mode);
-
     return;
 }
 
@@ -228,7 +219,6 @@ Return add mode observable status
 
 sub get_appmode_observable {
     my $self = shift;
-
     return $self->{_appmode};
 }
 
@@ -240,7 +230,6 @@ Return application mode
 
 sub get_appmode {
     my $self = shift;
-
     return $self->get_appmode_observable->get;
 }
 
@@ -256,9 +245,7 @@ Set screen data status for the I<rec> tab.
 
 sub set_scrdata_rec {
     my ( $self, $state ) = @_;
-
     $self->get_scrdata_rec_observable->set($state);
-
     return;
 }
 
@@ -274,9 +261,7 @@ Clear data status for the I<rec> tab.
 
 sub unset_scrdata_rec {
     my $self = shift;
-
     $self->get_scrdata_rec_observable->unset();
-
     return;
 }
 
@@ -288,7 +273,6 @@ Return screen data status for the I<rec> tab.
 
 sub get_scrdata_rec_observable {
     my $self = shift;
-
     return $self->{_scrdata_rec};
 }
 
@@ -300,7 +284,6 @@ Return true if screen data record is modified.
 
 sub is_modified {
     my $self = shift;
-
     return $self->get_scrdata_rec_observable->get;
 }
 
@@ -313,7 +296,6 @@ is undef.
 
 sub is_loaded {
     my $self = shift;
-
     return defined $self->get_scrdata_rec_observable->get;
 }
 
@@ -1505,7 +1487,7 @@ sub get_template_datasources {
     return $datasources->[0];
 }
 
-=head2 function_name
+=head2 other_data
 
 Get info about the datasources for the TT template from the templates table.
 
