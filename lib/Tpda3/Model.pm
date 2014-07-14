@@ -1522,16 +1522,21 @@ sub other_data {
     my $tt_aref       = $self->table_batch_query($args);
     my $id_tt         = $tt_aref->[0]{id_tt};
 
-    my $common_table = $self->get_template_datasources($id_tt)->{common_data};
-
     # Common data for all templates
-    $args = {};
-    $args->{table}    = $common_table;       # ex: semnaturi
-    $args->{colslist} = [qw{var_name var_value}];
-    $args->{order}    = undef;
-    $args->{where}    = undef;
-    my $common_aref   = $self->table_batch_query($args);
-    my %common = map { $_->{var_name} => $_->{var_value} } @{$common_aref};
+    my $common_table = $self->get_template_datasources($id_tt)->{common_data};
+    my %common;
+    if ($common_table) {
+        $args             = {};
+        $args->{table}    = $common_table;              # ex: semnaturi
+        $args->{colslist} = [qw{var_name var_value}];
+        $args->{order}    = undef;
+        $args->{where}    = undef;
+        my $common_aref = $self->table_batch_query($args);
+        %common = map { $_->{var_name} => $_->{var_value} } @{$common_aref};
+    }
+    else {
+        %common = ();
+    }
 
     # Specific data for the current template
     $args = {};
