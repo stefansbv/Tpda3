@@ -15,6 +15,8 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Tools::Reports screen.

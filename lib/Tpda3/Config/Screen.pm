@@ -52,17 +52,22 @@ sub new {
     return $self;
 }
 
-=head2 _cfg
+=head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
+
+=head2 load_conf
+
+Return a Perl data structure from a configuration file.
+
+=cut
 
 sub load_conf {
     my ($self, $name) = @_;
@@ -75,10 +80,11 @@ sub load_conf {
 
 =head2 screen
 
-Return the screen section data structure.
+Return the L<screen> section data structure.
 
-The B<details> section is used for loading different screen modules
-in the B<Details> tab, based on a field value from the B<Record> tab.
+The B<details> section can be used for loading different screen
+modules in the B<Details> tab, based on a field value from the
+B<Record> tab.
 
 In the screen config example below C<cod_tip> can be B<CS> or B<CT>,
 and for each, the corresponding screen module is loaded.  The
@@ -108,28 +114,45 @@ C<filter> parametere is the foreign key of the database table.
 
 sub screen {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'screen', @args );
 }
 
+=head2 defaultreport
+
+Return the L<defaultreport> section data structure.
+
+    <defaultreport>
+        name                = The title of the report
+        file                = report-file.rep
+    </defaultreport>
+
+=cut
+
 sub defaultreport {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'defaultreport', @args );
 }
 
+=head2 defaultdocument
+
+Return the L<defaultdocument> section data structure.
+
+    <defaultdocument>
+        name                = The title of the document
+        file                = template-file.tt
+        datasource          = db_view_name
+    </defaultdocument>
+
+=cut
+
 sub defaultdocument {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'defaultdocument', @args );
 }
 
 =head2 lists_ds
 
-Return the B<lists_ds> section data structure.  Data source for list
-widgets (Combobox).
-
-An example:
+Return the L<lists_ds> section data structure.
 
     <lists_ds>
         <cod_stud>
@@ -145,61 +168,221 @@ An example:
 
 sub lists_ds {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'lists_ds', @args );
 }
 
+=head2 list_header
+
+Return the L<list_header> section data structure.
+
+    <list_header>
+        lookup              = [ id_column ]
+        column              = column1
+        column              = column2
+        ...
+    </list_header>
+
+The L<lookup> column value is returned and considered the primary key
+of the table.  Some screens can have a second L<lookup> column.
+
+    <list_header>
+        lookup              = id_column1
+        lookup              = id_column2
+        column              = column3
+        column              = column4
+        ...
+    </list_header>
+
+=cut
+
 sub list_header {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'list_header', @args );
 }
 
+=head2 bindings
+
+Return the L<bindings> section data structure.
+
+See the POD in L<setup_lookup_bindings_entry> in the Tpda3::Controller
+module.
+
+=cut
+
 sub bindings {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'bindings', @args );
 }
 
+=head2 bindings_select
+
+Return the L<bindings_select> section data structure.
+
+    <bindings_select>
+        <suma>
+            target_tm       = tm1
+            table           = fact_pr
+            filter          = id_terti
+            order           = data_fact
+            field           = id_fact
+            ...
+            callback        = update_suma
+        </suma>
+    </bindings_select>
+
+=cut
+
 sub bindings_select {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'bindings_select', @args );
 }
 
+=head2 tablebindings
+
+Return the L<tablebindings> section data structure.
+
+See the POD in L<get_lookup_setings> in the Tpda3::Controller
+module.
+
+=cut
+
 sub tablebindings {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'tablebindings', @args );
 }
 
+=head2 deptable
+
+Return the L<deptable> section data structure.
+
+    <deptable tm1>
+        name                = orderdetails
+        view                = v_orderdetails
+        updatestyle         = delete+add
+        selectorcol         =
+        colstretch          = 2
+        orderby             = orderlinenumber
+        <keys>
+            name            = ordernumber
+            name            = orderlinenumber
+        </keys>
+        <columns>
+            <orderlinenumber>
+                id          = 0
+                label       = Art
+                tag         = ro_center
+                displ_width = 5
+                valid_width = 5
+                numscale    = 0
+                readwrite   = rw
+                datatype    = integer
+            </orderlinenumber>
+            ...
+        </columns>
+    </deptable>
+
+=cut
+
 sub deptable {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'deptable', @args );
 }
 
+=head2 repotable
+
+Return the L<repotable> section data structure.
+
+=cut
+
 sub repotable {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'repotable', @args );
 }
 
+=head2 scrtoolbar
+
+Return the L<scrtoolbar> section data structure.
+
+    <scrtoolbar>
+        <tm1>
+            name            = tb2ad
+            method          = tmatrix_add_row
+        </tm1>
+        <tm1>
+            name            = tb2rm
+            method          = tmatrix_remove_row
+        </tm1>
+    </scrtoolbar>
+
+
+=cut
+
 sub scrtoolbar {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'scrtoolbar', @args );
 }
 
+=head2 toolbar
+
+Return the L<toolbar> section data structure.
+
+    <toolbar>
+      <tb_fm>
+        <state>
+          <rec>
+            idle            = disabled
+            add             = disabled
+            edit            = disabled
+          </rec>
+        </state>
+      </tb_tn>
+      <tb_rm>
+        <state>
+          <rec>
+            edit            = disabled
+          </rec>
+        </state>
+      </tb_rm>
+    </toolbar>
+
+=cut
+
 sub toolbar {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'toolbar', @args );
 }
 
+=head2 maintable
+
+Return the L<maintable> section data structure.
+
+    <maintable>
+        name                = orders
+        view                = v_orders
+        <keys>
+            name            = [ ordernumber ]
+        </keys>
+        <columns>
+            <customername>
+                label       = Customer
+                state       = normal
+                ctrltype    = e
+                displ_width = 30
+                valid_width = 30
+                numscale    = 0
+                readwrite   = ro
+                findtype    = contains
+                bgcolor     = lightgreen
+                datatype    = alphanumplus
+            </customername>
+            ...
+        </columns>
+    </maintable>
+
+=cut
+
 sub maintable {
     my ($self, @args) = @_;
-
     return Dive( $self->{_scr}, 'maintable', @args );
 }
 

@@ -26,6 +26,8 @@ require Tpda3::Selected;
 
 use Tpda3::Model::Table;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Controller - The Controller
@@ -169,7 +171,7 @@ sub connect_dialog {
 
 =head2 model
 
-Return model instance variable
+Return model instance object.
 
 =cut
 
@@ -186,13 +188,12 @@ Return view instance variable
 
 sub view {
     my $self = shift;
-
     return $self->{_view};
 }
 
 =head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 
@@ -200,6 +201,12 @@ sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
+
+=head2 table_key
+
+Return the table keys.
+
+=cut
 
 sub table_key {
     my ($self, $page, $name) = @_;
@@ -236,11 +243,23 @@ sub dialog_login {
     return;
 }
 
+=head2 message_dialog
+
+Stub for message dialog.
+
+=cut
+
 sub message_dialog {
     my ($message, $details, $icon, $type) = @_;
     print 'message_tiler not implemented in ', __PACKAGE__, "\n";
     return;
 }
+
+=head2 message_tiler
+
+Stub for message dialog with tiler.
+
+=cut
 
 sub message_tiler {
     my ($self, $message, $record);
@@ -4074,6 +4093,12 @@ sub on_quit {
 
     $self->view->on_close_window(@_);
 }
+
+=head2 catch_db_exceptions
+
+Handle database exceptions.
+
+=cut
 
 sub catch_db_exceptions {
     my ($self, $exc) = @_;

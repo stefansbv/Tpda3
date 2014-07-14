@@ -19,6 +19,8 @@ require Tpda3::Utils;
 
 #use Data::Dumper;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Model - The Model
@@ -65,7 +67,7 @@ sub new {
 
 =head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 
@@ -1454,6 +1456,12 @@ sub report_data {
     return (\@records, \%levelmeta);
 }
 
+=head2 table_columns
+
+Return the table columns for the named table.
+
+=cut
+
 sub table_columns {
     my ($self, $table_name) = @_;
 
@@ -1468,10 +1476,22 @@ sub table_columns {
     return \@fields;
 }
 
+=head2 table_keys
+
+Return the table keys for the named table.
+
+=cut
+
 sub table_keys {
     my ($self, $table_name) = @_;
     return $self->dbc->table_keys($table_name);
 }
+
+=head2 get_template_datasources
+
+Return the template data sources from the template configuration.
+
+=cut
 
 sub get_template_datasources {
     my ($self, $id_tt) = @_;
@@ -1530,6 +1550,14 @@ sub other_data {
         \%specific,
     );
 }
+
+=head2 update_or_insert
+
+Update or insert records in table.
+
+BUG: Specific to Firebird!
+
+=cut
 
 sub update_or_insert {
     my ($self, $table, $columns, $matching, $records) = @_;

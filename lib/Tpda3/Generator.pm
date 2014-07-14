@@ -17,6 +17,8 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Generator - The Generator
@@ -74,7 +76,7 @@ sub _log {
 
 =head2 cfg
 
-Return config instance variable.
+Return configuration instance object.
 
 =cut
 
@@ -213,6 +215,12 @@ sub pdf_from_latex {
     return $output_pdf;
 }
 
+=head2 find_pdflatex
+
+Try to locate the pdflatex executable.
+
+=cut
+
 sub find_pdflatex {
     my $self = shift;
 
@@ -232,6 +240,12 @@ sub find_pdflatex {
     return;
 }
 
+=head2 check_pdflatex
+
+Check the pdflatex executable.
+
+=cut
+
 sub check_pdflatex {
     my ($self, $exe) = @_;
 
@@ -244,6 +258,12 @@ sub check_pdflatex {
 
     return $exe;
 }
+
+=head2 extract_tt_fields
+
+Extract the field names from the TT template and return the list.
+
+=cut
 
 sub extract_tt_fields {
     my ($self, $model_file) = @_;

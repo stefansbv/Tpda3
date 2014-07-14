@@ -9,6 +9,8 @@ use Tk::Tiler;
 
 require Tpda3::Utils;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Dialog::Tiler - Dialog for messages.
@@ -50,7 +52,7 @@ sub new {
     return $self;
 }
 
-=head2 message_dialog
+=head2 message_tiler
 
 Define and show message dialog.  MsgBox doesn't allow to change the
 button labels.

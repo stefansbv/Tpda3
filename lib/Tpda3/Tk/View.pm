@@ -26,6 +26,8 @@ require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
 require Tpda3::Tk::Dialog::Tiler;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::App - Tk Perl application class
@@ -110,7 +112,7 @@ sub new {
 
 =head2 model
 
-Return model instance
+Return the model instance object.
 
 =cut
 
@@ -121,7 +123,7 @@ sub model {
 
 =head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 
@@ -255,7 +257,7 @@ sub set_geometry {
 
 =head2 logger
 
-Return logger.
+Return the logger instance object.
 
 =cut
 
@@ -1873,6 +1875,12 @@ sub table_record_update {
     return;
 }
 
+=head2 generate_doc
+
+Generate a document from a TT template using Tpda3::Generator.
+
+=cut
+
 sub generate_doc {
     my ($self, $model_file, $record, $sufix) = @_;
 
@@ -1963,6 +1971,12 @@ sub generate_doc {
 
     return;
 }
+
+=head2 io_exception
+
+Handle IO exceptions.
+
+=cut
 
 sub io_exception {
     my ($self, $exc, $context) = @_;

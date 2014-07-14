@@ -9,6 +9,8 @@ use Tk::widgets qw(StatusBar LabFrame JComboBox);
 require Tpda3::Config;
 require Tpda3::Tk::TM;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Dialog::AppList - Dialog for the applications list.
@@ -53,7 +55,7 @@ sub new {
 
 =head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 

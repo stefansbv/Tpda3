@@ -857,12 +857,24 @@ sub set_app_configs {
     return;
 }
 
+=head2 message_dialog
+
+Show a Tpda3::Tk::Dialog::Message dialog instance.
+
+=cut
+
 sub message_dialog {
     my ($self, $message, $details, $icon, $type) = @_;
     my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
     $dlg->message_dialog($message, $details, $icon, $type);
     return;
 }
+
+=head2 message_tiler
+
+Show aTpda3::Tk::Dialog::Tiler dialog instance.
+
+=cut
 
 sub message_tiler {
     my ($self, $message, $record) = @_;

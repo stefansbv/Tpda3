@@ -5,7 +5,6 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
-
 #use Tpda3::Tk::Text;
 
 use Tpda3::Utils;
@@ -13,6 +12,8 @@ use Tpda3::Tk::TB;
 use Tpda3::Config::Screen;
 
 require Tpda3::Tk::Validation;
+
+=encoding utf8
 
 =head1 NAME
 
@@ -253,7 +254,13 @@ sub screen_update {
     return;
 }
 
-sub isa_toolscr {
+=head2 toolscr
+
+Return the toolscr variable.
+
+=cut
+
+sub toolscr {
     my $self = shift;
     return $self->{toolscr};
 }

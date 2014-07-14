@@ -8,6 +8,8 @@ use Encode qw(is_utf8 decode);
 
 require Tpda3::Exceptions;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Utils - Various utility functions
@@ -343,7 +345,6 @@ Case of string identified as full date string, regardless of the format.
 
 sub date_string {
     my ($date) = @_;
-
     return $date;
 }
 
@@ -355,9 +356,7 @@ Case of string not identified or empty.
 
 sub do_error {
     my ($date) = @_;
-
     print "String not identified or empty!\n";
-
     return;
 }
 
@@ -394,6 +393,12 @@ sub deaccent {
     return $text;
 }
 
+=head2 check_path
+
+Check a path and throw an exception if not valid.
+
+=cut
+
 sub check_path {
     my ($self, $path) = @_;
 
@@ -406,6 +411,12 @@ sub check_path {
 
     return;
 }
+
+=head2 check_file
+
+Check a file path and throw an exception if not valid.
+
+=cut
 
 sub check_file {
     my ($self, $file) = @_;
@@ -420,13 +431,29 @@ sub check_file {
     return;
 }
 
+=head2 decode_unless_utf
+
+Decode a string if is not utf8.
+
+=cut
+
 sub decode_unless_utf {
     my ($self, $value) = @_;
-
     $value = decode( 'utf8', $value ) unless is_utf8($value);
-
     return $value;
 }
+
+=head2 parse_message
+
+Parse a message text in the following format:
+
+   error#Message text
+   info#Message text
+   warn#Message text
+
+and return the coresponding mesage text and color.
+
+=cut
 
 sub parse_message {
     my ($self, $text) = @_;

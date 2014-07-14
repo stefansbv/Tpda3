@@ -20,6 +20,8 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Tools::TemplDet screen
@@ -57,10 +59,22 @@ sub _init {
     return;
 }
 
+=head2 cfg
+
+Return configuration instance object.
+
+=cut
+
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
+
+=head2 model
+
+Return model instance object.
+
+=cut
 
 sub model {
     my $self = shift;
@@ -69,7 +83,7 @@ sub model {
 
 =head2 run_screen
 
-The screen layout
+The screen layout.
 
 =cut
 
@@ -279,11 +293,23 @@ sub run_screen {
     return;
 }
 
+=head2 update_labels
+
+Update the labels text in the screen.
+
+=cut
+
 sub update_labels {
     my ($self, $name, $value) = @_;
     $self->{$name}->configure(-text => $value) if defined $value;
     return;
 }
+
+=head2 update_statistics
+
+Update the statistics labels text in the screen.
+
+=cut
 
 sub update_statistics {
     my $self = shift;
@@ -296,6 +322,12 @@ sub update_statistics {
 
     return;
 }
+
+=head2 update_column_required
+
+Update column required.
+
+=cut
 
 sub update_column_required {
     my $self = shift;
@@ -310,6 +342,12 @@ sub update_column_required {
 
     return;
 }
+
+=head2 list_of_variables
+
+Return the list of variables from the TT template document.
+
+=cut
 
 sub list_of_variables {
     my $self = shift;
@@ -329,12 +367,24 @@ sub list_of_variables {
     return $fields_aref;
 }
 
+=head2 on_load_record
+
+Update on load event.
+
+=cut
+
 sub on_load_record {
     my $self = shift;
     $self->update_column_required;
     $self->update_statistics;
     return;
 }
+
+=head2 read_db_table
+
+Return the table data.
+
+=cut
 
 sub read_db_table {
     my $self = shift;
@@ -384,6 +434,12 @@ sub get_data_diff {
     return (\@to_delete, \@to_insert);
 }
 
+=head2 update_table_widget
+
+Update the table widget.
+
+=cut
+
 sub update_table_widget {
     my $self = shift;
 
@@ -409,6 +465,12 @@ sub update_table_widget {
 
     return;
 }
+
+=head2 save_table_widget
+
+Save the data from the table widget.
+
+=cut
 
 sub save_table_widget {
     my $self = shift;

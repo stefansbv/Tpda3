@@ -22,6 +22,8 @@ require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Dialog::TTGen - Dialog for generating documentes from templates.
@@ -68,7 +70,7 @@ sub new {
 
 =head2 dbc
 
-Return the Connection module handler.
+Return the connection object handler.
 
 =cut
 
@@ -77,30 +79,66 @@ sub dbc {
     return $self->{_db}->dbc;
 }
 
+=head2 dbh
+
+Return the database object handler.
+
+=cut
+
 sub dbh {
     my $self = shift;
     return $self->{_db}->dbh;
 }
+
+=head2 _cfg
+
+Return configuration instance object.
+
+=cut
 
 sub _cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
+=head2 _log
+
+Return the log object.
+
+=cut
+
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
+
+=head2 scrcfg
+
+Return the screen configuration object.
+
+=cut
 
 sub scrcfg {
     my $self = shift;
     return $self->{scrcfg};
 }
 
+=head2 model
+
+Return the model object.
+
+=cut
+
 sub model {
     my $self = shift;
     return $self->{model};
 }
+
+=head2 view
+
+Return the view object.
+
+=cut
 
 sub view {
     my $self = shift;
@@ -534,6 +572,12 @@ sub load_tt_details {
 
     return;
 }
+
+=head2 batch_generate_doc
+
+Generate the documents in the ID range provided by the user.
+
+=cut
 
 sub batch_generate_doc {
     my $self = shift;

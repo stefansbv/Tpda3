@@ -6,6 +6,26 @@ use Mouse::Util::TypeConstraints;
 
 use Tpda3::Model::Table::Record;
 
+=encoding utf8
+
+=head1 NAME
+
+Tpda3::Model::Table::Record
+
+=head1 VERSION
+
+Version 0.88
+
+=cut
+
+our $VERSION = 0.88;
+
+=head1 SYNOPSIS
+
+=head1 METHODS
+
+=cut
+
 subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
 
 coerce 'TableRecordObject', from 'ArrayRef', via {
@@ -42,6 +62,12 @@ has '_keys' => (
     },
 );
 
+=head2 find_index_for
+
+Return index for L<name>.
+
+=cut
+
 sub find_index_for {
     my ($self, $name) = @_;
     my $key = $self->find_key( sub { $_->name eq $name } );
@@ -51,6 +77,12 @@ sub find_index_for {
     return $key;
 }
 
+=head2 update_field
+
+Update field.
+
+=cut
+
 sub update_field {
     my ($self, $name, $new_value) = @_;
 
@@ -59,6 +91,12 @@ sub update_field {
     $self->find_index_for($name)->value($new_value);
     return $new_value;
 }
+
+=head2 update_index
+
+Update the index.
+
+=cut
 
 sub update_index {
     my ( $self, $index, $new_value ) = @_;
@@ -72,4 +110,24 @@ sub update_index {
 
 __PACKAGE__->meta->make_immutable;
 
-1;
+=head1 AUTHOR
+
+Stefan Suciu, C<< <stefan@s2i2.ro> >>
+
+=head1 BUGS
+
+None known.
+
+Please report any bugs or feature requests to the author.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2010-2014 Stefan Suciu.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation.
+
+=cut
+
+1;    # End of Tpda3::Model::Table

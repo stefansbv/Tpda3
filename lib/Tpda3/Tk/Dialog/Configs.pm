@@ -12,6 +12,8 @@ use File::Spec;
 require Tpda3::Config;
 require Tpda3::Config::Utils;
 
+=encoding utf8
+
 =head1 NAME
 
 Tpda3::Tk::Dialog::Configs - Dialog for user configuration options
@@ -60,13 +62,12 @@ sub new {
 
 =head2 cfg
 
-Return config instance variable
+Return configuration instance object.
 
 =cut
 
 sub cfg {
     my $self = shift;
-
     return $self->{cfg};
 }
 
@@ -235,9 +236,9 @@ sub _set_status {
     return;
 }
 
-=head2 run_dialog
+=head2 show_cfg_dialog
 
-Show dialog
+Show the configuration dialog.
 
 =cut
 
