@@ -1998,7 +1998,7 @@ sub screen_module_detail_load {
 
     $self->_set_event_handler_nb('det');
 
-    my $from_tools = $self->{_rscrobj}->isa_toolscr;
+    my $from_tools = $self->{_rscrobj}->toolscr;
     my ( $class, $module_file )
         = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };

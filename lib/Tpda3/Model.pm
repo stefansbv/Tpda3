@@ -17,7 +17,7 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
-#use Data::Dumper;
+use Data::Dumper;
 
 =encoding utf8
 
@@ -455,11 +455,9 @@ sub table_batch_query {
     my $where    = $opts->{where};
     my $order    = $opts->{order};
 
-    # TODO; add validation for the parameteres
-    # print "Table:\n", Dumper($table);
-    # print "Cols :\n", Dumper($colslist);
-    # print "Where:\n", Dumper($where);
-    # print "Order:\n", Dumper($order);
+    die "Empty TABLE name in SELECT command!" unless $table;
+    die "Empty COLUMN list in SELECT command for table '$table'!"
+        unless scalar @{$colslist};
 
     my $sql = SQL::Abstract->new();
 

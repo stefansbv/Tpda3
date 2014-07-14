@@ -11,6 +11,7 @@ use Path::Tiny;
 use Try::Tiny;
 use Log::Log4perl qw(get_logger :levels);
 use Template;
+use Template::Context;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -268,7 +269,7 @@ Extract the field names from the TT template and return the list.
 sub extract_tt_fields {
     my ($self, $model_file) = @_;
 
-    my $template  = path $model_file->slurp_utf8;
+    my $template  = path($model_file)->slurp_utf8;
     my $context   = Template::Context->new(TRACE_VARS => 1);
     my $compiled  = $context->template(\$template) or die $context->error;
     my $variables = $compiled->variables;
