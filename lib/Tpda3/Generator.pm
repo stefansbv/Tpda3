@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use IPC::System::Simple 1.17 qw(capture);
-use File::Spec::Functions;
+use Path::Tiny;
+use List::MoreUtils qw(uniq);
 use File::Basename;
 use File::Copy qw(mv);
 use Template;
@@ -119,7 +120,7 @@ sub tex_from_template {
 
     # Add images path to the record
     # The trailing slash is requred by TeX
-    $rec->{images_path} = catdir($output_path, 'images') . '/';
+    $rec->{images_path} = path($output_path, 'images') . '/';
     $rec->{images_path} =~ s{\\}{/}g;        # for TeX on M$Windows
 
     #- Cleanup values and prepare for LaTeX, (translate '&' in '\&')
@@ -146,7 +147,7 @@ sub tex_from_template {
         return;
     };
 
-    return catfile($output_path, qq{$model.tex});
+    return path( $output_path, qq{$model.tex} );
 }
 
 =head2 pdf_from_latex
@@ -176,7 +177,7 @@ sub pdf_from_latex {
 
     my ( $name, $path, $ext ) = fileparse( $tex_file, qr/\Q.tex\E/ );
     foreach my $ext (qw{aux log pdf}) {
-        my $temp_file = catfile( $output_path, qq{$name.$ext} );
+        my $temp_file = path( $output_path, qq{$name.$ext} );
         my $cnt = unlink $temp_file;
         if ( $cnt == 1 ) {
             $self->_log->info(qq{Removed temporary file: "$temp_file"});
@@ -202,11 +203,11 @@ sub pdf_from_latex {
         print "OUTPUT: >$output<\n" if $self->cfg->verbose;
     };
 
-    my $output_pdf = catfile($output_path, qq{$name.pdf});
+    my $output_pdf = path( $output_path, qq{$name.pdf} );
 
     # Rename with suffix
     if ($suffix) {
-        my $new = catfile($output_path, qq{$name-$suffix.pdf});
+        my $new = path( $output_path, qq{$name-$suffix.pdf} );
         if ( mv($output_pdf, $new) ) {
             $output_pdf = $new;
         }
@@ -263,45 +264,20 @@ sub check_pdflatex {
 
 Extract the field names from the TT template and return the list.
 
+# Thanks to: Borodin
+# http://stackoverflow.com/questions/16088203/perl-template-toolkit-how-get-list-of-variables-in-the-template
+
 =cut
 
 sub extract_tt_fields {
     my ($self, $model_file) = @_;
 
-    open my $file_fh, '<', $model_file
-        or die "Can't open file ", $model_file, ": $!";
+    my $template  = path $model_file->slurp_utf8;
+    my $context   = Template::Context->new(TRACE_VARS => 1);
+    my $compiled  = $context->template(\$template) or die $context->error;
+    my $variables = $compiled->variables;
 
-    my @unique = ();
-    my %seen   = ();
-    while ( my $line = <$file_fh> ) {
-        my (@fields)
-            = $line =~ /$RE{balanced}{-begin => "[%"}{-end => "%]"}/gms;
-
-        next unless @fields;
-
-        foreach my $field (@fields) {
-
-            # Trim spaces
-            $field =~ s/^\s+//;
-            $field =~ s/\s+$//;
-
-            # Clean (TODO: refactor)
-            $field =~ s/^\[%\-?\s*//g;
-            $field =~ s/\s*\-?%\]$//g;
-            $field =~ s/\s*(IF|ELSIF|ELSE|END|FOREACH|FOR)\s*//i;
-            $field =~ s/\s*USE.*//i;
-            $field =~ s/\s*(==.+)\s*//i;
-            $field =~ s/^r\.//;
-
-            if ($field) {
-                # Store unique name
-                next if $seen{$field}++;
-                push @unique, $field unless $field eq 'images_path';
-            }
-        }
-    }
-
-    close $file_fh;
+    my @unique = uniq sort keys %{ $variables->{r} };
 
     return \@unique;
 }
