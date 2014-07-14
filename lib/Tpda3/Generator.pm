@@ -207,8 +207,11 @@ sub pdf_from_latex {
     # Rename with suffix
     if ($suffix) {
         my $new = path( $output_path, qq{$name-$suffix.pdf} );
-        $output_pdf = $new if $output_pdf->move($new)->exists;
+        $output_pdf->move($new);
+        $output_pdf = $new if $new->exists;
     }
+
+    print "pdf: $output_pdf\n" if $self->cfg->verbose;
 
     return $output_pdf;
 }
