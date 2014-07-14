@@ -4,15 +4,13 @@ use strict;
 use warnings;
 
 use IPC::System::Simple 1.17 qw(capture);
-use Path::Tiny;
 use List::MoreUtils qw(uniq);
 use File::Basename;
-use File::Copy qw(mv);
-use Template;
+use File::Which;
+use Path::Tiny;
 use Try::Tiny;
 use Log::Log4perl qw(get_logger :levels);
-use File::Which;
-use Regexp::Common qw/balanced/;
+use Template;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -208,9 +206,7 @@ sub pdf_from_latex {
     # Rename with suffix
     if ($suffix) {
         my $new = path( $output_path, qq{$name-$suffix.pdf} );
-        if ( mv($output_pdf, $new) ) {
-            $output_pdf = $new;
-        }
+        $output_pdf = $new if $output_pdf->move($new)->exists;
     }
 
     return $output_pdf;
