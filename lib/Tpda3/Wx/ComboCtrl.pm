@@ -12,11 +12,11 @@ Tpda3::Wx::ComboCtrl - A subclass of Wx::ComboCtrl.
 
 =head1 VERSION
 
-Version 0.88
+Version 0.89
 
 =cut
 
-our $VERSION = 0.88;
+our $VERSION = 0.89;
 
 =head1 SYNOPSIS
 
