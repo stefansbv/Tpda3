@@ -2023,11 +2023,13 @@ sub Tk::Error {
     my $dlg_message = $usermsg ? $usermsg : $error;
     my $log_messsge = $logmsg  ? $logmsg  : $error;
 
+    my ($message) = split /\n/, $dlg_message if $error;
+
     $self->log_msg("EE: '$log_messsge'");
 
     $self->Dialog(
         -title => __ 'Error',
-        -text  => $dlg_message,
+        -text  => $message,
     )->Show();
 
     return;
