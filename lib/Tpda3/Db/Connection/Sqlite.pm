@@ -82,7 +82,7 @@ sub db_connect {
             PrintError       => 0,
             LongReadLen      => 524288,
             HandleError      => sub { $self->handle_error() },
-            pg_enable_utf8   => 1,
+            sqlite_unicode   => 1,
         }
     );
 
@@ -171,9 +171,43 @@ Table info 'short'.
 sub table_info_short {
     my ( $self, $table ) = @_;
 
-    die "\n\nMethod to retrieve SQLite table info not implemented!\n\n";
+    my $h_ref = $self->{_dbh}
+        ->selectall_hashref( "PRAGMA table_info($table)", 'cid' );
 
-    return;
+    my $flds_ref = {};
+    foreach my $cid ( sort keys %{$h_ref} ) {
+        my $name       = $h_ref->{$cid}{name};
+        my $dflt_value = $h_ref->{$cid}{dflt_value};
+        my $notnull    = $h_ref->{$cid}{notnull};
+        # my $pk       = $h_ref->{$cid}{pk}; is part of PK ? index : undef
+        my $data_type  = $h_ref->{$cid}{type};
+
+        # Parse type;
+        my ($type, $precision, $scale);
+        if ( $data_type =~ m{
+               (\w+)                           # data type
+               (?:\((\d+)(?:,(\d+))?\))?       # optional (precision[,scale])
+             }x
+         ) {
+            $type      = $1;
+            $precision = $2;
+            $scale     = $3;
+        }
+
+        my $info = {
+            pos         => $cid,
+            name        => $name,
+            type        => $type,
+            is_nullable => $notnull ? 0 : 1,
+            defa        => $dflt_value,
+            length      => $precision,
+            prec        => $precision,
+            scale       => $scale,
+        };
+        $flds_ref->{$cid} = $info;
+    }
+
+    return $flds_ref;
 }
 
 =head2 table_exists
@@ -210,16 +244,16 @@ sub table_exists {
 
 =head2 table_keys
 
-Get the primary key field name of the table.
+Get the primary key field names of the table.
 
 =cut
 
 sub table_keys {
     my ( $self, $table ) = @_;
 
-    die "\n\nMethod to retrieve SQLite table keys not implemented!\n\n";
+    my @names = $self->{_dbh}->primary_key(undef, undef, $table);
 
-    return;
+    return \@names;
 }
 
 =head2 table_list
