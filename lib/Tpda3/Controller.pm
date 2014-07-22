@@ -9,6 +9,7 @@ use Class::Unload;
 use File::Basename;
 use Hash::Merge;
 use File::Spec::Functions qw(catfile);
+use List::Util qw(any);
 use List::MoreUtils qw(uniq);
 use Log::Log4perl qw(get_logger :levels);
 use Scalar::Util qw(blessed looks_like_number);
@@ -110,7 +111,7 @@ sub start {
     $self->{_view}->toggle_status_cn(0);
 
     # Connect if user and pass or if driver is SQLite
-    my $driver = $self->cfg->connection->{driver};
+    my $driver = lc $self->cfg->connection->{driver};
     if (   ( $self->cfg->user and $self->cfg->pass )
         or ( $driver eq 'sqlite' ) )
     {
@@ -1906,6 +1907,10 @@ sub screen_init_keys {
     #-- Dependent tables (TableMatrix)
 
     my @tms = keys %{ $self->scrcfg->deptable };
+
+    die "The screen configuration for the dependent tables requires a label (for example: 'tm1').\n"
+        if any { $_ eq 'columns' } @tms;
+
     foreach my $tm (@tms) {
         my $keys_d = $self->scrcfg->deptable( $tm, 'keys', 'name' );
         my $table = Tpda3::Model::Table->new(
