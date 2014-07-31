@@ -707,7 +707,7 @@ sub get_selected_and_store_key {
     $self->screen_store_key_values($rec_params);
 
     my $det_params = $self->tmx_read_selected;
-    if ( scalar %{$det_params} ) {
+    if ( defined $det_params and scalar %{$det_params} ) {
         $self->screen_store_key_values($det_params);
     }
 
