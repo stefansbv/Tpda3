@@ -24,8 +24,7 @@ require Tpda3::Config;
 require Tpda3::Model;
 require Tpda3::Lookup;
 require Tpda3::Selected;
-
-use Tpda3::Model::Table;
+require Tpda3::Model::Table;
 
 =encoding utf8
 
@@ -588,10 +587,10 @@ sub on_page_rec_activate {
     my @selected = values %{$selected_href};
 
     my $dc   = Data::Compare->new(\@selected, \@current);
-    my $same = $dc->Cmp ? 1 : 0;
-    # print "Same? ", $same ? 'YES ' : 'NO ', "\n";
+    my $diff = $dc->Cmp ? 0 : 1;
+    # print "R: different? ", $diff ? 'YES ' : 'NO ', "\n";
 
-    $self->record_load_new($selected_href) unless $same;
+    $self->record_load_new($selected_href) if $diff;
 
     $self->toggle_detail_tab;
 
@@ -606,9 +605,7 @@ On page I<lst> activate.
 
 sub on_page_lst_activate {
     my $self = shift;
-
     $self->set_app_mode('sele');
-
     return;
 }
 
@@ -629,13 +626,27 @@ sub on_page_det_activate {
         return $self->view->get_notebook()->raise('rec');
     }
 
-    $self->get_selected_and_store_key;
-    $self->record_load();       # load detail record
+    #- Compare Key values, load detail record only if different
 
-    $self->view->set_status(__ 'Record loaded (d)', 'ms', 'blue');
+    my @current
+        = $self->table_key( 'det', 'main' )->map_keys( sub { $_->value } );
+    my $selected_pk_href = $self->view->list_read_selected();
+    my @selected = values %{$selected_pk_href};
+    my $selected_fk_href = $self->tmx_read_selected;
+    push @selected, values %{$selected_fk_href};
+
+    my $dc   = Data::Compare->new(\@selected, \@current);
+    my $diff = $dc->Cmp ? 0 : 1;
+    # print "D: different? ", $diff ? 'YES ' : 'NO ', "\n";
+
+    if ( $diff ) {
+        $self->get_selected_and_store_key;
+        $self->record_load();   # load detail record
+        $self->view->set_status( __ 'Record loaded (d)', 'ms', 'blue' );
+    }
+
     $self->set_app_mode('edit');
-
-    $self->view->nb_set_page_state( 'lst', 'disabled');
+    $self->view->nb_set_page_state( 'lst', 'disabled' );
 
     return;
 }
@@ -685,36 +696,51 @@ sub screen_detail_name {
 
 =head2 get_selected_and_store_key
 
-Read the selected row from I<tm1> TableMatrix widget from the
-I<Record> page and get the foreign key value designated by the
-I<filter> configuration value of the screen.
-
-Save the foreign key value.
-
-Only one table can have a selector column: I<tm1>.
+Save the primary and foreign key values for the C<Details> page.
 
 =cut
 
 sub get_selected_and_store_key {
     my $self = shift;
 
-    # Detail screen module name from config
-    my $screen = $self->scrcfg('rec')->screen('details');
-
     my $rec_params = $self->table_key( 'rec', 'main' )->get_key(0)->get_href;
     $self->screen_store_key_values($rec_params);
 
+    my $det_params = $self->tmx_read_selected;
+    if ( scalar %{$det_params} ) {
+        $self->screen_store_key_values($det_params);
+    }
+
+    return;
+}
+
+=head2 tmx_read_selected
+
+Read the selected row from I<tm1> TableMatrix widget from the
+I<Record> page and get the foreign key value designated by the
+I<filter> configuration value of the screen.
+
+Limitation: only the table with I<tm1> label can have a selector
+column.
+
+=cut
+
+sub tmx_read_selected {
+    my $self = shift;
+
+    # Detail screen module name from config
+    my $screen = $self->scrcfg('rec')->screen('details');
+
+    my $det_params;
     my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol('tm1');
     if ( defined $sc ) {
         my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
         my $row = $self->tmatrix_get_selected;
         if ( defined $row and $row > 0 ) {
-            my $det_params = $tmx->cell_read( $row, $screen->{filter} );
-            $self->screen_store_key_values($det_params);
+            $det_params = $tmx->cell_read( $row, $screen->{filter} );
         }
     }
-
-    return;
+    return $det_params;
 }
 
 =head2 screen_detail_load
@@ -725,12 +751,9 @@ Check if the detail screen module is loaded, and load if it's not.
 
 sub screen_detail_load {
     my ( $self, $dsm ) = @_;
-
     my $dscrstr = $self->screen_string('det');
-
     unless ( $dscrstr && ( $dscrstr eq lc($dsm) ) ) {
-        # Loading detail screen ($dsm)
-        $self->screen_module_detail_load($dsm);
+        $self->screen_module_detail_load($dsm); # load detail screen
     }
     return;
 }
@@ -3184,6 +3207,8 @@ sub record_load {
     my $self = shift;
 
     my $page = $self->view->get_nb_current_page();
+
+    print "Loading record on page '$page'\n";
 
     #-  Main table
     my $params = $self->main_table_metadata('qry');

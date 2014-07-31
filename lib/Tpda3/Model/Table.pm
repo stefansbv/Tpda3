@@ -4,7 +4,7 @@ use Mouse;
 use namespace::autoclean;
 use Mouse::Util::TypeConstraints;
 
-use Tpda3::Model::Table::Record;
+require Tpda3::Model::Table::Record;
 
 =encoding utf8
 
