@@ -26,11 +26,11 @@ Tpda3::App::Test::Orders screen
 
 =head1 VERSION
 
-Version 0.89
+Version 0.90
 
 =cut
 
-our $VERSION = 0.89;
+our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
