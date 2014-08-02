@@ -17,8 +17,6 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
-use Data::Dumper;
-
 =encoding utf8
 
 =head1 NAME
@@ -932,7 +930,7 @@ sub table_record_delete {
     die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
     $self->_log->debug("Deleting from $table: ");
-    #$self->_log->debug( sub { Dumper($where) } );
+    # $self->_log->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 

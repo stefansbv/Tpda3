@@ -65,16 +65,12 @@ sub _new_instance {
 
     # Load configuration and create accessors
     $self->config_main_load($args);
+
+    # If no config name don't bother to load this
     if ( $args->{cfname} ) {
-
-        # If no config name don't bother to load this
-        $self->config_interfaces_load();
-
-        # Application configs
-        $self->config_runtime_load();
-
-        # Load administrator configs
-        $self->config_load_administrator();
+        #$self->config_interfaces_load();
+        $self->config_runtime_load();       # application configs
+        $self->config_load_administrator(); # administrator configs
     }
 
     return $self;
@@ -286,18 +282,20 @@ at restart.
 
 =cut
 
-sub config_interfaces_load {
-    my $self = shift;
+# sub config_interfaces_load {
+#     my $self = shift;
 
-    foreach my $section ( keys %{ $self->cfiface } ) {
-        my $resource_file
-            = catfile( $self->cfpath, $self->cfiface->{$section} );
-        my $resource_data_hr = $self->config_data_from($resource_file);
-        $self->make_accessors($resource_data_hr);
-    }
+#     foreach my $section ( keys %{ $self->cfiface } ) {
+#         print " $section\n";
+#         next if $section =~ /^(menu|tool)bar$/; # *bar are deprecated, skip
+#         print " loding\n";
+#         my $res_file = catfile( $self->cfpath, $self->cfiface->{$section} );
+#         my $res_data_hr = $self->config_data_from($res_file);
+#         $self->make_accessors($res_data_hr);
+#     }
 
-    return;
-}
+#     return;
+# }
 
 =head2 config_runtime_load
 
@@ -325,9 +323,9 @@ sub config_runtime_load {
     );
 
     foreach my $section ( @cfg ) {
-        my $resource_file    = $self->resource_path_for($section, 'etc');
-        my $resource_data_hr = $self->config_data_from($resource_file);
-        $self->make_accessors($resource_data_hr);
+        my $res_file    = $self->resource_path_for($section, 'etc');
+        my $res_data_hr = $self->config_data_from($res_file);
+        $self->make_accessors($res_data_hr);
     }
 
     return;
@@ -577,9 +575,10 @@ Reload toolbar.
 sub toolbar_interface_reload {
     my $self = shift;
 
-    my $resource_file = catfile( $self->cfpath, $self->cfiface->{'toolbar'} );
-    my $resource_data_hr = $self->config_data_from($resource_file);
-    $self->make_accessors($resource_data_hr);
+    my $res_file    = catfile( $self->cfpath, $self->cfiface->{toolbar} );
+    print "res_file $res_file\n";
+    my $res_data_hr = $self->config_data_from($res_file);
+    $self->make_accessors($res_data_hr);
 
     return;
 }
@@ -720,7 +719,6 @@ the extension of the file.
 sub config_data_from {
     my ( $self, $conf_file, $not_fatal ) = @_;
 
-    # my $log = get_logger();
     if ( !-f $conf_file ) {
         print " $conf_file ... not found\n" if $self->verbose;
         if ($not_fatal) {
@@ -838,8 +836,8 @@ file from a path in configdir.
 =cut
 
 sub resource_data_for {
-    my ($self, $file_name, $resource_path) = @_;
-    my $cfg_file = $self->resource_path_for($file_name, $resource_path);
+    my ($self, $file_name, $res_path) = @_;
+    my $cfg_file = $self->resource_path_for($file_name, $res_path);
     return $self->config_data_from($cfg_file);
 }
 

@@ -108,9 +108,9 @@ sub help_dialog {
         }
     };
 
-    my $toolbars = [ 'tb3gd', 'tb3gp', 'tb3qt', ];
-
-    $self->{tb3}->make_toolbar_buttons( $toolbars, $attribs );
+    foreach my $name ( qw{tb3gd tb3gp tb3qt} ) {
+        $self->{tb3}->make_toolbar_button( $name, $attribs->{$name} );
+    }
 
     #-- end ToolBar
 

@@ -47,7 +47,7 @@ sub new {
 
     $self->{_scr} = $self->load_conf( $args->{scrcfg} );
 
-    $self->alter_toolbar();
+    $self->alter_toolbar_state;
 
     return $self;
 }
@@ -72,10 +72,10 @@ Return a Perl data structure from a configuration file.
 sub load_conf {
     my ($self, $name) = @_;
 
-    my $config_file = $self->cfg->config_scr_file_name($name);
-    my $config_href = $self->cfg->config_data_from($config_file);
+    my $conf_file = $self->cfg->config_scr_file_name($name);
+    my $conf_href = $self->cfg->config_data_from($conf_file);
 
-    return $config_href;
+    return $conf_href;
 }
 
 =head2 screen
@@ -575,14 +575,14 @@ sub repo_table_columns_by_level {
     return $dss;
 }
 
-=head2 alter_toolbar
+=head2 alter_toolbar_state
 
-Fine tune the configuration for screens, alter behavior of toolbar
-buttons per screen.
+Alter the I<state> of the tool-bar buttons per screen, using the
+I<toolbar> section from the screen configuration.
 
 =cut
 
-sub alter_toolbar {
+sub alter_toolbar_state {
     my $self = shift;
 
     my $tb_m = $self->cfg->toolbar();

@@ -40,19 +40,31 @@ sub Populate {
     return;
 }
 
-=head2 make_toolbar_buttons
+=head2 make_toolbar_button
 
 Make main toolbar buttons.
 
 =cut
 
-sub make_toolbar_buttons {
-    my ( $self, $toolbars, $attribs ) = @_;
+sub make_toolbar_button {
+    my ( $self, $name, $attribs ) = @_;
 
-    # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name ( @{$toolbars} ) {
-        my $type = $attribs->{$name}{type};
-        $self->$type( $name, $attribs->{$name} );
+    my $type = $attribs->{type};
+    $self->$type( $name, $attribs );
+
+    return;
+}
+
+=head2 set_initial_mode
+
+Disable some of the toolbar buttons.
+
+=cut
+
+sub set_initial_mode {
+    my ($self, $names) = @_;
+
+    foreach my $name ( @{$names} ) {
 
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
@@ -62,6 +74,7 @@ sub make_toolbar_buttons {
         next if $name eq 'tb3gd';
         next if $name eq 'tb3gp';
         next if $name eq 'tb3qt';
+
         # And from RepMan window
         next if $name eq 'tb4pr';
         next if $name eq 'tb4qt';

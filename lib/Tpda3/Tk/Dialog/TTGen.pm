@@ -194,9 +194,7 @@ sub run_screen {
         }
     };
 
-    my $toolbars = [qw{tb4qt}];
-
-    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
+    $self->{tb4}->make_toolbar_button( 'tb4qt', $attribs->{$name} );
 
     #-- end ToolBar
 

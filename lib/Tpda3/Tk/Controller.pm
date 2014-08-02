@@ -5,7 +5,6 @@ use warnings;
 use utf8;
 use English;                                 # for $PERL_VERSION
 
-use Data::Dumper;
 use Math::Symbolic;
 use Hash::Merge qw(merge);
 use Log::Log4perl qw(get_logger :levels);
@@ -368,7 +367,7 @@ sub setup_bindings_table {
             }
 
             $self->_log->trace("Setup binding '$bind_type' for '$tm_ds' with:");
-            $self->_log->trace( sub { Dumper($bindings) } );
+            # $self->_log->trace( sub { Dumper($bindings) } );
         }
 
         # Bindings:

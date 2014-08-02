@@ -1782,7 +1782,7 @@ sub screen_module_load {
     }
 
     # reload toolbar - if? altered by prev screen
-    $self->cfg->toolbar_interface_reload();
+#    $self->cfg->toolbar_interface_reload();
 
     # Make new NoteBook widget and setup callback
     $self->view->create_notebook();
@@ -2257,18 +2257,17 @@ the application, and different pages.
 sub toggle_interface_controls {
     my $self = shift;
 
-    my ( $toolbars, $attribs ) = $self->view->toolbar_names();
+    my $conf = Tpda3::Config::Toolbar->new;
 
     my $mode = $self->model->get_appmode;
     my $page = $self->view->get_nb_current_page();
 
     my $is_rec = $self->is_record();
 
-    foreach my $name ( @{$toolbars} ) {
-        my $status = $attribs->{$name}{state}{$page}{$mode};
+    foreach my $name ( $conf->all_buttons ) {
+        my $status = $conf->get_tool($name)->{state}{$page}{$mode};
 
         #- Corrections
-
         unless ( ( $page eq 'lst' ) and $self->{_rscrcls} ) {
             next unless $status;
 
