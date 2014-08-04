@@ -1,6 +1,6 @@
 Tpda3 (Tiny Perl Database Application 3)
 ========================================
-Ștefan Suciu <stefan@s2i2.ro>
+Ștefan Suciu
 2014-08-02
 
 Version: 0.90
