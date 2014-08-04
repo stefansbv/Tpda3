@@ -1,5 +1,7 @@
 package Tpda3::Wx::DatePopup;
 
+# ABSTRACT: A custom, Calendar popup for Wx::ComboDate
+
 use strict;
 use warnings;
 
@@ -8,21 +10,7 @@ use Wx::Event qw(EVT_CALENDAR_SEL_CHANGED);
 use Wx::Calendar;
 use base qw(Wx::PlComboPopup);
 
-=head1 NAME
-
-Tpda3::Wx::DatePopup - A custom, Calendar popup for Tpda3::Wx::ComboDate.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
-
-=head1 METHODS
 
 =head2 Init
 
@@ -99,29 +87,9 @@ sub GetAdjustedSize {
 #     Wx::LogMessage( "Being dismissed on " . $self->GetStringValue() );
 # }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGEMENTS
 
 Inspired from Wx/DemoModules/wxComboCtrl.pm
 Copyright (c) 2007 Mattia Barbon
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2012-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::DatePopup

@@ -1,5 +1,7 @@
 package Tpda3::Wx::Grid;
 
+# ABSTRACT: A subclass of Wx::Grid
+
 use strict;
 use warnings;
 use Carp;
@@ -26,24 +28,10 @@ my %translation_table = (
     numeric      => 'double',
 );
 
-=head1 NAME
-
-Tpda3::Wx::Grid - A subclass of Wx::Grid.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Wx::Grid;
     ...
-
-=head1 METHODS
 
 =head2 new
 
@@ -295,26 +283,4 @@ sub delete_row {
     return 1;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-Many!
-
-Please report any bugs or feature requests to the author.
-
-=head1 ACKNOWLEDGMENTS
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright Stefan Suciu, 2013-2014
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::Grid
+1;

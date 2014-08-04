@@ -1,27 +1,15 @@
 package Tpda3::Codings;
 
+# ABSTRACT: Codes and values for list widgets
+
 use strict;
 use warnings;
-
-=head1 NAME
-
-Tpda3::Codings - The Codings
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
    use Tpda3::Codings;
 
    my $codes = Tpda3::Codings->new();
-
-=head1 METHODS
 
 =head2 new
 
@@ -45,7 +33,7 @@ sub new {
 =head2 get_coding_init
 
 Return the data structure used to fill the list of choices (options)
-of widgets like Tk::JComboBox and experimental for Tk::MatchingBE.
+of Tk::JComboBox widgets.
 
 Initialize the datastructure from the database when needed.  The
 procedure is: check key, if exists return a hash ref else query the
@@ -107,7 +95,6 @@ Return codes.
 
 sub get_coding {
     my ( $self, $field, $val ) = @_;
-
     return $self->{_code}{$field}{$val};
 }
 

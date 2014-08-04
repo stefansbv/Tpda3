@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::AppList;
 
+# ABSTRACT: Dialog for the applications list
+
 use strict;
 use warnings;
 
@@ -9,20 +11,6 @@ use Tk::widgets qw(StatusBar LabFrame JComboBox);
 require Tpda3::Config;
 require Tpda3::Tk::TM;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Dialog::AppList - Dialog for the applications list.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tk::Dialog::AppList;
@@ -31,11 +19,9 @@ our $VERSION = 0.90;
 
     $fd->login($self);
 
-=head1 METHODS
-
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -487,24 +473,4 @@ sub dlg_exit {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::Dialog::AppList
+1;

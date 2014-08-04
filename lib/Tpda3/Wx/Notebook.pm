@@ -1,5 +1,7 @@
 package Tpda3::Wx::Notebook;
 
+# ABSTRACT: Create a notebook
+
 use strict;
 use warnings;
 
@@ -8,25 +10,11 @@ use Wx::AUI;
 
 use base qw{Wx::AuiNotebook};
 
-=head1 NAME
-
-Tpda3::Wx::Notebook - Create a notebook
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Wx::Notebook;
 
     $self->{_nb} = Tpda3::Wx::Notebook->new( $gui );
-
-=head1 METHODS
 
 =head2 new
 
@@ -111,24 +99,4 @@ sub page_widget {
     }
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::Notebook
+1;

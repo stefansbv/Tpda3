@@ -1,5 +1,7 @@
 package Tpda3::Db::Connection::Sqlite;
 
+# ABSTRACT: Connect to a SQLite database
+
 use strict;
 use warnings;
 
@@ -12,18 +14,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 NAME
-
-Tpda3::Db::Connection::Sqlite - Connect to a SQLite database.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Db::Connection::Sqlite;
@@ -32,11 +22,9 @@ our $VERSION = 0.90;
 
     $db->db_connect($connection);
 
-=head1 METHODS
-
 =head2 new
 
-Constructor
+Constructor method.
 
 =cut
 
@@ -305,24 +293,4 @@ feature.
 
 sub has_feature_returning { 0 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Db::Connection::Sqlite
+1;

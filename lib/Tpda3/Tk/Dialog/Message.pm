@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::Message;
 
+# ABSTRACT: Dialog for messages
+
 use strict;
 use warnings;
 use utf8;
@@ -7,18 +9,6 @@ use Locale::TextDomain 1.20 qw(Tpda3);
 use Tk::DialogBox;
 
 require Tpda3::Utils;
-
-=head1 NAME
-
-Tpda3::Tk::Dialog::Message - Dialog for messages.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -32,11 +22,9 @@ Where icon can be one of: 'error', 'info', or 'question'.
 
 Where type can be one of: 'ok', 'close', 'yn', or 'ycn'.
 
-=head1 METHODS
-
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -362,24 +350,4 @@ static unsigned char w3_bits[] = {
     }
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::Dialog::Message
+1;

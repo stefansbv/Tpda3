@@ -1,5 +1,7 @@
 package Tpda3::Tree;
 
+# ABSTRACT: A tree data structure
+
 use strict;
 use warnings;
 use utf8;
@@ -10,30 +12,12 @@ my @maindata;                  # TODO: find better way to collect data
 my $expdata  = {};
 my $colslist = [];
 
-=head1 NAME
-
-Tpda3::Tree
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tree;
     my $tree = Tpda3::Tree->new({});
     $tree->name('root');
     ...
-
-=head1 DESCRIPTION
-
-Subclass of L<Tree::DAG_Node>.
-
-=head1 METHODS
 
 =head2 new
 
@@ -341,15 +325,7 @@ sub print_wealth {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -357,15 +333,3 @@ Heavily inspired from the I<Introduction to Tree::DAG_Node> article by
 gmax, from: http://www.perlmonks.org/?node_id=153259
 
 Thank You!
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tree

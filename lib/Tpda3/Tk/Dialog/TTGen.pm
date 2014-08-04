@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::TTGen;
 
+# ABSTRACT: Dialog for generating documentes from templates
+
 use strict;
 use warnings;
 use utf8;
@@ -22,20 +24,6 @@ require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Dialog::TTGen - Dialog for generating documentes from templates.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tk::Dialog::TTGen;
@@ -43,8 +31,6 @@ our $VERSION = 0.90;
     my $fd = Tpda3::Tk::Dialog::TTGen->new;
 
     $fd->search($self);
-
-=head1 METHODS
 
 =head2 new
 

@@ -1,5 +1,7 @@
 package Tpda3::Wx::Grid::Table;
 
+# ABSTRACT: Grid table implementation
+
 use strict;
 use warnings;
 use Carp;
@@ -16,20 +18,6 @@ my %default = (
     string  => q{},
     double  => 0.00,
 );
-
-=head1 NAME
-
-Tpda3::Wx::GridTable
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
-=head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
@@ -406,15 +394,7 @@ sub GetAttr {
     return $cell_attr;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-Many!
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGMENTS
 
@@ -427,17 +407,3 @@ git://github.com/freephys/wxPython-In-Action.git, was a source of
 inspiration.
 
 Thank you!
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright:
-  Mark Dootson  2012
-  Stefan Suciu  2013-2014
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::Grid::Table

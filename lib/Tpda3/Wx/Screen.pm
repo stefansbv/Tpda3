@@ -1,5 +1,7 @@
 package Tpda3::Wx::Screen;
 
+# ABSTRACT: The Tpda3 application's screen base class
+
 use strict;
 use warnings;
 use Carp;
@@ -11,25 +13,11 @@ use Wx::ArtProvider qw(:artid);
 require Tpda3::Utils;
 require Tpda3::Config::Screen;
 
-=head1 NAME
-
-Tpda3::Wx::Screen - Tpda Screen base class.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
-
-=head1 METHODS
 
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -207,24 +195,4 @@ sub make_toolbar_for_table {
     return $tb1;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::Screen
+1;

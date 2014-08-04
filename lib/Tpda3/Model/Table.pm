@@ -1,28 +1,27 @@
 package Tpda3::Model::Table;
 
+# ABSTRACT: Database table meta data
+
 use Mouse;
 use namespace::autoclean;
 use Mouse::Util::TypeConstraints;
 
 require Tpda3::Model::Table::Record;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Model::Table::Record
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
-=head1 METHODS
+    my $table  = Tpda3::Model::Table->new(
+        keys   => [ 'key_field1', 'key_field2' ],
+        table  => 'table_name',
+        view   => 'view_name',
+    );
+
+    # Elsewhere
+    my $table_name = $table->table;
+
+    my $table_view = $table->view;
+
+    $table->update_key_field( 'key_field1', 101 );
 
 =cut
 
@@ -77,28 +76,28 @@ sub find_index_for {
     return $key;
 }
 
-=head2 update_field
+=head2 update_key_field
 
-Update field.
+Update the key field value.
 
 =cut
 
-sub update_field {
+sub update_key_field {
     my ($self, $name, $new_value) = @_;
 
-    die "Wrong parameters for 'update_field'" unless $name;
+    die "Wrong parameters for 'update_key_field'" unless $name;
 
     $self->find_index_for($name)->value($new_value);
     return $new_value;
 }
 
-=head2 update_index
+=head2 update_key_index
 
-Update the index.
+Update the key when we know the index.
 
 =cut
 
-sub update_index {
+sub update_key_index {
     my ( $self, $index, $new_value ) = @_;
 
     die "Wrong parameters for 'update_key_index'" unless defined $index;
@@ -109,25 +108,3 @@ sub update_index {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Model::Table

@@ -1,5 +1,7 @@
 package Tpda3::Tk::Screen;
 
+# ABSTRACT: Tpda3 Screen base class
+
 use strict;
 use warnings;
 use Carp;
@@ -13,27 +15,55 @@ use Tpda3::Config::Screen;
 
 require Tpda3::Tk::Validation;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Screen - Tpda3 Screen base class.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
-=head1 METHODS
+    use base 'Tpda3::Tk::Screen';
+
+    sub run_screen {
+        my ( $self, $nb ) = @_;
+
+        my $rec_page = $nb->page_widget('rec');
+        my $det_page = $nb->page_widget('det');
+        $self->{view} = $nb->toplevel;
+        $self->{bg}   = $self->{view}->cget('-background');
+
+        my $validation
+            = Tpda3::Tk::Validation->new( $self->{scrcfg}, $self->{view} );
+
+        #-- Frame1 - Customer
+
+        my $frame1 = $rec_page->LabFrame(
+            -label      => 'Customer',
+            -foreground => 'blue',
+            -labelside  => 'acrosstop',
+        )->pack;
+
+        # Fields
+
+        my $lcustomername = $frame1->Label( -text => 'Customer' );
+        ...
+
+        my $ecustomername = $frame1->MEntry(
+            -width    => 35,
+            -validate => 'key',
+            -vcmd     => sub {
+                $validation->validate_entry( 'customername', @_ );
+            },
+        );
+        ...
+
+        # Entry objects: var_asoc, var_obiect
+        # Other configurations in '<screen>.conf'
+        $self->{controls} = {
+            customername     => [ undef, $ecustomername ],
+            customernumber   => [ undef, $ecustomernumber ],
+            ...
+        };
+    }
 
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -265,24 +295,4 @@ sub toolscr {
     return $self->{toolscr};
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::Screen
+1;

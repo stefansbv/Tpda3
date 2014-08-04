@@ -1,5 +1,7 @@
 package Tpda3::Tk::Tools::TemplDet;
 
+# ABSTRACT: Templates meta data editing details screen
+
 use strict;
 use warnings;
 use utf8;
@@ -20,20 +22,6 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Tools::TemplDet screen
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = '0.90';
-
 =head1 SYNOPSIS
 
     require Tpda3::Tk::Tools::TemplDet;
@@ -41,8 +29,6 @@ our $VERSION = '0.90';
     my $scr = Tpda3::Tk::Tools::TemplDet->new;
 
     $scr->run_screen($args);
-
-=head1 METHODS
 
 =head2 _init
 
@@ -531,24 +517,4 @@ sub set_row_status {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan at s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2013 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1; # End of Tpda3::Tk::Tools::TemplDet
+1;

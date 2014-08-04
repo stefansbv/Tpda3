@@ -1,5 +1,7 @@
 package Tpda3::Tk::Tools::Reports;
 
+# ABSTRACT: Reports meta data editing screen
+
 use strict;
 use warnings;
 use utf8;
@@ -15,20 +17,6 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Tools::Reports screen.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     require Tpda3::Tools::Reports;
@@ -37,11 +25,9 @@ our $VERSION = 0.90;
 
     $scr->run_screen($args);
 
-=head1 METHODS
-
 =head2 run_screen
 
-The screen layout
+The screen layout.
 
 =cut
 
@@ -276,24 +262,4 @@ sub report_file {
     return;
 }
 
-=head1 AUTHOR
-
-Ștefan Suciu, C<< <stefbv70 la gmail punct com> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011-2014 Ștefan Suciu
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1; # End of Tpda3::Tools::Reports
+1;

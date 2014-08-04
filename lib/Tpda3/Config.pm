@@ -1,5 +1,7 @@
 package Tpda3::Config;
 
+# ABSTRACT: The Tpda3 application's configuration system
+
 use strict;
 use warnings;
 
@@ -17,18 +19,6 @@ require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
 
-=head1 NAME
-
-Tpda3::Config - Tpda Tpda configuration module
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
 Reads configuration files in I<Config::General> format and create a
@@ -40,8 +30,6 @@ automatically create methods from the keys of the hash.
     my $cfg = Tpda3::Config->instance($args); # first time init
 
     my $cfg = Tpda3::Config->instance(); # later, in other modules
-
-=head1 METHODS
 
 =head2 _new_instance
 
@@ -843,22 +831,4 @@ sub resource_data_for {
     return $self->config_data_from($cfg_file);
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Config
+1;

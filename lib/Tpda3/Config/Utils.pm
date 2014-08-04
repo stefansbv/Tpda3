@@ -1,5 +1,7 @@
 package Tpda3::Config::Utils;
 
+# ABSTRACT: Utility functions for configuration data structures
+
 use strict;
 use warnings;
 
@@ -15,25 +17,11 @@ use Try::Tiny;
 use YAML::Tiny;
 use Config::General;
 
-=head1 NAME
-
-Tpda3::Config::Utils - Utility functions for config paths and files
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Config::Utils;
 
     my $cu = Tpda3::Config::Utils->new();
-
-=head1 METHODS
 
 =head2 load_conf
 
@@ -234,24 +222,4 @@ sub get_doc_file_by_name {
     return catfile( dist_dir('Tpda3'), 'doc', $doc_file);
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Config::Utils
+1;

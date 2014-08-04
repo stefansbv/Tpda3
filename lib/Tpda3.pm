@@ -19,18 +19,6 @@ BEGIN {
     bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;
 }
 
-=head1 NAME
-
-Tpda3 - Tpda3 (Tiny Perl Database Application 3).
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = '0.90';
-
 =head1 SYNOPSIS
 
 B<Tpda3> is a classic desktop database application framework.
@@ -90,8 +78,6 @@ apps/<appname>/etc/application.yml >>, has a (new) option named
 I<widgetset> with Tk and Wx as valid values (case insensitive).
 
 This is the main module of the application.
-
-=head1 METHODS
 
 =head2 new
 
@@ -160,42 +146,9 @@ sub run {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Tpda3
-
-You can also look for information at: http://tpda.sourceforge.net
+1;
 
 =head1 ACKNOWLEDGEMENTS
-
-The Open Source movement, and all the authors, contributors and
-community behind this great projects, this project would not exist
-without:
-
- Perl and Perl modules including CPAN
- Perl Monks - the best Perl support site. [http://www.perlmonks.org/]
- Kephra
- Padre
- GNU/Linux
- Firebird (and Flamerobin)
- Postgresql
- SQLite
- CUBRID
-
-The implementation of the MVC pattern is heavily based on the
-implementation from the Cipres project:
-
-Author: Rutger Vos, 17/Aug/2006
-        http://svn.sdsc.edu/repo/CIPRES/cipresdev/branches/guigen \
-             /cipres/framework/perl/cipres/lib/Cipres/
 
 The implementation of the Wx interface is heavily based on the work
 of Mark Dootson.
@@ -204,25 +157,3 @@ The implementation of the localization code is based on the work of
 David E. Wheeler.
 
 Thank You!
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 dated June, 1991 or at your option
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License is available in the source tree;
-if not, write to the Free Software Foundation, Inc.,
-59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-=cut
-
-1;    # End of Tpda3

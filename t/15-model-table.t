@@ -28,21 +28,21 @@ is($table->count_keys, 3, 'count keys');
 
 is($table->get_key(0)->value, undef, 'check field1 value');
 
-ok($table->update_field( 'field1', 101 ), 'update field1 value');
+ok($table->update_key_field( 'field1', 101 ), 'update field1 value');
 
 is($table->get_key(0)->name, 'field1', 'check field1 name');
 is($table->get_key(0)->value, 101, 'check field1 value 101');
 
-ok($table->update_field( 'field1', 1001 ), 'update field1 value');
+ok($table->update_key_field( 'field1', 1001 ), 'update field1 value');
 is($table->get_key(0)->value, 1001, 'check field1 value 1001');
 
-ok($table->update_index(1, 1002 ), 'update field2 value');
+ok($table->update_key_index(1, 1002 ), 'update field2 value');
 is($table->get_key(1)->value, 1002, 'check field2 value 1002');
 
-is($table->update_index(2, undef ), undef, 'clear field3 value');
+is($table->update_key_index(2, undef ), undef, 'clear field3 value');
 is($table->get_key(2)->value, undef, 'check field3 value undef ');
 
-is($table->update_field( 'field1', undef ), undef, 'clear field1 value');
+is($table->update_key_field( 'field1', undef ), undef, 'clear field1 value');
 is($table->get_key(0)->value, undef, 'check field1 value undef ');
 
 ok(my @keys = $table->all_keys, 'get all keys');

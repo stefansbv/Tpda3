@@ -1,5 +1,7 @@
 package Tpda3::Wx::View;
 
+# ABSTRACT: The view - Wx version
+
 use strict;
 use warnings;
 use Carp;
@@ -23,18 +25,6 @@ require Tpda3::Utils;
 require Tpda3::Wx::Notebook;
 require Tpda3::Wx::ToolBar;
 
-=head1 NAME
-
-Tpda3::Wx::App - Wx Perl application class
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Wx::View;
@@ -45,8 +35,6 @@ our $VERSION = 0.90;
         [ -1, -1 ],
         wxDEFAULT_FRAME_STYLE,
     );
-
-=head1 METHODS
 
 =head2 new
 
@@ -1749,28 +1737,8 @@ sub make_binding_entry {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGEMENTS
 
 Mark Dootson for clarification regarding the DatePicker controll.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::View

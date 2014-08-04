@@ -1,5 +1,7 @@
 package Tpda3::Wx::App::Test::Orders;
 
+# ABSTRACT: The Orders screen
+
 use strict;
 use warnings;
 
@@ -20,18 +22,6 @@ use Tpda3::Wx::Grid::DataTable;
 
 Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
-=head1 NAME
-
-Tpda3::App::Test::Orders screen
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     require Tpda3::App::Test::Orders;
@@ -39,8 +29,6 @@ our $VERSION = 0.90;
     my $scr = Tpda3::App::Test::Orders->new;
 
     $scr->run_screen($args);
-
-=head1 METHODS
 
 =head2 run_screen
 
@@ -138,44 +126,27 @@ sub run_screen {
     return;
 }
 
-sub XRC {
-    my ( $self, $object ) = @_;
+=head2 XRC
 
-    return  $self->{frame}->FindWindow(Wx::XmlResource::GetXRCID($object) );
-}
-
-# sub gbpos { Wx::GBPosition->new(@_) }
-
-# sub gbspan { Wx::GBSpan->new(@_) }
-
-sub make_bitmap {
-    my ( $self, $icon ) = @_;
-
-    my $ico_path = $self->{cfg}->cfico;
-
-    my $bmp = Wx::Bitmap->new( $ico_path . "/$icon.gif", wxBITMAP_TYPE_ANY, );
-
-    return $bmp;
-}
-
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
+XRC.
 
 =cut
 
-1;    # End of Tpda3::Wx::App::Test::Orders
+sub XRC {
+    my ( $self, $object ) = @_;
+    return  $self->{frame}->FindWindow(Wx::XmlResource::GetXRCID($object) );
+}
+
+=head2 make_bitmap
+
+Make bitmap.
+
+=cut
+
+sub make_bitmap {
+    my ( $self, $icon ) = @_;
+    my $ico_path = $self->{cfg}->cfico;
+    return Wx::Bitmap->new( $ico_path . "/$icon.gif", wxBITMAP_TYPE_ANY, );
+}
+
+1;

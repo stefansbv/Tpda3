@@ -1,5 +1,7 @@
 package Tpda3::Tk::TB;
 
+# ABSTRACT: Create a tool-bar
+
 use strict;
 use warnings;
 
@@ -8,23 +10,13 @@ use base qw{Tk::Derived Tk::ToolBar};
 
 Tk::Widget->Construct('TB');
 
-=head1 NAME
-
-Tpda3::Tk::TB - Create a toolbar
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tk::TB;
 
-=head1 METHODS
+    $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
+
+    $self->{_tb}->make_toolbar_buttons( $toolbars, $attribs );
 
 =head2 Populate
 
@@ -226,24 +218,4 @@ sub toggle_tool_check {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::TB
+1;

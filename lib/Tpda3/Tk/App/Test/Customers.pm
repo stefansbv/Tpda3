@@ -1,21 +1,11 @@
 package Tpda3::Tk::App::Test::Customers;
 
+# ABSTRACT: The Tpda3::App::Test::Customers screen
+
 use strict;
 use warnings;
 
 use base 'Tpda3::Tk::Screen';
-
-=head1 NAME
-
-Tpda3::App::Test::Customers screen
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -24,8 +14,6 @@ our $VERSION = 0.90;
     my $scr = Tpda3::App::Test::Customers->new;
 
     $scr->run_screen($args);
-
-=head1 METHODS
 
 =head2 run_screen
 
@@ -336,24 +324,4 @@ sub run_screen {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::App::Test::Customers
+1;

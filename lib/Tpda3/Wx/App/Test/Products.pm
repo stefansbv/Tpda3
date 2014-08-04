@@ -1,22 +1,12 @@
 package Tpda3::Wx::App::Test::Products;
 
+# ABSTRACT: The Products screen
+
 use strict;
 use warnings;
 
 use Wx qw{:everything};
 use base 'Tpda3::Wx::Screen';
-
-=head1 NAME
-
-Tpda3::App::Test::Products screen
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -25,8 +15,6 @@ our $VERSION = 0.90;
     my $scr = Tpda3::App::Test::Products->new;
 
     $scr->run_screen($args);
-
-=head1 METHODS
 
 =head2 run_screen
 
@@ -265,28 +253,20 @@ sub run_screen {
     return;
 }
 
-sub gbpos { Wx::GBPosition->new(@_) }
+=head2 gbpos
 
-sub gbspan { Wx::GBSpan->new(@_) }
-
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
+Grid bag position.
 
 =cut
 
-1;    # End of Tpda3::Wx::App::Test::Products
+sub gbpos { Wx::GBPosition->new(@_) }
+
+=head2 gbspan
+
+Grid bag span.
+
+=cut
+
+sub gbspan { Wx::GBSpan->new(@_) }
+
+1;

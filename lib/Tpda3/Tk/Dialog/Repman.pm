@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::Repman;
 
+# ABSTRACT: Dialog for preview and print of Report Manager reports
+
 use strict;
 use warnings;
 use utf8;
@@ -17,27 +19,13 @@ require Tpda3::Lookup;
 
 use base q{Tpda3::Tk::Screen};
 
-=head1 NAME
-
-Tpda3::Tk::Dialog::RepMan - Dialog for preview and print RepMan reports.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Dialog::Help;
+    use Tpda3::Tk::Dialog::Repman;
 
-    my $fd = Tpda3::Tk::Dialog::Help->new;
+    my $fd = Tpda3::Tk::Dialog::Repman->new;
 
     $fd->search($self);
-
-=head1 METHODS
 
 =head2 new
 

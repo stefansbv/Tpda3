@@ -1,19 +1,9 @@
 package Tpda3::Observable;
 
+# ABSTRACT: the observer patern implementation
+
 use strict;
 use warnings;
-
-=head1 NAME
-
-Tpda3::Observable - Observer patern implementation
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -31,8 +21,6 @@ our $VERSION = 0.90;
 
         return $self;
     }
-
-=head1 METHODS
 
 =head2 new
 
@@ -138,15 +126,7 @@ sub unset {
     return $self;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGMENTS
 
@@ -156,16 +136,4 @@ Author: Rutger Vos, 17/Aug/2006 13:57
              /cipres/framework/perl/cipres/lib/Cipres/
 Thank you!
 
-=head1 LICENSE AND COPYRIGHT
-
-Copyright:
-  Rutger Vos   2006
-  Stefan Suciu 2010-2014
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Observable
+Copyright: Rutger Vos, 2006

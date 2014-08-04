@@ -1,5 +1,7 @@
 package Tpda3::Db::Connection::Postgresql;
 
+# ABSTRACT: Connect to a PostgreSQL database
+
 use strict;
 use warnings;
 
@@ -10,18 +12,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 NAME
-
-Tpda3::Db::Connection::Postgresql - Connect to a PostgreSQL database.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Db::Connection::Postgresql;
@@ -30,12 +20,9 @@ our $VERSION = 0.90;
 
     $db->db_connect($connection);
 
-
-=head1 METHODS
-
 =head2 new
 
-Constructor
+Constructor method.
 
 =cut
 
@@ -53,7 +40,7 @@ sub new {
 
 =head2 db_connect
 
-Connect to database
+Connect to the database.
 
 =cut
 
@@ -449,29 +436,9 @@ Should check for the PostgreSQL version?
 
 sub has_feature_returning { 1 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
+1;
 
 =head1 ACKNOWLEDGEMENTS
 
 Information schema queries by Lorenzo Alberton from
 http://www.alberton.info/postgresql_meta_info.html
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Db::Connection::Postgresql

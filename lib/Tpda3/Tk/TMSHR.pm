@@ -1,5 +1,7 @@
 package Tpda3::Tk::TMSHR;
 
+# ABSTRACT: Create a table matrix SpreadsheetHideRows widget
+
 use strict;
 use warnings;
 use utf8;
@@ -11,18 +13,6 @@ use Tk;
 use base qw{Tk::Derived Tk::TableMatrix::SpreadsheetHideRows};
 
 Tk::Widget->Construct('TMSHR');
-
-=head1 NAME
-
-Tpda3::Tk::TMSHR - Create a table matrix SpreadsheetHideRows widget.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -50,8 +40,6 @@ our $VERSION = 0.90;
     $xtable->make_header($header);
     $xtable->fill_main($record_aoh, 'rowcountcolname');
     $xtable->fill_details($expanddata);
-
-=head1 METHODS
 
 =head2 ClassInit
 
@@ -322,24 +310,4 @@ sub get_expdata {
     return $self->cget('-expandData');
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2011-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # end of Tpda3::Tk::TMSHR
+1;

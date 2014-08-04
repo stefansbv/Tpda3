@@ -1,5 +1,7 @@
 package Tpda3::Tk::TM;
 
+# ABSTRACT: Create a table matrix widget
+
 use strict;
 use warnings;
 use Carp;
@@ -10,18 +12,6 @@ use base qw< Tk::Derived Tk::TableMatrix >;
 use Tk::widgets qw< Checkbutton >;
 
 Tk::Widget->Construct('TM');
-
-=head1 NAME
-
-Tpda3::Tk::TM - Create a table matrix widget.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -47,8 +37,6 @@ our $VERSION = 0.90;
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     $xtable->init($frame, $header);
-
-=head1 METHODS
 
 =head2 ClassInit
 
@@ -848,24 +836,4 @@ sub count_is_checked {
     return $count;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # end of Tpda3::Tk::TM
+1;

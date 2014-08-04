@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::Tiler;
 
+# ABSTRACT: Dialog for messages
+
 use strict;
 use warnings;
 use utf8;
@@ -9,20 +11,6 @@ use Tk::Tiler;
 
 require Tpda3::Utils;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Tk::Dialog::Tiler - Dialog for messages.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     require Tpda3::Tk::Dialog::Tiler;
@@ -30,8 +18,6 @@ our $VERSION = 0.90;
     my $dlg = Tpda3::Tk::Dialog::Tiler->new($self->view);
 
     $dlg->message_tiler($message, $details);
-
-=head1 METHODS
 
 =head2 new
 
@@ -324,24 +310,4 @@ static unsigned char w3_bits[] = {
     }
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::Dialog::Tiler
+1;

@@ -1,5 +1,7 @@
 package Tpda3::Tk::App::Test::Orders;
 
+# ABSTRACT: The Tpda3::App::Test::Orders screen
+
 use strict;
 use warnings;
 
@@ -9,18 +11,6 @@ use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Tk::TM;
 
-=head1 NAME
-
-Tpda3::App::Test::Orders screen
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     require Tpda3::App::Test::Orders;
@@ -29,11 +19,9 @@ our $VERSION = 0.90;
 
     $scr->run_screen($args);
 
-=head1 METHODS
-
 =head2 run_screen
 
-The screen layout
+The screen layout.
 
 =cut
 
@@ -522,24 +510,4 @@ sub on_mode_idle {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::App::Test::Orders
+1;

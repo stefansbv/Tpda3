@@ -1,5 +1,7 @@
 package Tpda3::Model;
 
+# ABSTRACT: The Model
+
 use strict;
 use warnings;
 
@@ -17,29 +19,11 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
-use Data::Dumper;
-
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Model - The Model
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Model;
 
     my $model = Tpda3::Model->new();
-
-=head1 METHODS
 
 =head2 new
 
@@ -931,8 +915,9 @@ sub table_record_delete {
     die "Empty TABLE name in DELETE command!" unless $table;
     die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
-    $self->_log->debug("Deleting from $table: ");
-    #$self->_log->debug( sub { Dumper($where) } );
+    # require Data::Dumper;
+    # $self->_log->debug("Deleting from $table: ");
+    # $self->_log->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
@@ -1594,24 +1579,4 @@ sub update_or_insert {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Model
+1;

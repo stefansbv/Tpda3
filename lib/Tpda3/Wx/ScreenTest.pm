@@ -1,5 +1,7 @@
 package Tpda3::Wx::ScreenTest;
 
+# ABSTRACT: module for screen tests
+
 use strict;
 use warnings;
 
@@ -12,18 +14,6 @@ use Tpda3::Config;
 use Exporter 'import';
 our @EXPORT_OK = qw(test_screen);
 
-=head1 NAME
-
-Tpda3::Wx::ScreenTest - module for screen test.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
 use Tpda3::Wx::ScreenTest q{test_screen};
@@ -35,8 +25,6 @@ my $args = {
 };
 
 test_screen($args, 'Tpda3::Wx::App::<AppName>::<ScreenName>');
-
-=head1 METHODS
 
 =head2 new
 
@@ -139,4 +127,4 @@ sub test_screen {
 
 }
 
-1;  #-- End test
+1;

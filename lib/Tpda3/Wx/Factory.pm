@@ -1,15 +1,6 @@
-#############################################################################
-## Name: XRCCustom.pm
-## Purpose: wxWindows' XML Resources demo
-## Author: Mattia Barbon
-## Created: 25/08/2003
-## RCS-ID: $Id: XRCCustom.pm,v 1.1 2003/07/25 20:36:10 mbarbon Exp $
-## Copyright: (c) 2003 Mattia Barbon
-## Licence: This program is free software; you can redistribute it and/or
-## modify it under the same terms as Perl itself
-#############################################################################
-
 package Tpda3::Wx::Factory;
+
+# ABSTRACT: Factory
 
 use base 'Wx::XmlSubclassFactory';
 
@@ -20,3 +11,24 @@ sub Create {
 }
 
 1;
+
+=head1 ACKNOWLEDGEMENTS
+
+The implementation of the Wx interface is heavily based on the work
+of Mark Dootson.
+
+The implementation of the localization code is based on the work of
+David E. Wheeler.
+
+Thank You!
+
+=head1 AUTHOR
+
+Mattia Barbon
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright: (c) 2003 Mattia Barbon
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.

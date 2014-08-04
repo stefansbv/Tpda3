@@ -1,5 +1,7 @@
 package Tpda3::Wx::Dialog::Help;
 
+# ABSTRACT: Help dialog
+
 use strict;
 use warnings;
 

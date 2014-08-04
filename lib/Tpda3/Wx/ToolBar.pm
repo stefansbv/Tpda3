@@ -1,22 +1,12 @@
 package Tpda3::Wx::ToolBar;
 
+# ABSTRACT: Create a toolbar
+
 use strict;
 use warnings;
 
 use Wx qw(:everything);
 use base qw{Wx::ToolBar};
-
-=head1 NAME
-
-Tpda3::Wx::ToolBar - Create a toolbar
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
 
 =head1 SYNOPSIS
 
@@ -24,8 +14,6 @@ our $VERSION = 0.90;
     $self->SetToolBar( Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE ) );
     $self->{_tb} = $self->GetToolBar;
     $self->{_tb}->Realize;
-
-=head1 METHODS
 
 =head2 new
 
@@ -259,24 +247,4 @@ sub toggle_tool_check {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Wx::ToolBar
+1;

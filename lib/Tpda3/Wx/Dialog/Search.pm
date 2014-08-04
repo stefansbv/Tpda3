@@ -1,5 +1,7 @@
 package Tpda3::Wx::Dialog::Search;
 
+# ABSTRACT: Search dialog
+
 use strict;
 use warnings;
 
@@ -376,4 +378,4 @@ sub choices {
     return $self->{choices}{$choice};
 }
 
-1;    # End of Tpda3::Wx::Dialog::Search
+1;

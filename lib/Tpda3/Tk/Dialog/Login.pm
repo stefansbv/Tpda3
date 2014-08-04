@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::Login;
 
+# ABSTRACT: Dialog for user name and password
+
 use strict;
 use warnings;
 
@@ -9,18 +11,6 @@ use Tk;
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=head1 NAME
-
-Tpda3::Tk::Dialog::Login - Dialog for user name and password
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tk::Dialog::Login;
@@ -29,11 +19,9 @@ our $VERSION = 0.90;
 
     $fd->login($self);
 
-=head1 METHODS
-
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 
@@ -49,7 +37,7 @@ sub new {
 
 =head2 login
 
-Show dialog
+Show dialog.
 
 =cut
 
@@ -164,4 +152,4 @@ sub login {
     return $return_choice;
 }
 
-1;    # End of Tpda3::Tk::Dialog::Login
+1;

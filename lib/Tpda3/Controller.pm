@@ -1,5 +1,7 @@
 package Tpda3::Controller;
 
+# ABSTRACT: The Controller
+
 use strict;
 use warnings;
 use utf8;
@@ -26,20 +28,6 @@ require Tpda3::Lookup;
 require Tpda3::Selected;
 require Tpda3::Model::Table;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Controller - The Controller
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Controller;
@@ -47,8 +35,6 @@ our $VERSION = 0.90;
     my $controller = Tpda3::Controller->new();
 
     $controller->start();
-
-=head1 METHODS
 
 =head2 new
 
@@ -3997,7 +3983,7 @@ sub screen_store_key_values {
 
     foreach my $field ( keys %{$record_href} ) {
         my $value = $record_href->{$field};
-        $self->table_key( $page, 'main' )->update_field( $field, $value );
+        $self->table_key( $page, 'main' )->update_key_field( $field, $value );
     }
 
     return;
@@ -4159,24 +4145,4 @@ sub catch_db_exceptions {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Controller
+1;

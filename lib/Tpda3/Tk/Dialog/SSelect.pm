@@ -1,5 +1,7 @@
 package Tpda3::Tk::Dialog::SSelect;
 
+# ABSTRACT: Dialog for...
+
 use strict;
 use warnings;
 use utf8;
@@ -13,31 +15,17 @@ use Tpda3::Utils;
 
 use base q{Tpda3::Tk::Screen};
 
-=head1 NAME
-
-Tpda3::Tk::Dialog::RepMan - Dialog for preview and print RepMan reports.
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
-    use Tpda3::Tk::Dialog::Help;
+    use Tpda3::Tk::Dialog::SSelect;
 
-    my $fd = Tpda3::Tk::Dialog::Help->new;
+    my $fd = Tpda3::Tk::Dialog::SSelect->new;
 
     $fd->search($self);
 
-=head1 METHODS
-
 =head2 new
 
-Constructor method
+Constructor method.
 
 =cut
 

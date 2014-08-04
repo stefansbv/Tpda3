@@ -1,5 +1,7 @@
 package Tpda3::Tk::Controller;
 
+# ABSTRACT: The Controller, specific for the Tk interface
+
 use strict;
 use warnings;
 use utf8;
@@ -18,18 +20,6 @@ require Tpda3::Tk::Dialog::Tiler;
 
 use base qw{Tpda3::Controller};
 
-=head1 NAME
-
-Tpda3::Tk::Controller - The Controller
-
-=head1 VERSION
-
-Version 0.90
-
-=cut
-
-our $VERSION = 0.90;
-
 =head1 SYNOPSIS
 
     use Tpda3::Tk::Controller;
@@ -37,9 +27,6 @@ our $VERSION = 0.90;
     my $controller = Tpda3::Tk::Controller->new();
 
     $controller->start();
-
-=head1 METHODS
-
 
 =head2 new
 
@@ -883,24 +870,4 @@ sub message_tiler {
     return;
 }
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Tk::Controller
+1;
