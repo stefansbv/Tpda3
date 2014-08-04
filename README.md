@@ -5,9 +5,6 @@ Tpda3 (Tiny Perl Database Application 3)
 
 Version: 0.90
 
-Copyright (C) 2010-2014  Stefan Suciu
-GNU General Public License v3
-
 Tpda3 is a classic desktop database application framework and
 run-time, written in Perl.  The graphical user interface is based on
 PerlTk. It supports the CUBRID, Firebird, PostgreSQL and SQLite RDBMS.
@@ -18,15 +15,14 @@ There is also an experimental, graphical user interface based on wxPerl.
 Requirements
 ------------
 
-- Perl v5.8.9 or newer. For full UTF support is recomended at least v5.10.1
+- Perl v5.10.1 or newer.
 
 - SQLite (required for testing);
-- PostgreSQL version 8.2 or greater;
+- PostgreSQL version 8.2 or greater (using DBD::Pg)
   or
-- Firebird version 2.1 or greater
-  (Because of the "INSERT ... RETURNING" SQL statement, feature);
+- Firebird version 2.1 or greater (using DBD::Firebird or DBD::ODBC)
   or
-- CUBRID version 8.4;
+- CUBRID version 8.4 (using DBD::cubrid);
 
 - Operating System
 
@@ -56,7 +52,7 @@ cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only Tpda3
 Troubleshooting
 ---------------
 
-See README.trouble. There is a new dir on SF with some patched modules.
+See README.trouble. There is a dir on SF with some patched modules.
 
 
 Links
