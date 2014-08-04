@@ -9,7 +9,7 @@ Tpda3 is a classic desktop database application framework and
 run-time, written in Perl.  The graphical user interface is based on
 PerlTk. It supports the CUBRID, Firebird, PostgreSQL and SQLite RDBMS.
 
-There is also an experimental, graphical user interface based on wxPerl.
+There is also an experimental graphical user interface based on wxPerl.
 
 
 Requirements
@@ -42,6 +42,8 @@ and Apache format (Config::General).
 Installation
 ------------
 
+### The Preffered Way
+
 Because Tpda3 uses a few modules that need to be patched, the best way
 to install is from Stratopan.  This is a good time to say to the
 Stratopan team: thank you for a great service!
@@ -49,10 +51,128 @@ Stratopan team: thank you for a great service!
 cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only Tpda3
 
 
+### The Classic Way
+
+% tar -xvzf Tpda3-0.NN.tar.gz
+
+or
+
+% tar xvzf Tpda3-0.nn.tar.gz
+
+cd Tpda3-0.nn
+
+Then as usual for a Perl application:
+
+% perl Makefile.PL
+% make
+% make test
+% make install
+
+For testing the application without installation, after 'make' one can use:
+
+% perl -Mblib bin/tpda3 [options] ...
+
+Only make install should be run as root.
+
+
+### Usage
+
+After installing the application, at first start, the configuration
+directory is initialized automatically.  The following command will
+list all the defined application configurations.
+
+% tpda3 -l
+
+On a fresh installation this command should return:
+
+test-tk
+test-wx
+
+Run the demo application with:
+
+% tpda3 test-tk
+
+
+Citrus Perl
+-----------
+
+__Notes__ for the custom Citrus Perl distribution that includes Tpda3.
+
+### Installation
+
+#### GNU/Linux
+
+Install and start as normal user, not root:
+
+Open a terminal, and:
+
+% cd test         # or any other playground dir
+% tar xaf ~/downloads/tpda3perl-standard-51402-20903-linux-x86-061.tar.gz
+% cd Tpda3Perl
+% ./bin/citrusutils
+
+After exit:
+
+% source bin/citrusvars.sh
+% perl -V
+
+Paths should include Tpda3Perl.
+
+Finally we start the app with:
+
+% tpda3
+
+#### Windows
+
+Unzip the distribution to a folder, for example C:\dev\
+
+Run: C:\dev\Tpda3Perl\bin\citrusutls.exe
+
+And, after exit: C:\dev\Tpda3Perl\bin\citrusterm.bat to open a terminal, then:
+
+% tpda3
+
+Alternatively run: C:\dev\Tpda3Perl\apps\Tpda3.exe
+
+Have fun!
+
+Thank You, Mark Dootson for Citrus Perl.
+
+
 Troubleshooting
 ---------------
 
-See README.trouble. There is a dir on SF with some patched modules.
+There is a dir on SF with some patched modules that can fix all this
+problems.
+
+Problem:
+Tk::Error: unknown color name "systembuttonface"
+
+Fix:
+remove the option '-systembuttonface' from Tk::StatusBar module
+
+Problem:
+In Perl 5.10.0 on Slackware 12.2 the module MListbox throws an error
+like: XS_Tk__Callback_Call error:Not a CODE reference at \
+ /usr/lib/perl5/site_perl/5.10.0/Tk/MListbox.pm line 703.
+Similar error on ActivePerl5.10.0 build 1004.
+
+Fix: Fortunately there is a fix on the ActiveState forum (thanks to
+RobSeegel):
+
+Go into the MListbox code, and replace all references of
+ $w->can('SUPER::
+with
+ $w->can('Tk::Listbox::
+
+Problem:
+Tk::Error: Can't set -state to `normal' for
+Tk::JComboBox=HASH(0x930c6a8): Cannot use undef value for object of
+type 'color' at /usr/lib/perl5/site_perl/5.10.0/Tk/JComboBox.pm line
+1061.
+
+Fix: There is a patch on PerlMonks (Thank you lamprecht!)
+http://www.perlmonks.com/?node_id=799099
 
 
 Links
