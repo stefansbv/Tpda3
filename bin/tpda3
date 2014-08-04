@@ -106,7 +106,6 @@ exit 0;
 #- Print version
 
 sub tpda3_version {
-
     my $ver = $Tpda3::VERSION;
     print
 "Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2014 Stefan Suciu\n\n";

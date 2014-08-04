@@ -145,7 +145,7 @@ Note: There is a dir on SF with some patched modules that can fix all
 this problems, and also the modules can be installed from
 stratopan.com.
 
-Problems and their fix listed here for reference:
+Problems and their fix, listed here for reference:
 
 _Problem_: Tk::Error: unknown color name "systembuttonface"
 
