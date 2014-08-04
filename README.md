@@ -11,25 +11,6 @@ PerlTk. It supports the CUBRID, Firebird, PostgreSQL and SQLite RDBMS.
 
 There is also an experimental graphical user interface based on wxPerl.
 
-
-Requirements
-------------
-
-- Perl v5.10.1 or newer.
-
-- SQLite (required for testing);
-- PostgreSQL version 8.2 or greater (using DBD::Pg)
-  or
-- Firebird version 2.1 or greater (using DBD::Firebird or DBD::ODBC)
-  or
-- CUBRID version 8.4 (using DBD::cubrid);
-
-- Operating System
-
-Tpda3 should work on any OS where Perl and the required dependencies
-can be installed, but currently it's only tested on GNU/Linux and
-Windows (XP and 7).  Feedback and patches for other OSs is welcome.
-
 Tpda3 is the successor of TPDA and, hopefully, has a much better API
 implementation, Tpda3 follows the Model View Controller (MVC)
 architecture pattern.  The look and the user interface functionality
@@ -37,6 +18,24 @@ of Tpda3 is almost the same as of TPDA, with some minor improvements.
 
 The configuration files formats are new and are in YAML (YAML::Tiny)
 and Apache format (Config::General).
+
+
+Requirements
+------------
+
+- Perl v5.10.1 or newer.
+
+- A database, one or more of the following:
+  * SQLite (required for testing);
+  * PostgreSQL version 8.2 or greater (using DBD::Pg)
+  * Firebird version 2.1 or greater (using DBD::Firebird or DBD::ODBC)
+  * CUBRID version 8.4 (using DBD::cubrid);
+
+- The Operating System
+
+Tpda3 should work on any OS where Perl and the required dependencies
+can be installed, but currently it's only tested on GNU/Linux and
+Windows (XP and 7).  Feedback and patches for other OSs are welcome.
 
 
 Installation
@@ -148,8 +147,10 @@ Have fun!
 Troubleshooting
 ---------------
 
-There is a dir on SF with some patched modules that can fix all this
-problems.
+Note: There is a dir on SF with some patched modules that can fix all
+this problems, and also the modules can be installed from
+stratopan.com.
+
 
 Problem: Tk::Error: unknown color name "systembuttonface"
 
