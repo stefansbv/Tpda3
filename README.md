@@ -52,11 +52,9 @@ Stratopan team: thank you for a great service!).
 
 ### The Classic Way
 
-    % tar -xvzf Tpda3-0.NN.tar.gz
+Download the distribution, unpack and install:
 
-or
-
-    % tar xvzf Tpda3-0.NN.tar.gz
+    % tar xaf Tpda3-0.NN.tar.gz
     % cd Tpda3-0.NN
 
 Then as usual for a Perl application:
