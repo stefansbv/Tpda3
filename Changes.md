@@ -1,3 +1,101 @@
+## 0.90 (2014-08-02)
+
+- Bugfix
+  - Do not reload detail tab data if already loaded. Fix for the #3 bug.
+  - Cleanup READMEs.
+
+### 0.89 (2014-07-22)
+
+- Features
+  - Implement table_info_short and table_keys for SQLite.
+- Bugfix
+  - Fix file move in Tpda::Generator.
+  - Datasources - common data table is not required for templates.
+- Changes
+  - Refactor extract_tt_fields from Tpda3/Generator.
+
+## 0.88 (2014-06-15)
+
+- Features
+  - Add administrator.yml used to disable menus by name.
+
+## 0.87 (2014-06-14)
+
+- Bugfix
+  - Fix loading detail data for templates.
+
+## 0.86 (2014-05-31)
+
+- Changes
+  - Remove Log::Dispatch::FileRotate from required.
+
+## 0.85 (2014-05-31)
+
+- Features
+  - Add method to config for loading a .yaml or .conf file and return a Perl DS.
+- Changes
+  - Add the Tpda3 system tables to the Fb, Pg and SQLite schemas.
+
+## 0.84 (2014-04-16)
+
+- Changes
+  - Refactor TemplDet screen, update Reports and Templates screens.
+
+## 0.83 (2014-04-12)
+
+- Features
+  - Make TM in Details tab
+  - Detail screen for template vars.
+  - Add method to ::Tk::Screen to check if it's a tool screen.
+  - Add method to extract fields from templates to Generator.
+- Changes
+  - TTGen screen changes.
+  - Change table name in conf.
+  - Add sequence_list method.
+- Bugfix
+  - Fix regexp to match full date strings, update test.
+  - Convert format of dates from ISO to configured, for generated documents.
+  - Fix utf8 problems when the ODBC driver is used.
+
+## 0.82 (2014-04-08)
+
+- Changes
+  - Replace 'each' with 'foreach' globally;
+  - Refactor document generation code.
+  - Add message dialog to TTGen, configure fields.
+- Bugfix
+  - Fix image path for Windows.
+  - Use short paths on Windows.
+  - Fix utf8 encoding problems in generated TeX document.
+
+## 0.81 (2014-04-06)
+
+- Changes
+  - Remove Log::Dispatch::FileRotate, does not work.
+  - Simplify code in Firebird.pm
+  - Guess the app distribution name.
+- Features
+  - Add dialog and screen for Templates.
+  - Add info methods to the OdbcFb module.
+  - Generator new parameter: suffix, for generated pdf name.
+
+## 0.80 (2014-03-09)
+
+- Features
+  - Allow Tk::Checkbutton to have other off/on values; not tested.
+  - Add ODBC support using Firebird
+- Changes
+  - Increase config version number to 6
+  - Add proper localization using gettext and switch to Dist::Zilla.
+  - Implement Table module to keep track of keys and values using Mouse.
+  - Add test for Model::Table; update the module.
+  - Switch to IPC::System::Simple for RepMan preview
+  - Remove localisation configs from main.yml
+  - Remove Words TT plugin
+  - Sync Wx implemetation with Tk
+  - Use Git::CommitBuild plugin.
+  - Move Wx tests to a lib
+
 ## 0.69 (2013-10-19)
 
 - Bugfix
