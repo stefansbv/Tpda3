@@ -85,7 +85,7 @@
   - Allow Tk::Checkbutton to have other off/on values; not tested.
   - Add ODBC support using Firebird
 - Changes
-  - Increase config version number to 6
+  - Increase config version number to v5
   - Add proper localization using gettext and switch to Dist::Zilla.
   - Implement Table module to keep track of keys and values using Mouse.
   - Add test for Model::Table; update the module.
