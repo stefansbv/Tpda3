@@ -5,7 +5,8 @@ package Tpda3::Exceptions;
 use strict;
 use warnings;
 
-use Exception::Base
+use Exception::Base (
+    verbosity => 3,
     'Exception::Db',
     'Exception::Db::Connect' => {
         isa               => 'Exception::Db',
@@ -38,6 +39,13 @@ use Exception::Base
         isa               => 'Exception::Config',
         has               => [qw( usermsg logmsg )],
         string_attributes => [qw( usermsg )],
-    };
+    },
+    'Exception::Data',
+    'Exception::Data::Missing' => {
+        isa               => 'Exception::Data',
+        has               => [qw( usermsg labels )],
+        string_attributes => [qw( usermsg )],
+    }
+);
 
 1;

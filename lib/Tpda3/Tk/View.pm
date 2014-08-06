@@ -1998,18 +1998,14 @@ Override Tk::Error.
 sub Tk::Error {
     my ( $self, $error, @locations ) = @_;
 
-    # This is probably superfluous
-    my ($usermsg, $logmsg);
-    if ( my $e = Exception::Base->catch() ) {
-        print "WW: Exception in View (not superfluous!)\n";
-        $usermsg = $e->usermsg;
-        $logmsg  = $e->logmsg;
-    }
+    # Here would be nice to have:
+    # if ( my $e = Exception::Base->catch ) {
+    #     if ( $e->isa('Exception::Data::Missing') ) {
+    # but, it doesn't work.
+    return if $error =~ /^Exception::Data::Missing/sm; # ignore
 
-    my $dlg_message = $usermsg ? $usermsg : $error;
-    my $log_messsge = $logmsg  ? $logmsg  : $error;
-
-    my ($message) = split /\n/, $dlg_message if $error;
+    my $log_messsge = $error;
+    my ($message)   = split /\n/, $log_messsge;
 
     $self->log_msg("EE: '$log_messsge'");
 

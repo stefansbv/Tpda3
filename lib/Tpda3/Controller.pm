@@ -1743,7 +1743,7 @@ Load screen chosen from the menu.
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
 
-    print "Loading $module\n";
+    print "Loading >$module<\n" if $self->cfg->verbose;
 
     my $rscrstr = lc $module;
 
@@ -3194,8 +3194,6 @@ sub record_load {
 
     my $page = $self->view->get_nb_current_page();
 
-    print "Loading record on page '$page'\n";
-
     #-  Main table
     my $params = $self->main_table_metadata('qry');
 
@@ -3409,7 +3407,8 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('ins');
 
-        return unless $self->check_required_data($record);
+        try   { $self->check_required_data($record); }
+        catch { $self->catch_data_exceptions($_);    };
 
         my $answer = $self->ask_to('save_insert');
 
@@ -3435,14 +3434,11 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('upd');
 
-        return unless $self->check_required_data($record);
+        try   { $self->check_required_data($record); }
+        catch { $self->catch_data_exceptions($_);    };
 
-        try {
-            $self->model->prepare_record_update($record);
-        }
-        catch {
-            $self->catch_db_exceptions($_);
-        };
+        try   { $self->model->prepare_record_update($record); }
+        catch { $self->catch_db_exceptions($_);               };
 
         $self->view->set_status(__ 'Saved', 'ms', 'darkgreen');
     }
@@ -3466,7 +3462,7 @@ sub record_save {
 
 Check if all the required data is present in the screen.
 
-There are two list used in this method, the list of the non empty
+There are two lists used in this method, the list of the non empty
 fields from the screen and the list of the fields that must have a
 value.
 
@@ -3485,7 +3481,7 @@ Example I<Screen> data structure for the required field:
 
 Fields depending on other fields. Check field1 only if tip1 has some value.
 
-Returns I<true> if all required fields have values.
+Throws an exception if not all required fields have values.
 
 =cut
 
@@ -3498,7 +3494,6 @@ sub check_required_data {
     }
 
     my $page = $self->view->get_nb_current_page();
-    my $ok_to_save = 1;
 
     my $ctrl_req = $self->scrobj($page)->get_rq_controls();
     if ( !scalar keys %{$ctrl_req} ) {
@@ -3506,7 +3501,7 @@ sub check_required_data {
             . ucfirst $self->screen_string($page);
         $self->_log->info($warn_str);
 
-        return $ok_to_save;
+        return;
     }
 
     # List of the fields with values from the screen
@@ -3545,9 +3540,7 @@ sub check_required_data {
             }
         }
         else {
-            # No data for condition field?
-            #$self->view->set_status( "$cond_field field?", 'ms', 'darkred' );
-            print "No data for condition field: $cond_field field?\n";
+            warn "No data for condition field: $cond_field field?\n";
         }
     }
 
@@ -3555,16 +3548,18 @@ sub check_required_data {
     my $messages = [];
     foreach my $field (@required) {
         $messages->[ $ctrl_req->{$field}[0] ] = $ctrl_req->{$field}[1];
-        $ok_to_save = 0;
     }
 
     my @message = grep { defined } @{$messages}; # ignore undef elements
-    if ( !$ok_to_save ) {
-        my $message = __ 'Please, fill in data for:';
-        $self->message_tiler($message, \@message);
+
+    if ( scalar @message > 0 ) {
+        Exception::Data::Missing->throw(
+            usermsg => __ 'Please, fill in data for:',
+            labels  => \@message,
+        );
     }
 
-    return $ok_to_save;
+    return;
 }
 
 =head2 record_save_insert
@@ -4133,15 +4128,55 @@ sub catch_db_exceptions {
             print "Exception is a Connect ($message, $details)\n";
         }
         else {
-            print "Exception is a Unknown\n";
-            $self->_log->error( $e->message );
-            $e->throw;    # rethrow the exception
+            warn "*** Unknown exception:\n";
+            $self->_log->error( $e->to_string );
+            $e->throw;          # rethrow the exception
             return;
         }
 
         $self->message_dialog($message, $details, 'error', 'close');
     }
 
+    return;
+}
+
+=head2 catch_data_exceptions
+
+Handle "required data not provided" exception.
+
+=cut
+
+sub catch_data_exceptions {
+    my ($self, $exc) = @_;
+
+    if ( my $e = Exception::Base->catch($exc) ) {
+        if ( $e->isa('Exception::Data::Missing') ) {
+            $self->reset_tb_button_state;
+            $self->message_tiler( $e->usermsg, $e->labels );
+            $e->throw;          # rethrow the exception
+        }
+        else {
+            warn "*** Unknown exception:\n";
+            $self->_log->error( $e->to_string );
+            $e->throw;          # rethrow the exception
+        }
+    }
+
+    return;
+}
+
+=head2 reset_tb_button_state
+
+De-select tool-bar buttons after a failed attempt to change state.
+
+=cut
+
+sub reset_tb_button_state {
+    my $self = shift;
+    if ( $self->model->is_mode('edit') ) {
+        $self->view->get_toolbar_btn('tb_fm')->deselect;
+        $self->view->get_toolbar_btn('tb_ad')->deselect;
+    }
     return;
 }
 
