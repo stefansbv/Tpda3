@@ -88,17 +88,18 @@ sub find_subdirs {
 
 =head2 find_files
 
-Find files in directory at depth 1, not recursively.
+Find files in directory at depth 1, not recursively.  Optionally filter
+by extension.
 
 =cut
 
 sub find_files {
-    my ( $self, $dir ) = @_;
+    my ( $self, $dir, $ext ) = @_;
 
     my $rule = File::Find::Rule->new->mindepth(1)->maxdepth(1);
     $rule->or( $rule->new->directory->name('.git')->prune->discard,
         $rule->new );    # ignore git
-
+    $rule->name("*.$ext") if $ext;
     my @files = $rule->file->in($dir);
 
     my @justnames = map { basename($_); } @files;

@@ -774,7 +774,7 @@ sub list_config_files {
     my $self = shift;
 
     my $scrdir = catdir( $self->configdir, 'scr' );
-    my $conlst = Tpda3::Config::Utils->find_files($scrdir);
+    my $conlst = Tpda3::Config::Utils->find_files($scrdir, 'conf');
 
     print "Screen configurations:\n";
     foreach my $cfg_name ( @{$conlst} ) {
