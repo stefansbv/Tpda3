@@ -47,11 +47,8 @@ Connect when there already is an instance.
 
 sub db_connect {
     my ($self, $model) = @_;
-
     my $conn = Tpda3::Db::Connection->new($model);
-
     $self->{conn} = $conn;
-
     return $self;
 }
 
@@ -63,7 +60,6 @@ Return database handle.
 
 sub dbh {
     my $self = shift;
-
     return $self->{conn}{dbh};
 }
 
@@ -75,7 +71,6 @@ Module instance
 
 sub dbc {
     my $self = shift;
-
     return $self->{conn}{dbc};
 }
 

@@ -20,9 +20,7 @@ require Tpda3::Config;
 
 =head2 new
 
-Constructor method, the first and only time a new instance is created.
-All parameters passed to the instance() method are forwarded to this
-method. (From I<Class::Singleton> docs).
+Constructor method.
 
 =cut
 
