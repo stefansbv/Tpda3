@@ -119,7 +119,7 @@ sub parse_error {
 
     my $log = get_logger();
 
-    print "\nFB: $fb\n\n";
+    $log->error("EE: $fb");
 
     my $message_type
         = $fb eq q{} ? "nomessage"

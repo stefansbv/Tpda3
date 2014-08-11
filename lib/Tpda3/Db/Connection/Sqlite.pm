@@ -115,7 +115,7 @@ sub parse_error {
 
     my $log = get_logger();
 
-    print "\nSI: $si\n\n";
+    $log->error("EE: $si");
 
     my $message_type =
          $si eq q{}                                        ? "nomessage"

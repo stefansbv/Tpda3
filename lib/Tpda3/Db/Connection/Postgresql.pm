@@ -120,7 +120,7 @@ sub parse_error {
 
     my $log = get_logger();
 
-    print "\nPG: $pg\n\n";
+    $log->error("EE: $pg");
 
     my $message_type =
          $pg eq q{}                                          ? "nomessage"
