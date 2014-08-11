@@ -3,7 +3,6 @@ package Tpda3::Model::Table;
 # ABSTRACT: Database table meta data
 
 use Mouse;
-use namespace::autoclean;
 use Mouse::Util::TypeConstraints;
 
 require Tpda3::Model::Table::Record;
@@ -108,3 +107,5 @@ sub update_key_index {
 }
 
 __PACKAGE__->meta->make_immutable;
+
+no Mouse;

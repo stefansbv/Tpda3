@@ -3,7 +3,6 @@ package Tpda3::Model::Table::Record;
 # ABSTRACT: Database table meta data record ( name => value )
 
 use Mouse;
-use namespace::autoclean;
 
 =head1 SYNOPSIS
 
@@ -26,3 +25,5 @@ sub get_href {
 }
 
 __PACKAGE__->meta->make_immutable;
+
+no Mouse;
