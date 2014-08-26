@@ -29,3 +29,5 @@ errors.txt
 nytprof.out
 pm_to_blib
 t/tex/output/test.*
+perlapp/*.exe
+perlapp/*.bin
