@@ -47,6 +47,7 @@ Because Tpda3 uses a few modules that need to be patched, the best way
 to install is from Stratopan.  (This is a good time to say to the
 Stratopan team: thank you for a great service!).
 
+    cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only --installdeps Tpda3
     cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only Tpda3
 
 

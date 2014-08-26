@@ -58,6 +58,7 @@ sub db_connect {
     $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
 
     # Fixed path for SQLite databases
+    # TODO: use other paths
     my $dbfile = $conf->{dbfile} = get_testdb_filename($dbname);
 
     my $dsn = qq{dbi:SQLite:dbname=$dbfile};
@@ -280,7 +281,6 @@ Returns the full path to the test database file.
 
 sub get_testdb_filename {
     my $dbname = shift;
-
     return catfile(File::HomeDir->my_data, "$dbname.db");
 }
 
