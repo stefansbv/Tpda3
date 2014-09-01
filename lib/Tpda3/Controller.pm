@@ -15,7 +15,7 @@ use List::Util qw(any);
 use List::MoreUtils qw(uniq);
 use Log::Log4perl qw(get_logger :levels);
 use Scalar::Util qw(blessed looks_like_number);
-use Storable qw (store retrieve);
+use Storable qw(store retrieve);
 use Try::Tiny;
 use Data::Compare;
 use Locale::TextDomain 1.20 qw(Tpda3);
@@ -498,9 +498,7 @@ set event handler for the notebook pages.
 
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
-
     print '_init not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
@@ -515,7 +513,6 @@ row and the data is saved, enable the I<Detail> tab, else disable.
 
 sub toggle_detail_tab {
     my $self = shift;
-
     my $sel = $self->tmatrix_get_selected;
     if ( defined $sel ) {
         if ( $sel and !$self->model->is_modified ) {
@@ -525,7 +522,6 @@ sub toggle_detail_tab {
             $self->view->nb_set_page_state( 'det', 'disabled' );
         }
     }
-
     return;
 }
 
@@ -664,9 +660,7 @@ or
 
 sub screen_detail_name {
     my $self = shift;
-
     my $screen = $self->scrcfg('rec')->screen('details');
-
     my $dsm;
     if ( ref $screen ) {
         if ( ref $screen->{detail} eq 'ARRAY' ) {
@@ -676,7 +670,6 @@ sub screen_detail_name {
     else {
         $dsm = $screen;
     }
-
     return $dsm;
 }
 
@@ -798,12 +791,10 @@ sub _set_menus_state {
     foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
         $self->view->set_menu_state($menu, $state);
     }
-
     return unless $self->cfg->can('disabled_menus');
     foreach my $menu ( @{ $self->cfg->disabled_menus } ) {
         $self->view->set_menu_state($menu, 'disabled');
     }
-
     return;
 }
 
@@ -818,7 +809,6 @@ Only for I<menu_user> hardwired menu name for now!
 
 sub _check_app_menus {
     my $self = shift;
-
     my $appmenus = $self->view->get_app_menus_list();
     foreach my $menu_item ( @{$appmenus} ) {
         my ( $class, $module_file ) = $self->screen_module_class($menu_item);
@@ -829,7 +819,6 @@ sub _check_app_menus {
             print "Reason: $_" if $self->cfg->verbose;
         }
     }
-
     return;
 }
 
@@ -3185,7 +3174,7 @@ sub record_reload {
 
 Load the selected record in the current screen. First it loads the
 main record into the screen widgets, than the dependent record(s) into
-the TableMatrix widget(s) if configured.
+the TableMatrix widget(s) if it is configured.
 
 =cut
 
@@ -3396,7 +3385,7 @@ sub ask_to {
 
 Save record.  Different procedures for different modes.
 
-First, check if required data present in screen.
+First, check if the required data is present in the screen.
 
 =cut
 
@@ -3488,11 +3477,6 @@ Throws an exception if not all required fields have values.
 sub check_required_data {
     my ($self, $record) = @_;
 
-    unless ( scalar keys %{ $record->[0]{data} } > 0 ) {
-        $self->view->set_status(__ 'Empty record', 'ms', 'darkred');
-        return 0;
-    }
-
     my $page = $self->view->get_nb_current_page();
 
     my $ctrl_req = $self->scrobj($page)->get_rq_controls();
@@ -3500,8 +3484,6 @@ sub check_required_data {
         my $warn_str = 'WW: Unimplemented screen data check in '
             . ucfirst $self->screen_string($page);
         $self->_log->info($warn_str);
-
-        return;
     }
 
     # List of the fields with values from the screen
