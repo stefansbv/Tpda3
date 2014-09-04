@@ -1,3 +1,8 @@
+## 0.94 (2014-09-01)
+- Bugfix
+  - Fix bug #5.
+  - PerlApp project files
+
 ## 0.90 (2014-08-02)
 
 - Bugfix
