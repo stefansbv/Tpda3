@@ -228,7 +228,7 @@ Bind: auto/share/dist/Tpda3/apps/test-tk/res/search.conf[file=C:/Perl/site/lib/a
 Bind: auto/share/dist/Tpda3/LocaleData/ro/LC_MESSAGES/Tpda3.mo[file=C:/Perl/site/lib/auto/share/dist/Tpda3/LocaleData/ro/LC_MESSAGES/Tpda3.mo,extract,mode=444]
 Byref: 0
 Clean: 0
-Date: 2014-08-27 02:08:19
+Date: 2014-09-04 22:20:43
 Debug: 
 Dependent: 0
 Dyndll: 0
@@ -254,6 +254,6 @@ Version-LegalCopyright:
 Version-LegalTrademarks: 
 Version-OriginalFilename: 
 Version-ProductName: Tpda3
-Version-ProductVersion: 0.69
+Version-ProductVersion: 0.94
 Warnings: 1
 Xclude: 0
