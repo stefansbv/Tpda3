@@ -6,7 +6,7 @@ Note: The main development focus is on the PerlTk interface, at least
 
 * To do [75%]
   - [X] Improve exception handling, error reporting and user messages;
-  - [X] Test Log::Dispatch::FileRotate;
+  - [X] Test Log::Dispatch::FileRotate. Removed;
   - [X] Implement language support (translations);
   - [ ] Date fields and date validation in TM;
   - [X] Implement CUBRID support;
@@ -19,9 +19,9 @@ Note: The main development focus is on the PerlTk interface, at least
     - [ ] Developer;
   - [ ] Improve project site;
     - [ ] Add info about the last version and about the download site;
-    - [ ] Add screenshots
-    - [ ] Add custom Perl distributions with Tpda3
-    - [ ] Add installers for Linux and Windows
+    - [ ] Add screenshots;
+    - [ ] Add custom Perl distributions with Tpda3;
+    - [ ] Add installers for Linux and Windows;
   - [X] Fix the mnemonic list in the "default application" dialog;
 
 
@@ -30,5 +30,5 @@ Note: The main development focus is on the PerlTk interface, at least
   - [ ] Allow comma as decimal separator;
   - [ ] Admin tool screen to show the connected users;
   - [ ] Paginate records in the List tab (prev 50, next 50);
-  - [ ] Use hash parameters in control_read_X control_write_X
+  - [ ] Use hash parameters in control_read_X control_write_X;
   - [ ] Implement MySQL support;

@@ -380,7 +380,7 @@ Calculate order line.
 sub calculate_order_line {
     my ( $self, $row ) = @_;
 
-    my $xt = ${ $self->{tm_controls}{rec}{tm1} };
+    my $xt = ${ $self->{tm_controls}{tm1} };
 
     $self->{view}->set_status( '', 'ms'); # clear status message
 
@@ -468,9 +468,7 @@ On load record event.
 
 sub on_load_record {
     my $self = shift;
-
     $self->{view}->set_status( '', 'ms'); # clear status message
-
     return;
 }
 
@@ -482,7 +480,6 @@ On mode add event.
 
 sub on_mode_add {
     my $self = shift;
-
     return;
 }
 
