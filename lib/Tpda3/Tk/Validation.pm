@@ -278,8 +278,6 @@ sub integer {
 Function to validate strings containing only digit and dot characters
 for decimal numbers.
 
-TODO: Allow comma as decimal separator?
-
 =cut
 
 sub numeric {
@@ -287,7 +285,7 @@ sub numeric {
 
     $numscale = 0 unless ( defined $numscale );
 
-    my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
+    my $pattern = sprintf "\^\-?[0-9]{0,%d}([\\.,][0-9]{0,%d})?\$",
         $maxlen - $numscale - 1, $numscale;
 
 # TODO:
