@@ -20,8 +20,6 @@ use base 'Tk::MainWindow';
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
-require Tpda3::Config::Menu;
-require Tpda3::Config::Toolbar;
 require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
@@ -291,7 +289,7 @@ sub _create_menu {
     my $self = shift;
     $self->{_menu} = $self->Menu();
 
-    my $conf = Tpda3::Config::Menu->new;
+    my $conf = $self->cfg->menubar;
 
     my $poz;
     foreach my $name ( $conf->all_menus ) {
@@ -619,7 +617,7 @@ sub _create_toolbar {
 
     $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
 
-    my $conf     = Tpda3::Config::Toolbar->new;
+    my $conf     = $self->cfg->toolbar;
     my @toolbars = $conf->all_buttons;
 
     foreach my $name (@toolbars) {

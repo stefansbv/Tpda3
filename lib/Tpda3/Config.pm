@@ -13,6 +13,8 @@ use File::Copy::Recursive ();
 use List::Util qw(first);
 use Try::Tiny;
 
+require Tpda3::Config::Menu;
+require Tpda3::Config::Toolbar;
 require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
@@ -55,6 +57,9 @@ sub _new_instance {
     my ( $class, $args ) = @_;
 
     my $self = bless {}, $class;
+
+    $self->{_mb} = Tpda3::Config::Menu->new;
+    $self->{_tb} = Tpda3::Config::Toolbar->new;
 
     $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file
     $args->{cfgdefa} = 'etc/default.yml'; # and app default config file
@@ -839,6 +844,16 @@ sub resource_data_for {
     my ($self, $file_name, $res_path) = @_;
     my $cfg_file = $self->resource_path_for($file_name, $res_path);
     return $self->config_data_from($cfg_file);
+}
+
+sub menubar {
+    my $self = shift;
+    return $self->{_mb};
+}
+
+sub toolbar {
+    my $self = shift;
+    return $self->{_tb};
 }
 
 =head1 AUTHOR

@@ -2257,8 +2257,7 @@ the application, and different pages.
 sub toggle_interface_controls {
     my $self = shift;
 
-    my $conf = Tpda3::Config::Toolbar->new;
-
+    my $conf = $self->cfg->toolbar;
     my $mode = $self->model->get_appmode;
     my $page = $self->view->get_nb_current_page();
 
