@@ -13,20 +13,23 @@ Tk::Widget->Construct('TB');
 
 sub Populate {
     my ( $self, $args ) = @_;
-
     $self->SUPER::Populate($args);
-
     return;
 }
 
 
-sub make_toolbar_buttons {
-    my ( $self, $toolbars, $attribs ) = @_;
+sub make_toolbar_button {
+    my ( $self, $name, $attribs ) = @_;
+    my $type = $attribs->{type};
+    $self->$type( $name, $attribs );
+    return;
+}
 
-    # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name ( @{$toolbars} ) {
-        my $type = $attribs->{$name}{type};
-        $self->$type( $name, $attribs->{$name} );
+
+sub set_initial_mode {
+    my ($self, $names) = @_;
+
+    foreach my $name ( @{$names} ) {
 
         # Initial state disabled, except quit and attach button
         next if $name eq 'tb_qt';
@@ -36,6 +39,7 @@ sub make_toolbar_buttons {
         next if $name eq 'tb3gd';
         next if $name eq 'tb3gp';
         next if $name eq 'tb3qt';
+
         # And from RepMan window
         next if $name eq 'tb4pr';
         next if $name eq 'tb4qt';
@@ -176,6 +180,10 @@ Constructor method.
 =head2 make_toolbar_buttons
 
 Make main toolbar buttons.
+
+=head2 set_initial_mode
+
+Disable some of the toolbar buttons.
 
 =head2 _item_normal
 

@@ -87,9 +87,9 @@ sub run_screen {
         }
     };
 
-    my $toolbars = [ 'tb4pr', 'tb4qt', ];
-
-    $self->{tb4}->make_toolbar_buttons( $toolbars, $attribs );
+    foreach my $name (qw {tb4pr tb4qt}) {
+        $self->{tb4}->make_toolbar_button( $name, $attribs->{$name} );
+    }
 
     #-- end ToolBar
 

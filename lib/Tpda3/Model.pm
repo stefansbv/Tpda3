@@ -641,8 +641,7 @@ sub table_record_delete {
     die "Empty TABLE name in DELETE command!" unless $table;
     die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
-    # require Data::Dumper;
-    # $self->_log->debug("Deleting from $table: ");
+    $self->_log->debug("Deleting from $table: ");
     # $self->_log->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );

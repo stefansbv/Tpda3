@@ -105,14 +105,16 @@ sub get_bgcolor {
 
 
 sub make_toolbar_for_table {
-    my ( $self, $name, $tb_frame ) = @_;
+    my ( $self, $toolbar, $tb_frame ) = @_;
 
-    $self->{tb}{$name} = $tb_frame->TB();
+    $self->{tb}{$toolbar} = $tb_frame->TB();
 
-    my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($name);
-    my $attribs    = $self->{scrcfg}->app_toolbar_attribs($name);
+    my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($toolbar);
+    my $attribs    = $self->{scrcfg}->app_toolbar_attribs($toolbar);
 
-    $self->{tb}{$name}->make_toolbar_buttons( $toolbars, $attribs );
+    foreach my $name ( @{$toolbars} ) {
+        $self->{tb}{$toolbar}->make_toolbar_button( $name, $attribs->{$name} );
+    }
 
     return;
 }

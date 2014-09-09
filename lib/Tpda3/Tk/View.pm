@@ -10,7 +10,6 @@ use Log::Log4perl qw(get_logger);
 use POSIX qw (floor);
 use Data::Compare;
 use List::Compare;
-use Hash::Merge qw(merge);
 use Scalar::Util qw(blessed);
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Try::Tiny;
@@ -27,7 +26,6 @@ require Tpda3::Utils;
 require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
 require Tpda3::Tk::Dialog::Tiler;
-
 
 sub new {
     my $class = shift;
@@ -208,92 +206,63 @@ sub log_msg {
 sub _create_menu {
     my $self = shift;
     $self->{_menu} = $self->Menu();
-    my $attribs = $self->get_menubar_merged_labels;
-    $self->make_menus($attribs);
+
+    my $conf = $self->cfg->menubar;
+
+    my $poz;
+    foreach my $name ( $conf->all_menus ) {
+        my $attribs_app = $conf->get_menu($name);
+        $poz = $self->make_menus($name, $attribs_app, $poz );
+    }
+
     $self->configure( -menu => $self->{_menu} );
+
     return;
-}
-
-
-sub get_menubar_merged_labels {
-    my $self = shift;
-
-    my $labels = {
-        'menu_admin' => {
-            'label' => __ 'Admin',
-            'popup' => {
-                '1' => { 'label' => __ 'Default app' },
-                '2' => { 'label' => __ 'Configurations' },
-                '3' => { 'label' => __ 'Reports data' },
-                '4' => { 'label' => __ 'Templates data' },
-            },
-        },
-        'menu_help' => {
-            'label' => __ 'Help',
-            'popup' => {
-                '1' => { 'label' => __ 'Manual' },
-                '2' => { 'label' => __ 'About' },
-            },
-        },
-        'menu_app' => {
-            'label' => __ 'App',
-            'popup' => {
-                '1' => { 'label' => __ 'Toggle find mode' },
-                '2' => { 'label' => __ 'Execute search' },
-                '3' => { 'label' => __ 'Execute count' },
-                '4' => { 'label' => __ 'Preview report' },
-                '5' => { 'label' => __ 'Generate document' },
-                '6' => { 'label' => __ 'Quit' },
-            },
-        }
-    };
-
-    my $menucfg = $self->cfg->menubar;
-
-    return merge( $menucfg, $labels );
 }
 
 
 sub _create_app_menu {
     my $self    = shift;
+
     my $attribs = $self->cfg->appmenubar;
-    $self->make_menus( $attribs, 2 ); # add it starting with position=2
+    my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
+
+    my $pos = 2;                             # start with pos=2
+    foreach my $menu_name ( @{$menus} ) {
+        $pos = $self->make_menus( $menu_name, $attribs->{$menu_name}, $pos );
+    }
+
     return;
 }
 
 
 sub make_menus {
-    my ( $self, $attribs, $position ) = @_;
+    my ( $self, $menu_name, $attribs, $position ) = @_;
 
-    $position = 1 if !$position;
-    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+    $position //= 1;
 
-    #- Create menus
-    foreach my $menu_name ( @{$menus} ) {
+    $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
 
-        $self->{_menu}{$menu_name} = $self->{_menu}->Menu( -tearoff => 0 );
-
-        my @popups
-            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
-        foreach my $id (@popups) {
-            $self->make_popup_item(
-                $self->{_menu}{$menu_name},
-                $attribs->{$menu_name}{popup}{$id},
-            );
-        }
-
-        $self->{_menu}->insert(
-            $position,
-            'cascade',
-            -menu      => $self->{_menu}{$menu_name},
-            -label     => $attribs->{$menu_name}{label},
-            -underline => $attribs->{$menu_name}{underline},
+    my @popups = sort { $a <=> $b } keys %{ $attribs->{popup} };
+    foreach my $id (@popups) {
+        $self->make_popup_item(
+            $self->{_menu}{$menu_name},
+            $attribs->{popup}{$id},
         );
-
-        $position++;
+        # p $attribs->{popup}{$id}
     }
 
-    return;
+    $self->{_menu}->insert(
+        $position,
+        'cascade',
+        -menu      => $self->{_menu}{$menu_name},
+        -label     => $attribs->{label},
+        -underline => $attribs->{underline},
+    );
+
+    $position++;
+
+    return $position;
 }
 
 
@@ -335,6 +304,9 @@ sub make_popup_item {
 
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
+    die "Popup item name is required" unless $name;
+    warn "Popup item '$name' does not exists"
+        unless exists $self->{_menu}{$name};
     return $self->{_menu}{$name};
 }
 
@@ -489,89 +461,17 @@ sub _create_toolbar {
 
     $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
 
-    my ( $toolbars, $attribs ) = $self->toolbar_names();
+    my $conf     = $self->cfg->toolbar;
+    my @toolbars = $conf->all_buttons;
 
-    $self->{_tb}->make_toolbar_buttons( $toolbars, $attribs );
+    foreach my $name (@toolbars) {
+        my $attribs = $conf->get_tool($name);
+        $self->{_tb}->make_toolbar_button( $name, $attribs );
+    }
+
+    $self->{_tb}->set_initial_mode(\@toolbars);
 
     return;
-}
-
-
-sub toolbar_names {
-    my $self = shift;
-
-    # Get ToolBar button atributes
-    my $attribs = $self->get_toolbar_merged_labels;
-
-    # TODO: Change the config file so we don't need this sorting anymore
-    # or better keep them sorted and ready to use in config
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-    return ( $toolbars, $attribs );
-}
-
-
-sub get_toolbar_merged_labels {
-    my $self = shift;
-
-    my $labels = {
-        tb_rr => {
-            tooltip => __ 'Reload record',
-            help    => __ 'Reload record',
-        },
-        tb_fm => {
-            tooltip => __ 'Toggle find mode',
-            help    => __ 'Toggle find mode',
-        },
-        tb_qt => {
-            tooltip => __ 'Quit',
-            help    => __ 'Quit the application',
-        },
-        tb_tr => {
-            tooltip => __ 'Paste record',
-            help    => __ 'Paste record',
-        },
-        tb_fe => {
-            tooltip => __ 'Execute search',
-            help    => __ 'Execute search',
-        },
-        tb_sv => {
-            tooltip => __ 'Save record',
-            help    => __ 'Save record',
-        },
-        tb_pr => {
-            tooltip => __ 'Print preview',
-            help    => __ 'Print preview default report',
-        },
-        tb_ad => {
-            tooltip => __ 'Add record',
-            help    => __ 'Add record',
-        },
-        tb_at => {
-            tooltip => __ 'Save current window geometry',
-            help    => __ 'Save current window geometry',
-        },
-        tb_rm => {
-            tooltip => __ 'Remove record',
-            help    => __ 'Remove record',
-        },
-        tb_gr => {
-            tooltip => __ 'Generate document',
-            help    => __ 'Generate default document',
-        },
-        tb_tn => {
-            tooltip => __ 'Copy record',
-            help    => __ 'Copy record',
-        },
-        tb_fc => {
-            tooltip => __ 'Execute count',
-            help    => __ 'Execute count',
-        },
-    };
-
-    my $toolcfg = $self->cfg->toolbar;
-
-    return merge($toolcfg, $labels);
 }
 
 
