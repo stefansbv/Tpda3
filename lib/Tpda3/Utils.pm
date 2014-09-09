@@ -10,19 +10,6 @@ use Encode qw(is_utf8 decode);
 
 require Tpda3::Exceptions;
 
-=head1 SYNOPSIS
-
-Various utility functions used by all other modules.
-
-    use Tpda3::Utils;
-
-    my $foo = Tpda3::Utils->function_name();
-
-=head2 transformations
-
-Global hash reference.
-
-=cut
 
 my $transformations = {
     datey   => \&year_month,
@@ -34,11 +21,6 @@ my $transformations = {
     error   => \&do_error,
 };
 
-=head2 trim
-
-Trim strings or arrays.
-
-=cut
 
 sub trim {
     my ( $self, @text ) = @_;
@@ -51,11 +33,6 @@ sub trim {
     return wantarray ? @text : "@text";
 }
 
-=head2 dateentry_parse_date
-
-Parse date for Tk::DateEntry.
-
-=cut
 
 sub dateentry_parse_date {
 
@@ -93,11 +70,6 @@ sub dateentry_parse_date {
     return ( $y, $m, $d );
 }
 
-=head2 dateentry_format_date
-
-Format date for Tk::DateEntry.
-
-=cut
 
 sub dateentry_format_date {
 
@@ -132,12 +104,6 @@ sub dateentry_format_date {
     return $date;
 }
 
-=head2 sort_hash_by_id
-
-Use ST to sort hash by value (Id), returns an array or an array
-reference of the sorted items.
-
-=cut
 
 sub sort_hash_by_id {
     my ( $self, $attribs ) = @_;
@@ -155,12 +121,6 @@ sub sort_hash_by_id {
     return wantarray ? @attribs : \@attribs;
 }
 
-=head2 filter_hash_by_keyvalue
-
-Use ST to sort hash by value (Id), returns an array ref of the sorted
-items, filtered by key => value.
-
-=cut
 
 sub filter_hash_by_keyvalue {
     my ($self, $attribs, $key, $value) = @_;
@@ -181,14 +141,6 @@ sub filter_hash_by_keyvalue {
     return \@attribs;
 }
 
-=head2 quote4like
-
-Surround text with '%', by default, for SQL LIKE.  An optional second
-parameter can be used for 'start with' or 'end with' sintax.
-
-If option parameter is not 'C', 'S', or 'E', 'C' is assumed.
-
-=cut
 
 sub quote4like {
     my ( $self, $text, $option ) = @_;
@@ -204,13 +156,6 @@ sub quote4like {
     }
 }
 
-=head2 special_ops
-
-SQL::Abstract special ops for EXTRACT (YEAR|MONTH FROM field) = word1.
-
-Note: Not compatible with SQLite.
-
-=cut
 
 sub special_ops {
     my $self = shift;
@@ -244,12 +189,6 @@ sub special_ops {
     ];
 }
 
-=head2 process_date_string
-
-Try to identify the input string as full date, year or month and year
-and return a where clause.
-
-=cut
 
 sub process_date_string {
     my ( $self, $search_input ) = @_;
@@ -260,13 +199,6 @@ sub process_date_string {
     return $where;
 }
 
-=head2 identify_date_string
-
-Identify format of the I<input> I<string> from a date type field and
-return the matched pieces in a string as separate values where the
-separator is the colon character.
-
-=cut
 
 sub identify_date_string {
     my ( $self, $is ) = @_;
@@ -282,12 +214,6 @@ sub identify_date_string {
         :                                                   "dataerr:$is";
 }
 
-=head2 format_query
-
-Execute the appropriate sub and return the where attributes Choices
-are defined in the I<$transformations> hash.
-
-=cut
 
 sub format_query {
     my ( $self, $type ) = @_;
@@ -307,11 +233,6 @@ sub format_query {
     return $where;
 }
 
-=head2 year_month
-
-Case of string identified as year and/or month.
-
-=cut
 
 sub year_month {
     my ( $year, $month ) = @_;
@@ -323,22 +244,12 @@ sub year_month {
     return $where;
 }
 
-=head2 date_string
-
-Case of string identified as full date string, regardless of the format.
-
-=cut
 
 sub date_string {
     my ($date) = @_;
     return $date;
 }
 
-=head2 do_error
-
-Case of string not identified or empty.
-
-=cut
 
 sub do_error {
     my ($date) = @_;
@@ -346,11 +257,6 @@ sub do_error {
     return;
 }
 
-=head2 ins_underline_mark
-
-Insert ampersand character for underline mark in menu.
-
-=cut
 
 sub ins_underline_mark {
     my ( $self, $label, $position ) = @_;
@@ -363,13 +269,6 @@ sub ins_underline_mark {
     return $label;
 }
 
-=head2 deaccent
-
-Remove Romanian accented characters.
-
-TODO: Add other accented characters, especially for German and Hungarian.
-
-=cut
 
 sub deaccent {
     my ( $self, $text ) = @_;
@@ -379,11 +278,6 @@ sub deaccent {
     return $text;
 }
 
-=head2 check_path
-
-Check a path and throw an exception if not valid.
-
-=cut
 
 sub check_path {
     my ($self, $path) = @_;
@@ -398,11 +292,6 @@ sub check_path {
     return;
 }
 
-=head2 check_file
-
-Check a file path and throw an exception if not valid.
-
-=cut
 
 sub check_file {
     my ($self, $file) = @_;
@@ -417,11 +306,6 @@ sub check_file {
     return;
 }
 
-=head2 decode_unless_utf
-
-Decode a string if is not utf8.
-
-=cut
 
 sub decode_unless_utf {
     my ($self, $value) = @_;
@@ -429,17 +313,6 @@ sub decode_unless_utf {
     return $value;
 }
 
-=head2 parse_message
-
-Parse a message text in the following format:
-
-   error#Message text
-   info#Message text
-   warn#Message text
-
-and return the coresponding mesage text and color.
-
-=cut
 
 sub parse_message {
     my ($self, $text) = @_;
@@ -464,3 +337,114 @@ sub parse_message {
 }
 
 1;
+
+__END__
+
+=head1 SYNOPSIS
+
+Various utility functions used by all other modules.
+
+    use Tpda3::Utils;
+
+    my $foo = Tpda3::Utils->function_name();
+
+=head2 transformations
+
+Global hash reference.
+
+=head2 trim
+
+Trim strings or arrays.
+
+=head2 dateentry_parse_date
+
+Parse date for Tk::DateEntry.
+
+=head2 dateentry_format_date
+
+Format date for Tk::DateEntry.
+
+=head2 sort_hash_by_id
+
+Use ST to sort hash by value (Id), returns an array or an array
+reference of the sorted items.
+
+=head2 filter_hash_by_keyvalue
+
+Use ST to sort hash by value (Id), returns an array ref of the sorted
+items, filtered by key => value.
+
+=head2 quote4like
+
+Surround text with '%', by default, for SQL LIKE.  An optional second
+parameter can be used for 'start with' or 'end with' sintax.
+
+If option parameter is not 'C', 'S', or 'E', 'C' is assumed.
+
+=head2 special_ops
+
+SQL::Abstract special ops for EXTRACT (YEAR|MONTH FROM field) = word1.
+
+Note: Not compatible with SQLite.
+
+=head2 process_date_string
+
+Try to identify the input string as full date, year or month and year
+and return a where clause.
+
+=head2 identify_date_string
+
+Identify format of the I<input> I<string> from a date type field and
+return the matched pieces in a string as separate values where the
+separator is the colon character.
+
+=head2 format_query
+
+Execute the appropriate sub and return the where attributes Choices
+are defined in the I<$transformations> hash.
+
+=head2 year_month
+
+Case of string identified as year and/or month.
+
+=head2 date_string
+
+Case of string identified as full date string, regardless of the format.
+
+=head2 do_error
+
+Case of string not identified or empty.
+
+=head2 ins_underline_mark
+
+Insert ampersand character for underline mark in menu.
+
+=head2 deaccent
+
+Remove Romanian accented characters.
+
+TODO: Add other accented characters, especially for German and Hungarian.
+
+=head2 check_path
+
+Check a path and throw an exception if not valid.
+
+=head2 check_file
+
+Check a file path and throw an exception if not valid.
+
+=head2 decode_unless_utf
+
+Decode a string if is not utf8.
+
+=head2 parse_message
+
+Parse a message text in the following format:
+
+   error#Message text
+   info#Message text
+   warn#Message text
+
+and return the coresponding mesage text and color.
+
+=cut

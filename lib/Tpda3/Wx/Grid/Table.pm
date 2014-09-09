@@ -19,27 +19,6 @@ my %default = (
     double  => 0.00,
 );
 
-=head1 DESCRIPTION
-
-wxGridTableBase
-
-Documentation from gridtablebase.h:
-
-The almost abstract base class for grid tables.
-
-A grid table is responsible for storing the grid data and, indirectly,
-grid cell attributes. The data can be stored in the way most
-convenient for the application but has to be provided in string form
-to wxGrid. It is also possible to provide cells values in other
-formats if appropriate, e.g. as numbers.
-
-This base class is not quite abstract as it implements a trivial
-strategy for storing the attributes by forwarding it to
-wxGridCellAttrProvider and also provides stubs for some other
-functions. However it does have a number of pure virtual methods which
-must be implemented in the derived classes.
-
-=cut
 
 sub new {
     my ( $class, $gdt, $grid ) = @_;
@@ -52,11 +31,6 @@ sub new {
     return $self;
 }
 
-=head2 GetView
-
-Overridden to return the grid, otherwise GetView returns undef.
-
-=cut
 
 sub GetView {
     my $self = shift;
@@ -64,11 +38,6 @@ sub GetView {
     return $self->{view};
 }
 
-=head2 GetNumberRows
-
-Overridden to return the number of rows in the table.
-
-=cut
 
 sub GetNumberRows {
     my $self = shift;
@@ -76,11 +45,6 @@ sub GetNumberRows {
     return $self->{gdt}->get_row_num;
 }
 
-=head2 GetNumberCols
-
-Overridden to return the number of columns in the table.
-
-=cut
 
 sub GetNumberCols {
     my $self = shift;
@@ -88,11 +52,6 @@ sub GetNumberCols {
     return $self->{gdt}->get_col_num;
 }
 
-=head2 IsEmptyCell
-
-Overridden to implement testing for empty cells.
-
-=cut
 
 sub IsEmptyCell {
     my ( $self, $row, $col ) = @_;
@@ -102,11 +61,6 @@ sub IsEmptyCell {
         : 1;
 }
 
-=head2 GetValue
-
-Overridden to implement accessing the table values as text.
-
-=cut
 
 sub GetValue {
     my ( $self, $row, $col ) = @_;
@@ -131,11 +85,6 @@ sub get_data_all {
     return $self->{gdt}->get_row_data;
 }
 
-=head2 SetValue
-
-Overridden to implement setting the table values as text.
-
-=cut
 
 sub SetValue {
     my ( $self, $row, $col, $value ) = @_;
@@ -181,38 +130,12 @@ sub SetValueAsBool { shift->SetValue( @_ ); }
 
 ###
 
-=head1 Table Structure Modifiers
-
-Notice that none of these functions are pure virtual as they don't
-have to be implemented if the table structure is never modified after
-creation, i.e. neither rows nor columns are never added or deleted but
-that you do need to implement them if they are called, i.e. if your
-code either calls them directly or uses the matching wxGrid methods,
-as by default they simply do nothing which is definitely
-inappropriate.
-
-Clear the table contents.
-
-sub Clear {
-
-}
-
-=head2 InsertRows
-
-Insert additional rows into the table.
-
-=cut
 
 sub InsertRows {
     my ( $self, $pos, $rows ) = @_;
     return 0;
 }
 
-=head2 AppendRows
-
-Append additional rows at the end of the table.
-
-=cut
 
 sub AppendRows {
     my ( $self, $pos, $rows ) = @_;
@@ -242,11 +165,6 @@ sub AppendRows {
     return 1;
 }
 
-=head2 DeleteRows
-
-Delete rows from the table.
-
-=cut
 
 sub DeleteRows {
     my ( $self, $pos, $rows ) = @_;
@@ -280,34 +198,6 @@ sub DeleteRows {
     return 1;
 }
 
-=head2 InsertCols
-
-Exactly the same as InsertRows() but for columns.
-
-sub InsertCols {
-    my ($pos, $numCols);
-}
-
-Exactly the same as AppendRows() but for columns.
-
-sub AppendCols {
-    my ($numCols);
-    return;
-}
-
-Exactly the same as DeleteRows() but for columns.
-
-sub DeleteCols {
-    my ($pos, $numCols);
-}
-
-=head1 Table Row and Column Labels
-
-=head2 GetRowLabelValue
-
-Return the label of the specified row.
-
-=cut
 
 sub GetRowLabelValue {
     my ($self, $row) = @_;
@@ -315,11 +205,6 @@ sub GetRowLabelValue {
     return "r$row";
 }
 
-=head2 GetColLabelValue
-
-Return the label of the specified column.
-
-=cut
 
 sub GetColLabelValue {
     my ($self, $col) = @_;
@@ -327,15 +212,6 @@ sub GetColLabelValue {
     return  $self->{gdt}->get_col_attrib($col,'label');
 }
 
-=head2 SetRowLabelValue
-
-Set the given label for the specified row.
-
-The default version does nothing, i.e. the label is not stored. You
-must override this method in your derived class if you wish
-wxGrid::SetRowLabelValue() to work.
-
-=cut
 
 sub SetRowLabelValue {
     my ($self, $row, $label) = @_;
@@ -343,15 +219,6 @@ sub SetRowLabelValue {
     return;
 }
 
-=head2 SetColLabelValue
-
-Set the given label for the specified col.
-
-The default version does nothing, i.e. the label is not stored. You
-must override this method in your derived class if you wish
-wxGrid::SetRowLabelValue() to work.
-
-=cut
 
 sub SetColLabelValue {
     my ($self, $col, $label) = @_;
@@ -359,13 +226,6 @@ sub SetColLabelValue {
     return;
 }
 
-=head2 GetAttr
-
-Returns a new attribute object every time is called.
-
-TODO: Not efficient, alternatives?
-
-=cut
 
 sub GetAttr {
     my ( $self, $row, $col, $kind ) = @_;
@@ -396,6 +256,131 @@ sub GetAttr {
 
 1;
 
+=head1 DESCRIPTION
+
+wxGridTableBase
+
+Documentation from gridtablebase.h:
+
+The almost abstract base class for grid tables.
+
+A grid table is responsible for storing the grid data and, indirectly,
+grid cell attributes. The data can be stored in the way most
+convenient for the application but has to be provided in string form
+to wxGrid. It is also possible to provide cells values in other
+formats if appropriate, e.g. as numbers.
+
+This base class is not quite abstract as it implements a trivial
+strategy for storing the attributes by forwarding it to
+wxGridCellAttrProvider and also provides stubs for some other
+functions. However it does have a number of pure virtual methods which
+must be implemented in the derived classes.
+
+=head2 GetView
+
+Overridden to return the grid, otherwise GetView returns undef.
+
+=head2 GetNumberRows
+
+Overridden to return the number of rows in the table.
+
+=head2 GetNumberCols
+
+Overridden to return the number of columns in the table.
+
+=head2 IsEmptyCell
+
+Overridden to implement testing for empty cells.
+
+=head2 GetValue
+
+Overridden to implement accessing the table values as text.
+
+=head2 SetValue
+
+Overridden to implement setting the table values as text.
+
+=head1 Table Structure Modifiers
+
+Notice that none of these functions are pure virtual as they don't
+have to be implemented if the table structure is never modified after
+creation, i.e. neither rows nor columns are never added or deleted but
+that you do need to implement them if they are called, i.e. if your
+code either calls them directly or uses the matching wxGrid methods,
+as by default they simply do nothing which is definitely
+inappropriate.
+
+Clear the table contents.
+
+sub Clear {
+
+}
+
+=head2 InsertRows
+
+Insert additional rows into the table.
+
+=head2 AppendRows
+
+Append additional rows at the end of the table.
+
+=head2 DeleteRows
+
+Delete rows from the table.
+
+=head2 InsertCols
+
+Exactly the same as InsertRows() but for columns.
+
+sub InsertCols {
+    my ($pos, $numCols);
+}
+
+Exactly the same as AppendRows() but for columns.
+
+sub AppendCols {
+    my ($numCols);
+    return;
+}
+
+Exactly the same as DeleteRows() but for columns.
+
+sub DeleteCols {
+    my ($pos, $numCols);
+}
+
+=head1 Table Row and Column Labels
+
+=head2 GetRowLabelValue
+
+Return the label of the specified row.
+
+=head2 GetColLabelValue
+
+Return the label of the specified column.
+
+=head2 SetRowLabelValue
+
+Set the given label for the specified row.
+
+The default version does nothing, i.e. the label is not stored. You
+must override this method in your derived class if you wish
+wxGrid::SetRowLabelValue() to work.
+
+=head2 SetColLabelValue
+
+Set the given label for the specified col.
+
+The default version does nothing, i.e. the label is not stored. You
+must override this method in your derived class if you wish
+wxGrid::SetRowLabelValue() to work.
+
+=head2 GetAttr
+
+Returns a new attribute object every time is called.
+
+TODO: Not efficient, alternatives?
+
 =head1 ACKNOWLEDGMENTS
 
 Based on the CP::Wx::Grid::Table module Copyright (c) 2012 Mark
@@ -407,3 +392,5 @@ git://github.com/freephys/wxPython-In-Action.git, was a source of
 inspiration.
 
 Thank you!
+
+=cut

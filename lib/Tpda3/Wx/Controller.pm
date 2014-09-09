@@ -17,19 +17,6 @@ require Tpda3::Config::Utils;
 
 use base qw{Tpda3::Controller};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::Controller;
-
-    my $controller = Tpda3::Wx::Controller->new();
-
-    $controller->start();
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -55,11 +42,6 @@ sub new {
     return $self;
 }
 
-=head2 _init
-
-Init App.
-
-=cut
 
 sub _init {
     my $self = shift;
@@ -71,12 +53,6 @@ sub _init {
     return;
 }
 
-=head2 start_delay
-
-Show message, delay the database connection. Delay not yet
-implemented.
-
-=cut
 
 sub start_delay {
     my $self = shift;
@@ -86,11 +62,6 @@ sub start_delay {
     return;
 }
 
-=head2 dialog_login
-
-Login dialog.
-
-=cut
 
 sub dialog_login {
     my $self = shift;
@@ -110,11 +81,6 @@ sub dialog_login {
     return $return_string;
 }
 
-=head2 screen_module_class
-
-Return screen module class and file name.
-
-=cut
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
@@ -132,11 +98,6 @@ sub screen_module_class {
     return ( $module_class, $module_file );
 }
 
-=head2 _set_event_handlers_keys
-
-Setup event handlers for the interface.
-
-=cut
 
 sub _set_event_handlers_keys {
     my $self = shift;
@@ -148,13 +109,6 @@ sub _set_event_handlers_keys {
     return;
 }
 
-=head2 _set_event_handler_nb
-
-Separate event handler for NoteBook because must be initialized only
-after the NoteBook is (re)created and that happens when a new screen is
-required (selected from the applications menu) to load.
-
-=cut
 
 sub _set_event_handler_nb {
     my $self = shift;
@@ -190,19 +144,6 @@ sub _set_event_handler_nb {
     return;
 }
 
-=head2 set_event_handler_screen
-
-Setup event handlers for the toolbar buttons configured in the
-C<scrtoolbar> section of the current screen configuration.
-
-Default usage is for the I<add> and I<delete> buttons attached to the
-TableMatrix widget.
-
- tmatrix_add_row
-
- tmatrix_remove_row
-
-=cut
 
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
@@ -210,11 +151,6 @@ sub set_event_handler_screen {
     return;
 }
 
-=head2 about
-
-The About dialog
-
-=cut
 
 sub about {
     my $self = shift;
@@ -257,11 +193,6 @@ sub about {
     return;
 }
 
-=head2 guide
-
-Quick help dialog.
-
-=cut
 
 sub guide {
     my $self = shift;
@@ -275,3 +206,64 @@ sub guide {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::Controller;
+
+    my $controller = Tpda3::Wx::Controller->new();
+
+    $controller->start();
+
+=head2 new
+
+Constructor method.
+
+=head2 _init
+
+Init App.
+
+=head2 start_delay
+
+Show message, delay the database connection. Delay not yet
+implemented.
+
+=head2 dialog_login
+
+Login dialog.
+
+=head2 screen_module_class
+
+Return screen module class and file name.
+
+=head2 _set_event_handlers_keys
+
+Setup event handlers for the interface.
+
+=head2 _set_event_handler_nb
+
+Separate event handler for NoteBook because must be initialized only
+after the NoteBook is (re)created and that happens when a new screen is
+required (selected from the applications menu) to load.
+
+=head2 set_event_handler_screen
+
+Setup event handlers for the toolbar buttons configured in the
+C<scrtoolbar> section of the current screen configuration.
+
+Default usage is for the I<add> and I<delete> buttons attached to the
+TableMatrix widget.
+
+ tmatrix_add_row
+
+ tmatrix_remove_row
+
+=head2 about
+
+The About dialog
+
+=head2 guide
+
+Quick help dialog.
+
+=cut

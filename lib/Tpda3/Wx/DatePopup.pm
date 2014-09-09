@@ -10,13 +10,6 @@ use Wx::Event qw(EVT_CALENDAR_SEL_CHANGED);
 use Wx::Calendar;
 use base qw(Wx::PlComboPopup);
 
-=head1 SYNOPSIS
-
-=head2 Init
-
-Init value.
-
-=cut
 
 sub Init {
     my( $self ) = @_;
@@ -24,11 +17,6 @@ sub Init {
     $self->{value} = "";
 }
 
-=head2 Create
-
-Create :)
-
-=cut
 
 sub Create {
     my( $self, $parent ) = @_;
@@ -89,7 +77,19 @@ sub GetAdjustedSize {
 
 1;
 
+=head1 SYNOPSIS
+
+=head2 Init
+
+Init value.
+
+=head2 Create
+
+Create :)
+
 =head1 ACKNOWLEDGEMENTS
 
 Inspired from Wx/DemoModules/wxComboCtrl.pm
 Copyright (c) 2007 Mattia Barbon
+
+=cut

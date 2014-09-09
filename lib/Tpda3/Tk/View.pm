@@ -28,17 +28,6 @@ require Tpda3::Tk::TB;    # ToolBar
 require Tpda3::Generator;
 require Tpda3::Tk::Dialog::Tiler;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Notebook;
-
-    $self->{_nb} = Tpda3::Tk::Notebook->new( $gui );
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -96,33 +85,18 @@ sub new {
     return $self;
 }
 
-=head2 model
-
-Return the model instance object.
-
-=cut
 
 sub model {
     my $self = shift;
     return $self->{_model};
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 _set_model_callbacks
-
-Define the model callbacks
-
-=cut
 
 sub _set_model_callbacks {
     my $self = shift;
@@ -145,12 +119,6 @@ sub _set_model_callbacks {
     return;
 }
 
-=head2 set_modified_record
-
-Set modified to 1 if not already set but only if in I<edit> or I<add>
-mode.
-
-=cut
 
 sub set_modified_record {
     my $self = shift;
@@ -164,13 +132,6 @@ sub set_modified_record {
     return;
 }
 
-=head2 update_gui_components
-
-When the application status (mode) changes, update gui components.
-Screen controls (widgets) are not handled here, but in the controller
-module.
-
-=cut
 
 sub update_gui_components {
     my $self = shift;
@@ -201,12 +162,6 @@ SWITCH: {
     return;
 }
 
-=head2 set_geometry_main
-
-Set main window geometry.  Load instance config, than set geometry for
-the window.  Fall back to default if no instance config yet.
-
-=cut
 
 sub set_geometry_main {
     my $self = shift;
@@ -229,11 +184,6 @@ sub set_geometry_main {
     return;
 }
 
-=head2 set_geometry
-
-Set window geometry
-
-=cut
 
 sub set_geometry {
     my ( $self, $geom ) = @_;
@@ -241,22 +191,12 @@ sub set_geometry {
     return;
 }
 
-=head2 logger
-
-Return the logger instance object.
-
-=cut
 
 sub logger {
     my $self = shift;
     return $self->{_log};
 }
 
-=head2 log_msg
-
-Log messages.
-
-=cut
 
 sub log_msg {
     my ( $self, $msg ) = @_;
@@ -264,11 +204,6 @@ sub log_msg {
     return;
 }
 
-=head2 _create_menu
-
-Create the menu
-
-=cut
 
 sub _create_menu {
     my $self = shift;
@@ -279,13 +214,6 @@ sub _create_menu {
     return;
 }
 
-=head2 get_menubar_merged_labels
-
-Merge separate labels from the menu config so we can translate them.
-
-TODO: Maybe get rid of menubar.yml and make a data module...
-
-=cut
 
 sub get_menubar_merged_labels {
     my $self = shift;
@@ -325,12 +253,6 @@ sub get_menubar_merged_labels {
     return merge( $menucfg, $labels );
 }
 
-=head2 _create_app_menu
-
-Application specific menu to be inserted at position 2 in the main
-menu.
-
-=cut
 
 sub _create_app_menu {
     my $self    = shift;
@@ -339,11 +261,6 @@ sub _create_app_menu {
     return;
 }
 
-=head2 make_menus
-
-Make menus.
-
-=cut
 
 sub make_menus {
     my ( $self, $attribs, $position ) = @_;
@@ -379,13 +296,6 @@ sub make_menus {
     return;
 }
 
-=head2 get_app_menus_list
-
-Get application menus list, needed for binding the command to load the
-screen.  We only need the name of the popup which is also the name of
-the screen (and also the name of the module).
-
-=cut
 
 sub get_app_menus_list {
     my $self = shift;
@@ -405,11 +315,6 @@ sub get_app_menus_list {
     return \@menulist;
 }
 
-=head2 make_popup_item
-
-Make popup item
-
-=cut
 
 sub make_popup_item {
     my ( $self, $menu, $item ) = @_;
@@ -427,22 +332,12 @@ sub make_popup_item {
     return;
 }
 
-=head2 get_menu_popup_item
-
-Return a menu popup by name.
-
-=cut
 
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
     return $self->{_menu}{$name};
 }
 
-=head2 set_menu_state
-
-Enable / disable menus.
-
-=cut
 
 sub set_menu_state {
         my ( $self, $menu, $state ) = @_;
@@ -450,11 +345,6 @@ sub set_menu_state {
         return;
 }
 
-=head2 create_statusbar
-
-Create the status bar
-
-=cut
 
 sub _create_statusbar {
     my $self = shift;
@@ -517,11 +407,6 @@ sub _create_statusbar {
     return;
 }
 
-=head2 get_statusbar
-
-Return the status bar handler
-
-=cut
 
 sub get_statusbar {
     my ( $self, $sb_id ) = @_;
@@ -529,21 +414,6 @@ sub get_statusbar {
     return $self->{_sb}{$sb_id};
 }
 
-=head2 status_message
-
-Message types:
-
-=over
-
-=item error  message with I<darkred> color
-
-=item warn   message with I<yellow> color
-
-=item info   message with I<darkgreen> color
-
-=back
-
-=cut
 
 sub status_message {
     my ($self, $text) = @_;
@@ -565,12 +435,6 @@ sub status_message {
     return;
 }
 
-=head2 set_status
-
-Display message in the status bar.  Colour name can also be passed to
-the method in the message string separated by a # char.
-
-=cut
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
@@ -600,11 +464,6 @@ sub set_status {
     return;
 }
 
-=head2 temporized_clear
-
-Temporized clear for messages.
-
-=cut
 
 sub temporized_clear {
     my $self = shift;
@@ -624,11 +483,6 @@ sub temporized_clear {
     return;
 }
 
-=head2 _create_toolbar
-
-Create toolbar
-
-=cut
 
 sub _create_toolbar {
     my $self = shift;
@@ -642,11 +496,6 @@ sub _create_toolbar {
     return;
 }
 
-=head2 toolbar_names
-
-Get Toolbar names as array reference from config.
-
-=cut
 
 sub toolbar_names {
     my $self = shift;
@@ -661,14 +510,6 @@ sub toolbar_names {
     return ( $toolbars, $attribs );
 }
 
-=head2 get_toolbar_merged_labels
-
-Merge separate labels from the toolbar config so we can translate
-them.
-
-TODO: Maybe get rid of toolbar.yml and make a data module...
-
-=cut
 
 sub get_toolbar_merged_labels {
     my $self = shift;
@@ -733,15 +574,6 @@ sub get_toolbar_merged_labels {
     return merge($toolcfg, $labels);
 }
 
-=head2 create_notebook
-
-Create the NoteBook and the 3 panes.  The pane first named 'rec'
-contains widgets mostly of the type Entry, mapped to the fields of a
-table.  The second pane contains a MListbox widget and is used for
-listing the search results.  The third pane is for records from a
-dependent table.
-
-=cut
 
 sub create_notebook {
     my ($self) = @_;    # , $det_page
@@ -798,11 +630,6 @@ sub create_notebook {
     return;
 }
 
-=head2 create_notebook_panel
-
-Create a NoteBook panel
-
-=cut
 
 sub create_notebook_panel {
     my ( $self, $panel, $label ) = @_;
@@ -814,11 +641,6 @@ sub create_notebook_panel {
     return;
 }
 
-=head2 remove_notebook_panel
-
-Remove a NoteBook panel
-
-=cut
 
 sub remove_notebook_panel {
     my ( $self, $panel ) = @_;
@@ -826,11 +648,6 @@ sub remove_notebook_panel {
     return;
 }
 
-=head2 get_notebook
-
-Return the notebook handler
-
-=cut
 
 sub get_notebook {
     my ( $self, $page ) = @_;
@@ -842,11 +659,6 @@ sub get_notebook {
     }
 }
 
-=head2 destroy_notebook
-
-Destroy existing window, before the creation of an other.
-
-=cut
 
 sub destroy_notebook {
     my $self = shift;
@@ -854,11 +666,6 @@ sub destroy_notebook {
     return;
 }
 
-=head2 get_nb_current_page
-
-Return the current page of the Tk::NoteBook widget.
-
-=cut
 
 sub get_nb_current_page {
     my $self = shift;
@@ -867,11 +674,6 @@ sub get_nb_current_page {
     return $nb->raised();
 }
 
-=head2 set_nb_current
-
-Save current notbook page.
-
-=cut
 
 sub set_nb_current {
     my ( $self, $page ) = @_;
@@ -880,22 +682,12 @@ sub set_nb_current {
     return;
 }
 
-=head2 get_nb_previous_page
-
-NOTE: $nb->info('focusprev') doesn't work.
-
-=cut
 
 sub get_nb_previous_page {
     my $self = shift;
     return $self->{nb_prev};
 }
 
-=head2 notebook_page_clean
-
-Clean a page of the Tk::NoteBook widget, remove all child widgets.
-
-=cut
 
 sub notebook_page_clean {
     my ( $self, $page ) = @_;
@@ -909,11 +701,6 @@ sub notebook_page_clean {
     return;
 }
 
-=head2 nb_set_page_state
-
-Enable/disable notebook pages.
-
-=cut
 
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
@@ -921,11 +708,6 @@ sub nb_set_page_state {
     return;
 }
 
-=head2 dialog_confirm
-
-Confirmation dialog.
-
-=cut
 
 sub dialog_confirm {
     my ( $self, $message, $details, $icon, $type ) = @_;
@@ -936,11 +718,6 @@ sub dialog_confirm {
     return $dlg->message_dialog($message, $details, $icon, $type);
 }
 
-=head2 dialog_info
-
-Informations message dialog.
-
-=cut
 
 sub dialog_info {
     my ( $self, $message, $details, $type ) = @_;
@@ -958,11 +735,6 @@ sub dialog_info {
     return $dialog_i->Show();
 }
 
-=head2 dialog_error
-
-Error message dialog.
-
-=cut
 
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
@@ -976,25 +748,12 @@ sub dialog_error {
     return $dialog_e->Show();
 }
 
-=head2 get_toolbar_btn
-
-Return a toolbar button when we know the its name
-
-=cut
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
     return $self->{_tb}->get_toolbar_btn($name);
 }
 
-=head2 enable_tool
-
-Toggle tool bar button.  If state is defined then set to state do not
-toggle.
-
-State can come as 0 | 1 and normal | disabled.
-
-=cut
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -1002,11 +761,6 @@ sub enable_tool {
     return;
 }
 
-=head2 toggle_status_cn
-
-Toggle the icon in the status bar
-
-=cut
 
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
@@ -1025,11 +779,6 @@ sub toggle_status_cn {
     return;
 }
 
-=head2 on_close_window
-
-Destroy window on quit.
-
-=cut
 
 sub on_close_window {
     my $self = shift;
@@ -1037,11 +786,6 @@ sub on_close_window {
     return;
 }
 
-=head2 get_geometry
-
-Return window geometry.
-
-=cut
 
 sub get_geometry {
     my $self = shift;
@@ -1062,22 +806,12 @@ sub get_geometry {
     return $geom;
 }
 
-=head2 get_recordlist
-
-Return the record list handler
-
-=cut
 
 sub get_recordlist {
     my $self = shift;
     return $self->{_rc};
 }
 
-=head2 make_list_header
-
-Prepare the header for list in the List tab.
-
-=cut
 
 sub make_list_header {
     my ( $self, $header_look, $header_cols, $fields ) = @_;
@@ -1111,11 +845,6 @@ sub make_list_header {
     return;
 }
 
-=head2 list_header
-
-Make header for the list in the List tab.
-
-=cut
 
 sub list_header {
     my ( $self, $colattr, $colcnt ) = @_;
@@ -1149,11 +878,6 @@ sub list_header {
     return;
 }
 
-=head2 list_init
-
-Delete the rows of the list.
-
-=cut
 
 sub list_init {
     my $self = shift;
@@ -1162,11 +886,6 @@ sub list_init {
     return;
 }
 
-=head2 list_populate
-
-Populate list with data from query result.
-
-=cut
 
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
@@ -1214,11 +933,6 @@ sub list_populate {
     return $record_count;
 }
 
-=head2 list_raise
-
-Raise I<List> tab and set focus to list.
-
-=cut
 
 sub list_raise {
     my $self = shift;
@@ -1227,11 +941,6 @@ sub list_raise {
     return;
 }
 
-=head2 has_list_records
-
-Return number of records from list.
-
-=cut
 
 sub has_list_records {
     my $self = shift;
@@ -1253,11 +962,6 @@ sub has_list_records {
     return $row_count;
 }
 
-=head2 list_read_selected
-
-Read and return selected row (column 0..n) from the list.
-
-=cut
 
 sub list_read_selected {
     my $self = shift;
@@ -1313,14 +1017,6 @@ sub list_read_selected {
     return \%selected;
 }
 
-=head2 list_remove_selected
-
-Remove the selected row from the list.
-
-First it compares the key values from the screen, with the selected
-row contents in the list.
-
-=cut
 
 sub list_remove_selected {
     my ( $self, $keys ) = @_;
@@ -1359,12 +1055,6 @@ sub list_remove_selected {
     return;
 }
 
-=head2 list_locate
-
-This should be never needed and is not used.  Using brute force to
-locate the record in the list. ;)
-
-=cut
 
 sub list_locate {
     my ( $self, $pk_val, $fk_val ) = @_;
@@ -1397,13 +1087,6 @@ sub list_locate {
     return $idx;
 }
 
-=head2 event_handler_for_menu
-
-Event handlers.
-
-Configure callback for menu
-
-=cut
 
 sub event_handler_for_menu {
     my ( $self, $name, $calllback ) = @_;
@@ -1411,13 +1094,6 @@ sub event_handler_for_menu {
     return;
 }
 
-=head2 event_handler_for_tb_button
-
-Event handlers.
-
-Configure callback for toolbar button.
-
-=cut
 
 sub event_handler_for_tb_button {
     my ( $self, $name, $calllback ) = @_;
@@ -1425,11 +1101,6 @@ sub event_handler_for_tb_button {
     return;
 }
 
-=head2 list_control_choices
-
-Configure choices.
-
-=cut
 
 sub list_control_choices {
     my ($self, $control, $choices) = @_;
@@ -1438,13 +1109,6 @@ sub list_control_choices {
     return;
 }
 
-=head2 control_write_e
-
-Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
-Can use parameters to change the foreground and background colors.
-Undef is for the I<date format> parameter, irrelevant here.
-
-=cut
 
 sub control_write_e {
     my ( $self, $field, $control_ref, $value, $state, undef, $fgcolor, $bgcolor ) = @_;
@@ -1473,11 +1137,6 @@ sub control_write_e {
     return;
 }
 
-=head2 control_write_t
-
-Write to a Tk::Text widget.  If I<$value> not true, than only delete.
-
-=cut
 
 sub control_write_t {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
@@ -1502,13 +1161,6 @@ sub control_write_t {
     return;
 }
 
-=head2 control_write_d
-
-Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
-
-Date is required to come from the database in the ISO format.
-
-=cut
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $date_format ) = @_;
@@ -1538,12 +1190,6 @@ sub control_write_d {
     return;
 }
 
-=head2 control_write_m
-
-Write to a Tk::JComboBox widget.  If I<$value> not true, than only
-delete.
-
-=cut
 
 sub control_write_m {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
@@ -1569,11 +1215,6 @@ sub control_write_m {
     return;
 }
 
-=head2 control_write_c
-
-Write to a Tk::Checkbox widget.
-
-=cut
 
 sub control_write_c {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
@@ -1601,11 +1242,6 @@ sub control_write_c {
     return;
 }
 
-=head2 control_write_r
-
-Write to a Tk::RadiobuttonGroup widget.
-
-=cut
 
 sub control_write_r {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
@@ -1633,11 +1269,6 @@ sub control_write_r {
 
 #-- Read
 
-=head2 control_read_e
-
-Read contents of a Tk::Entry control.
-
-=cut
 
 sub control_read_e {
     my ( $self, $field, $control_ref ) = @_;
@@ -1652,11 +1283,6 @@ sub control_read_e {
     return $control->get;
 }
 
-=head2 control_read_t
-
-Read contents of a Tk::Text control.
-
-=cut
 
 sub control_read_t {
     my ( $self, $field, $control_ref ) = @_;
@@ -1671,11 +1297,6 @@ sub control_read_t {
     return $control->get( '0.0', 'end' );
 }
 
-=head2 control_read_d
-
-Read contents of a Tk::DateEntry control.
-
-=cut
 
 sub control_read_d {
     my ( $self, $field, $control_ref, $date_format ) = @_;
@@ -1705,11 +1326,6 @@ sub control_read_d {
     return $value;
 }
 
-=head2 control_read_m
-
-Read contents of a Tk::JComboBox control.
-
-=cut
 
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
@@ -1724,11 +1340,6 @@ sub control_read_m {
     return ${ $control_ref->[0] };           # value from variable
 }
 
-=head2 control_read_c
-
-Read state of a Checkbox.
-
-=cut
 
 sub control_read_c {
     my ( $self, $field, $control_ref ) = @_;
@@ -1743,11 +1354,6 @@ sub control_read_c {
     return ${ $control_ref->[0] };           # value from variable
 }
 
-=head2 control_read_r
-
-Read RadiobuttonGroup.
-
-=cut
 
 sub control_read_r {
     my ( $self, $field, $control_ref ) = @_;
@@ -1762,11 +1368,6 @@ sub control_read_r {
     return ${ $control_ref->[0] };           # value from variable
 }
 
-=head2 configure_controls
-
-Enable / disable controls and set background color.
-
-=cut
 
 sub configure_controls {
     my ($self, $ctrl_ref, $ctrl_state, $bg_color) = @_;
@@ -1777,11 +1378,6 @@ sub configure_controls {
     return;
 }
 
-=head2 make_binding_entry
-
-Key is always ENTER.
-
-=cut
 
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;
@@ -1791,11 +1387,6 @@ sub make_binding_entry {
     return;
 }
 
-=head2 lookup_description
-
-Dictionary lookup.
-
-=cut
 
 sub lookup_description {
     my ($self, $para) = @_;
@@ -1805,11 +1396,6 @@ sub lookup_description {
     return $descr_caen->[0];
 }
 
-=head2 tbl_selection_query
-
-Call method in Model.
-
-=cut
 
 sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
@@ -1819,11 +1405,6 @@ sub tbl_selection_query {
     return $ary_ref;
 }
 
-=head2 tbl_selection_count
-
-Call method in Model.
-
-=cut
 
 sub tbl_selection_count {
     my ($self, $para) = @_;
@@ -1833,11 +1414,6 @@ sub tbl_selection_count {
     return $records_count;
 }
 
-=head2 query_proxy
-
-Call a database query method from the Model. ;)
-
-=cut
 
 sub query_proxy {
     my ($self, $method, $para) = @_;
@@ -1847,11 +1423,6 @@ sub query_proxy {
     return $record;
 }
 
-=head2 table_record_update
-
-Call the database update method from the Model.
-
-=cut
 
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
@@ -1861,11 +1432,6 @@ sub table_record_update {
     return;
 }
 
-=head2 generate_doc
-
-Generate a document from a TT template using Tpda3::Generator.
-
-=cut
 
 sub generate_doc {
     my ($self, $model_file, $record, $sufix) = @_;
@@ -1958,11 +1524,6 @@ sub generate_doc {
     return;
 }
 
-=head2 io_exception
-
-Handle IO exceptions.
-
-=cut
 
 sub io_exception {
     my ($self, $exc, $context) = @_;
@@ -1989,11 +1550,6 @@ sub io_exception {
     return;
 }
 
-=head2 Tk::Error
-
-Override Tk::Error.
-
-=cut
 
 sub Tk::Error {
     my ( $self, $error, @locations ) = @_;
@@ -2018,3 +1574,370 @@ sub Tk::Error {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Notebook;
+
+    $self->{_nb} = Tpda3::Tk::Notebook->new( $gui );
+
+=head2 new
+
+Constructor method.
+
+=head2 model
+
+Return the model instance object.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 _set_model_callbacks
+
+Define the model callbacks
+
+=head2 set_modified_record
+
+Set modified to 1 if not already set but only if in I<edit> or I<add>
+mode.
+
+=head2 update_gui_components
+
+When the application status (mode) changes, update gui components.
+Screen controls (widgets) are not handled here, but in the controller
+module.
+
+=head2 set_geometry_main
+
+Set main window geometry.  Load instance config, than set geometry for
+the window.  Fall back to default if no instance config yet.
+
+=head2 set_geometry
+
+Set window geometry
+
+=head2 logger
+
+Return the logger instance object.
+
+=head2 log_msg
+
+Log messages.
+
+=head2 _create_menu
+
+Create the menu
+
+=head2 get_menubar_merged_labels
+
+Merge separate labels from the menu config so we can translate them.
+
+TODO: Maybe get rid of menubar.yml and make a data module...
+
+=head2 _create_app_menu
+
+Application specific menu to be inserted at position 2 in the main
+menu.
+
+=head2 make_menus
+
+Make menus.
+
+=head2 get_app_menus_list
+
+Get application menus list, needed for binding the command to load the
+screen.  We only need the name of the popup which is also the name of
+the screen (and also the name of the module).
+
+=head2 make_popup_item
+
+Make popup item
+
+=head2 get_menu_popup_item
+
+Return a menu popup by name.
+
+=head2 set_menu_state
+
+Enable / disable menus.
+
+=head2 create_statusbar
+
+Create the status bar
+
+=head2 get_statusbar
+
+Return the status bar handler
+
+=head2 status_message
+
+Message types:
+
+=over
+
+=item error  message with I<darkred> color
+
+=item warn   message with I<yellow> color
+
+=item info   message with I<darkgreen> color
+
+=back
+
+=head2 set_status
+
+Display message in the status bar.  Colour name can also be passed to
+the method in the message string separated by a # char.
+
+=head2 temporized_clear
+
+Temporized clear for messages.
+
+=head2 _create_toolbar
+
+Create toolbar
+
+=head2 toolbar_names
+
+Get Toolbar names as array reference from config.
+
+=head2 get_toolbar_merged_labels
+
+Merge separate labels from the toolbar config so we can translate
+them.
+
+TODO: Maybe get rid of toolbar.yml and make a data module...
+
+=head2 create_notebook
+
+Create the NoteBook and the 3 panes.  The pane first named 'rec'
+contains widgets mostly of the type Entry, mapped to the fields of a
+table.  The second pane contains a MListbox widget and is used for
+listing the search results.  The third pane is for records from a
+dependent table.
+
+=head2 create_notebook_panel
+
+Create a NoteBook panel
+
+=head2 remove_notebook_panel
+
+Remove a NoteBook panel
+
+=head2 get_notebook
+
+Return the notebook handler
+
+=head2 destroy_notebook
+
+Destroy existing window, before the creation of an other.
+
+=head2 get_nb_current_page
+
+Return the current page of the Tk::NoteBook widget.
+
+=head2 set_nb_current
+
+Save current notbook page.
+
+=head2 get_nb_previous_page
+
+NOTE: $nb->info('focusprev') doesn't work.
+
+=head2 notebook_page_clean
+
+Clean a page of the Tk::NoteBook widget, remove all child widgets.
+
+=head2 nb_set_page_state
+
+Enable/disable notebook pages.
+
+=head2 dialog_confirm
+
+Confirmation dialog.
+
+=head2 dialog_info
+
+Informations message dialog.
+
+=head2 dialog_error
+
+Error message dialog.
+
+=head2 get_toolbar_btn
+
+Return a toolbar button when we know the its name
+
+=head2 enable_tool
+
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
+
+=head2 toggle_status_cn
+
+Toggle the icon in the status bar
+
+=head2 on_close_window
+
+Destroy window on quit.
+
+=head2 get_geometry
+
+Return window geometry.
+
+=head2 get_recordlist
+
+Return the record list handler
+
+=head2 make_list_header
+
+Prepare the header for list in the List tab.
+
+=head2 list_header
+
+Make header for the list in the List tab.
+
+=head2 list_init
+
+Delete the rows of the list.
+
+=head2 list_populate
+
+Populate list with data from query result.
+
+=head2 list_raise
+
+Raise I<List> tab and set focus to list.
+
+=head2 has_list_records
+
+Return number of records from list.
+
+=head2 list_read_selected
+
+Read and return selected row (column 0..n) from the list.
+
+=head2 list_remove_selected
+
+Remove the selected row from the list.
+
+First it compares the key values from the screen, with the selected
+row contents in the list.
+
+=head2 list_locate
+
+This should be never needed and is not used.  Using brute force to
+locate the record in the list. ;)
+
+=head2 event_handler_for_menu
+
+Event handlers.
+
+Configure callback for menu
+
+=head2 event_handler_for_tb_button
+
+Event handlers.
+
+Configure callback for toolbar button.
+
+=head2 list_control_choices
+
+Configure choices.
+
+=head2 control_write_e
+
+Write to a Tk::Entry widget.  If I<$value> not true, than only delete.
+Can use parameters to change the foreground and background colors.
+Undef is for the I<date format> parameter, irrelevant here.
+
+=head2 control_write_t
+
+Write to a Tk::Text widget.  If I<$value> not true, than only delete.
+
+=head2 control_write_d
+
+Write to a Tk::DateEntry widget.  If I<$value> not true, than only delete.
+
+Date is required to come from the database in the ISO format.
+
+=head2 control_write_m
+
+Write to a Tk::JComboBox widget.  If I<$value> not true, than only
+delete.
+
+=head2 control_write_c
+
+Write to a Tk::Checkbox widget.
+
+=head2 control_write_r
+
+Write to a Tk::RadiobuttonGroup widget.
+
+=head2 control_read_e
+
+Read contents of a Tk::Entry control.
+
+=head2 control_read_t
+
+Read contents of a Tk::Text control.
+
+=head2 control_read_d
+
+Read contents of a Tk::DateEntry control.
+
+=head2 control_read_m
+
+Read contents of a Tk::JComboBox control.
+
+=head2 control_read_c
+
+Read state of a Checkbox.
+
+=head2 control_read_r
+
+Read RadiobuttonGroup.
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=head2 make_binding_entry
+
+Key is always ENTER.
+
+=head2 lookup_description
+
+Dictionary lookup.
+
+=head2 tbl_selection_query
+
+Call method in Model.
+
+=head2 tbl_selection_count
+
+Call method in Model.
+
+=head2 query_proxy
+
+Call a database query method from the Model. ;)
+
+=head2 table_record_update
+
+Call the database update method from the Model.
+
+=head2 generate_doc
+
+Generate a document from a TT template using Tpda3::Generator.
+
+=head2 io_exception
+
+Handle IO exceptions.
+
+=head2 Tk::Error
+
+Override Tk::Error.
+
+=cut

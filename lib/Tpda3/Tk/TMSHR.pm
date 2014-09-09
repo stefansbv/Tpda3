@@ -14,38 +14,6 @@ use base qw{Tk::Derived Tk::TableMatrix::SpreadsheetHideRows};
 
 Tk::Widget->Construct('TMSHR');
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::TMSHR;
-
-    my ($xtvar, $expand_data) = ( {}, {} );
-    my $xtable = $frame->Scrolled(
-        'TMSHR',
-        -rows           => 6,
-        -cols           => 1,
-        -width          => -1,
-        -height         => -1,
-        -ipadx          => 3,
-        -titlerows      => 1,
-        -variable       => $xtvar,
-        -selectmode     => 'single',
-        -colstretchmode => 'unset',
-        -resizeborders  => 'none',
-        -bg             => 'white',
-        -scrollbars     => 'osw',
-        -expandData     => $expand_data,
-    );
-    $xtable->pack( -expand => 1, -fill => 'both' );
-
-    $xtable->make_header($header);
-    $xtable->fill_main($record_aoh, 'rowcountcolname');
-    $xtable->fill_details($expanddata);
-
-=head2 ClassInit
-
-Constructor method.
-
-=cut
 
 sub ClassInit {
     my ( $class, $mw ) = @_;
@@ -55,11 +23,6 @@ sub ClassInit {
     return;
 }
 
-=head2 Populate
-
-Constructor method.
-
-=cut
 
 sub Populate {
     my ( $self, $args ) = @_;
@@ -69,11 +32,6 @@ sub Populate {
     return $self;
 }
 
-=head2 make_header
-
-Write header on row 0 of TableMatrix.
-
-=cut
 
 sub make_header {
     my ( $self, $args ) = @_;
@@ -86,11 +44,6 @@ sub make_header {
     return;
 }
 
-=head2 set_tags
-
-Set tags for the table matrix.
-
-=cut
 
 sub set_tags {
     my $self = shift;
@@ -193,11 +146,6 @@ sub set_tags {
     return;
 }
 
-=head2 clear_all
-
-Clear all data from the Tk::TableMatrix widget, but preserve the header.
-
-=cut
 
 sub clear_all {
     my $self = shift;
@@ -215,11 +163,6 @@ sub clear_all {
     return;
 }
 
-=head2 fill_main
-
-Fill TableMatrix widget with data from the main table.
-
-=cut
 
 sub fill_main {
     my ( $self, $record_ref, $countcol ) = @_;
@@ -243,11 +186,6 @@ sub fill_main {
     return;
 }
 
-=head2 fill_details
-
-Fill TableMatrix widget expand data from the dependent table(s).
-
-=cut
 
 sub fill_details {
     my ( $self, $record_ref ) = @_;
@@ -257,11 +195,6 @@ sub fill_details {
     return;
 }
 
-=head2 get_main_data
-
-Read main data from the widget.
-
-=cut
 
 sub get_main_data {
     my $self = shift;
@@ -298,11 +231,6 @@ sub get_main_data {
     return (\@tabledata);
 }
 
-=head2 get_expdata
-
-Get I<expandData> variable value;
-
-=cut
 
 sub get_expdata {
     my $self = shift;
@@ -311,3 +239,68 @@ sub get_expdata {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::TMSHR;
+
+    my ($xtvar, $expand_data) = ( {}, {} );
+    my $xtable = $frame->Scrolled(
+        'TMSHR',
+        -rows           => 6,
+        -cols           => 1,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -variable       => $xtvar,
+        -selectmode     => 'single',
+        -colstretchmode => 'unset',
+        -resizeborders  => 'none',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
+        -expandData     => $expand_data,
+    );
+    $xtable->pack( -expand => 1, -fill => 'both' );
+
+    $xtable->make_header($header);
+    $xtable->fill_main($record_aoh, 'rowcountcolname');
+    $xtable->fill_details($expanddata);
+
+=head2 ClassInit
+
+Constructor method.
+
+=head2 Populate
+
+Constructor method.
+
+=head2 make_header
+
+Write header on row 0 of TableMatrix.
+
+=head2 set_tags
+
+Set tags for the table matrix.
+
+=head2 clear_all
+
+Clear all data from the Tk::TableMatrix widget, but preserve the header.
+
+=head2 fill_main
+
+Fill TableMatrix widget with data from the main table.
+
+=head2 fill_details
+
+Fill TableMatrix widget expand data from the dependent table(s).
+
+=head2 get_main_data
+
+Read main data from the widget.
+
+=head2 get_expdata
+
+Get I<expandData> variable value;
+
+=cut

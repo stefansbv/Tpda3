@@ -12,20 +12,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Db::Connection::Cubrid;
-
-    my $db = Tpda3::Db::Connection::Cubrid->new();
-
-    $db->db_connect($connection);
-
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $model ) = @_;
@@ -39,11 +25,6 @@ sub new {
     return $self;
 }
 
-=head2 db_connect
-
-Connect to the database.
-
-=cut
 
 sub db_connect {
     my ( $self, $conf ) = @_;
@@ -76,11 +57,6 @@ sub db_connect {
     return $self->{_dbh};
 }
 
-=head2 handle_error
-
-Log errors.
-
-=cut
 
 sub handle_error {
     my $self = shift;
@@ -103,13 +79,6 @@ sub handle_error {
     return;
 }
 
-=head2 parse_error
-
-Parse a database error message, and translate it for the user.
-
-RDBMS specific (and maybe version specific?).
-
-=cut
 
 sub parse_error {
     my ( $self, $cb ) = @_;
@@ -156,11 +125,6 @@ sub parse_error {
     return $message;
 }
 
-=head2 table_list
-
-Return list of tables from the database.
-
-=cut
 
 sub table_list {
     my $self = shift;
@@ -188,12 +152,6 @@ sub table_list {
     return $table_list;
 }
 
-=head2 table_info_short
-
-Table info 'short'.  The 'table_info' method from the Cubrid driver
-doesn't seem to be reliable.
-
-=cut
 
 sub table_info_short {
     my ( $self, $table ) = @_;
@@ -229,11 +187,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-=head2 table_keys
-
-Get the primary key field name of the table.
-
-=cut
 
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
@@ -268,11 +221,6 @@ sub table_keys {
     return $pkf;
 }
 
-=head2 table_exists
-
-Check if table exists in the database.
-
-=cut
 
 sub table_exists {
     my ( $self, $table ) = @_;
@@ -300,13 +248,6 @@ sub table_exists {
     return $val_ret;
 }
 
-=head2 type_and_length
-
-Parse the TYPE_NAME attribute and return SQL type and a length.  The
-TYPE_NAME can be something like VARCHAR(30) or INTEGER.  If there is
-no length, return 10.
-
-=cut
 
 sub type_and_length {
     my ($self, $type_name) = @_;
@@ -326,13 +267,63 @@ sub type_and_length {
     return (lc($type), $length);
 }
 
+
+sub has_feature_returning { 0 }
+
+1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Db::Connection::Cubrid;
+
+    my $db = Tpda3::Db::Connection::Cubrid->new();
+
+    $db->db_connect($connection);
+
+=head2 new
+
+Constructor method.
+
+=head2 db_connect
+
+Connect to the database.
+
+=head2 handle_error
+
+Log errors.
+
+=head2 parse_error
+
+Parse a database error message, and translate it for the user.
+
+RDBMS specific (and maybe version specific?).
+
+=head2 table_list
+
+Return list of tables from the database.
+
+=head2 table_info_short
+
+Table info 'short'.  The 'table_info' method from the Cubrid driver
+doesn't seem to be reliable.
+
+=head2 table_keys
+
+Get the primary key field name of the table.
+
+=head2 table_exists
+
+Check if table exists in the database.
+
+=head2 type_and_length
+
+Parse the TYPE_NAME attribute and return SQL type and a length.  The
+TYPE_NAME can be something like VARCHAR(30) or INTEGER.  If there is
+no length, return 10.
+
 =head2 has_feature_returning
 
 Returns no for CUBRID, meaning that is has not the INSERT... RETURNING
 feature.
 
 =cut
-
-sub has_feature_returning { 0 }
-
-1;

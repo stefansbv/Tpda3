@@ -10,17 +10,6 @@ use Wx::AUI;
 
 use base qw{Wx::AuiNotebook};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::Notebook;
-
-    $self->{_nb} = Tpda3::Wx::Notebook->new( $gui );
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $gui ) = @_;
@@ -47,11 +36,6 @@ sub new {
     return $self;
 }
 
-=head2 create_notebook_page
-
-Create a notebook_panel and page.
-
-=cut
 
 sub create_notebook_page {
     my ( $self, $name, $label ) = @_;
@@ -100,3 +84,19 @@ sub page_widget {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::Notebook;
+
+    $self->{_nb} = Tpda3::Wx::Notebook->new( $gui );
+
+=head2 new
+
+Constructor method.
+
+=head2 create_notebook_page
+
+Create a notebook_panel and page.
+
+=cut

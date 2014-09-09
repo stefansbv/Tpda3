@@ -10,19 +10,6 @@ use base qw{Tk::Derived Tk::ToolBar};
 
 Tk::Widget->Construct('TB');
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::TB;
-
-    $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
-
-    $self->{_tb}->make_toolbar_buttons( $toolbars, $attribs );
-
-=head2 Populate
-
-Constructor method.
-
-=cut
 
 sub Populate {
     my ( $self, $args ) = @_;
@@ -32,11 +19,6 @@ sub Populate {
     return;
 }
 
-=head2 make_toolbar_buttons
-
-Make main toolbar buttons.
-
-=cut
 
 sub make_toolbar_buttons {
     my ( $self, $toolbars, $attribs ) = @_;
@@ -64,16 +46,6 @@ sub make_toolbar_buttons {
     return;
 }
 
-=head2 _item_normal
-
-Create a normal toolbar button.
-
-A callback can be defined in the attribs data structure like a
-methodname string or a code reference.
-
-A text attribute takes precedence over an icon attribute.
-
-=cut
 
 sub _item_normal {
     my ( $self, $name, $attribs ) = @_;
@@ -98,14 +70,6 @@ sub _item_normal {
     return;
 }
 
-=head2 _item_check
-
-Create a check toolbar button.
-
-A callback can be defined in the attribs data structure like a
-methodname string or a code reference.
-
-=cut
 
 sub _item_check {
     my ( $self, $name, $attribs ) = @_;
@@ -128,11 +92,6 @@ sub _item_check {
     return;
 }
 
-=head2 _item_legend
-
-Create a label toolbar button used as a color legend for a table.
-
-=cut
 
 sub _item_legend {
     my ( $self, $name, $attribs ) = @_;
@@ -152,11 +111,6 @@ sub _item_legend {
     return;
 }
 
-=head2 get_toolbar_btn
-
-Return a toolbar button when we know the its name
-
-=cut
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
@@ -164,14 +118,6 @@ sub get_toolbar_btn {
     return $self->{$name};
 }
 
-=head2 enable_tool
-
-Toggle tool bar button.  If state is defined then set to state do not
-toggle.
-
-State can come as 0 | 1 and normal | disabled.
-
-=cut
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -197,11 +143,6 @@ sub enable_tool {
     return;
 }
 
-=head2 toggle_tool_check
-
-Toggle a toolbar checkbutton.
-
-=cut
 
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;
@@ -219,3 +160,56 @@ sub toggle_tool_check {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::TB;
+
+    $self->{_tb} = $self->TB(qw/-movable 0 -side top -cursorcontrol 0/);
+
+    $self->{_tb}->make_toolbar_buttons( $toolbars, $attribs );
+
+=head2 Populate
+
+Constructor method.
+
+=head2 make_toolbar_buttons
+
+Make main toolbar buttons.
+
+=head2 _item_normal
+
+Create a normal toolbar button.
+
+A callback can be defined in the attribs data structure like a
+methodname string or a code reference.
+
+A text attribute takes precedence over an icon attribute.
+
+=head2 _item_check
+
+Create a check toolbar button.
+
+A callback can be defined in the attribs data structure like a
+methodname string or a code reference.
+
+=head2 _item_legend
+
+Create a label toolbar button used as a color legend for a table.
+
+=head2 get_toolbar_btn
+
+Return a toolbar button when we know the its name
+
+=head2 enable_tool
+
+Toggle tool bar button.  If state is defined then set to state do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.
+
+=head2 toggle_tool_check
+
+Toggle a toolbar checkbutton.
+
+=cut

@@ -12,19 +12,6 @@ use Tk::MListbox;
 use Tk::StatusBar;
 use Tk::JComboBox;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::Select;
-
-    my $fd = Tpda3::Tk::Dialog::Select->new;
-
-    $fd->search($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $opts) = @_;
@@ -36,11 +23,6 @@ sub new {
     return $self;
 }
 
-=head2 select_dialog
-
-Define and show search dialog.
-
-=cut
 
 sub select_dialog {
     my ( $self, $view, $para ) = @_;
@@ -194,11 +176,6 @@ sub select_dialog {
     }
 }
 
-=head2 select_command
-
-Lookup in dictionary and display result in list box.
-
-=cut
 
 sub select_command {
     my ( $self, $model, $para ) = @_;
@@ -235,11 +212,6 @@ sub select_command {
     return;
 }
 
-=head2 refresh_message
-
-Refresh the message on the screen.
-
-=cut
 
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
@@ -251,3 +223,29 @@ sub refresh_message {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::Select;
+
+    my $fd = Tpda3::Tk::Dialog::Select->new;
+
+    $fd->search($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 select_dialog
+
+Define and show search dialog.
+
+=head2 select_command
+
+Lookup in dictionary and display result in list box.
+
+=head2 refresh_message
+
+Refresh the message on the screen.
+
+=cut

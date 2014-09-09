@@ -5,17 +5,6 @@ package Tpda3::Codings;
 use strict;
 use warnings;
 
-=head1 SYNOPSIS
-
-   use Tpda3::Codings;
-
-   my $codes = Tpda3::Codings->new();
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $model) = @_;
@@ -30,23 +19,6 @@ sub new {
     return $self;
 }
 
-=head2 get_coding_init
-
-Return the data structure used to fill the list of choices (options)
-of Tk::JComboBox widgets.
-
-Initialize the datastructure from the database when needed.  The
-procedure is: check key, if exists return a hash ref else query the
-database.
-
-Add the default value defined in configuration, if not exists in table.
-
-Different labels for different widgets:
-
- -name and -value for JCombobox
- label and  value for MatchingBE
-
-=cut
 
 sub get_coding_init {
     my ( $self, $field, $para, $widget ) = @_;
@@ -87,11 +59,6 @@ sub get_coding_init {
     return $self->{_code}{$field};
 }
 
-=head2 get_coding
-
-Return codes.
-
-=cut
 
 sub get_coding {
     my ( $self, $field, $val ) = @_;
@@ -99,3 +66,35 @@ sub get_coding {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+   use Tpda3::Codings;
+
+   my $codes = Tpda3::Codings->new();
+
+=head2 new
+
+Constructor method.
+
+=head2 get_coding_init
+
+Return the data structure used to fill the list of choices (options)
+of Tk::JComboBox widgets.
+
+Initialize the datastructure from the database when needed.  The
+procedure is: check key, if exists return a hash ref else query the
+database.
+
+Add the default value defined in configuration, if not exists in table.
+
+Different labels for different widgets:
+
+ -name and -value for JCombobox
+ label and  value for MatchingBE
+
+=head2 get_coding
+
+Return codes.
+
+=cut

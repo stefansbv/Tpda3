@@ -12,19 +12,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Db::Connection::Postgresql;
-
-    my $db = Tpda3::Db::Connection::Postgresql->new();
-
-    $db->db_connect($connection);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $model) = @_;
@@ -38,11 +25,6 @@ sub new {
     return $self;
 }
 
-=head2 db_connect
-
-Connect to the database.
-
-=cut
 
 sub db_connect {
     my ( $self, $conf ) = @_;
@@ -80,11 +62,6 @@ sub db_connect {
     return $self->{_dbh};
 }
 
-=head2 handle_error
-
-Log errors.
-
-=cut
 
 sub handle_error {
     my $self = shift;
@@ -107,13 +84,6 @@ sub handle_error {
     return;
 }
 
-=head2 parse_error
-
-Parse a database error message, and translate it for the user.
-
-Better way to do this?
-
-=cut
 
 sub parse_error {
     my ($self, $pg) = @_;
@@ -175,12 +145,6 @@ sub parse_error {
     return $message;
 }
 
-=head2 table_info_short
-
-Table info 'short'.  The 'table_info' method from the Pg driver
-doesn't seem to be reliable.
-
-=cut
 
 sub table_info_short {
     my ( $self, $table ) = @_;
@@ -217,11 +181,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-=head2 table_exists
-
-Check if table exists in the database.
-
-=cut
 
 sub table_exists {
     my ( $self, $table ) = @_;
@@ -251,11 +210,6 @@ sub table_exists {
     return $val_ret;
 }
 
-=head2 table_keys
-
-Get the primary key field name of the table.
-
-=cut
 
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
@@ -293,11 +247,6 @@ sub table_keys {
     return $pkf;
 }
 
-=head2 table_deps
-
-Return table dependencies and their Id field.
-
-=cut
 
 sub table_deps {
     my ( $self, $table ) = @_;
@@ -305,11 +254,6 @@ sub table_deps {
     return;
 }
 
-=head2 table_list
-
-Return list of tables from the database.
-
-=cut
 
 sub table_list {
     my $self = shift;
@@ -340,11 +284,6 @@ sub table_list {
     return $table_list;
 }
 
-=head2 sequences_list
-
-Return list of sequences from the database.
-
-=cut
 
 sub sequences_list {
     my $self = shift;
@@ -376,11 +315,6 @@ sub sequences_list {
     return $seq_list;
 }
 
-=head2 constraints_list
-
-Return list of constraints for a table from the database.
-
-=cut
 
 sub constraints_list {
     my ($self, $table) = @_;
@@ -425,6 +359,66 @@ sub constraints_list {
     return $flds_ref;
 }
 
+
+sub has_feature_returning { 1 }
+
+1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Db::Connection::Postgresql;
+
+    my $db = Tpda3::Db::Connection::Postgresql->new();
+
+    $db->db_connect($connection);
+
+=head2 new
+
+Constructor method.
+
+=head2 db_connect
+
+Connect to the database.
+
+=head2 handle_error
+
+Log errors.
+
+=head2 parse_error
+
+Parse a database error message, and translate it for the user.
+
+Better way to do this?
+
+=head2 table_info_short
+
+Table info 'short'.  The 'table_info' method from the Pg driver
+doesn't seem to be reliable.
+
+=head2 table_exists
+
+Check if table exists in the database.
+
+=head2 table_keys
+
+Get the primary key field name of the table.
+
+=head2 table_deps
+
+Return table dependencies and their Id field.
+
+=head2 table_list
+
+Return list of tables from the database.
+
+=head2 sequences_list
+
+Return list of sequences from the database.
+
+=head2 constraints_list
+
+Return list of constraints for a table from the database.
+
 =head2 has_feature_returning
 
 Returns yes for PostgreSQL, meaning that is has the
@@ -432,13 +426,9 @@ INSERT... RETURNING feature.
 
 Should check for the PostgreSQL version?
 
-=cut
-
-sub has_feature_returning { 1 }
-
-1;
-
 =head1 ACKNOWLEDGEMENTS
 
 Information schema queries by Lorenzo Alberton from
 http://www.alberton.info/postgresql_meta_info.html
+
+=cut

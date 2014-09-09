@@ -12,11 +12,6 @@ use Wx::Perl::ListCtrl;
 
 use base qw{Wx::Dialog};
 
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -34,11 +29,6 @@ sub new {
     return $self;
 }
 
-=head2 search_dialog
-
-Search dialog GUI
-
-=cut
 
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
@@ -228,11 +218,6 @@ sub search_dialog {
     return $dlg;
 }
 
-=head2 search_command
-
-Lookup in dictionary and display result in list box
-
-=cut
 
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
@@ -273,20 +258,6 @@ sub search_command {
     return;
 }
 
-=head2 get_selected_item
-
-Return the selected record to caller.
-
-Record is a hashref:
-
-  {
-   fieldname1 => value1,
-   fieldname2 => value2,
-  }
-
-If Cancel is pressed than the hash values are undef.
-
-=cut
 
 sub get_selected_item {
     my $self = shift;
@@ -309,11 +280,6 @@ sub get_selected_item {
     return $row_data;
 }
 
-=head2 refresh_mesg
-
-Refresh the message on the screen.
-
-=cut
 
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
@@ -325,11 +291,6 @@ sub refresh_message {
     return;
 }
 
-=head2 refresh_filter
-
-Refresh the filter message on the screen.
-
-=cut
 
 sub refresh_filter {
     my ( $self, $text, $color ) = @_;
@@ -340,11 +301,6 @@ sub refresh_filter {
     return;
 }
 
-=head2 make_list_header
-
-Make the header for the list control.
-
-=cut
 
 sub make_list_header {
     my ( $self, $columns_aref, $header_attr ) = @_;
@@ -366,11 +322,6 @@ sub make_list_header {
     return;
 }
 
-=head2 choices
-
-Return codified choice.
-
-=cut
 
 sub choices {
     my ( $self, $choice ) = @_;
@@ -379,3 +330,46 @@ sub choices {
 }
 
 1;
+
+=head2 new
+
+Constructor method.
+
+=head2 search_dialog
+
+Search dialog GUI
+
+=head2 search_command
+
+Lookup in dictionary and display result in list box
+
+=head2 get_selected_item
+
+Return the selected record to caller.
+
+Record is a hashref:
+
+  {
+   fieldname1 => value1,
+   fieldname2 => value2,
+  }
+
+If Cancel is pressed than the hash values are undef.
+
+=head2 refresh_mesg
+
+Refresh the message on the screen.
+
+=head2 refresh_filter
+
+Refresh the filter message on the screen.
+
+=head2 make_list_header
+
+Make the header for the list control.
+
+=head2 choices
+
+Return codified choice.
+
+=cut

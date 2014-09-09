@@ -8,18 +8,6 @@ use warnings;
 use Wx qw(:everything);
 use base qw{Wx::ToolBar};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::ToolBar;
-    $self->SetToolBar( Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE ) );
-    $self->{_tb} = $self->GetToolBar;
-    $self->{_tb}->Realize;
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $gui ) = @_;
@@ -37,11 +25,6 @@ sub new {
     return $self;
 }
 
-=head2 make_toolbar_buttons
-
-Make main toolbar buttons.
-
-=cut
 
 sub make_toolbar_buttons {
     my ( $self, $toolbars, $attribs, $ico_path ) = @_;
@@ -60,11 +43,6 @@ sub make_toolbar_buttons {
     return;
 }
 
-=head2 _item_normal
-
-Create a normal toolbar button
-
-=cut
 
 sub _item_normal {
     my ( $self, $name, $attribs, $ico_path ) = @_;
@@ -84,11 +62,6 @@ sub _item_normal {
     return;
 }
 
-=head2 _item_check
-
-Create a check toolbar button
-
-=cut
 
 sub _item_check {
     my ( $self, $name, $attribs, $ico_path ) = @_;
@@ -108,11 +81,6 @@ sub _item_check {
     return;
 }
 
-=head2 get_toolbar_btn
-
-Return a toolbar button by name.
-
-=cut
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
@@ -120,13 +88,6 @@ sub get_toolbar_btn {
     return $self->{$name};
 }
 
-=head2 make_bitmap
-
-Create and return a bitmap object, of any type.
-
-TODO: Put (replace) full path to the iconfile to attribs
-
-=cut
 
 sub make_bitmap {
     my ( $self, $ico_path, $icon ) = @_;
@@ -136,11 +97,6 @@ sub make_bitmap {
     return $bmp;
 }
 
-=head2 _item_list
-
-Create a list toolbar button. Not used.
-
-=cut
 
 sub _item_list {
 
@@ -168,11 +124,6 @@ sub _item_list {
     return;
 }
 
-=head2 get_choice_options
-
-Return all options or the name of the option with index
-
-=cut
 
 sub get_choice_options {
     my ( $self, $index ) = @_;
@@ -189,15 +140,6 @@ sub get_choice_options {
     }
 }
 
-=head2 enable_tool
-
-Toggle tool bar button.  If state is defined then set to state, do not
-toggle.
-
-State can come as 0 | 1 and normal | disabled.  Because toolbar.yml is
-used for both Tk and Wx, this sub is more complex that is should be.
-
-=cut
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -231,11 +173,6 @@ sub enable_tool {
     return;
 }
 
-=head2 toggle_tool_check
-
-Toggle a toolbar checkbutton.  State can come as 0 | 1.
-
-=cut
 
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;
@@ -248,3 +185,58 @@ sub toggle_tool_check {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::ToolBar;
+    $self->SetToolBar( Tpda3::Wx::ToolBar->new( $self, wxADJUST_MINSIZE ) );
+    $self->{_tb} = $self->GetToolBar;
+    $self->{_tb}->Realize;
+
+=head2 new
+
+Constructor method.
+
+=head2 make_toolbar_buttons
+
+Make main toolbar buttons.
+
+=head2 _item_normal
+
+Create a normal toolbar button
+
+=head2 _item_check
+
+Create a check toolbar button
+
+=head2 get_toolbar_btn
+
+Return a toolbar button by name.
+
+=head2 make_bitmap
+
+Create and return a bitmap object, of any type.
+
+TODO: Put (replace) full path to the iconfile to attribs
+
+=head2 _item_list
+
+Create a list toolbar button. Not used.
+
+=head2 get_choice_options
+
+Return all options or the name of the option with index
+
+=head2 enable_tool
+
+Toggle tool bar button.  If state is defined then set to state, do not
+toggle.
+
+State can come as 0 | 1 and normal | disabled.  Because toolbar.yml is
+used for both Tk and Wx, this sub is more complex that is should be.
+
+=head2 toggle_tool_check
+
+Toggle a toolbar checkbutton.  State can come as 0 | 1.
+
+=cut

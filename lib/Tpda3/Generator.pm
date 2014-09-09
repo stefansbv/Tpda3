@@ -19,21 +19,6 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-   use Tpda3::Generator;
-
-   my $gen = Tpda3::Generator->new();
-
-   my $tex_file = $gen->tex_from_template($record, $model, $output_path);
-
-   my $pdf_file = $gen->pdf_from_latex($tex_file);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $type = shift;
@@ -48,11 +33,6 @@ sub new {
     return $self;
 }
 
-=head2 _log
-
-Return log instance variable.
-
-=cut
 
 sub _log {
     my $self = shift;
@@ -60,22 +40,12 @@ sub _log {
     return $self->{_log};
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 tex_from_template
-
-Generate LaTeX source from TT template.
-
-=cut
 
 sub tex_from_template {
     my ($self, $rec, $model_file, $output_path) = @_;
@@ -135,14 +105,6 @@ sub tex_from_template {
     return path( $output_path, qq{$model.tex} );
 }
 
-=head2 pdf_from_latex
-
-Generate PDF from LaTeX source using L<pdflatex>.  On success
-L<pdflatex> returns 0.
-
-Has a L<sufix> parameter.
-
-=cut
 
 sub pdf_from_latex {
     my ($self, $tex_file, $docspath, $suffix) = @_;
@@ -202,11 +164,6 @@ sub pdf_from_latex {
     return $output_pdf;
 }
 
-=head2 find_pdflatex
-
-Try to locate the pdflatex executable.
-
-=cut
 
 sub find_pdflatex {
     my $self = shift;
@@ -227,11 +184,6 @@ sub find_pdflatex {
     return;
 }
 
-=head2 check_pdflatex
-
-Check the pdflatex executable.
-
-=cut
 
 sub check_pdflatex {
     my ($self, $exe) = @_;
@@ -246,14 +198,6 @@ sub check_pdflatex {
     return $exe;
 }
 
-=head2 extract_tt_fields
-
-Extract the field names from the TT template and return the list.
-
-# Thanks to: Borodin
-# http://stackoverflow.com/questions/16088203/perl-template-toolkit-how-get-list-of-variables-in-the-template
-
-=cut
 
 sub extract_tt_fields {
     my ($self, $model_file) = @_;
@@ -269,3 +213,53 @@ sub extract_tt_fields {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+   use Tpda3::Generator;
+
+   my $gen = Tpda3::Generator->new();
+
+   my $tex_file = $gen->tex_from_template($record, $model, $output_path);
+
+   my $pdf_file = $gen->pdf_from_latex($tex_file);
+
+=head2 new
+
+Constructor method.
+
+=head2 _log
+
+Return log instance variable.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 tex_from_template
+
+Generate LaTeX source from TT template.
+
+=head2 pdf_from_latex
+
+Generate PDF from LaTeX source using L<pdflatex>.  On success
+L<pdflatex> returns 0.
+
+Has a L<sufix> parameter.
+
+=head2 find_pdflatex
+
+Try to locate the pdflatex executable.
+
+=head2 check_pdflatex
+
+Check the pdflatex executable.
+
+=head2 extract_tt_fields
+
+Extract the field names from the TT template and return the list.
+
+# Thanks to: Borodin
+# http://stackoverflow.com/questions/16088203/perl-template-toolkit-how-get-list-of-variables-in-the-template
+
+=cut

@@ -12,18 +12,6 @@ my @maindata;                  # TODO: find better way to collect data
 my $expdata  = {};
 my $colslist = [];
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tree;
-    my $tree = Tpda3::Tree->new({});
-    $tree->name('root');
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $options ) = @_;
@@ -37,13 +25,6 @@ sub new {
     return $self;
 }
 
-=head2 set_header
-
-Initialize header data.
-
-TODO: This should be integrated in the I<new> method (when I learn how).
-
-=cut
 
 sub set_header {
     my ($self, $args) = @_;
@@ -53,11 +34,6 @@ sub set_header {
     return;
 }
 
-=head2 set_attributes
-
-Set node attributes.
-
-=cut
 
 sub set_attributes {
     my ( $self, $field, $val ) = @_;
@@ -67,11 +43,6 @@ sub set_attributes {
     return;
 }
 
-=head2 get_attributes
-
-Get node attributes.
-
-=cut
 
 sub get_attributes {
     my ( $self, $field ) = @_;
@@ -79,11 +50,6 @@ sub get_attributes {
     return $self->attributes->{$field};
 }
 
-=head2 by_name
-
-Search node by name.
-
-=cut
 
 sub by_name {
     my ( $self, $name ) = @_;
@@ -104,11 +70,6 @@ sub by_name {
     return wantarray ? @found : @found ? $found[0] : undef;
 }
 
-=head2 get_tree_data
-
-Return tree data.
-
-=cut
 
 sub get_tree_data {
     my ( $self, $name ) = @_;
@@ -118,11 +79,6 @@ sub get_tree_data {
     return (\@maindata, $expdata);
 }
 
-=head2 process_node
-
-Gather attributes data from each node.
-
-=cut
 
 sub process_node {
     my ($node, $options) = @_;
@@ -147,11 +103,6 @@ sub process_node {
     return 1;
 }
 
-=head2 collect_main_data
-
-Return data from depth level 1 from the tree attributes.
-
-=cut
 
 sub collect_main_data {
     my $node = shift;
@@ -165,18 +116,6 @@ sub collect_main_data {
     return;
 }
 
-=head2 collect_detail_data
-
-Return data from depth level > 1 from the tree attributes.
-
-Builds expandData variable for the TMSHR widget.
-
-Limited to 3 levels deep.
-
-TODO: Replace the switch with some kind of a loop for arbitrary depth
-level.
-
-=cut
 
 sub collect_detail_data {
     my ($node) = @_;
@@ -220,12 +159,6 @@ sub collect_detail_data {
     return;
 }
 
-=head2 clear_totals
-
-Clear totals.  The fields are those configured with I<=sumup> value in
-the I<datasource> section.
-
-=cut
 
 sub clear_totals {
     my ( $self, $fields, $numscale ) = @_;
@@ -245,15 +178,6 @@ sub clear_totals {
     return;
 }
 
-=head2 format_numbers
-
-Traverse once again the tree and format the columns configured with
-I<=sumup> value in the I<datasource> section.
-
-Have to do the formatting after sum, because the format is not
-preserved when summing up.
-
-=cut
 
 sub format_numbers {
     my ( $self, $fields, $numscale ) = @_;
@@ -273,12 +197,6 @@ sub format_numbers {
     return;
 }
 
-=head2 sum_up
-
-Calculate sum.  The fields are those configured with I<=sumup> value
-in the I<datasource> section.
-
-=cut
 
 sub sum_up {
     my ( $self, $fields, $numscale ) = @_;
@@ -303,11 +221,6 @@ sub sum_up {
     return;
 }
 
-=head2 print_wealth
-
-Debug method.
-
-=cut
 
 sub print_wealth {
     my ( $self, $field ) = @_;
@@ -327,9 +240,85 @@ sub print_wealth {
 
 1;
 
+=head1 SYNOPSIS
+
+    use Tpda3::Tree;
+    my $tree = Tpda3::Tree->new({});
+    $tree->name('root');
+    ...
+
+=head2 new
+
+Constructor method.
+
+=head2 set_header
+
+Initialize header data.
+
+TODO: This should be integrated in the I<new> method (when I learn how).
+
+=head2 set_attributes
+
+Set node attributes.
+
+=head2 get_attributes
+
+Get node attributes.
+
+=head2 by_name
+
+Search node by name.
+
+=head2 get_tree_data
+
+Return tree data.
+
+=head2 process_node
+
+Gather attributes data from each node.
+
+=head2 collect_main_data
+
+Return data from depth level 1 from the tree attributes.
+
+=head2 collect_detail_data
+
+Return data from depth level > 1 from the tree attributes.
+
+Builds expandData variable for the TMSHR widget.
+
+Limited to 3 levels deep.
+
+TODO: Replace the switch with some kind of a loop for arbitrary depth
+level.
+
+=head2 clear_totals
+
+Clear totals.  The fields are those configured with I<=sumup> value in
+the I<datasource> section.
+
+=head2 format_numbers
+
+Traverse once again the tree and format the columns configured with
+I<=sumup> value in the I<datasource> section.
+
+Have to do the formatting after sum, because the format is not
+preserved when summing up.
+
+=head2 sum_up
+
+Calculate sum.  The fields are those configured with I<=sumup> value
+in the I<datasource> section.
+
+=head2 print_wealth
+
+Debug method.
+
 =head1 ACKNOWLEDGEMENTS
 
 Heavily inspired from the I<Introduction to Tree::DAG_Node> article by
 gmax, from: http://www.perlmonks.org/?node_id=153259
 
 Thank You!
+
+=cut

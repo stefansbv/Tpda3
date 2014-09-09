@@ -5,11 +5,6 @@ package Tpda3::Wx::App::Test;
 use strict;
 use warnings;
 
-=head2 application_name
-
-Application info.
-
-=cut
 
 sub application_name {
     my $name = "Test and demo application for Tpda3\n";

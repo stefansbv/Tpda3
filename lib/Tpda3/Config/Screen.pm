@@ -9,20 +9,6 @@ use Data::Diver qw( Dive );
 
 require Tpda3::Config;
 
-=head1 SYNOPSIS
-
-Load the screen configuration.
-
-    use Tpda3::Config::Screen;
-
-    my $foo = Tpda3::Config::Screen->new();
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $args ) = @_;
@@ -40,22 +26,12 @@ sub new {
     return $self;
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 load_conf
-
-Return a Perl data structure from a configuration file.
-
-=cut
 
 sub load_conf {
     my ($self, $name) = @_;
@@ -65,6 +41,251 @@ sub load_conf {
 
     return $config_href;
 }
+
+
+sub screen {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'screen', @args );
+}
+
+
+sub defaultreport {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'defaultreport', @args );
+}
+
+
+sub defaultdocument {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'defaultdocument', @args );
+}
+
+
+sub lists_ds {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'lists_ds', @args );
+}
+
+
+sub list_header {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'list_header', @args );
+}
+
+
+sub bindings {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'bindings', @args );
+}
+
+
+sub bindings_select {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'bindings_select', @args );
+}
+
+
+sub tablebindings {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'tablebindings', @args );
+}
+
+
+sub deptable {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'deptable', @args );
+}
+
+
+sub repotable {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'repotable', @args );
+}
+
+
+sub scrtoolbar {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'scrtoolbar', @args );
+}
+
+
+sub toolbar {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'toolbar', @args );
+}
+
+
+sub maintable {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'maintable', @args );
+}
+
+
+sub has_screen_details {
+    my $self = shift;
+
+    my $screen = $self->screen('details');
+    if ( ref $screen ) {
+        return scalar keys %{$screen};
+    }
+    else {
+        return $screen;
+    }
+}
+
+
+sub screen_toolbars {
+    my ( $self, $name ) = @_;
+
+    die "Screen toolbar name is required" unless $name;
+
+    my $scrtb = $self->scrtoolbar($name);
+    my @toolbars;
+    if (ref($scrtb) eq 'ARRAY') {
+        @toolbars = @{$scrtb};
+    }
+    else {
+        @toolbars = ($scrtb);
+    }
+
+    return \@toolbars;
+}
+
+
+sub scr_toolbar_names {
+    my ($self, $name) = @_;
+
+    my $attribs = $self->screen_toolbars($name);
+    my @tbnames = map { $_->{name} } @{$attribs};
+    my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
+
+    return (\@tbnames, \%tbattrs);
+}
+
+
+sub scr_toolbar_groups {
+    my $self = shift;
+    my @group_labels = keys %{ $self->scrtoolbar };
+    return \@group_labels;
+}
+
+
+sub dep_table_header_info {
+    my ( $self, $tm_ds ) = @_;
+
+    die "TM parameter missing!" unless $tm_ds;
+
+    my $href = {};
+
+    $href->{columns}       = $self->deptable( $tm_ds, 'columns' );
+    $href->{selectorcol}   = $self->deptable( $tm_ds, 'selectorcol' );
+    $href->{colstretch}    = $self->deptable( $tm_ds, 'colstretch' );
+    $href->{selectorstyle} = $self->deptable( $tm_ds, 'selectorstyle' );
+
+    return $href;
+}
+
+
+sub repo_table_header_info {
+    my $self = shift;
+
+    my $href = {};
+
+    $href->{columns}       = $self->repotable('columns');
+    $href->{selectorcol}   = $self->repotable('selectorcol');
+    $href->{colstretch}    = $self->repotable('colstretch');
+    $href->{selectorstyle} = $self->repotable('selectorstyle');
+
+    return $href;
+}
+
+
+sub app_dateformat {
+    my $self = shift;
+
+    return $self->cfg->application->{dateformat} || 'iso';
+}
+
+
+sub app_toolbar_attribs {
+    my $self = shift;
+
+    return $self->cfg->toolbar2;
+}
+
+
+sub dep_table_has_selectorcol {
+    my ( $self, $tm_ds ) = @_;
+
+    die "TM parameter missing!" unless $tm_ds;
+    my $sc = $self->deptable($tm_ds, 'selectorcol');
+
+    return $sc;
+}
+
+
+sub repo_table_columns_by_level {
+    my ( $self, $level ) = @_;
+
+    my $cols = $self->repotable('columns');
+
+    $level = 'level' . $level;
+    my $dss;
+
+    foreach my $col ( keys %{$cols} ) {
+        my $ds = ref $cols->{$col}{datasource}
+               ? $cols->{$col}{datasource}{$level}
+               : $cols->{$col}{datasource};
+        next unless $ds;
+        $dss->{$ds} = [] unless exists $dss->{$ds};
+        push @{ $dss->{$ds} }, $col;
+    }
+
+    return $dss;
+}
+
+
+sub alter_toolbar {
+    my $self = shift;
+
+    my $tb_m = $self->cfg->toolbar();
+    my $tb_a = $self->toolbar();
+
+    foreach my $tb ( keys %{$tb_a} ) {
+        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
+            foreach my $k ( keys %{ $tb_a->{$tb}{state}{$pg} } ) {
+                $tb_m->{$tb}{state}{$pg}{$k} = $tb_a->{$tb}{state}{$pg}{$k};
+            }
+        }
+    }
+
+    $self->cfg->toolbar($tb_m);
+
+    return;
+}
+
+1;
+
+=head1 SYNOPSIS
+
+Load the screen configuration.
+
+    use Tpda3::Config::Screen;
+
+    my $foo = Tpda3::Config::Screen->new();
+    ...
+
+=head2 new
+
+Constructor method.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 load_conf
+
+Return a Perl data structure from a configuration file.
 
 =head2 screen
 
@@ -98,13 +319,6 @@ C<filter> parametere is the foreign key of the database table.
         </details>
     </screen>
 
-=cut
-
-sub screen {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'screen', @args );
-}
-
 =head2 defaultreport
 
 Return the L<defaultreport> section data structure.
@@ -113,13 +327,6 @@ Return the L<defaultreport> section data structure.
         name                = The title of the report
         file                = report-file.rep
     </defaultreport>
-
-=cut
-
-sub defaultreport {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'defaultreport', @args );
-}
 
 =head2 defaultdocument
 
@@ -130,13 +337,6 @@ Return the L<defaultdocument> section data structure.
         file                = template-file.tt
         datasource          = db_view_name
     </defaultdocument>
-
-=cut
-
-sub defaultdocument {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'defaultdocument', @args );
-}
 
 =head2 lists_ds
 
@@ -151,13 +351,6 @@ Return the L<lists_ds> section data structure.
             code            = id_isced
         </cod_stud>
     </lists_ds>
-
-=cut
-
-sub lists_ds {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'lists_ds', @args );
-}
 
 =head2 list_header
 
@@ -181,26 +374,12 @@ of the table.  Some screens can have a second L<lookup> column.
         ...
     </list_header>
 
-=cut
-
-sub list_header {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'list_header', @args );
-}
-
 =head2 bindings
 
 Return the L<bindings> section data structure.
 
 See the POD in L<setup_lookup_bindings_entry> in the Tpda3::Controller
 module.
-
-=cut
-
-sub bindings {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'bindings', @args );
-}
 
 =head2 bindings_select
 
@@ -218,26 +397,12 @@ Return the L<bindings_select> section data structure.
         </suma>
     </bindings_select>
 
-=cut
-
-sub bindings_select {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'bindings_select', @args );
-}
-
 =head2 tablebindings
 
 Return the L<tablebindings> section data structure.
 
 See the POD in L<get_lookup_setings> in the Tpda3::Controller
 module.
-
-=cut
-
-sub tablebindings {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'tablebindings', @args );
-}
 
 =head2 deptable
 
@@ -269,23 +434,9 @@ Return the L<deptable> section data structure.
         </columns>
     </deptable>
 
-=cut
-
-sub deptable {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'deptable', @args );
-}
-
 =head2 repotable
 
 Return the L<repotable> section data structure.
-
-=cut
-
-sub repotable {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'repotable', @args );
-}
 
 =head2 scrtoolbar
 
@@ -301,14 +452,6 @@ Return the L<scrtoolbar> section data structure.
             method          = tmatrix_remove_row
         </tm1>
     </scrtoolbar>
-
-
-=cut
-
-sub scrtoolbar {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'scrtoolbar', @args );
-}
 
 =head2 toolbar
 
@@ -332,13 +475,6 @@ Return the L<toolbar> section data structure.
         </state>
       </tb_rm>
     </toolbar>
-
-=cut
-
-sub toolbar {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'toolbar', @args );
-}
 
 =head2 maintable
 
@@ -367,30 +503,9 @@ Return the L<maintable> section data structure.
         </columns>
     </maintable>
 
-=cut
-
-sub maintable {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'maintable', @args );
-}
-
 =head2 has_screen_details
 
 Return true if the main screen has details screen.
-
-=cut
-
-sub has_screen_details {
-    my $self = shift;
-
-    my $screen = $self->screen('details');
-    if ( ref $screen ) {
-        return scalar keys %{$screen};
-    }
-    else {
-        return $screen;
-    }
-}
 
 =head2 screen_toolbars
 
@@ -399,41 +514,10 @@ curren screen.
 
 If there is only one toolbar button then return it as an array reference.
 
-=cut
-
-sub screen_toolbars {
-    my ( $self, $name ) = @_;
-
-    die "Screen toolbar name is required" unless $name;
-
-    my $scrtb = $self->scrtoolbar($name);
-    my @toolbars;
-    if (ref($scrtb) eq 'ARRAY') {
-        @toolbars = @{$scrtb};
-    }
-    else {
-        @toolbars = ($scrtb);
-    }
-
-    return \@toolbars;
-}
-
 =head2 scr_toolbar_names
 
 Return the toolbar names and their method names configured for the
 current screen.
-
-=cut
-
-sub scr_toolbar_names {
-    my ($self, $name) = @_;
-
-    my $attribs = $self->screen_toolbars($name);
-    my @tbnames = map { $_->{name} } @{$attribs};
-    my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
-
-    return (\@tbnames, \%tbattrs);
-}
 
 =head2 scr_toolbar_groups
 
@@ -443,96 +527,29 @@ widget.  Now screen toolbars can be defined separately.
 
 This method returns the labels.
 
-=cut
-
-sub scr_toolbar_groups {
-    my $self = shift;
-    my @group_labels = keys %{ $self->scrtoolbar };
-    return \@group_labels;
-}
-
 =head2 dep_table_header_info
 
 Return the table header configuration data structure bound to the
 related Tk::TableMatrix widget.
-
-=cut
-
-sub dep_table_header_info {
-    my ( $self, $tm_ds ) = @_;
-
-    die "TM parameter missing!" unless $tm_ds;
-
-    my $href = {};
-
-    $href->{columns}       = $self->deptable( $tm_ds, 'columns' );
-    $href->{selectorcol}   = $self->deptable( $tm_ds, 'selectorcol' );
-    $href->{colstretch}    = $self->deptable( $tm_ds, 'colstretch' );
-    $href->{selectorstyle} = $self->deptable( $tm_ds, 'selectorstyle' );
-
-    return $href;
-}
 
 =head2 repo_table_header_info
 
 Return the table header configuration data structure bound to the
 related Tk::TableMatrix widget.
 
-=cut
-
-sub repo_table_header_info {
-    my $self = shift;
-
-    my $href = {};
-
-    $href->{columns}       = $self->repotable('columns');
-    $href->{selectorcol}   = $self->repotable('selectorcol');
-    $href->{colstretch}    = $self->repotable('colstretch');
-    $href->{selectorstyle} = $self->repotable('selectorstyle');
-
-    return $href;
-}
-
 =head2 app_dateformat
 
 Date format configuration.
-
-=cut
-
-sub app_dateformat {
-    my $self = shift;
-
-    return $self->cfg->application->{dateformat} || 'iso';
-}
 
 =head2 app_toolbar_attribs
 
 Return the toolbar configuration data structure defined for the
 current application, in the etc/toolbar.yml file.
 
-=cut
-
-sub app_toolbar_attribs {
-    my $self = shift;
-
-    return $self->cfg->toolbar2;
-}
-
 =head2 dep_table_has_selectorcol
 
 Return true if the dependent table has I<selector column> attribute
 set.
-
-=cut
-
-sub dep_table_has_selectorcol {
-    my ( $self, $tm_ds ) = @_;
-
-    die "TM parameter missing!" unless $tm_ds;
-    my $sc = $self->deptable($tm_ds, 'selectorcol');
-
-    return $sc;
-}
 
 =head2 repo_table_columns_by_level
 
@@ -541,52 +558,9 @@ to the related Tk::TableMatrix widget, filtered by the I<level>.
 
 Columns with no level ...
 
-=cut
-
-sub repo_table_columns_by_level {
-    my ( $self, $level ) = @_;
-
-    my $cols = $self->repotable('columns');
-
-    $level = 'level' . $level;
-    my $dss;
-
-    foreach my $col ( keys %{$cols} ) {
-        my $ds = ref $cols->{$col}{datasource}
-               ? $cols->{$col}{datasource}{$level}
-               : $cols->{$col}{datasource};
-        next unless $ds;
-        $dss->{$ds} = [] unless exists $dss->{$ds};
-        push @{ $dss->{$ds} }, $col;
-    }
-
-    return $dss;
-}
-
 =head2 alter_toolbar
 
 Fine tune the configuration for screens, alter behavior of toolbar
 buttons per screen.
 
 =cut
-
-sub alter_toolbar {
-    my $self = shift;
-
-    my $tb_m = $self->cfg->toolbar();
-    my $tb_a = $self->toolbar();
-
-    foreach my $tb ( keys %{$tb_a} ) {
-        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
-            foreach my $k ( keys %{ $tb_a->{$tb}{state}{$pg} } ) {
-                $tb_m->{$tb}{state}{$pg}{$k} = $tb_a->{$tb}{state}{$pg}{$k};
-            }
-        }
-    }
-
-    $self->cfg->toolbar($tb_m);
-
-    return;
-}
-
-1;

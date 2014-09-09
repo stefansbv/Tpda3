@@ -28,35 +28,6 @@ require Tpda3::Lookup;
 require Tpda3::Selected;
 require Tpda3::Model::Table;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Controller;
-
-    my $controller = Tpda3::Controller->new();
-
-    $controller->start();
-
-=head2 new
-
-Constructor method.
-
-=over
-
-=item _rscrcls  - class name of the current I<record> screen
-
-=item _rscrobj  - current I<record> screen object
-
-=item _dscrcls  - class name of the current I<detail> screen
-
-=item _dscrobj  - current I<detail> screen object
-
-=item _tblkeys  - record of database table keys and values
-
-=item _scrdata  - current screen data
-
-=back
-
-=cut
 
 sub new {
     my $class = shift;
@@ -80,12 +51,6 @@ sub new {
     return $self;
 }
 
-=head2 start
-
-Show the login dialog, until connected or until a fatal error message
-is received from the RDBMS.
-
-=cut
 
 sub start {
     my $self = shift;
@@ -112,12 +77,6 @@ sub start {
     return;
 }
 
-=head2 connect_dialog
-
-Show login dialog until connected or canceled.  Called with delay from
-XX::Controller.
-
-=cut
 
 sub connect_dialog {
     my $self = shift;
@@ -155,44 +114,24 @@ sub connect_dialog {
     return;
 }
 
-=head2 model
-
-Return model instance object.
-
-=cut
 
 sub model {
     my $self = shift;
     return $self->{_model};
 }
 
-=head2 view
-
-Return view instance variable
-
-=cut
 
 sub view {
     my $self = shift;
     return $self->{_view};
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 table_key
-
-Return the table keys.
-
-=cut
 
 sub table_key {
     my ($self, $page, $name) = @_;
@@ -206,22 +145,12 @@ sub table_key {
     return $self->{_tblkeys}{$page}{$name};
 }
 
-=head2 _log
-
-Return log instance variable
-
-=cut
 
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
 
-=head2 dialog_login
-
-Login dialog.
-
-=cut
 
 sub dialog_login {
     my $self = shift;
@@ -229,11 +158,6 @@ sub dialog_login {
     return;
 }
 
-=head2 message_dialog
-
-Stub for message dialog.
-
-=cut
 
 sub message_dialog {
     my ($message, $details, $icon, $type) = @_;
@@ -241,11 +165,6 @@ sub message_dialog {
     return;
 }
 
-=head2 message_tiler
-
-Stub for message dialog with tiler.
-
-=cut
 
 sub message_tiler {
     my ($self, $message, $record);
@@ -253,11 +172,6 @@ sub message_tiler {
     return;
 }
 
-=head2 _set_event_handlers
-
-Setup event handlers for the interface.
-
-=cut
 
 sub _set_event_handlers {
     my $self = shift;
@@ -490,11 +404,6 @@ sub _set_event_handlers {
     return;
 }
 
-=head2 _set_event_handler_nb
-
-set event handler for the notebook pages.
-
-=cut
 
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
@@ -502,14 +411,6 @@ sub _set_event_handler_nb {
     return;
 }
 
-=head2 toggle_detail_tab
-
-Toggle state of the I<Detail> tab.
-
-If TableMatrix with selector col configured and if there is a selected
-row and the data is saved, enable the I<Detail> tab, else disable.
-
-=cut
 
 sub toggle_detail_tab {
     my $self = shift;
@@ -525,18 +426,6 @@ sub toggle_detail_tab {
     return;
 }
 
-=head2 on_page_rec_activate
-
-When the C<Record> page is activated, do:
-
-If the previous page is C<List>, then get the selected item from the
-C<List> widget and load the corresponding record from the database in
-the I<rec> screen, but only if it is not already loaded.
-
-If the previous page is C<Details>, toggle toolbar buttons state for
-the current page.
-
-=cut
 
 sub on_page_rec_activate {
     my $self = shift;
@@ -579,11 +468,6 @@ sub on_page_rec_activate {
     return;
 }
 
-=head2 on_page_lst_activate
-
-On page I<lst> activate.
-
-=cut
 
 sub on_page_lst_activate {
     my $self = shift;
@@ -591,12 +475,6 @@ sub on_page_lst_activate {
     return;
 }
 
-=head2 on_page_det_activate
-
-On page I<det> activate, check if detail screen module is loaded and
-load it if not.
-
-=cut
 
 sub on_page_det_activate {
     my $self = shift;
@@ -633,30 +511,6 @@ sub on_page_det_activate {
     return;
 }
 
-=head2 screen_detail_name
-
-Detail screen module name from screen configuration.
-
-Configuration:
-
-    details             = Cursuri
-
-or
-
-    <details>
-        match           = cod_tip
-        filter          = id_act
-        <detail>
-            value       = CS
-            name        = Cursuri
-        </detail>
-        <detail>
-            value       = CT
-            name        = Consult
-        </detail>
-    </details>
-
-=cut
 
 sub screen_detail_name {
     my $self = shift;
@@ -673,11 +527,6 @@ sub screen_detail_name {
     return $dsm;
 }
 
-=head2 get_selected_and_store_key
-
-Save the primary and foreign key values for the C<Details> page.
-
-=cut
 
 sub get_selected_and_store_key {
     my $self = shift;
@@ -693,16 +542,6 @@ sub get_selected_and_store_key {
     return;
 }
 
-=head2 tmx_read_selected
-
-Read the selected row from I<tm1> TableMatrix widget from the
-I<Record> page and get the foreign key value designated by the
-I<filter> configuration value of the screen.
-
-Limitation: only the table with I<tm1> label can have a selector
-column.
-
-=cut
 
 sub tmx_read_selected {
     my $self = shift;
@@ -722,11 +561,6 @@ sub tmx_read_selected {
     return $det_params;
 }
 
-=head2 screen_detail_load
-
-Check if the detail screen module is loaded, and load if it's not.
-
-=cut
 
 sub screen_detail_load {
     my ( $self, $dsm ) = @_;
@@ -737,29 +571,6 @@ sub screen_detail_load {
     return;
 }
 
-=head2 get_dsm_name
-
-Find the selected row in the TM. Read it and return the name of the
-detail screen module to load.
-
-The configuration is like this:
-
-  {
-      'detail' => [
-          {
-              'value' => 'CS',
-              'name'  => 'Cursuri'
-          },
-          {
-              'value' => 'CT',
-              'name'  => 'Consult'
-          }
-      ],
-      'filter' => 'id_act',
-      'match'  => 'cod_tip'
-  };
-
-=cut
 
 sub get_dsm_name {
     my ( $self, $detscr ) = @_;
@@ -780,11 +591,6 @@ sub get_dsm_name {
     return $dsm[0]{name};
 }
 
-=head2 _set_menus_state
-
-Disable some menus at start.
-
-=cut
 
 sub _set_menus_state {
     my ( $self, $state ) = @_;
@@ -798,14 +604,6 @@ sub _set_menus_state {
     return;
 }
 
-=head2 _check_app_menus
-
-Check if screen modules from the menu exists and are loadable.
-Disable those which fail the test.
-
-Only for I<menu_user> hardwired menu name for now!
-
-=cut
 
 sub _check_app_menus {
     my $self = shift;
@@ -822,74 +620,6 @@ sub _check_app_menus {
     return;
 }
 
-=head2 setup_lookup_bindings_entry
-
-Creates widget bindings that use the C<Tpda3::XX::Dialog::Search>
-module to look-up value key translations from a table and put them in
-one or more widgets.
-
-The simplest configuration, with one lookup field and one return
-field, looks like this:
-
- <bindings>
-   <customer>
-     table               = customers
-     search              = customername
-     field               = customernumber
-   </customer>
- </bindings>
-
-This configuration allows to lookup for a I<customernumber> in the
-I<customers> table when knowing the I<customername>.  The
-I<customername> and I<customernumber> fields must be defined in the
-current table, with properties like width, label and datatype. this are
-also the names of the widgets in the screen I<Orders>.  Multiple
-I<field> items can be added to the configuration, to return more than
-one value, and write its contents to the screen.
-
-When the field names are different than the control names we need to
-map the name of the fields with the name of the controls and the
-configuration will be a little more complicated.
-
-Here is an example from a I<real> application, with two configs with a
-complex field bindings and one with a simple one:
-
-  <bindings>
-      <loc_ds>
-          table           = siruta
-          <search>
-              localitate  = loc_ds
-          </search>
-          <field>
-              mnemonic    = jud_ds
-              codp        = codp_ds
-              siruta      = siruta_ds
-          </field>
-      </loc_ds>
-      <loc_ln>
-          table           = siruta
-          <search>
-              localitate  = loc_ln
-          </search>
-          <field>
-              mnemonic    = jud_ln
-              codp        = codp_ln
-              siruta      = siruta_ln
-          </field>
-      </loc_ln>
-      <tara>
-          table           = tari
-          search          = tara
-          field           = [ tara_cod ]
-      </tara>
-  </bindings>
-
-There is another (new) option for a field name from the screen to be
-used as a filter.
-
-  filter = field_name
-
-=cut
 
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
@@ -977,12 +707,6 @@ sub setup_lookup_bindings_entry {
     return;
 }
 
-=head2 filter_field
-
-Read the (filter) field value from the current screen and return a
-hash reference.
-
-=cut
 
 sub filter_field {
     my ($self, $filter_field) = @_;
@@ -994,30 +718,6 @@ sub filter_field {
     return { $filter_field => $filter_value };
 }
 
-=head2 setup_bindings_table
-
-Creates column bindings for table widgets created with
-C<Tk::TableMatrix> using the information from the I<tablebindings>
-section of the screen configuration.
-
-First it creates a dispatch table:
-
- my $dispatch = {
-     colsub1 => \&lookup,
-     colsub4 => \&method,
- };
-
-Then creates a class binding for I<method_for> subroutine to override
-the default return binding.  I<method_for> than uses the dispatch
-table to execute the appropriate function when the return key is
-pressed inside a cell.
-
-There are two functions defined, I<lookup> and I<method>.  The first
-activates the C<Tpda3::XX::Dialog::Search> module, to look-pu value
-key translations from a database table and fill the configured cells
-with the results.  The second can call a method in the current screen.
-
-=cut
 
 sub setup_bindings_table {
     my $self = shift;
@@ -1027,11 +727,6 @@ sub setup_bindings_table {
     return;
 }
 
-=head2 setup_select_bindings_entry
-
-Setup select bindings entry.
-
-=cut
 
 sub setup_select_bindings_entry {
     my ( $self, $page ) = @_;
@@ -1108,11 +803,6 @@ sub setup_select_bindings_entry {
     return;
 }
 
-=head2 add_dispatch_for_lookup
-
-Return an entry in the dispatch table for a I<lookup> type binding.
-
-=cut
 
 sub add_dispatch_for_lookup {
     my ( $self, $bnd ) = @_;
@@ -1122,11 +812,6 @@ sub add_dispatch_for_lookup {
     return { $bindcol => \&lookup_call };
 }
 
-=head2 add_dispatch_for_method
-
-Return an entry in the dispatch table for a I<method> type binding.
-
-=cut
 
 sub add_dispatch_for_method {
     my ( $self, $bnd ) = @_;
@@ -1136,12 +821,6 @@ sub add_dispatch_for_method {
     return { $bindcol => \&method_call };
 }
 
-=head2 method_for
-
-This is bound to the Return key, and executes a function as defined in
-the configuration, using a dispatch table.
-
-=cut
 
 sub method_for {
     my ( $self, $dispatch, $bindings, $r, $c, $tm_ds ) = @_;
@@ -1155,13 +834,6 @@ sub method_for {
     return $skip_cols;
 }
 
-=head2 lookup_call
-
-Activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
-key translations from a database table and fill the configured cells
-with the results.
-
-=cut
 
 sub lookup_call {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
@@ -1189,11 +861,6 @@ sub lookup_call {
     return $skip_cols;
 }
 
-=head2 method_call
-
-Call a method from the Screen module on I<Return> key.
-
-=cut
 
 sub method_call {
     my ( $self, $bnd, $r, $c ) = @_;
@@ -1214,68 +881,6 @@ sub method_call {
     return 1;    # skip_cols
 }
 
-=head2 get_lookup_setings
-
-Return the data structure used by the C<Tpda3::XX::Dialog::Search>
-module.  Uses the I<tablebindings> section of the screen configuration
-and the related field attributes from the I<dep_table> section.
-
-This is a configuration example from the C<Orders> screen:
-
- <tablebindings tm1>
-   <lookup>
-     <products>
-       bindcol           = 1
-       table             = products
-       search            = productname
-       field             = productcode
-     </products>
-   </lookup>
-   <method>
-     <article>
-       bindcol           = 4
-       subname           = calculate_article
-     </article>
-   </method>
- </tablebindings>
-
-=over
-
-=item I<bindcol> - column number to bind to
-
-=item I<search>  - field name to be searched for a substring
-
-=item I<columns> - columns to be displayed in the list, with attributes
-
-=item I<table>   - name of the look-up table
-
-=back
-
-An example of a returned data structure, for the Orders screen:
-
- {
-    'search'  => 'productname',
-    'columns' => [
-        {
-            'productname' => {
-                'width'   => 36,
-                'datatype' => 'alphanum',
-                'name'    => 'productname',
-                'label'   => 'Product',
-            }
-        },
-        {
-            'productcode' => {
-                'width'   => 15,
-                'datatype' => 'alphanum',
-                'label'   => 'Code',
-            }
-        },
-    ],
-    'table' => 'products',
- }
-
-=cut
 
 sub get_lookup_setings {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
@@ -1350,11 +955,6 @@ SWITCH: for ( ref $bindings->{field} ) {
     return $lk_para;
 }
 
-=head2 fields_cfg_array
-
-Multiple return fields.
-
-=cut
 
 sub fields_cfg_array {
     my ( $self, $bindings, $tm_ds ) = @_;
@@ -1384,11 +984,6 @@ sub fields_cfg_array {
     return \@cols;
 }
 
-=head2 fields_cfg_hash
-
-Multiple return fields and widget name different from field name.
-
-=cut
 
 sub fields_cfg_hash {
     my ( $self, $bindings, $tm_ds ) = @_;
@@ -1421,11 +1016,6 @@ sub fields_cfg_hash {
     return \@cols;
 }
 
-=head2 set_app_mode
-
-Set application mode to $mode.
-
-=cut
 
 sub set_app_mode {
     my ( $self, $mode ) = @_;
@@ -1449,11 +1039,6 @@ sub set_app_mode {
                  # probably missing something :) TODO!
 }
 
-=head2 is_record
-
-Return true if a record is loaded in the main screen.
-
-=cut
 
 sub is_record {
     my $self  = shift;
@@ -1462,12 +1047,6 @@ sub is_record {
     return $table->get_key(0)->value;
 }
 
-=head2 on_screen_mode_idle
-
-when in I<idle> mode set status to I<normal> and clear all controls
-content in the I<Screen> than set status of controls to I<disabled>.
-
-=cut
 
 sub on_screen_mode_idle {
     my $self = shift;
@@ -1494,16 +1073,6 @@ sub on_screen_mode_idle {
     return;
 }
 
-=head2 on_screen_mode_add
-
-When in I<add> mode set status to I<normal> and clear all controls
-content in the I<Screen> and change the background to the default
-color as specified in the configuration.
-
-Create an empty record and write it to the controls. If default values
-are defined for some fields, then fill in that value.
-
-=cut
 
 sub on_screen_mode_add {
     my $self = shift;
@@ -1535,12 +1104,6 @@ sub on_screen_mode_add {
     return;
 }
 
-=head2 on_screen_mode_find
-
-When in I<find> mode set status to I<normal> and clear all controls
-content in the I<Screen> and change the background to light green.
-
-=cut
 
 sub on_screen_mode_find {
     my $self = shift;
@@ -1564,12 +1127,6 @@ sub on_screen_mode_find {
     return;
 }
 
-=head2 on_screen_mode_edit
-
-When in I<edit> mode set status to I<normal> and change the background
-to the default color as specified in the configuration.
-
-=cut
 
 sub on_screen_mode_edit {
     my $self = shift;
@@ -1587,11 +1144,6 @@ sub on_screen_mode_edit {
     return;
 }
 
-=head2 on_screen_mode_sele
-
-Noting to do here.
-
-=cut
 
 sub on_screen_mode_sele {
     my $self = shift;
@@ -1602,11 +1154,6 @@ sub on_screen_mode_sele {
     return;
 }
 
-=head2 _control_states_init
-
-Data structure with setting for the different modes of the controls.
-
-=cut
 
 sub _control_states_init {
     my $self = shift;
@@ -1641,12 +1188,6 @@ sub _control_states_init {
     return;
 }
 
-=head2 scrcfg
-
-Return screen configuration object for I<page>, or for the current
-page.
-
-=cut
 
 sub scrcfg {
     my ( $self, $page ) = @_;
@@ -1668,12 +1209,6 @@ sub scrcfg {
     return;
 }
 
-=head2 scrobj
-
-Return current screen object reference, or the object reference from
-the required page unless the current page is L<lst>.
-
-=cut
 
  sub scrobj {
     my ( $self, $page ) = @_;
@@ -1695,11 +1230,6 @@ the required page unless the current page is L<lst>.
     return;
 }
 
-=head2 application_class
-
-Main application class name.
-
-=cut
 
 sub application_class {
     my $self = shift;
@@ -1709,11 +1239,6 @@ sub application_class {
     return;
 }
 
-=head2 screen_module_class
-
-Return screen module class and file name.
-
-=cut
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
@@ -1723,11 +1248,6 @@ sub screen_module_class {
     return;
 }
 
-=head2 screen_module_load
-
-Load screen chosen from the menu.
-
-=cut
 
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
@@ -1866,20 +1386,6 @@ sub screen_module_load {
 }
 
 
-=head2 screen_init_keys
-
-Initialize key column names for the current screen.  The format of the
-configuration section has changed starting with v0.70.
-  <maintable>
-      name                = customers
-      view                = v_customers
-      <keys>
-          name            = [ customernumber ]
-      </keys>
-  ...
-  </maintable>
-
-=cut
 
 sub screen_init_keys {
     my ($self, $page, $scrcfg) = @_;
@@ -1926,11 +1432,6 @@ sub screen_init_keys {
     return;
 }
 
-=head2 check_cfg_version
-
-Return undef if screen config version doesn't check.
-
-=cut
 
 sub check_cfg_version {
     my $self = shift;
@@ -1964,25 +1465,11 @@ sub check_cfg_version {
     }
 }
 
-=head2 set_event_handler_screen
-
-Setup event handlers for the toolbar buttons configured in the
-C<scrtoolbar> section of the current screen configuration.
-
-Default usage is for the I<add> and I<delete> buttons attached to the
-TableMatrix widget.
-
-=cut
 
 sub set_event_handler_screen {
     print 'set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
 }
 
-=head2 screen_module_detail_load
-
-Load detail screen.
-
-=cut
 
 sub screen_module_detail_load {
     my ( $self, $module ) = @_;
@@ -2053,11 +1540,6 @@ sub screen_module_detail_load {
     return;
 }
 
-=head2 screen_string
-
-Return a lower case string of the current screen module name.
-
-=cut
 
 sub screen_string {
     my ( $self, $page ) = @_;
@@ -2081,11 +1563,6 @@ sub screen_string {
     return lc $scrstr;
 }
 
-=head2 save_geometry
-
-Save geometry in instance configuration file.
-
-=cut
 
 sub save_geometry {
     my $self = shift;
@@ -2102,12 +1579,6 @@ sub save_geometry {
     return;
 }
 
-=head2 set_mnemonic
-
-Dialog to set the default mnemonic - application configuration to be
-used when none is specified.
-
-=cut
 
 sub set_mnemonic {
     my $self = shift;
@@ -2117,11 +1588,6 @@ sub set_mnemonic {
     return;
 }
 
-=head2 set_geometry
-
-Set window geometry from instance config if exists or from defaults.
-
-=cut
 
 sub set_geometry {
     my $self = shift;
@@ -2147,11 +1613,6 @@ sub set_geometry {
     return;
 }
 
-=head2 set_app_configs
-
-Dialog to set runtime configurations for Tpda3.
-
-=cut
 
 sub set_app_configs {
     my $self = shift;
@@ -2161,26 +1622,6 @@ sub set_app_configs {
     return;
 }
 
-=head2 screen_load_lists
-
-Load options in Listbox like widgets - JCombobox support only.
-
-All JComboBox widgets must have a <lists_ds> record in config to
-define where the data for the list come from:
-
-Data source for list widgets (JCombobox)
-
- <lists_ds>
-     <statuscode>
-         orderby = description
-         table   = status
-         code    = code
-         name    = description
-         default = none
-     </statuscode>
- </lists_ds>
-
-=cut
 
 sub screen_load_lists {
     my $self = shift;
@@ -2222,12 +1663,6 @@ sub screen_load_lists {
     return;
 }
 
-=head2 toggle_interface_controls
-
-Toggle controls (tool bar buttons) appropriate for different states of
-the application, and different pages.
-
-=cut
 
 sub toggle_interface_controls {
     my $self = shift;
@@ -2285,15 +1720,6 @@ sub toggle_interface_controls {
     return;
 }
 
-=head2 toggle_screen_interface_controls
-
-Toggle screen controls (toolbar buttons) appropriate for different
-states of the application.
-
-Also used by the toolbar buttons near the TableMatrix widget in some
-screens.
-
-=cut
 
 sub toggle_screen_interface_controls {
     my $self = shift;
@@ -2320,76 +1746,6 @@ sub toggle_screen_interface_controls {
     return;
 }
 
-=head2 record_find_execute
-
-Execute search.
-
-In the screen configuration file, there is an attribute named
-I<findtype>, defined for every field of the table associated with the
-screen and used to control the behavior of count and search.
-
-All controls from the screen with I<findtype> configured other than
-I<none>, are read. The values are used to create a perl data structure
-used by the SQL::Abstract module to build an SQL WHERE clause.
-
-The accepted values for I<findtype> are:
-
-=over
-
-=item contains - Translated to LIKE | CONTAINING I<%searchstring%>
-
-=item full     - field = I<searchstring>
-
-=item date     - Used for date widgets, see below
-
-=item none     - Counting and searching for the field is disabled
-
-=back
-
-A special form is used for the date fields, to allow to search by year
-and month.
-
-=over
-
-=item year       - yyyy
-
-=item year-month - yyyy<sep>mm or yyyy<sep>m or mm<sep>yyyy or m<sep>yyyy
-
-The separator <sep> can be a point (.), a dash (-) or a slash (/).
-
-=item date       - full date string
-
-=back
-
-A I<special_ops> sub is used to teach SQL::Abstract to create the
-required SQL WHERE clause.
-
-EXAMPLES:
-
-If the user enters a year like '2009' (four digits) in a date field
-than the generated WHERE Clause will look like this:
-
-    WHERE (EXTRACT YEAR FROM b_date) = 2009
-
-Another case is where the user enters a year and a month separated by
-a slash, a point or a dash. The order can be reversed too: month-year
-
-    2009.12 or 2009/12 or 2009-12
-    12.2009 or 12/2009 or 12-2009
-
-The result WHERE Clause has to be the same:
-
-    WHERE EXTRACT (YEAR FROM b_date) = 2009 AND
-        EXTRACT (MONTH FROM b_date) = 12
-
-The case when an entire date is entered is treated as a whole string
-and is processed by the DB SQL server differently by vendor.
-
-  WHERE b_date = '2009-12-31'
-
-TODO: convert the date string to ISO before building the WHERE Clause
-
-=cut
 
 sub record_find_execute {
     my $self = shift;
@@ -2466,13 +1822,6 @@ sub record_find_execute {
     return;
 }
 
-=head2 record_find_count
-
-Execute count.
-
-Same as for I<record_find_execute>.
-
-=cut
 
 sub record_find_count {
     my $self = shift;
@@ -2517,11 +1866,6 @@ sub record_find_count {
     return;
 }
 
-=head2 screen_report_print
-
-Printing report configured as default with Report Manager.
-
-=cut
 
 sub screen_report_print {
     my $self = shift;
@@ -2571,11 +1915,6 @@ sub screen_report_print {
     return;
 }
 
-=head2 screen_document_generate
-
-Generate default document assigned to screen.
-
-=cut
 
 sub screen_document_generate {
     my $self = shift;
@@ -2645,11 +1984,6 @@ sub screen_document_generate {
     return;
 }
 
-=head2 get_alternate_data_record
-
-Datasource from configuration for default document assigned to screen.
-
-=cut
 
 sub get_alternate_data_record {
     my ( $self, $datasource ) = @_;
@@ -2676,38 +2010,6 @@ sub get_alternate_data_record {
     return \@rec;
 }
 
-=head2 screen_read
-
-Read screen controls (widgets) and save in a Perl data structure.
-
-Creates different data for different application modes.
-
-=over
-
-=item I<Find> mode
-
-Read the fields that have the configured I<readwrite> attribute set to
-I<rw> and I<ro> ignoring the fields with I<r>, but also ignoring the
-fields with no values.
-
-=item I<Edit> mode
-
-Read the fields that have the configured I<readwrite> attribute set to
-I<rw>, ignoring the rest (I<r> and I<ro>), but including the fields
-with no values as I<undef> for the value.
-
-=item I<Add>  mode
-
-Read the fields that have the configured I<readwrite> attribute set to
-I<rw>, ignoring the rest (I<r> and I<ro>), but also ignoring the
-fields with no values.
-
-=back
-
-Option to read all fields regardless of the configured I<readwrite>
-attribute.
-
-=cut
 
 sub screen_read {
     my ($self, $all) = @_;
@@ -2744,13 +2046,6 @@ sub screen_read {
     return;
 }
 
-=head2 ctrl_read_from
-
-Run the appropriate method according to the control (widget) type to
-read from the screen controls. The value is stored in a global data
-structure C<< $self->{_scrdata}{field-name} >> and also returned.
-
-=cut
 
 sub ctrl_read_from {
     my ($self, $field, $date_format) = @_;
@@ -2771,33 +2066,6 @@ sub ctrl_read_from {
     return $value;
 }
 
-=head2 clean_and_save_value
-
-Trim value and add it to the C<_scrdata> global data structure.
-
-=over
-
-=item find mode
-
-Add to the data structure the values that Perl recognise as true
-values.  Add value 0 when read from an Entry controll, but ignore it
-when read from a CheckBox control.  This allows searching for C<0> in
-numeric fields.
-
-=item add mode
-
-Add to the data structure the values that Perl recognise as true
-values.  Add value 0 when read from an Entry controll, or from a
-CheckBox control.
-
-=item edit mode
-
-When in C<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
-because some of them may be empty, interpreted as a new NULL value.
-
-=back
-
-=cut
 
 sub clean_and_save_value {
     my ($self, $field, $value, $ctrltype) = @_;
@@ -2841,12 +2109,6 @@ sub clean_and_save_value {
     return;
 }
 
-=head2 screen_write
-
-Write record to screen.  The parameter is a hash reference with the
-field names as keys.  I<undef> value clears the control.
-
-=cut
 
 sub screen_write {
     my ( $self, $record ) = @_;
@@ -2897,14 +2159,6 @@ sub screen_write {
     return;
 }
 
-=head2 ctrl_write_to
-
-Run the appropriate sub according to control (entry widget) type to
-write to screen controls.
-
-TODO: Use hash for paramaters
-
-=cut
 
 sub ctrl_write_to {
     my ($self, $field, $value, $state, $date_format) = @_;
@@ -2924,11 +2178,6 @@ sub ctrl_write_to {
     return;
 }
 
-=head2 make_empty_record
-
-Make empty record, used for clearing the screen.
-
-=cut
 
 sub make_empty_record {
     my $self = shift;
@@ -2944,11 +2193,6 @@ sub make_empty_record {
     return $record;
 }
 
-=head2 tmatrix_get_selected
-
-Get selected table row from I<tm1>.
-
-=cut
 
 sub tmatrix_get_selected {
     my $self = shift;
@@ -2963,11 +2207,6 @@ sub tmatrix_get_selected {
     return $sc;
 }
 
-=head2 tmatrix_set_selected
-
-Set selected table row from I<tm1>.
-
-=cut
 
 sub tmatrix_set_selected {
     my ( $self, $row ) = @_;
@@ -2981,11 +2220,6 @@ sub tmatrix_set_selected {
     return;
 }
 
-=head2 toggle_mode_find
-
-Toggle find mode, ask to save record if modified.
-
-=cut
 
 sub toggle_mode_find {
     my $self = shift;
@@ -3005,11 +2239,6 @@ sub toggle_mode_find {
     return;
 }
 
-=head2 toggle_mode_add
-
-Toggle add mode, ask to save record if modified.
-
-=cut
 
 sub toggle_mode_add {
     my $self = shift;
@@ -3031,11 +2260,6 @@ sub toggle_mode_add {
     return;
 }
 
-=head2 controls_state_set
-
-Toggle all controls state from I<Screen>.
-
-=cut
 
 sub controls_state_set {
     my ( $self, $set_state ) = @_;
@@ -3091,11 +2315,6 @@ sub controls_state_set {
     return;
 }
 
-=head2 format_number
-
-Return trimmed and formated numeric value.
-
-=cut
 
 sub format_number {
     my ( $self, $value, $numscale ) = @_;
@@ -3109,11 +2328,6 @@ sub format_number {
     return $value;
 }
 
-=head2 control_states
-
-Return settings for controls, according to the state of the application.
-
-=cut
 
 sub control_states {
     my ( $self, $state ) = @_;
@@ -3121,14 +2335,6 @@ sub control_states {
     return $self->{control_states}{$state};
 }
 
-=head2 record_load_new
-
-Load a new record.
-
-The (primary) key field value is col0 from the selected item in the
-list control on the I<List> page.
-
-=cut
 
 sub record_load_new {
     my ( $self, $selected_href ) = @_;
@@ -3146,14 +2352,6 @@ sub record_load_new {
     return;
 }
 
-=head2 record_reload
-
-Reload the current record.
-
-Reads the contents of the (primary) key field, retrieves the record from
-the database table and loads the record data in the controls.
-
-=cut
 
 sub record_reload {
     my $self = shift;
@@ -3170,13 +2368,6 @@ sub record_reload {
     return;
 }
 
-=head2 record_load
-
-Load the selected record in the current screen. First it loads the
-main record into the screen widgets, than the dependent record(s) into
-the TableMatrix widget(s) if it is configured.
-
-=cut
 
 sub record_load {
     my $self = shift;
@@ -3231,11 +2422,6 @@ sub record_load {
     return;
 }
 
-=head2 event_record_delete
-
-Ask user if really wants to delete the record and proceed accordingly.
-
-=cut
 
 sub event_record_delete {
     my $self = shift;
@@ -3253,11 +2439,6 @@ sub event_record_delete {
     return;
 }
 
-=head2 record_delete
-
-Delete record and clear the screen.
-
-=cut
 
 sub record_delete {
     my $self = shift;
@@ -3295,11 +2476,6 @@ sub record_delete {
     return;
 }
 
-=head2 record_clear
-
-Clear the screen.
-
-=cut
 
 sub record_clear {
     my $self = shift;
@@ -3315,12 +2491,6 @@ sub record_clear {
     return;
 }
 
-=head2 ask_to_save
-
-If in I<add> or I<edit> mode show dialog and ask to save or to cancel.
-Reset modified status.
-
-=cut
 
 sub ask_to_save {
     my ($self, $page) = @_;
@@ -3351,12 +2521,6 @@ sub ask_to_save {
     return 1;
 }
 
-=head2 ask_to
-
-Create a custom dialog to ask the user confirmation about the current
-action.
-
-=cut
 
 sub ask_to {
     my ( $self, $for_action ) = @_;
@@ -3381,13 +2545,6 @@ sub ask_to {
     return $self->view->dialog_confirm($message, $details, 'question', 'ycn');
 }
 
-=head2 record_save
-
-Save record.  Different procedures for different modes.
-
-First, check if the required data is present in the screen.
-
-=cut
 
 sub record_save {
     my $self = shift;
@@ -3447,32 +2604,6 @@ sub record_save {
     return;
 }
 
-=head2 check_required_data
-
-Check if all the required data is present in the screen.
-
-There are two lists used in this method, the list of the non empty
-fields from the screen and the list of the fields that must have a
-value.
-
-This lists are compared and we build a new list with those items which
-appear only in the second list, and build a message string with it.
-
-Example I<Screen> data structure for the required field:
-
-  $self->{rq_controls} = {
-       productcode => [ 0, '  Product code' ],
-       productname => [ 1, '  Product name' ],
-       ...
-       field1 => [ 10, '  Field descr. 1', [ 'tip1', 'Value 1' ] ],
-       field2 => [ 11, '  Field descr. 2', [ 'tip2', 'Value 2' ] ],
-  };
-
-Fields depending on other fields. Check field1 only if tip1 has some value.
-
-Throws an exception if not all required fields have values.
-
-=cut
 
 sub check_required_data {
     my ($self, $record) = @_;
@@ -3544,11 +2675,6 @@ sub check_required_data {
     return;
 }
 
-=head2 record_save_insert
-
-Insert record.
-
-=cut
 
 sub record_save_insert {
     my ( $self, $record ) = @_;
@@ -3572,13 +2698,6 @@ sub record_save_insert {
 }
 
 
-=head2 list_update_add
-
-Insert the current record in I<List>.
-
-BUG: Lookup fields are empty in the list.
-
-=cut
 
 sub list_update_add {
     my $self = shift;
@@ -3596,12 +2715,6 @@ sub list_update_add {
     return;
 }
 
-=head2 list_remove
-
-Compare the selected row in the I<List> with given keys values and
-remove it.
-
-=cut
 
 sub list_remove {
     my $self = shift;
@@ -3616,13 +2729,6 @@ sub list_remove {
     return;
 }
 
-=head2 record_changed
-
-Retrieve the witness data structure from disk and the current data
-structure read from the screen widgets and compare them.  If they
-differ than return true, else false.
-
-=cut
 
 sub record_changed {
     my $self = shift;
@@ -3641,12 +2747,6 @@ sub record_changed {
     return $self->model->record_compare( $witness, $record );
 }
 
-=head2 take_note
-
-Save record to a temporary file on disk.  Can be restored into a new
-record.  An easy way of making multiple records based on a template.
-
-=cut
 
 sub take_note {
     my $self = shift;
@@ -3661,12 +2761,6 @@ sub take_note {
     return;
 }
 
-=head2 restore_note
-
-Restore record from a temporary file on disk into a new record.  An
-easy way of making multiple records based on a template.
-
-=cut
 
 sub restore_note {
     my $self = shift;
@@ -3681,15 +2775,6 @@ sub restore_note {
     return;
 }
 
-=head2 storable_file_name
-
-Return a file name build using the name of the configuration (by
-convention the lower characters screen name) with a I<dat> extension.
-
-If I<orig> parameter then add an I<-orig> string to the screen name.
-Used for the witness files.
-
-=cut
 
 sub storable_file_name {
     my ( $self, $orig ) = @_;
@@ -3705,13 +2790,6 @@ sub storable_file_name {
     return $data_file;
 }
 
-=head2 get_screen_data_record
-
-Make a record from screen data.  The data structure is an AoH where at
-index 0 there is the main record meta-data and data and at index 1 the
-dependent table(s) data and meta-data.
-
-=cut
 
 sub get_screen_data_record {
     my ( $self, $for_sql, $all ) = @_;
@@ -3754,11 +2832,6 @@ sub get_screen_data_record {
     return \@record;
 }
 
-=head2 main_table_metadata
-
-Retrieve main table meta-data from the screen configuration.
-
-=cut
 
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
@@ -3793,11 +2866,6 @@ sub main_table_metadata {
     return $metadata;
 }
 
-=head2 dep_table_metadata
-
-Retrieve dependent table meta-data from the screen configuration.
-
-=cut
 
 sub dep_table_metadata {
     my ( $self, $tm, $for_sql ) = @_;
@@ -3835,12 +2903,6 @@ sub dep_table_metadata {
     return $metadata;
 }
 
-=head2 report_table_metadata
-
-Retrieve table meta-data for report screen style configurations from
-the screen configuration.
-
-=cut
 
 sub report_table_metadata {
     my ( $self, $level ) = @_;
@@ -3874,11 +2936,6 @@ sub report_table_metadata {
     return $metadata;
 }
 
-=head2 get_table_sumup_cols
-
-Return table C<sumup> cols.
-
-=cut
 
 sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
@@ -3888,11 +2945,6 @@ sub get_table_sumup_cols {
     return $metadata->{'=sumup'};
 }
 
-=head2 save_screendata
-
-Save screen data to temp file with Storable.
-
-=cut
 
 sub save_screendata {
     my ( $self, $data_file ) = @_;
@@ -3904,11 +2956,6 @@ sub save_screendata {
     return store( $record, $data_file );
 }
 
-=head2 restore_screendata
-
-Restore screen data from file saved with Storable.
-
-=cut
 
 sub restore_screendata {
     my ( $self, $data_file ) = @_;
@@ -3947,11 +2994,6 @@ sub restore_screendata {
     return 1;
 }
 
-=head2 screen_store_key_values
-
-Store key column values for the current screen.
-
-=cut
 
 sub screen_store_key_values {
     my ( $self, $record_href ) = @_;
@@ -3966,11 +3008,6 @@ sub screen_store_key_values {
     return;
 }
 
-=head2 screen_clear_key_values
-
-Clear key column values for the current screen.
-
-=cut
 
 sub screen_clear_key_values {
     my $self = shift;
@@ -3985,11 +3022,6 @@ sub screen_clear_key_values {
     return;
 }
 
-=head2 list_column_names
-
-Return the list column names.
-
-=cut
 
 sub list_column_names {
     my $self = shift;
@@ -4004,11 +3036,6 @@ sub list_column_names {
     return $columns;
 }
 
-=head2 flatten_cfg
-
-TODO
-
-=cut
 
 sub flatten_cfg {
     my ( $self, $level, $attribs ) = @_;
@@ -4022,11 +3049,6 @@ sub flatten_cfg {
     return \%flatten;
 }
 
-=head2 record_merge_columns
-
-Merge level columns with header columns and set default values.
-
-=cut
 
 sub record_merge_columns {
     my ($self, $record, $header) = @_;
@@ -4047,12 +3069,6 @@ sub record_merge_columns {
     return \%hr;
 }
 
-=head2 DESTROY
-
-Cleanup on destroy.  Remove I<Storable> data files from the
-configuration directory.
-
-=cut
 
 sub DESTROY {
     my $self = shift;
@@ -4073,11 +3089,6 @@ sub DESTROY {
     # }
 }
 
-=head2 on_quit
-
-Close application.
-
-=cut
 
 sub on_quit {
     my $self = shift;
@@ -4087,11 +3098,6 @@ sub on_quit {
     $self->view->on_close_window(@_);
 }
 
-=head2 catch_db_exceptions
-
-Handle database exceptions.
-
-=cut
 
 sub catch_db_exceptions {
     my ($self, $exc) = @_;
@@ -4122,11 +3128,6 @@ sub catch_db_exceptions {
     return;
 }
 
-=head2 catch_data_exceptions
-
-Handle "required data not provided" exception.
-
-=cut
 
 sub catch_data_exceptions {
     my ($self, $exc) = @_;
@@ -4147,11 +3148,6 @@ sub catch_data_exceptions {
     return;
 }
 
-=head2 reset_tb_button_state
-
-De-select tool-bar buttons after a failed attempt to change state.
-
-=cut
 
 sub reset_tb_button_state {
     my $self = shift;
@@ -4163,3 +3159,896 @@ sub reset_tb_button_state {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Controller;
+
+    my $controller = Tpda3::Controller->new();
+
+    $controller->start();
+
+=head2 new
+
+Constructor method.
+
+=over
+
+=item _rscrcls  - class name of the current I<record> screen
+
+=item _rscrobj  - current I<record> screen object
+
+=item _dscrcls  - class name of the current I<detail> screen
+
+=item _dscrobj  - current I<detail> screen object
+
+=item _tblkeys  - record of database table keys and values
+
+=item _scrdata  - current screen data
+
+=back
+
+=head2 start
+
+Show the login dialog, until connected or until a fatal error message
+is received from the RDBMS.
+
+=head2 connect_dialog
+
+Show login dialog until connected or canceled.  Called with delay from
+XX::Controller.
+
+=head2 model
+
+Return model instance object.
+
+=head2 view
+
+Return view instance variable
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 table_key
+
+Return the table keys.
+
+=head2 _log
+
+Return log instance variable
+
+=head2 dialog_login
+
+Login dialog.
+
+=head2 message_dialog
+
+Stub for message dialog.
+
+=head2 message_tiler
+
+Stub for message dialog with tiler.
+
+=head2 _set_event_handlers
+
+Setup event handlers for the interface.
+
+=head2 _set_event_handler_nb
+
+set event handler for the notebook pages.
+
+=head2 toggle_detail_tab
+
+Toggle state of the I<Detail> tab.
+
+If TableMatrix with selector col configured and if there is a selected
+row and the data is saved, enable the I<Detail> tab, else disable.
+
+=head2 on_page_rec_activate
+
+When the C<Record> page is activated, do:
+
+If the previous page is C<List>, then get the selected item from the
+C<List> widget and load the corresponding record from the database in
+the I<rec> screen, but only if it is not already loaded.
+
+If the previous page is C<Details>, toggle toolbar buttons state for
+the current page.
+
+=head2 on_page_lst_activate
+
+On page I<lst> activate.
+
+=head2 on_page_det_activate
+
+On page I<det> activate, check if detail screen module is loaded and
+load it if not.
+
+=head2 screen_detail_name
+
+Detail screen module name from screen configuration.
+
+Configuration:
+
+    details             = Cursuri
+
+or
+
+    <details>
+        match           = cod_tip
+        filter          = id_act
+        <detail>
+            value       = CS
+            name        = Cursuri
+        </detail>
+        <detail>
+            value       = CT
+            name        = Consult
+        </detail>
+    </details>
+
+=head2 get_selected_and_store_key
+
+Save the primary and foreign key values for the C<Details> page.
+
+=head2 tmx_read_selected
+
+Read the selected row from I<tm1> TableMatrix widget from the
+I<Record> page and get the foreign key value designated by the
+I<filter> configuration value of the screen.
+
+Limitation: only the table with I<tm1> label can have a selector
+column.
+
+=head2 screen_detail_load
+
+Check if the detail screen module is loaded, and load if it's not.
+
+=head2 get_dsm_name
+
+Find the selected row in the TM. Read it and return the name of the
+detail screen module to load.
+
+The configuration is like this:
+
+  {
+      'detail' => [
+          {
+              'value' => 'CS',
+              'name'  => 'Cursuri'
+          },
+          {
+              'value' => 'CT',
+              'name'  => 'Consult'
+          }
+      ],
+      'filter' => 'id_act',
+      'match'  => 'cod_tip'
+  };
+
+=head2 _set_menus_state
+
+Disable some menus at start.
+
+=head2 _check_app_menus
+
+Check if screen modules from the menu exists and are loadable.
+Disable those which fail the test.
+
+Only for I<menu_user> hardwired menu name for now!
+
+=head2 setup_lookup_bindings_entry
+
+Creates widget bindings that use the C<Tpda3::XX::Dialog::Search>
+module to look-up value key translations from a table and put them in
+one or more widgets.
+
+The simplest configuration, with one lookup field and one return
+field, looks like this:
+
+ <bindings>
+   <customer>
+     table               = customers
+     search              = customername
+     field               = customernumber
+   </customer>
+ </bindings>
+
+This configuration allows to lookup for a I<customernumber> in the
+I<customers> table when knowing the I<customername>.  The
+I<customername> and I<customernumber> fields must be defined in the
+current table, with properties like width, label and datatype. this are
+also the names of the widgets in the screen I<Orders>.  Multiple
+I<field> items can be added to the configuration, to return more than
+one value, and write its contents to the screen.
+
+When the field names are different than the control names we need to
+map the name of the fields with the name of the controls and the
+configuration will be a little more complicated.
+
+Here is an example from a I<real> application, with two configs with a
+complex field bindings and one with a simple one:
+
+  <bindings>
+      <loc_ds>
+          table           = siruta
+          <search>
+              localitate  = loc_ds
+          </search>
+          <field>
+              mnemonic    = jud_ds
+              codp        = codp_ds
+              siruta      = siruta_ds
+          </field>
+      </loc_ds>
+      <loc_ln>
+          table           = siruta
+          <search>
+              localitate  = loc_ln
+          </search>
+          <field>
+              mnemonic    = jud_ln
+              codp        = codp_ln
+              siruta      = siruta_ln
+          </field>
+      </loc_ln>
+      <tara>
+          table           = tari
+          search          = tara
+          field           = [ tara_cod ]
+      </tara>
+  </bindings>
+
+There is another (new) option for a field name from the screen to be
+used as a filter.
+
+  filter = field_name
+
+=head2 filter_field
+
+Read the (filter) field value from the current screen and return a
+hash reference.
+
+=head2 setup_bindings_table
+
+Creates column bindings for table widgets created with
+C<Tk::TableMatrix> using the information from the I<tablebindings>
+section of the screen configuration.
+
+First it creates a dispatch table:
+
+ my $dispatch = {
+     colsub1 => \&lookup,
+     colsub4 => \&method,
+ };
+
+Then creates a class binding for I<method_for> subroutine to override
+the default return binding.  I<method_for> than uses the dispatch
+table to execute the appropriate function when the return key is
+pressed inside a cell.
+
+There are two functions defined, I<lookup> and I<method>.  The first
+activates the C<Tpda3::XX::Dialog::Search> module, to look-pu value
+key translations from a database table and fill the configured cells
+with the results.  The second can call a method in the current screen.
+
+=head2 setup_select_bindings_entry
+
+Setup select bindings entry.
+
+=head2 add_dispatch_for_lookup
+
+Return an entry in the dispatch table for a I<lookup> type binding.
+
+=head2 add_dispatch_for_method
+
+Return an entry in the dispatch table for a I<method> type binding.
+
+=head2 method_for
+
+This is bound to the Return key, and executes a function as defined in
+the configuration, using a dispatch table.
+
+=head2 lookup_call
+
+Activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
+key translations from a database table and fill the configured cells
+with the results.
+
+=head2 method_call
+
+Call a method from the Screen module on I<Return> key.
+
+=head2 get_lookup_setings
+
+Return the data structure used by the C<Tpda3::XX::Dialog::Search>
+module.  Uses the I<tablebindings> section of the screen configuration
+and the related field attributes from the I<dep_table> section.
+
+This is a configuration example from the C<Orders> screen:
+
+ <tablebindings tm1>
+   <lookup>
+     <products>
+       bindcol           = 1
+       table             = products
+       search            = productname
+       field             = productcode
+     </products>
+   </lookup>
+   <method>
+     <article>
+       bindcol           = 4
+       subname           = calculate_article
+     </article>
+   </method>
+ </tablebindings>
+
+=over
+
+=item I<bindcol> - column number to bind to
+
+=item I<search>  - field name to be searched for a substring
+
+=item I<columns> - columns to be displayed in the list, with attributes
+
+=item I<table>   - name of the look-up table
+
+=back
+
+An example of a returned data structure, for the Orders screen:
+
+ {
+    'search'  => 'productname',
+    'columns' => [
+        {
+            'productname' => {
+                'width'   => 36,
+                'datatype' => 'alphanum',
+                'name'    => 'productname',
+                'label'   => 'Product',
+            }
+        },
+        {
+            'productcode' => {
+                'width'   => 15,
+                'datatype' => 'alphanum',
+                'label'   => 'Code',
+            }
+        },
+    ],
+    'table' => 'products',
+ }
+
+=head2 fields_cfg_array
+
+Multiple return fields.
+
+=head2 fields_cfg_hash
+
+Multiple return fields and widget name different from field name.
+
+=head2 set_app_mode
+
+Set application mode to $mode.
+
+=head2 is_record
+
+Return true if a record is loaded in the main screen.
+
+=head2 on_screen_mode_idle
+
+when in I<idle> mode set status to I<normal> and clear all controls
+content in the I<Screen> than set status of controls to I<disabled>.
+
+=head2 on_screen_mode_add
+
+When in I<add> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to the default
+color as specified in the configuration.
+
+Create an empty record and write it to the controls. If default values
+are defined for some fields, then fill in that value.
+
+=head2 on_screen_mode_find
+
+When in I<find> mode set status to I<normal> and clear all controls
+content in the I<Screen> and change the background to light green.
+
+=head2 on_screen_mode_edit
+
+When in I<edit> mode set status to I<normal> and change the background
+to the default color as specified in the configuration.
+
+=head2 on_screen_mode_sele
+
+Noting to do here.
+
+=head2 _control_states_init
+
+Data structure with setting for the different modes of the controls.
+
+=head2 scrcfg
+
+Return screen configuration object for I<page>, or for the current
+page.
+
+=head2 scrobj
+
+Return current screen object reference, or the object reference from
+the required page unless the current page is L<lst>.
+
+=head2 application_class
+
+Main application class name.
+
+=head2 screen_module_class
+
+Return screen module class and file name.
+
+=head2 screen_module_load
+
+Load screen chosen from the menu.
+
+=head2 screen_init_keys
+
+Initialize key column names for the current screen.  The format of the
+configuration section has changed starting with v0.70.
+  <maintable>
+      name                = customers
+      view                = v_customers
+      <keys>
+          name            = [ customernumber ]
+      </keys>
+  ...
+  </maintable>
+
+=head2 check_cfg_version
+
+Return undef if screen config version doesn't check.
+
+=head2 set_event_handler_screen
+
+Setup event handlers for the toolbar buttons configured in the
+C<scrtoolbar> section of the current screen configuration.
+
+Default usage is for the I<add> and I<delete> buttons attached to the
+TableMatrix widget.
+
+=head2 screen_module_detail_load
+
+Load detail screen.
+
+=head2 screen_string
+
+Return a lower case string of the current screen module name.
+
+=head2 save_geometry
+
+Save geometry in instance configuration file.
+
+=head2 set_mnemonic
+
+Dialog to set the default mnemonic - application configuration to be
+used when none is specified.
+
+=head2 set_geometry
+
+Set window geometry from instance config if exists or from defaults.
+
+=head2 set_app_configs
+
+Dialog to set runtime configurations for Tpda3.
+
+=head2 screen_load_lists
+
+Load options in Listbox like widgets - JCombobox support only.
+
+All JComboBox widgets must have a <lists_ds> record in config to
+define where the data for the list come from:
+
+Data source for list widgets (JCombobox)
+
+ <lists_ds>
+     <statuscode>
+         orderby = description
+         table   = status
+         code    = code
+         name    = description
+         default = none
+     </statuscode>
+ </lists_ds>
+
+=head2 toggle_interface_controls
+
+Toggle controls (tool bar buttons) appropriate for different states of
+the application, and different pages.
+
+=head2 toggle_screen_interface_controls
+
+Toggle screen controls (toolbar buttons) appropriate for different
+states of the application.
+
+Also used by the toolbar buttons near the TableMatrix widget in some
+screens.
+
+=head2 record_find_execute
+
+Execute search.
+
+In the screen configuration file, there is an attribute named
+I<findtype>, defined for every field of the table associated with the
+screen and used to control the behavior of count and search.
+
+All controls from the screen with I<findtype> configured other than
+I<none>, are read. The values are used to create a perl data structure
+used by the SQL::Abstract module to build an SQL WHERE clause.
+
+The accepted values for I<findtype> are:
+
+=over
+
+=item contains - Translated to LIKE | CONTAINING I<%searchstring%>
+
+=item full     - field = I<searchstring>
+
+=item date     - Used for date widgets, see below
+
+=item none     - Counting and searching for the field is disabled
+
+=back
+
+A special form is used for the date fields, to allow to search by year
+and month.
+
+=over
+
+=item year       - yyyy
+
+=item year-month - yyyy<sep>mm or yyyy<sep>m or mm<sep>yyyy or m<sep>yyyy
+
+The separator <sep> can be a point (.), a dash (-) or a slash (/).
+
+=item date       - full date string
+
+=back
+
+A I<special_ops> sub is used to teach SQL::Abstract to create the
+required SQL WHERE clause.
+
+EXAMPLES:
+
+If the user enters a year like '2009' (four digits) in a date field
+than the generated WHERE Clause will look like this:
+
+    WHERE (EXTRACT YEAR FROM b_date) = 2009
+
+Another case is where the user enters a year and a month separated by
+a slash, a point or a dash. The order can be reversed too: month-year
+
+    2009.12 or 2009/12 or 2009-12
+    12.2009 or 12/2009 or 12-2009
+
+The result WHERE Clause has to be the same:
+
+    WHERE EXTRACT (YEAR FROM b_date) = 2009 AND
+        EXTRACT (MONTH FROM b_date) = 12
+
+The case when an entire date is entered is treated as a whole string
+and is processed by the DB SQL server differently by vendor.
+
+  WHERE b_date = '2009-12-31'
+
+TODO: convert the date string to ISO before building the WHERE Clause
+
+=head2 record_find_count
+
+Execute count.
+
+Same as for I<record_find_execute>.
+
+=head2 screen_report_print
+
+Printing report configured as default with Report Manager.
+
+=head2 screen_document_generate
+
+Generate default document assigned to screen.
+
+=head2 get_alternate_data_record
+
+Datasource from configuration for default document assigned to screen.
+
+=head2 screen_read
+
+Read screen controls (widgets) and save in a Perl data structure.
+
+Creates different data for different application modes.
+
+=over
+
+=item I<Find> mode
+
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw> and I<ro> ignoring the fields with I<r>, but also ignoring the
+fields with no values.
+
+=item I<Edit> mode
+
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw>, ignoring the rest (I<r> and I<ro>), but including the fields
+with no values as I<undef> for the value.
+
+=item I<Add>  mode
+
+Read the fields that have the configured I<readwrite> attribute set to
+I<rw>, ignoring the rest (I<r> and I<ro>), but also ignoring the
+fields with no values.
+
+=back
+
+Option to read all fields regardless of the configured I<readwrite>
+attribute.
+
+=head2 ctrl_read_from
+
+Run the appropriate method according to the control (widget) type to
+read from the screen controls. The value is stored in a global data
+structure C<< $self->{_scrdata}{field-name} >> and also returned.
+
+=head2 clean_and_save_value
+
+Trim value and add it to the C<_scrdata> global data structure.
+
+=over
+
+=item find mode
+
+Add to the data structure the values that Perl recognise as true
+values.  Add value 0 when read from an Entry controll, but ignore it
+when read from a CheckBox control.  This allows searching for C<0> in
+numeric fields.
+
+=item add mode
+
+Add to the data structure the values that Perl recognise as true
+values.  Add value 0 when read from an Entry controll, or from a
+CheckBox control.
+
+=item edit mode
+
+When in C<edit> mode Tpda3 builds the SQL UPDATE from all the controls,
+because some of them may be empty, interpreted as a new NULL value.
+
+=back
+
+=head2 screen_write
+
+Write record to screen.  The parameter is a hash reference with the
+field names as keys.  I<undef> value clears the control.
+
+=head2 ctrl_write_to
+
+Run the appropriate sub according to control (entry widget) type to
+write to screen controls.
+
+TODO: Use hash for paramaters
+
+=head2 make_empty_record
+
+Make empty record, used for clearing the screen.
+
+=head2 tmatrix_get_selected
+
+Get selected table row from I<tm1>.
+
+=head2 tmatrix_set_selected
+
+Set selected table row from I<tm1>.
+
+=head2 toggle_mode_find
+
+Toggle find mode, ask to save record if modified.
+
+=head2 toggle_mode_add
+
+Toggle add mode, ask to save record if modified.
+
+=head2 controls_state_set
+
+Toggle all controls state from I<Screen>.
+
+=head2 format_number
+
+Return trimmed and formated numeric value.
+
+=head2 control_states
+
+Return settings for controls, according to the state of the application.
+
+=head2 record_load_new
+
+Load a new record.
+
+The (primary) key field value is col0 from the selected item in the
+list control on the I<List> page.
+
+=head2 record_reload
+
+Reload the current record.
+
+Reads the contents of the (primary) key field, retrieves the record from
+the database table and loads the record data in the controls.
+
+=head2 record_load
+
+Load the selected record in the current screen. First it loads the
+main record into the screen widgets, than the dependent record(s) into
+the TableMatrix widget(s) if it is configured.
+
+=head2 event_record_delete
+
+Ask user if really wants to delete the record and proceed accordingly.
+
+=head2 record_delete
+
+Delete record and clear the screen.
+
+=head2 record_clear
+
+Clear the screen.
+
+=head2 ask_to_save
+
+If in I<add> or I<edit> mode show dialog and ask to save or to cancel.
+Reset modified status.
+
+=head2 ask_to
+
+Create a custom dialog to ask the user confirmation about the current
+action.
+
+=head2 record_save
+
+Save record.  Different procedures for different modes.
+
+First, check if the required data is present in the screen.
+
+=head2 check_required_data
+
+Check if all the required data is present in the screen.
+
+There are two lists used in this method, the list of the non empty
+fields from the screen and the list of the fields that must have a
+value.
+
+This lists are compared and we build a new list with those items which
+appear only in the second list, and build a message string with it.
+
+Example I<Screen> data structure for the required field:
+
+  $self->{rq_controls} = {
+       productcode => [ 0, '  Product code' ],
+       productname => [ 1, '  Product name' ],
+       ...
+       field1 => [ 10, '  Field descr. 1', [ 'tip1', 'Value 1' ] ],
+       field2 => [ 11, '  Field descr. 2', [ 'tip2', 'Value 2' ] ],
+  };
+
+Fields depending on other fields. Check field1 only if tip1 has some value.
+
+Throws an exception if not all required fields have values.
+
+=head2 record_save_insert
+
+Insert record.
+
+=head2 list_update_add
+
+Insert the current record in I<List>.
+
+BUG: Lookup fields are empty in the list.
+
+=head2 list_remove
+
+Compare the selected row in the I<List> with given keys values and
+remove it.
+
+=head2 record_changed
+
+Retrieve the witness data structure from disk and the current data
+structure read from the screen widgets and compare them.  If they
+differ than return true, else false.
+
+=head2 take_note
+
+Save record to a temporary file on disk.  Can be restored into a new
+record.  An easy way of making multiple records based on a template.
+
+=head2 restore_note
+
+Restore record from a temporary file on disk into a new record.  An
+easy way of making multiple records based on a template.
+
+=head2 storable_file_name
+
+Return a file name build using the name of the configuration (by
+convention the lower characters screen name) with a I<dat> extension.
+
+If I<orig> parameter then add an I<-orig> string to the screen name.
+Used for the witness files.
+
+=head2 get_screen_data_record
+
+Make a record from screen data.  The data structure is an AoH where at
+index 0 there is the main record meta-data and data and at index 1 the
+dependent table(s) data and meta-data.
+
+=head2 main_table_metadata
+
+Retrieve main table meta-data from the screen configuration.
+
+=head2 dep_table_metadata
+
+Retrieve dependent table meta-data from the screen configuration.
+
+=head2 report_table_metadata
+
+Retrieve table meta-data for report screen style configurations from
+the screen configuration.
+
+=head2 get_table_sumup_cols
+
+Return table C<sumup> cols.
+
+=head2 save_screendata
+
+Save screen data to temp file with Storable.
+
+=head2 restore_screendata
+
+Restore screen data from file saved with Storable.
+
+=head2 screen_store_key_values
+
+Store key column values for the current screen.
+
+=head2 screen_clear_key_values
+
+Clear key column values for the current screen.
+
+=head2 list_column_names
+
+Return the list column names.
+
+=head2 flatten_cfg
+
+TODO
+
+=head2 record_merge_columns
+
+Merge level columns with header columns and set default values.
+
+=head2 DESTROY
+
+Cleanup on destroy.  Remove I<Storable> data files from the
+configuration directory.
+
+=head2 on_quit
+
+Close application.
+
+=head2 catch_db_exceptions
+
+Handle database exceptions.
+
+=head2 catch_data_exceptions
+
+Handle "required data not provided" exception.
+
+=head2 reset_tb_button_state
+
+De-select tool-bar buttons after a failed attempt to change state.
+
+=cut

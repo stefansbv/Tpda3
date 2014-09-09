@@ -10,16 +10,6 @@ use Wx::Event qw(EVT_SET_FOCUS EVT_CHAR EVT_KEY_DOWN EVT_KEY_UP);
 
 use base qw( Wx::ComboBox );
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::ComboBox;
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     #my $class = shift;
@@ -90,7 +80,18 @@ sub get_selected {
 
 1;
 
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::ComboBox;
+    ...
+
+=head2 new
+
+Constructor method.
+
 =head1 ACKNOWLEDGEMENTS
 
 Default paramaters handling inspired from Wx::Perl::ListView,
 Copyright (c) 2007 Mattia Barbon
+
+=cut

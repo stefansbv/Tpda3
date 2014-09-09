@@ -19,25 +19,6 @@ require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
 
-=head1 SYNOPSIS
-
-Reads configuration files in I<Config::General> format and create a
-complex Perl data structure (HoH).  Then using I<Class::Accessor>,
-automatically create methods from the keys of the hash.
-
-    use Tpda3::Config;
-
-    my $cfg = Tpda3::Config->instance($args); # first time init
-
-    my $cfg = Tpda3::Config->instance(); # later, in other modules
-
-=head2 _new_instance
-
-Constructor method, the first and only time a new instance is created.
-All parameters passed to the instance() method are forwarded to this
-method. (From I<Class::Singleton> docs).
-
-=cut
 
 sub _new_instance {
     my ( $class, $args ) = @_;
@@ -68,11 +49,6 @@ sub _new_instance {
     return $self;
 }
 
-=head2 init_configurations
-
-Initialize basic configuration options.
-
-=cut
 
 sub init_configurations {
     my ( $self, $args ) = @_;
@@ -129,12 +105,6 @@ sub init_configurations {
     return;
 }
 
-=head2 get_default_mnemonic
-
-Set cfname (mnemonic) to the value read from the optional
-L<default.yml> configuration file.
-
-=cut
 
 sub get_default_mnemonic {
     my $self = shift;
@@ -154,16 +124,6 @@ sub get_default_mnemonic {
     }
 }
 
-=head2 pick_default_mnemonic
-
-Pick a default mnemonic. If there is only one, return it.  If there
-remains only one after removing I<test-(wx|tk)> pick that. Fall back
-to B<test-tk>.
-
-TODO: Should popup a dialog for the user to let him select a mnemonic,
-if there are too many choices.
-
-=cut
 
 sub pick_default_mnemonic {
     my $self = shift;
@@ -179,11 +139,6 @@ sub pick_default_mnemonic {
     return 'test-tk';           # fallback to test-tk
 }
 
-=head2 set_default_mnemonic
-
-Save the default mnemonic in the configs.
-
-=cut
 
 sub set_default_mnemonic {
     my ($self, $mnemonic) = @_;
@@ -211,11 +166,6 @@ sub set_default_mnemonic {
     return;
 }
 
-=head2 make_accessors
-
-Automatically make accessors for the hash keys.
-
-=cut
 
 sub make_accessors {
     my ( $self, $cfg_hr ) = @_;
@@ -230,17 +180,6 @@ sub make_accessors {
     return;
 }
 
-=head2 config_main_load
-
-Initialize configuration variables from arguments, also initialize the
-user configuration tree if not exists, with the I<File::UserConfig>
-module.
-
-Load the main configuration file and return a HoH data structure.
-
-Make accessors.
-
-=cut
 
 sub config_main_load {
     my ( $self, $args ) = @_;
@@ -265,14 +204,6 @@ sub config_main_load {
     return $maincfg;
 }
 
-=head2 config_interfaces_load
-
-Process the main configuration file and automaticaly load all the
-interface defined configuration files.  That means if we add a YAML
-configuration file to the tree, all defined values should be available
-at restart.
-
-=cut
 
 sub config_interfaces_load {
     my $self = shift;
@@ -287,12 +218,6 @@ sub config_interfaces_load {
     return;
 }
 
-=head2 config_runtime_load
-
-Load the runtime specific configuration files. This are configurations
-specific to the current application.
-
-=cut
 
 sub config_runtime_load {
     my $self = shift;
@@ -321,12 +246,6 @@ sub config_runtime_load {
     return;
 }
 
-=head2 validate_config
-
-Return I<true>, if the required Tpda3 application module is loadable
-and I<false> if not.
-
-=cut
 
 sub validate_config {
     my ( $self, $cfname ) = @_;
@@ -346,12 +265,6 @@ sub validate_config {
     return $@ ? 0 : 1;
 }
 
-=head2 config_file_name
-
-Return full path to a configuration file.  Default is the connection
-configuration file.
-
-=cut
 
 sub config_file_name {
     my ( $self, $cfg_name, $cfg_file ) = @_;
@@ -361,12 +274,6 @@ sub config_file_name {
     return catfile( $self->configdir($cfg_name), $cfg_file);
 }
 
-=head2 list_mnemonics
-
-List all existing connection configurations or the one supplied on the
-command line, with details if required.
-
-=cut
 
 sub list_mnemonics {
     my ( $self, $mnemonic ) = @_;
@@ -384,11 +291,6 @@ sub list_mnemonics {
     return;
 }
 
-=head2 list_mnemonics_all
-
-List all the configured mnemonics.
-
-=cut
 
 sub list_mnemonics_all {
     my $self = shift;
@@ -416,11 +318,6 @@ sub list_mnemonics_all {
     return;
 }
 
-=head2 list_mnemonic_details_for
-
-List details about the configuration name (mnemonic) if exists.
-
-=cut
 
 sub list_mnemonic_details_for {
     my ($self, $mnemonic) = @_;
@@ -447,12 +344,6 @@ sub list_mnemonic_details_for {
     return;
 }
 
-=head2 get_details_for
-
-Return the connection configuration details.  Check the name and
-return the reference only if the name matches.
-
-=cut
 
 sub get_details_for {
     my ($self, $mnemonic) = @_;
@@ -469,12 +360,6 @@ sub get_details_for {
     return $conn_ref;
 }
 
-=head2 get_mnemonics
-
-Return the list of mnemonics - the subdirectory names of the L<apps>
-path.
-
-=cut
 
 sub get_mnemonics {
     my $self = shift;
@@ -490,33 +375,18 @@ sub get_mnemonics {
     return \@mnemonics;
 }
 
-=head2 instance_file
-
-Return the absolute path to the instance.yaml configuration file.
-
-=cut
 
 sub instance_file {
     my $self = shift;
     return catfile( $self->configdir, 'etc', 'instance.yml' );
 }
 
-=head2 administrator_file
-
-Return the absolute path to the administrator.yaml configuration file.
-
-=cut
 
 sub administrator_file {
     my $self = shift;
     return catfile( $self->configdir, 'etc', 'administrator.yml' );
 }
 
-=head2 config_save_instance
-
-Save instance configurations.  Only window geometry configuration.
-
-=cut
 
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
@@ -527,12 +397,6 @@ sub config_save_instance {
     return;
 }
 
-=head2 config_load_instance
-
-Load instance configurations.  User window geometry configuration.
-This configuration file is optional.
-
-=cut
 
 sub config_load_instance {
     my $self = shift;
@@ -541,12 +405,6 @@ sub config_load_instance {
     return;
 }
 
-=head2 config_load_administrator
-
-Load administrator configurations.  Disabled menu configurations, for
-example for the Admin menu.  This configuration file is optional.
-
-=cut
 
 sub config_load_administrator {
     my $self = shift;
@@ -556,11 +414,6 @@ sub config_load_administrator {
     return;
 }
 
-=head2 toolbar_interface_reload
-
-Reload toolbar.
-
-=cut
 
 sub toolbar_interface_reload {
     my $self = shift;
@@ -572,15 +425,6 @@ sub toolbar_interface_reload {
     return;
 }
 
-=head2 config_init
-
-Create new connection configuration directory and install
-configuration file(s) from defaults found in the application's
-I<share> directory.
-
-It won't overwrite an existing directory.
-
-=cut
 
 sub config_init {
     my ( $self, $cfname, $new_cfname ) = @_;
@@ -599,13 +443,6 @@ sub config_init {
     return;
 }
 
-=head2 configdir
-
-Return application configuration directory.  The config name is an
-optional parameter with default as the current application config
-name.
-
-=cut
 
 sub configdir {
     my ( $self, $cfname ) = @_;
@@ -615,13 +452,6 @@ sub configdir {
     return catdir( $self->cfapps, $cfname );
 }
 
-=head2 sharedir
-
-Returns the share directory for the current application configuration.
-The config name is an optional parameter with default as the current
-application config name.
-
-=cut
 
 sub sharedir {
     my ( $self, $cfname ) = @_;
@@ -629,30 +459,6 @@ sub sharedir {
     return catdir( dist_dir('Tpda3'), 'apps', $cfname );
 }
 
-=head2 configdir_populate
-
-Copy configuration files to the application configuration paths.
-
-The applications I<sharedir> is determined using the following
-algorithm: I<Tpda3-> + upper case of the I<configname> if the
-I<configname> contains digits or upper case first letter from the
-I<configname> otherwise.
-
-This is an workaround of the fact that applications have different
-distribution names than the I<Tpda3> run time.
-
-Ideally the share dirs for all the applications would be copied under
-I<Tpda3/>, but there is no option (yet?) to do that using
-L<Module::Install> or L<Module::Build>.
-
-As a consequence the application names must have the name made like
-this:
-
-   Tpda3-Appname and the I<configname>: appname
- or
-   Tpda3-APP2NAME and the I<configname>: app2name
-
-=cut
 
 sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
@@ -686,24 +492,12 @@ sub configdir_populate {
     return;
 }
 
-=head2 get_log_filename
-
-Return a file name and path for logging.
-
-=cut
 
 sub get_log_filename {
 
     return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
 
-=head2 config_data_from
-
-Load a config file and return the Perl data structure.  It loads a
-file in Config::General format or in YAML::Tiny format, depending on
-the extension of the file.
-
-=cut
 
 sub config_data_from {
     my ( $self, $conf_file, $not_fatal ) = @_;
@@ -738,11 +532,6 @@ sub config_data_from {
     return;
 }
 
-=head2 config_scr_file_name
-
-Return fully qualified screen configuration file name.
-
-=cut
 
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
@@ -764,11 +553,6 @@ sub config_scr_file_name {
     }
 }
 
-=head2 list_config_files
-
-List screen configuration files.
-
-=cut
 
 sub list_config_files {
     my $self = shift;
@@ -785,11 +569,6 @@ sub list_config_files {
     return;
 }
 
-=head2 application_class
-
-Main application class name.
-
-=cut
 
 sub application_class {
     my ( $self, $widgetset, $module ) = @_;
@@ -800,12 +579,6 @@ sub application_class {
     return qq{Tpda3::${widgetset}::App::${module}};
 }
 
-=head2 resource_path_for
-
-Return the absolute path for a resource file or directory.  The
-parameters are: resource name and type. Where type is a list of dirs.
-
-=cut
 
 sub resource_path_for {
     my ($self, $name, @type) = @_;
@@ -818,12 +591,6 @@ sub resource_path_for {
     }
 }
 
-=head2 resource_data_for
-
-Return a configuration datastructure loaded from a .yaml or a .conf
-file from a path in configdir.
-
-=cut
 
 sub resource_data_for {
     my ($self, $file_name, $resource_path) = @_;
@@ -832,3 +599,205 @@ sub resource_data_for {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+Reads configuration files in I<Config::General> format and create a
+complex Perl data structure (HoH).  Then using I<Class::Accessor>,
+automatically create methods from the keys of the hash.
+
+    use Tpda3::Config;
+
+    my $cfg = Tpda3::Config->instance($args); # first time init
+
+    my $cfg = Tpda3::Config->instance(); # later, in other modules
+
+=head2 _new_instance
+
+Constructor method, the first and only time a new instance is created.
+All parameters passed to the instance() method are forwarded to this
+method. (From I<Class::Singleton> docs).
+
+=head2 init_configurations
+
+Initialize basic configuration options.
+
+=head2 get_default_mnemonic
+
+Set cfname (mnemonic) to the value read from the optional
+L<default.yml> configuration file.
+
+=head2 pick_default_mnemonic
+
+Pick a default mnemonic. If there is only one, return it.  If there
+remains only one after removing I<test-(wx|tk)> pick that. Fall back
+to B<test-tk>.
+
+TODO: Should popup a dialog for the user to let him select a mnemonic,
+if there are too many choices.
+
+=head2 set_default_mnemonic
+
+Save the default mnemonic in the configs.
+
+=head2 make_accessors
+
+Automatically make accessors for the hash keys.
+
+=head2 config_main_load
+
+Initialize configuration variables from arguments, also initialize the
+user configuration tree if not exists, with the I<File::UserConfig>
+module.
+
+Load the main configuration file and return a HoH data structure.
+
+Make accessors.
+
+=head2 config_interfaces_load
+
+Process the main configuration file and automaticaly load all the
+interface defined configuration files.  That means if we add a YAML
+configuration file to the tree, all defined values should be available
+at restart.
+
+=head2 config_runtime_load
+
+Load the runtime specific configuration files. This are configurations
+specific to the current application.
+
+=head2 validate_config
+
+Return I<true>, if the required Tpda3 application module is loadable
+and I<false> if not.
+
+=head2 config_file_name
+
+Return full path to a configuration file.  Default is the connection
+configuration file.
+
+=head2 list_mnemonics
+
+List all existing connection configurations or the one supplied on the
+command line, with details if required.
+
+=head2 list_mnemonics_all
+
+List all the configured mnemonics.
+
+=head2 list_mnemonic_details_for
+
+List details about the configuration name (mnemonic) if exists.
+
+=head2 get_details_for
+
+Return the connection configuration details.  Check the name and
+return the reference only if the name matches.
+
+=head2 get_mnemonics
+
+Return the list of mnemonics - the subdirectory names of the L<apps>
+path.
+
+=head2 instance_file
+
+Return the absolute path to the instance.yaml configuration file.
+
+=head2 administrator_file
+
+Return the absolute path to the administrator.yaml configuration file.
+
+=head2 config_save_instance
+
+Save instance configurations.  Only window geometry configuration.
+
+=head2 config_load_instance
+
+Load instance configurations.  User window geometry configuration.
+This configuration file is optional.
+
+=head2 config_load_administrator
+
+Load administrator configurations.  Disabled menu configurations, for
+example for the Admin menu.  This configuration file is optional.
+
+=head2 toolbar_interface_reload
+
+Reload toolbar.
+
+=head2 config_init
+
+Create new connection configuration directory and install
+configuration file(s) from defaults found in the application's
+I<share> directory.
+
+It won't overwrite an existing directory.
+
+=head2 configdir
+
+Return application configuration directory.  The config name is an
+optional parameter with default as the current application config
+name.
+
+=head2 sharedir
+
+Returns the share directory for the current application configuration.
+The config name is an optional parameter with default as the current
+application config name.
+
+=head2 configdir_populate
+
+Copy configuration files to the application configuration paths.
+
+The applications I<sharedir> is determined using the following
+algorithm: I<Tpda3-> + upper case of the I<configname> if the
+I<configname> contains digits or upper case first letter from the
+I<configname> otherwise.
+
+This is an workaround of the fact that applications have different
+distribution names than the I<Tpda3> run time.
+
+Ideally the share dirs for all the applications would be copied under
+I<Tpda3/>, but there is no option (yet?) to do that using
+L<Module::Install> or L<Module::Build>.
+
+As a consequence the application names must have the name made like
+this:
+
+   Tpda3-Appname and the I<configname>: appname
+ or
+   Tpda3-APP2NAME and the I<configname>: app2name
+
+=head2 get_log_filename
+
+Return a file name and path for logging.
+
+=head2 config_data_from
+
+Load a config file and return the Perl data structure.  It loads a
+file in Config::General format or in YAML::Tiny format, depending on
+the extension of the file.
+
+=head2 config_scr_file_name
+
+Return fully qualified screen configuration file name.
+
+=head2 list_config_files
+
+List screen configuration files.
+
+=head2 application_class
+
+Main application class name.
+
+=head2 resource_path_for
+
+Return the absolute path for a resource file or directory.  The
+parameters are: resource name and type. Where type is a list of dirs.
+
+=head2 resource_data_for
+
+Return a configuration datastructure loaded from a .yaml or a .conf
+file from a path in configdir.
+
+=cut

@@ -13,39 +13,6 @@ use Tk::widgets qw< Checkbutton >;
 
 Tk::Widget->Construct('TM');
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::TM;
-
-    my $xtvar = {};
-    my $xtable = $frame->Scrolled(
-        'TM',
-        -rows           => 6,
-        -cols           => 1,
-        -width          => -1,
-        -height         => -1,
-        -ipadx          => 3,
-        -titlerows      => 1,
-        -validate       => 1,
-        -variable       => $xtvar,
-        -selectmode     => 'single',
-        -colstretchmode => 'unset',
-        -resizeborders  => 'none',
-        -bg             => 'white',
-        -scrollbars     => 'osw',
-    );
-    $xtable->pack( -expand => 1, -fill => 'both' );
-
-    $xtable->init($frame, $header);
-
-=head2 ClassInit
-
-Class initializations.
-
-Changes the bindings for cursor movements in the cell and between
-cells.
-
-=cut
 
 sub ClassInit {
     my ( $class, $mw ) = @_;
@@ -75,11 +42,6 @@ sub ClassInit {
     return;
 }
 
-=head2 Populate
-
-Constructor method, calls SUPER Populate.
-
-=cut
 
 sub Populate {
     my ( $self, $args ) = @_;
@@ -89,11 +51,6 @@ sub Populate {
     return $self;
 }
 
-=head2 init
-
-Write header on row 0 of TableMatrix.
-
-=cut
 
 sub init {
     my ( $self, $frame, $args ) = @_;
@@ -112,11 +69,6 @@ sub init {
     return;
 }
 
-=head2 get_row_count
-
-Return number of rows in TM, without the header row.
-
-=cut
 
 sub get_row_count {
     my $self = shift;
@@ -127,11 +79,6 @@ sub get_row_count {
     return $rows_count;
 }
 
-=head2 set_tags
-
-Define and set tags for the Table Matrix.
-
-=cut
 
 sub set_tags {
     my $self = shift;
@@ -255,11 +202,6 @@ sub set_tags {
     return;
 }
 
-=head2 clear_all
-
-Clear all data from the Tk::TableMatrix widget, but preserve the header.
-
-=cut
 
 sub clear_all {
     my $self = shift;
@@ -275,11 +217,6 @@ sub clear_all {
     return;
 }
 
-=head2 fill
-
-Fill TableMatrix widget with data.
-
-=cut
 
 sub fill {
     my ( $self, $record_ref ) = @_;
@@ -328,13 +265,6 @@ sub fill {
     return;
 }
 
-=head2 write_row
-
-Write a row to a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-=cut
 
 sub write_row {
     my ( $self, $row, $col, $record_ref ) = @_;
@@ -372,11 +302,6 @@ sub write_row {
     return $nr_col;
 }
 
-=head2 data_read
-
-Read data from widget.
-
-=cut
 
 sub data_read {
     my ($self, $with_sel_name) = @_;
@@ -427,16 +352,6 @@ sub data_read {
     return ( \@tabledata, $sc );
 }
 
-=head2 cell_read
-
-Read a cell from a TableMatrix widget and return it as a hash
-reference.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-The I<col> parameter can be a number - column index or a column name.
-
-=cut
 
 sub cell_read {
     my ( $self, $row, $col ) = @_;
@@ -462,15 +377,6 @@ sub cell_read {
 }
 
 
-=head2 cell_write
-
-Write to a cell from a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-The I<col> parameter can be a number - column index or a column name.
-
-=cut
 
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
@@ -500,11 +406,6 @@ sub cell_write {
     return;
 }
 
-=head2 add_row
-
-Table matrix methods.  Add TableMatrix row.
-
-=cut
 
 sub add_row {
     my $self = shift;
@@ -547,11 +448,6 @@ sub add_row {
     return $new_r;
 }
 
-=head2 remove_row
-
-Delete TableMatrix row.
-
-=cut
 
 sub remove_row {
     my ( $self, $row ) = @_;
@@ -583,11 +479,6 @@ sub remove_row {
     return;
 }
 
-=head2 get_active_row
-
-Return the active row.
-
-=cut
 
 sub get_active_row {
     my $self = shift;
@@ -602,11 +493,6 @@ sub get_active_row {
     return $r;
 }
 
-=head2 renum_row
-
-Renumber TableMatrix rows.
-
-=cut
 
 sub renum_row {
     my $self = shift;
@@ -622,11 +508,6 @@ sub renum_row {
     return;
 }
 
-=head2 tmatrix_make_selector
-
-Make TableMatrix selector.
-
-=cut
 
 sub tmatrix_make_selector {
     my ( $self, $c ) = @_;
@@ -641,12 +522,6 @@ sub tmatrix_make_selector {
     return;
 }
 
-=head2 embeded_buttons
-
-Embeded windows.  Config option L<selectorstyle> can be L<radio> the
-default, or L<checkbox>.
-
-=cut
 
 sub embeded_buttons {
     my ( $self, $row, $col ) = @_;
@@ -678,11 +553,6 @@ sub embeded_buttons {
     return;
 }
 
-=head2 build_rbbutton
-
-Build Radiobutton.
-
-=cut
 
 sub build_rbbutton {
     my ( $self, $row, $col, $selecolor ) = @_;
@@ -703,24 +573,12 @@ sub build_rbbutton {
     return $button;
 }
 
-=head2 get_selected
-
-Return selected table row, used for tables with embeded radion buttons
-as selectors.
-
-=cut
 
 sub get_selected {
     my $self = shift;
     return $self->{tm_sel};
 }
 
-=head2 set_selected
-
-Set row as selected. The value has to be true, for false values set to
-undef. As a consequence it won't set as selected row 0.
-
-=cut
 
 sub set_selected {
     my ( $self, $selected_row ) = @_;
@@ -735,22 +593,12 @@ sub set_selected {
     return;
 }
 
-=head2 get_selector
-
-Return selector column.
-
-=cut
 
 sub get_selector {
     my $self = shift;
     return $self->{selectorcol};
 }
 
-=head2 build_ckbutton
-
-Build Checkbutton.
-
-=cut
 
 sub build_ckbutton {
     my ( $self, $row, $col ) = @_;
@@ -767,11 +615,6 @@ sub build_ckbutton {
     return $button;
 }
 
-=head2 toggle_ckbutton
-
-Toggle Checkbutton or set state to L<state> if defined state.
-
-=cut
 
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
@@ -792,11 +635,6 @@ sub toggle_ckbutton {
     return;
 }
 
-=head2 is_checked
-
-Return true if embedded checkbutton is checked.
-
-=cut
 
 sub is_checked {
     my ($self, $r, $c) = @_;
@@ -816,11 +654,6 @@ sub is_checked {
     return $is_checked;
 }
 
-=head2 count_is_checked
-
-Return how many buttons are checked.
-
-=cut
 
 sub count_is_checked {
     my ($self, $c) = @_;
@@ -837,3 +670,147 @@ sub count_is_checked {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::TM;
+
+    my $xtvar = {};
+    my $xtable = $frame->Scrolled(
+        'TM',
+        -rows           => 6,
+        -cols           => 1,
+        -width          => -1,
+        -height         => -1,
+        -ipadx          => 3,
+        -titlerows      => 1,
+        -validate       => 1,
+        -variable       => $xtvar,
+        -selectmode     => 'single',
+        -colstretchmode => 'unset',
+        -resizeborders  => 'none',
+        -bg             => 'white',
+        -scrollbars     => 'osw',
+    );
+    $xtable->pack( -expand => 1, -fill => 'both' );
+
+    $xtable->init($frame, $header);
+
+=head2 ClassInit
+
+Class initializations.
+
+Changes the bindings for cursor movements in the cell and between
+cells.
+
+=head2 Populate
+
+Constructor method, calls SUPER Populate.
+
+=head2 init
+
+Write header on row 0 of TableMatrix.
+
+=head2 get_row_count
+
+Return number of rows in TM, without the header row.
+
+=head2 set_tags
+
+Define and set tags for the Table Matrix.
+
+=head2 clear_all
+
+Clear all data from the Tk::TableMatrix widget, but preserve the header.
+
+=head2 fill
+
+Fill TableMatrix widget with data.
+
+=head2 write_row
+
+Write a row to a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+=head2 data_read
+
+Read data from widget.
+
+=head2 cell_read
+
+Read a cell from a TableMatrix widget and return it as a hash
+reference.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+The I<col> parameter can be a number - column index or a column name.
+
+=head2 cell_write
+
+Write to a cell from a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+The I<col> parameter can be a number - column index or a column name.
+
+=head2 add_row
+
+Table matrix methods.  Add TableMatrix row.
+
+=head2 remove_row
+
+Delete TableMatrix row.
+
+=head2 get_active_row
+
+Return the active row.
+
+=head2 renum_row
+
+Renumber TableMatrix rows.
+
+=head2 tmatrix_make_selector
+
+Make TableMatrix selector.
+
+=head2 embeded_buttons
+
+Embeded windows.  Config option L<selectorstyle> can be L<radio> the
+default, or L<checkbox>.
+
+=head2 build_rbbutton
+
+Build Radiobutton.
+
+=head2 get_selected
+
+Return selected table row, used for tables with embeded radion buttons
+as selectors.
+
+=head2 set_selected
+
+Set row as selected. The value has to be true, for false values set to
+undef. As a consequence it won't set as selected row 0.
+
+=head2 get_selector
+
+Return selector column.
+
+=head2 build_ckbutton
+
+Build Checkbutton.
+
+=head2 toggle_ckbutton
+
+Toggle Checkbutton or set state to L<state> if defined state.
+
+=head2 is_checked
+
+Return true if embedded checkbutton is checked.
+
+=head2 count_is_checked
+
+Return how many buttons are checked.
+
+=cut

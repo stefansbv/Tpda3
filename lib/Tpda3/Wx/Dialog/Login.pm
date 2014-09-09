@@ -12,11 +12,6 @@ use base qw{Wx::Dialog};
 
 require Tpda3::Config;
 
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -28,11 +23,6 @@ sub new {
     return $self;
 }
 
-=head2 login
-
-Login dialog GUI.
-
-=cut
 
 sub login {
     my ( $class, $view ) = @_;
@@ -171,3 +161,13 @@ sub get_login {
 }
 
 1;
+
+=head2 new
+
+Constructor method.
+
+=head2 login
+
+Login dialog GUI.
+
+=cut

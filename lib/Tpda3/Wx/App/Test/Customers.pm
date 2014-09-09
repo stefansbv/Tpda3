@@ -8,19 +8,6 @@ use warnings;
 use Wx qw{:everything};
 use base 'Tpda3::Wx::Screen';
 
-=head1 SYNOPSIS
-
-    require Tpda3::App::Test::Customers;
-
-    my $scr = Tpda3::App::Test::Customers->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -299,20 +286,32 @@ sub run_screen {
     return;
 }
 
+
+sub gbpos { Wx::GBPosition->new(@_) }
+
+
+sub gbspan { Wx::GBSpan->new(@_) }
+
+1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::App::Test::Customers;
+
+    my $scr = Tpda3::App::Test::Customers->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout
+
 =head2 gbpos
 
 Grid bag position.
-
-=cut
-
-sub gbpos { Wx::GBPosition->new(@_) }
 
 =head2 gbspan
 
 Grid bag span.
 
 =cut
-
-sub gbspan { Wx::GBSpan->new(@_) }
-
-1;

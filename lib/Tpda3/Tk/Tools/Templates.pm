@@ -17,19 +17,6 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-    require Tpda3::Tools::Templates;
-
-    my $scr = Tpda3::Tools::Templates->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -289,11 +276,6 @@ sub run_screen {
     return;
 }
 
-=head2 template_file
-
-Add template file.
-
-=cut
 
 sub template_file {
     my $self = shift;
@@ -330,3 +312,21 @@ sub template_file {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::Tools::Templates;
+
+    my $scr = Tpda3::Tools::Templates->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout
+
+=head2 template_file
+
+Add template file.
+
+=cut

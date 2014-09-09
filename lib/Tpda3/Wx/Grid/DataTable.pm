@@ -100,3 +100,5 @@ Dootson and the DBGridTable package example from
 http://wiki.wxperl.nl/Wx::GridTableBase.
 
 Thank you!
+
+=cut

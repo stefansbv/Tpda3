@@ -11,19 +11,6 @@ use Tk::widgets qw(StatusBar LabFrame JComboBox);
 require Tpda3::Config;
 require Tpda3::Tk::TM;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::AppList;
-
-    my $fd = Tpda3::Tk::Dialog::AppList->new;
-
-    $fd->login($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -39,11 +26,6 @@ sub new {
     return $self;
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
@@ -51,11 +33,6 @@ sub cfg {
     return $self->{_cfg};
 }
 
-=head2 show_app_list
-
-Show dialog.
-
-=cut
 
 sub show_app_list {
     my ( $self, $view ) = @_;
@@ -310,11 +287,6 @@ sub show_app_list {
     return;
 }
 
-=head2 load_mnemonics
-
-Load the mnemonics data.
-
-=cut
 
 sub load_mnemonics {
     my $self = shift;
@@ -346,12 +318,6 @@ sub load_mnemonics {
     return;
 }
 
-=head2 select_default
-
-Select the default mnemonic, the one from the command line id any else
-the first.
-
-=cut
 
 sub select_default {
     my $self = shift;
@@ -367,11 +333,6 @@ sub select_default {
     return;
 }
 
-=head2 select_idx
-
-Select the mnemonic at the index and load its details.
-
-=cut
 
 sub select_idx {
     my ($self, $sel) = @_;
@@ -385,11 +346,6 @@ sub select_idx {
     return;
 }
 
-=head2 load_mnemonic_details_for
-
-Load the selected mnemonic details in the controls.
-
-=cut
 
 sub load_mnemonic_details_for {
     my ( $self, $rec ) = @_;
@@ -422,11 +378,6 @@ sub load_mnemonic_details_for {
     return;
 }
 
-=head2 save_as_default
-
-Save the curent mnemonic as default.
-
-=cut
 
 sub save_as_default {
     my $self = shift;
@@ -439,11 +390,6 @@ sub save_as_default {
     return;
 }
 
-=head2 _set_status
-
-Display message in the status bar.
-
-=cut
 
 sub _set_status {
     my ( $self, $text, $color ) = @_;
@@ -459,11 +405,6 @@ sub _set_status {
     return;
 }
 
-=head2 dlg_exit
-
-Quit Dialog.
-
-=cut
 
 sub dlg_exit {
     my $self = shift;
@@ -474,3 +415,54 @@ sub dlg_exit {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::AppList;
+
+    my $fd = Tpda3::Tk::Dialog::AppList->new;
+
+    $fd->login($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 show_app_list
+
+Show dialog.
+
+=head2 load_mnemonics
+
+Load the mnemonics data.
+
+=head2 select_default
+
+Select the default mnemonic, the one from the command line id any else
+the first.
+
+=head2 select_idx
+
+Select the mnemonic at the index and load its details.
+
+=head2 load_mnemonic_details_for
+
+Load the selected mnemonic details in the controls.
+
+=head2 save_as_default
+
+Save the curent mnemonic as default.
+
+=head2 _set_status
+
+Display message in the status bar.
+
+=head2 dlg_exit
+
+Quit Dialog.
+
+=cut

@@ -12,17 +12,6 @@ use DBI;
 require Tpda3::Exceptions;
 require Tpda3::Config;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Db::Connection;
-
-    my $dbh = Tpda3::Db::Connection->new();
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $model) = @_;
@@ -34,11 +23,6 @@ sub new {
     return $self;
 }
 
-=head2 _connect
-
-Connect method, uses I<Tpda3::Config> module for configuration.
-
-=cut
 
 sub _connect {
     my ($self, $model) = @_;
@@ -117,3 +101,19 @@ SWITCH: for ($driver) {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Db::Connection;
+
+    my $dbh = Tpda3::Db::Connection->new();
+
+=head2 new
+
+Constructor method.
+
+=head2 _connect
+
+Connect method, uses I<Tpda3::Config> module for configuration.
+
+=cut

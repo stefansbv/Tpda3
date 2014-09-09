@@ -28,16 +28,6 @@ my %translation_table = (
     numeric      => 'double',
 );
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::Grid;
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $parent, $columns ) = @_;
@@ -94,12 +84,6 @@ sub new {
     return $self;
 }
 
-=head2 on_key_down
-
-Adapted from:
-https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
-
-=cut
 
 sub on_key_down {
     my ( $self, $evt ) = @_;
@@ -208,11 +192,6 @@ sub set_selected {
     return;
 }
 
-=head2 fill
-
-Fill the Grid with data.
-
-=cut
 
 sub fill {
     my ( $self, $record_ref ) = @_;
@@ -234,13 +213,6 @@ sub fill {
     return;
 }
 
-=head2 data_read
-
-Read data from widget.
-
-The C<selectorcol> functionality is not implemented.
-
-=cut
 
 sub data_read {
     my $self = shift;
@@ -284,3 +256,29 @@ sub delete_row {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::Grid;
+    ...
+
+=head2 new
+
+Constructor method.
+
+=head2 on_key_down
+
+Adapted from:
+https://github.com/wxWidgets/wxPython/blob/master/demo/GridEnterHandler.py
+
+=head2 fill
+
+Fill the Grid with data.
+
+=head2 data_read
+
+Read data from widget.
+
+The C<selectorcol> functionality is not implemented.
+
+=cut

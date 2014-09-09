@@ -19,19 +19,6 @@ require Tpda3::Lookup;
 
 use base q{Tpda3::Tk::Screen};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::Repman;
-
-    my $fd = Tpda3::Tk::Dialog::Repman->new;
-
-    $fd->search($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -48,11 +35,6 @@ sub new {
     return $self;
 }
 
-=head2 run_screen
-
-Define and show search dialog.
-
-=cut
 
 sub run_screen {
     my ( $self, $view ) = @_;
@@ -458,11 +440,6 @@ sub run_screen {
     return;
 }
 
-=head2 select_idx
-
-Select the index and load its details.
-
-=cut
 
 sub select_idx {
     my ($self, $sel) = @_;
@@ -474,11 +451,6 @@ sub select_idx {
     return;
 }
 
-=head2 dlg_exit
-
-Quit Dialog.
-
-=cut
 
 sub dlg_exit {
     my $self = shift;
@@ -488,11 +460,6 @@ sub dlg_exit {
     return;
 }
 
-=head2 load_report_list
-
-Load report list from the L<reports> table.
-
-=cut
 
 sub load_report_list {
     my ($self, $sc) = @_;
@@ -525,12 +492,6 @@ sub load_report_list {
     return;
 }
 
-=head2 load_report_details
-
-On selected report, load the configuration details from the
-L<reports_det> table.
-
-=cut
 
 sub load_report_details {
     my $self = shift;
@@ -589,13 +550,6 @@ sub load_report_details {
     return;
 }
 
-=head2 preview_report
-
-Preview the report using the Report manager utility L<printrep.bin> on
-GNU/Linux L<printrepxp.exe> on Windows.  Fool path to this utilities
-is set in the <main.yml> configuration file.
-
-=cut
 
 sub preview_report {
     my $self = shift;
@@ -627,11 +581,6 @@ sub preview_report {
     return;
 }
 
-=head2 get_parameters
-
-Build parameter list from screen entry values.
-
-=cut
 
 sub get_parameters {
     my $self = shift;
@@ -661,15 +610,6 @@ sub get_parameters {
     return $parameters;
 }
 
-=head2 update_value
-
-Callback to update the value of the paramater, using the I<Search>
-dialog.
-
-Info for the Search dialog table header is from L<etc/search.conf>, in
-the application's L<etc> config dir.
-
-=cut
 
 sub update_value {
     my ($self, $view, $p_no) = @_;
@@ -735,3 +675,56 @@ sub update_value {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::Repman;
+
+    my $fd = Tpda3::Tk::Dialog::Repman->new;
+
+    $fd->search($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 run_screen
+
+Define and show search dialog.
+
+=head2 select_idx
+
+Select the index and load its details.
+
+=head2 dlg_exit
+
+Quit Dialog.
+
+=head2 load_report_list
+
+Load report list from the L<reports> table.
+
+=head2 load_report_details
+
+On selected report, load the configuration details from the
+L<reports_det> table.
+
+=head2 preview_report
+
+Preview the report using the Report manager utility L<printrep.bin> on
+GNU/Linux L<printrepxp.exe> on Windows.  Fool path to this utilities
+is set in the <main.yml> configuration file.
+
+=head2 get_parameters
+
+Build parameter list from screen entry values.
+
+=head2 update_value
+
+Callback to update the value of the paramater, using the I<Search>
+dialog.
+
+Info for the Search dialog table header is from L<etc/search.conf>, in
+the application's L<etc> config dir.
+
+=cut

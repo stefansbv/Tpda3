@@ -17,18 +17,6 @@ use Try::Tiny;
 use YAML::Tiny;
 use Config::General;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Config::Utils;
-
-    my $cu = Tpda3::Config::Utils->new();
-
-=head2 load_conf
-
-Load a generic config file in Config::General format and return the
-Perl data structure.
-
-=cut
 
 sub load_conf {
     my ( $self, $config_file ) = @_;
@@ -44,12 +32,6 @@ sub load_conf {
     return \%config;
 }
 
-=head2 load_yaml
-
-Use YAML::Tiny to load a YAML file and return as a Perl hash data
-structure.
-
-=cut
 
 sub load_yaml {
     my ( $self, $yaml_file ) = @_;
@@ -66,11 +48,6 @@ sub load_yaml {
     return $conf;
 }
 
-=head2 find_subdirs
-
-Find subdirectories of a directory, not recursively
-
-=cut
 
 sub find_subdirs {
     my ( $self, $dir ) = @_;
@@ -86,12 +63,6 @@ sub find_subdirs {
     return \@dbs;
 }
 
-=head2 find_files
-
-Find files in directory at depth 1, not recursively.  Optionally filter
-by extension.
-
-=cut
 
 sub find_files {
     my ( $self, $dir, $ext ) = @_;
@@ -107,15 +78,6 @@ sub find_files {
     return \@justnames;
 }
 
-=head2 save_yaml
-
-Read a YAML file or create a new one if it doesn't exists. Alter the
-data structure using the provided parameters. Save the YAML file.
-
-For deeper nested data structures the B<value> parameter can be a hash
-reference.
-
-=cut
 
 sub save_yaml {
     my ( $self, $yaml_file, $section, $key, $value ) = @_;
@@ -134,11 +96,6 @@ sub save_yaml {
     return;
 }
 
-=head2 create_path
-
-Create a new path or die.
-
-=cut
 
 sub create_path {
     my ( $self, $new_path ) = @_;
@@ -156,11 +113,6 @@ sub create_path {
     return;
 }
 
-=head2 copy_files
-
-Copy files or die.
-
-=cut
 
 sub copy_files {
     my ( $self, $src_fqn, $dst_p ) = @_;
@@ -181,12 +133,6 @@ sub copy_files {
 }
 
 
-=head2 get_license
-
-Slurp license file and return the text string.  Return only the title
-if the license file is not found, just to be on the save side.
-
-=cut
 
 sub get_license {
     my $self = shift;
@@ -211,11 +157,6 @@ END_LICENSE
     }
 }
 
-=head2 get_doc_file_by_name
-
-Return document file full path.
-
-=cut
 
 sub get_doc_file_by_name {
     my ($self, $doc_file) = @_;
@@ -224,3 +165,55 @@ sub get_doc_file_by_name {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Config::Utils;
+
+    my $cu = Tpda3::Config::Utils->new();
+
+=head2 load_conf
+
+Load a generic config file in Config::General format and return the
+Perl data structure.
+
+=head2 load_yaml
+
+Use YAML::Tiny to load a YAML file and return as a Perl hash data
+structure.
+
+=head2 find_subdirs
+
+Find subdirectories of a directory, not recursively
+
+=head2 find_files
+
+Find files in directory at depth 1, not recursively.  Optionally filter
+by extension.
+
+=head2 save_yaml
+
+Read a YAML file or create a new one if it doesn't exists. Alter the
+data structure using the provided parameters. Save the YAML file.
+
+For deeper nested data structures the B<value> parameter can be a hash
+reference.
+
+=head2 create_path
+
+Create a new path or die.
+
+=head2 copy_files
+
+Copy files or die.
+
+=head2 get_license
+
+Slurp license file and return the text string.  Return only the title
+if the license file is not found, just to be on the save side.
+
+=head2 get_doc_file_by_name
+
+Return document file full path.
+
+=cut

@@ -17,19 +17,6 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-    require Tpda3::Tools::Reports;
-
-    my $scr = Tpda3::Tools::Reports->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout.
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -222,11 +209,6 @@ sub run_screen {
     return;
 }
 
-=head2 report_file
-
-Add report file.
-
-=cut
 
 sub report_file {
     my $self = shift;
@@ -263,3 +245,21 @@ sub report_file {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::Tools::Reports;
+
+    my $scr = Tpda3::Tools::Reports->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout.
+
+=head2 report_file
+
+Add report file.
+
+=cut

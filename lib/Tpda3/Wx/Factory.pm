@@ -22,10 +22,6 @@ David E. Wheeler.
 
 Thank You!
 
-=head1 AUTHOR
-
-Mattia Barbon
-
 =head1 COPYRIGHT AND LICENSE
 
 Copyright: (c) 2003 Mattia Barbon

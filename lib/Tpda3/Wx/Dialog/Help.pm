@@ -18,11 +18,6 @@ require Tpda3::Config::Utils;
 
 sub new {
 
-=head2 new
-
-Constructor method.
-
-=cut
     my ($class, $gui) = @_;
 
     my $self = {};
@@ -31,11 +26,6 @@ Constructor method.
     return bless( $self, $class );
 }
 
-=head2 show_html_help
-
-Parameter: .htb file.
-
-=cut
 
 sub show_html_help {
     my ($self, $guide_file) = @_;
@@ -59,3 +49,13 @@ sub show_html_help {
 }
 
 1;
+
+=head2 new
+
+Constructor method.
+
+=head2 show_html_help
+
+Parameter: .htb file.
+
+=cut

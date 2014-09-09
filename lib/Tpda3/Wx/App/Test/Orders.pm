@@ -22,19 +22,6 @@ use Tpda3::Wx::Grid::DataTable;
 
 Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
-=head1 SYNOPSIS
-
-    require Tpda3::App::Test::Orders;
-
-    my $scr = Tpda3::App::Test::Orders->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout.
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -126,22 +113,12 @@ sub run_screen {
     return;
 }
 
-=head2 XRC
-
-XRC.
-
-=cut
 
 sub XRC {
     my ( $self, $object ) = @_;
     return  $self->{frame}->FindWindow(Wx::XmlResource::GetXRCID($object) );
 }
 
-=head2 make_bitmap
-
-Make bitmap.
-
-=cut
 
 sub make_bitmap {
     my ( $self, $icon ) = @_;
@@ -150,3 +127,25 @@ sub make_bitmap {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::App::Test::Orders;
+
+    my $scr = Tpda3::App::Test::Orders->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout.
+
+=head2 XRC
+
+XRC.
+
+=head2 make_bitmap
+
+Make bitmap.
+
+=cut

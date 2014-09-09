@@ -20,19 +20,6 @@ require Tpda3::Tk::Dialog::Tiler;
 
 use base qw{Tpda3::Controller};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Controller;
-
-    my $controller = Tpda3::Tk::Controller->new();
-
-    $controller->start();
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -57,11 +44,6 @@ sub new {
     return $self;
 }
 
-=head2 start_delay
-
-Show message, delay the database connection.
-
-=cut
 
 sub start_delay {
     my $self = shift;
@@ -76,11 +58,6 @@ sub start_delay {
     return;
 }
 
-=head2 _init
-
-Init App.
-
-=cut
 
 sub _init {
     my $self = shift;
@@ -92,11 +69,6 @@ sub _init {
     return;
 }
 
-=head2 dialog_login
-
-Login dialog.
-
-=cut
 
 sub dialog_login {
     my ($self, $error) = @_;
@@ -107,11 +79,6 @@ sub dialog_login {
     return $pd->login( $self->view, $error );
 }
 
-=head2 screen_module_class
-
-Return screen module class and file name.
-
-=cut
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
@@ -129,11 +96,6 @@ sub screen_module_class {
     return ( $module_class, $module_file );
 }
 
-=head2 _set_event_handlers_keys
-
-Setup event handlers for the interface.
-
-=cut
 
 sub _set_event_handlers_keys {
     my $self = shift;
@@ -190,19 +152,6 @@ sub _set_event_handlers_keys {
     return;
 }
 
-=head2 _set_event_handler_nb
-
-Separate event handler for NoteBook because must be initialized only
-after the NoteBook is (re)created and that happens when a new screen is
-required (selected from the applications menu) to load.
-
-Known limitation: Doesn't ask to save the record when the user changes
-from the I<Detail> page to the I<Record> page.
-
-Note: Tried to emulate L<on_page_leave>using I<raisecmd> but without
-success, for (now) obvious reasons.
-
-=cut
 
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
@@ -244,19 +193,6 @@ sub _set_event_handler_nb {
     return;
 }
 
-=head2 set_event_handler_screen
-
-Setup event handlers for the toolbar buttons configured in the
-C<scrtoolbar> section of the current screen configuration.
-
-Default usage is for the I<add> and I<delete> buttons attached to the
-TableMatrix widget.
-
- tmatrix_add_row
-
- tmatrix_remove_row
-
-=cut
 
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
@@ -296,30 +232,6 @@ sub set_event_handler_screen {
     return;
 }
 
-=head2 setup_bindings_table
-
-Creates column bindings for table widgets created with
-C<Tk::TableMatrix> using the information from the I<tablebindings>
-section of the screen configuration.
-
-First it creates a dispatch table:
-
- my $dispatch = {
-     colsub1 => \&lookup,
-     colsub4 => \&method,
- };
-
-Then creates a class binding for I<method_for> subroutine to override
-the default return binding.  I<method_for> than uses the dispatch
-table to execute the appropriate function when the return key is
-pressed inside a cell.
-
-There are two functions defined, I<lookup> and I<method>.  The first
-activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
-key translations from a database table and fill the configured cells
-with the results.  The second can call a method in the current screen.
-
-=cut
 
 sub setup_bindings_table {
     my $self = shift;
@@ -389,11 +301,6 @@ sub setup_bindings_table {
     return;
 }
 
-=head2 about
-
-About application dialog.
-
-=cut
 
 sub about {
     my $self = shift;
@@ -478,12 +385,6 @@ sub about {
     $dbox->Show();
 }
 
-=head2 guide
-
-Quick help dialog. On Windows start the default application that
-handles L<.chm> files.
-
-=cut
 
 sub guide {
     my ($self, $guide_chm) = @_;
@@ -516,11 +417,6 @@ sub guide {
     return;
 }
 
-=head2 repman
-
-Report Manager application dialog.
-
-=cut
 
 sub repman {
     my $self = shift;
@@ -535,11 +431,6 @@ sub repman {
     return;
 }
 
-=head2 ttgen
-
-Generate documents dialog.
-
-=cut
 
 sub ttgen {
     my $self = shift;
@@ -554,17 +445,6 @@ sub ttgen {
     return;
 }
 
-=head2 tmshr_fill_table
-
-Fill Table Matrix widget for I<report> style screens.
-
-The field with the attribute 'datasource == !count!' is used to number
-the rows and also as an index to the I<expand data>.
-
-Builds a tree with the C<Tpda::Tree> module, a subclass of
-C<Tree::DAG_Node>.
-
-=cut
 
 sub tmshr_fill_table {
     my $self = shift;
@@ -636,13 +516,6 @@ sub tmshr_fill_table {
     return;
 }
 
-=head2 tmshr_process_level
-
-For each record of the upper level (meta) data, make new daughter
-nodes in the tree. The node names are created from the tables primary
-column name and the I<rowcount> column value.
-
-=cut
 
 sub tmshr_process_level {
     my ($self, $level, $uplevelds, $metadata, $countcol, $header, $tree) = @_;
@@ -673,11 +546,6 @@ sub tmshr_process_level {
     return $newleveldata;
 }
 
-=head2 tmshr_format_record
-
-TMSHR format record.
-
-=cut
 
 sub tmshr_format_record {
     my ($self, $level, $rec, $header) = @_;
@@ -692,11 +560,6 @@ sub tmshr_format_record {
     return $rec;
 }
 
-=head2 tmshr_compute_value
-
-TODO
-
-=cut
 
 sub tmshr_compute_value {
     my ($self, $field, $record, $attribs) = @_;
@@ -748,19 +611,6 @@ sub tmshr_compute_value {
     return $value;
 }
 
-=head2 tmshr_get_function
-
-Make a reusable anonymous function to compute a field's value, using
-the definition from the screen configuration and the Math::Symbolic
-module.
-
-It's intended use is for simple functions, like in this example:
-
-  datasource => '=quantityordered*priceeach'
-
-Supported operations: arithmetic (-+/*).
-
-=cut
 
 sub tmshr_get_function {
     my ($self, $field, $funcdef) = @_;
@@ -788,11 +638,6 @@ sub tmshr_get_function {
     return $self->{$field};
 }
 
-=head2 tmshr_check_varnames
-
-Check if arguments variable names match field names.
-
-=cut
 
 sub tmshr_check_varnames {
     my ( $self, $vars ) = @_;
@@ -811,12 +656,6 @@ sub tmshr_check_varnames {
     return $check;
 }
 
-=head2 set_mnemonic
-
-Dialog to set the default mnemonic - application configuration to be
-used when none is specified.
-
-=cut
 
 sub set_mnemonic {
     my $self = shift;
@@ -828,11 +667,6 @@ sub set_mnemonic {
     return;
 }
 
-=head2 set_app_configs
-
-Dialog to set runtime configurations for Tpda3.
-
-=cut
 
 sub set_app_configs {
     my $self = shift;
@@ -844,11 +678,6 @@ sub set_app_configs {
     return;
 }
 
-=head2 message_dialog
-
-Show a Tpda3::Tk::Dialog::Message dialog instance.
-
-=cut
 
 sub message_dialog {
     my ($self, $message, $details, $icon, $type) = @_;
@@ -857,11 +686,6 @@ sub message_dialog {
     return;
 }
 
-=head2 message_tiler
-
-Show aTpda3::Tk::Dialog::Tiler dialog instance.
-
-=cut
 
 sub message_tiler {
     my ($self, $message, $record) = @_;
@@ -871,3 +695,158 @@ sub message_tiler {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Controller;
+
+    my $controller = Tpda3::Tk::Controller->new();
+
+    $controller->start();
+
+=head2 new
+
+Constructor method.
+
+=head2 start_delay
+
+Show message, delay the database connection.
+
+=head2 _init
+
+Init App.
+
+=head2 dialog_login
+
+Login dialog.
+
+=head2 screen_module_class
+
+Return screen module class and file name.
+
+=head2 _set_event_handlers_keys
+
+Setup event handlers for the interface.
+
+=head2 _set_event_handler_nb
+
+Separate event handler for NoteBook because must be initialized only
+after the NoteBook is (re)created and that happens when a new screen is
+required (selected from the applications menu) to load.
+
+Known limitation: Doesn't ask to save the record when the user changes
+from the I<Detail> page to the I<Record> page.
+
+Note: Tried to emulate L<on_page_leave>using I<raisecmd> but without
+success, for (now) obvious reasons.
+
+=head2 set_event_handler_screen
+
+Setup event handlers for the toolbar buttons configured in the
+C<scrtoolbar> section of the current screen configuration.
+
+Default usage is for the I<add> and I<delete> buttons attached to the
+TableMatrix widget.
+
+ tmatrix_add_row
+
+ tmatrix_remove_row
+
+=head2 setup_bindings_table
+
+Creates column bindings for table widgets created with
+C<Tk::TableMatrix> using the information from the I<tablebindings>
+section of the screen configuration.
+
+First it creates a dispatch table:
+
+ my $dispatch = {
+     colsub1 => \&lookup,
+     colsub4 => \&method,
+ };
+
+Then creates a class binding for I<method_for> subroutine to override
+the default return binding.  I<method_for> than uses the dispatch
+table to execute the appropriate function when the return key is
+pressed inside a cell.
+
+There are two functions defined, I<lookup> and I<method>.  The first
+activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
+key translations from a database table and fill the configured cells
+with the results.  The second can call a method in the current screen.
+
+=head2 about
+
+About application dialog.
+
+=head2 guide
+
+Quick help dialog. On Windows start the default application that
+handles L<.chm> files.
+
+=head2 repman
+
+Report Manager application dialog.
+
+=head2 ttgen
+
+Generate documents dialog.
+
+=head2 tmshr_fill_table
+
+Fill Table Matrix widget for I<report> style screens.
+
+The field with the attribute 'datasource == !count!' is used to number
+the rows and also as an index to the I<expand data>.
+
+Builds a tree with the C<Tpda::Tree> module, a subclass of
+C<Tree::DAG_Node>.
+
+=head2 tmshr_process_level
+
+For each record of the upper level (meta) data, make new daughter
+nodes in the tree. The node names are created from the tables primary
+column name and the I<rowcount> column value.
+
+=head2 tmshr_format_record
+
+TMSHR format record.
+
+=head2 tmshr_compute_value
+
+TODO
+
+=head2 tmshr_get_function
+
+Make a reusable anonymous function to compute a field's value, using
+the definition from the screen configuration and the Math::Symbolic
+module.
+
+It's intended use is for simple functions, like in this example:
+
+  datasource => '=quantityordered*priceeach'
+
+Supported operations: arithmetic (-+/*).
+
+=head2 tmshr_check_varnames
+
+Check if arguments variable names match field names.
+
+=head2 set_mnemonic
+
+Dialog to set the default mnemonic - application configuration to be
+used when none is specified.
+
+=head2 set_app_configs
+
+Dialog to set runtime configurations for Tpda3.
+
+=head2 message_dialog
+
+Show a Tpda3::Tk::Dialog::Message dialog instance.
+
+=head2 message_tiler
+
+Show aTpda3::Tk::Dialog::Tiler dialog instance.
+
+=cut

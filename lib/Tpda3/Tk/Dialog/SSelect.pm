@@ -15,19 +15,6 @@ use Tpda3::Utils;
 
 use base q{Tpda3::Tk::Screen};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::SSelect;
-
-    my $fd = Tpda3::Tk::Dialog::SSelect->new;
-
-    $fd->search($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -35,11 +22,6 @@ sub new {
     return bless( {}, $class );
 }
 
-=head2 select_dialog
-
-Define and show select dialog.
-
-=cut
 
 sub select_dialog {
     my ( $self, $view, $para, $filter ) = @_;
@@ -206,3 +188,21 @@ sub select_dialog {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::SSelect;
+
+    my $fd = Tpda3::Tk::Dialog::SSelect->new;
+
+    $fd->search($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 select_dialog
+
+Define and show select dialog.
+
+=cut

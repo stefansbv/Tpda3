@@ -24,19 +24,6 @@ require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::TTGen;
-
-    my $fd = Tpda3::Tk::Dialog::TTGen->new;
-
-    $fd->search($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -54,88 +41,48 @@ sub new {
     return $self;
 }
 
-=head2 dbc
-
-Return the connection object handler.
-
-=cut
 
 sub dbc {
     my $self = shift;
     return $self->{_db}->dbc;
 }
 
-=head2 dbh
-
-Return the database object handler.
-
-=cut
 
 sub dbh {
     my $self = shift;
     return $self->{_db}->dbh;
 }
 
-=head2 _cfg
-
-Return configuration instance object.
-
-=cut
 
 sub _cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 _log
-
-Return the log object.
-
-=cut
 
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
 
-=head2 scrcfg
-
-Return the screen configuration object.
-
-=cut
 
 sub scrcfg {
     my $self = shift;
     return $self->{scrcfg};
 }
 
-=head2 model
-
-Return the model object.
-
-=cut
 
 sub model {
     my $self = shift;
     return $self->{model};
 }
 
-=head2 view
-
-Return the view object.
-
-=cut
 
 sub view {
     my $self = shift;
     return $self->{view};
 }
 
-=head2 run_screen
-
-Define and show search dialog.
-
-=cut
 
 sub run_screen {
     my ( $self, $view ) = @_;
@@ -447,11 +394,6 @@ sub run_screen {
     return;
 }
 
-=head2 select_idx
-
-Select the index and load its details.
-
-=cut
 
 sub select_idx {
     my ($self, $sel) = @_;
@@ -461,11 +403,6 @@ sub select_idx {
     return;
 }
 
-=head2 dlg_exit
-
-Quit Dialog.
-
-=cut
 
 sub dlg_exit {
     my $self = shift;
@@ -473,11 +410,6 @@ sub dlg_exit {
     return;
 }
 
-=head2 load_template_list
-
-Load template list from the L<templates> table.
-
-=cut
 
 sub load_template_list {
     my ($self, $sc) = @_;
@@ -510,12 +442,6 @@ sub load_template_list {
     return;
 }
 
-=head2 load_tt_details
-
-On selected template, load the configuration details from the
-L<templates_var> table.
-
-=cut
 
 sub load_tt_details {
     my $self = shift;
@@ -559,11 +485,6 @@ sub load_tt_details {
     return;
 }
 
-=head2 batch_generate_doc
-
-Generate the documents in the ID range provided by the user.
-
-=cut
 
 sub batch_generate_doc {
     my $self = shift;
@@ -634,3 +555,70 @@ sub batch_generate_doc {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::TTGen;
+
+    my $fd = Tpda3::Tk::Dialog::TTGen->new;
+
+    $fd->search($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 dbc
+
+Return the connection object handler.
+
+=head2 dbh
+
+Return the database object handler.
+
+=head2 _cfg
+
+Return configuration instance object.
+
+=head2 _log
+
+Return the log object.
+
+=head2 scrcfg
+
+Return the screen configuration object.
+
+=head2 model
+
+Return the model object.
+
+=head2 view
+
+Return the view object.
+
+=head2 run_screen
+
+Define and show search dialog.
+
+=head2 select_idx
+
+Select the index and load its details.
+
+=head2 dlg_exit
+
+Quit Dialog.
+
+=head2 load_template_list
+
+Load template list from the L<templates> table.
+
+=head2 load_tt_details
+
+On selected template, load the configuration details from the
+L<templates_var> table.
+
+=head2 batch_generate_doc
+
+Generate the documents in the ID range provided by the user.
+
+=cut

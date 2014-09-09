@@ -13,19 +13,6 @@ use Tk::MListbox;
 use Tk::StatusBar;
 use Tk::JComboBox;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::Search;
-
-    my $fd = Tpda3::Tk::Dialog::Search->new;
-
-    $fd->search($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $opts) = @_;
@@ -37,11 +24,6 @@ sub new {
     return $self;
 }
 
-=head2 search_dialog
-
-Define and show search dialog.
-
-=cut
 
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
@@ -316,11 +298,6 @@ sub search_dialog {
     }
 }
 
-=head2 search_command
-
-Lookup in dictionary and display result in list box.
-
-=cut
 
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
@@ -368,11 +345,6 @@ sub search_command {
     return;
 }
 
-=head2 refresh_message
-
-Refresh the message on the screen.
-
-=cut
 
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
@@ -383,11 +355,6 @@ sub refresh_message {
     return;
 }
 
-=head2 refresh_filter_message
-
-Refresh the filter message on the screen
-
-=cut
 
 sub refresh_filter_message {
     my ( $self, $text, $color ) = @_;
@@ -399,3 +366,33 @@ sub refresh_filter_message {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::Search;
+
+    my $fd = Tpda3::Tk::Dialog::Search->new;
+
+    $fd->search($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 search_dialog
+
+Define and show search dialog.
+
+=head2 search_command
+
+Lookup in dictionary and display result in list box.
+
+=head2 refresh_message
+
+Refresh the message on the screen.
+
+=head2 refresh_filter_message
+
+Refresh the filter message on the screen
+
+=cut

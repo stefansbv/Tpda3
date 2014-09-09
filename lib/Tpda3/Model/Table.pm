@@ -7,22 +7,6 @@ use Mouse::Util::TypeConstraints;
 
 require Tpda3::Model::Table::Record;
 
-=head1 SYNOPSIS
-
-    my $table  = Tpda3::Model::Table->new(
-        keys   => [ 'key_field1', 'key_field2' ],
-        table  => 'table_name',
-        view   => 'view_name',
-    );
-
-    # Elsewhere
-    my $table_name = $table->table;
-
-    my $table_view = $table->view;
-
-    $table->update_key_field( 'key_field1', 101 );
-
-=cut
 
 subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
 
@@ -60,11 +44,6 @@ has '_keys' => (
     },
 );
 
-=head2 find_index_for
-
-Return index for L<name>.
-
-=cut
 
 sub find_index_for {
     my ($self, $name) = @_;
@@ -75,11 +54,6 @@ sub find_index_for {
     return $key;
 }
 
-=head2 update_key_field
-
-Update the key field value.
-
-=cut
 
 sub update_key_field {
     my ($self, $name, $new_value) = @_;
@@ -90,11 +64,6 @@ sub update_key_field {
     return $new_value;
 }
 
-=head2 update_key_index
-
-Update the key when we know the index.
-
-=cut
 
 sub update_key_index {
     my ( $self, $index, $new_value ) = @_;
@@ -109,3 +78,32 @@ sub update_key_index {
 __PACKAGE__->meta->make_immutable;
 
 no Mouse;
+
+=head1 SYNOPSIS
+
+    my $table  = Tpda3::Model::Table->new(
+        keys   => [ 'key_field1', 'key_field2' ],
+        table  => 'table_name',
+        view   => 'view_name',
+    );
+
+    # Elsewhere
+    my $table_name = $table->table;
+
+    my $table_view = $table->view;
+
+    $table->update_key_field( 'key_field1', 101 );
+
+=head2 find_index_for
+
+Return index for L<name>.
+
+=head2 update_key_field
+
+Update the key field value.
+
+=head2 update_key_index
+
+Update the key when we know the index.
+
+=cut

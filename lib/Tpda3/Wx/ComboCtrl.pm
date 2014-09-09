@@ -8,16 +8,6 @@ use warnings;
 use Wx qw (wxTE_PROCESS_ENTER);
 use base qw{Wx::ComboCtrl};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::ComboCtrl;
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;
@@ -36,7 +26,18 @@ sub new {
 
 1;
 
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::ComboCtrl;
+    ...
+
+=head2 new
+
+Constructor method.
+
 =head1 ACKNOWLEDGEMENTS
 
 Default paramaters handling inspired from Wx::Perl::ListView,
 Copyright (c) 2007 Mattia Barbon
+
+=cut

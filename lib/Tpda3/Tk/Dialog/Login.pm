@@ -11,19 +11,6 @@ use Tk;
 require Tpda3::Config;
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Tk::Dialog::Login;
-
-    my $fd = Tpda3::Tk::Dialog::Login->new;
-
-    $fd->login($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $type = shift;
@@ -35,11 +22,6 @@ sub new {
     return $self;
 }
 
-=head2 login
-
-Show dialog.
-
-=cut
 
 sub login {
     my ( $self, $mw, $message ) = @_;
@@ -153,3 +135,21 @@ sub login {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Tk::Dialog::Login;
+
+    my $fd = Tpda3::Tk::Dialog::Login->new;
+
+    $fd->login($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 login
+
+Show dialog.
+
+=cut

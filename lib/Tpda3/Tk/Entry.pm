@@ -10,17 +10,6 @@ use base qw(Tk::Entry);
 
 Construct Tk::Widget 'MEntry';
 
-=head1 SYNOPSIS
-
-Create new binding for the L<< <KeyRelease> >> event type.
-
-    use Tpda3::Tk::Entry;
-
-    my $entry = Entry->new();
-
-=head2 ClassInit
-
-=cut
 
 sub ClassInit {
     my ( $class, $mw ) = @_;
@@ -33,3 +22,13 @@ sub ClassInit {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+Create new binding for the L<< <KeyRelease> >> event type.
+
+    use Tpda3::Tk::Entry;
+
+    my $entry = Entry->new();
+
+=cut

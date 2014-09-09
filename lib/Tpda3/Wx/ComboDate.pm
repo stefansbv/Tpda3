@@ -9,16 +9,6 @@ use Wx qw{wxTE_PROCESS_ENTER};
 use Tpda3::Wx::DatePopup;
 use base qw{Tpda3::Wx::ComboCtrl};
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::ComboDate;
-    ...
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;

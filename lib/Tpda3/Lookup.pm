@@ -6,15 +6,6 @@ use strict;
 use warnings;
 use utf8;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Lookup;
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($type, $opts) = @_;
@@ -43,11 +34,6 @@ sub new {
     return $self;
 }
 
-=head2 lookup
-
-Show dialog and return selected record.
-
-=cut
 
 sub lookup {
     my ( $self, $view, $para, $filter ) = @_;

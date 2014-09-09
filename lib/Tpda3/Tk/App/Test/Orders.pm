@@ -11,19 +11,6 @@ use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Tk::TM;
 
-=head1 SYNOPSIS
-
-    require Tpda3::App::Test::Orders;
-
-    my $scr = Tpda3::App::Test::Orders->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout.
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -371,11 +358,6 @@ sub run_screen {
     return;
 }
 
-=head2 calculate_order_line
-
-Calculate order line.
-
-=cut
 
 sub calculate_order_line {
     my ( $self, $row ) = @_;
@@ -413,11 +395,6 @@ sub calculate_order_line {
     return;
 }
 
-=head2 calculate_order
-
-Calculate order values.
-
-=cut
 
 sub calculate_order {
     my ( $self, $xt ) = @_;
@@ -460,11 +437,6 @@ sub calculate_order {
     return;
 }
 
-=head2 on_load_record
-
-On load record event.
-
-=cut
 
 sub on_load_record {
     my $self = shift;
@@ -472,22 +444,12 @@ sub on_load_record {
     return;
 }
 
-=head2 on_mode_add
-
-On mode add event.
-
-=cut
 
 sub on_mode_add {
     my $self = shift;
     return;
 }
 
-=head2 on_mode_edit
-
-On mode edit event.
-
-=cut
 
 sub on_mode_edit {
     my $self = shift;
@@ -495,11 +457,6 @@ sub on_mode_edit {
     return;
 }
 
-=head2 on_mode_idle
-
-On mode idle event.
-
-=cut
 
 sub on_mode_idle {
     my $self = shift;
@@ -508,3 +465,41 @@ sub on_mode_idle {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::App::Test::Orders;
+
+    my $scr = Tpda3::App::Test::Orders->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout.
+
+=head2 calculate_order_line
+
+Calculate order line.
+
+=head2 calculate_order
+
+Calculate order values.
+
+=head2 on_load_record
+
+On load record event.
+
+=head2 on_mode_add
+
+On mode add event.
+
+=head2 on_mode_edit
+
+On mode edit event.
+
+=head2 on_mode_idle
+
+On mode idle event.
+
+=cut

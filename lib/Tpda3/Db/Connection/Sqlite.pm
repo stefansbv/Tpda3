@@ -14,19 +14,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Db::Connection::Sqlite;
-
-    my $db = Tpda3::Db::Connection::Sqlite->new();
-
-    $db->db_connect($connection);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $model) = @_;
@@ -40,11 +27,6 @@ sub new {
     return $self;
 }
 
-=head2 db_connect
-
-Connect to database
-
-=cut
 
 sub db_connect {
     my ( $self, $conf ) = @_;
@@ -78,11 +60,6 @@ sub db_connect {
     return $self->{_dbh};
 }
 
-=head2 handle_error
-
-Log errors.
-
-=cut
 
 sub handle_error {
     my $self = shift;
@@ -105,11 +82,6 @@ sub handle_error {
     return;
 }
 
-=head2 parse_error
-
-Parse a database error message, and translate it for the user.
-
-=cut
 
 sub parse_error {
     my ($self, $si) = @_;
@@ -151,11 +123,6 @@ sub parse_error {
     return $message;
 }
 
-=head2 table_info_short
-
-Table info 'short'.
-
-=cut
 
 sub table_info_short {
     my ( $self, $table ) = @_;
@@ -199,11 +166,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-=head2 table_exists
-
-Check if table exists in the database.
-
-=cut
 
 sub table_exists {
     my ( $self, $table ) = @_;
@@ -231,11 +193,6 @@ sub table_exists {
     return $val_ret;
 }
 
-=head2 table_keys
-
-Get the primary key field names of the table.
-
-=cut
 
 sub table_keys {
     my ( $self, $table ) = @_;
@@ -245,11 +202,6 @@ sub table_keys {
     return \@names;
 }
 
-=head2 table_list
-
-Return list of tables from the database.
-
-=cut
 
 sub table_list {
     my $self = shift;
@@ -273,16 +225,60 @@ sub table_list {
     return $table_list;
 }
 
-=head2 get_testdb_filename
-
-Returns the full path to the test database file.
-
-=cut
 
 sub get_testdb_filename {
     my $dbname = shift;
     return catfile(File::HomeDir->my_data, "$dbname.db");
 }
+
+
+sub has_feature_returning { 0 }
+
+1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Db::Connection::Sqlite;
+
+    my $db = Tpda3::Db::Connection::Sqlite->new();
+
+    $db->db_connect($connection);
+
+=head2 new
+
+Constructor method.
+
+=head2 db_connect
+
+Connect to database
+
+=head2 handle_error
+
+Log errors.
+
+=head2 parse_error
+
+Parse a database error message, and translate it for the user.
+
+=head2 table_info_short
+
+Table info 'short'.
+
+=head2 table_exists
+
+Check if table exists in the database.
+
+=head2 table_keys
+
+Get the primary key field names of the table.
+
+=head2 table_list
+
+Return list of tables from the database.
+
+=head2 get_testdb_filename
+
+Returns the full path to the test database file.
 
 =head2 has_feature_returning
 
@@ -290,7 +286,3 @@ Returns no for SQlite, meaning that is has not the INSERT... RETURNING
 feature.
 
 =cut
-
-sub has_feature_returning { 0 }
-
-1;

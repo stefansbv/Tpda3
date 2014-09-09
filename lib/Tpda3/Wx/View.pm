@@ -25,22 +25,6 @@ require Tpda3::Utils;
 require Tpda3::Wx::Notebook;
 require Tpda3::Wx::ToolBar;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::View;
-
-    $self->{_view} = Tpda3::Wx::View->new(
-        $model, undef, -1, 'Tpda3::wxPerl',
-        [ -1, -1 ],
-        [ -1, -1 ],
-        wxDEFAULT_FRAME_STYLE,
-    );
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -82,11 +66,6 @@ sub new {
     return $self;
 }
 
-=head2 model
-
-Return model instance
-
-=cut
 
 sub model {
     my $self = shift;
@@ -94,11 +73,6 @@ sub model {
     $self->{_model};
 }
 
-=head2 cfg
-
-Return config instance variable
-
-=cut
 
 sub cfg {
     my $self = shift;
@@ -106,11 +80,6 @@ sub cfg {
     return $self->{_cfg};
 }
 
-=head2 _set_model_callbacks
-
-Define the model callbacks.
-
-=cut
 
 sub _set_model_callbacks {
     my $self = shift;
@@ -132,11 +101,6 @@ sub _set_model_callbacks {
     return;
 }
 
-=head2 title
-
-Set window title.
-
-=cut
 
 sub title {
     my ($self, $string) = @_;
@@ -146,13 +110,6 @@ sub title {
     return;
 }
 
-=head2 update_gui_components
-
-When the application status (mode) changes, update gui components.
-Screen controls (widgets) are not handled here, but in controller
-module.
-
-=cut
 
 sub update_gui_components {
     my $self = shift;
@@ -181,12 +138,6 @@ SWITCH: {
     return;
 }
 
-=head2 _create_menu
-
-Create the menubar and the menus. Menus are defined in configuration
-files.
-
-=cut
 
 sub _create_menu {
     my $self = shift;
@@ -204,13 +155,6 @@ sub _create_menu {
     return;
 }
 
-=head2 get_menubar_merged_labels
-
-Merge separate labels from the menu config so we can translate them.
-
-TODO: Maybe get rid of menubar.yml and make a data module...
-
-=cut
 
 sub get_menubar_merged_labels {
     my $self = shift;
@@ -250,12 +194,6 @@ sub get_menubar_merged_labels {
     return merge( $menucfg, $labels );
 }
 
-=head2 _create_app_menu
-
-Insert application menu. The menubars are inserted after the first
-item of the default menu.
-
-=cut
 
 sub _create_app_menu {
     my $self = shift;
@@ -266,11 +204,6 @@ sub _create_app_menu {
     return;
 }
 
-=head2 make_menus
-
-Make menus.
-
-=cut
 
 sub make_menus {
     my ( $self, $attribs, $position ) = @_;
@@ -309,13 +242,6 @@ sub make_menus {
     return;
 }
 
-=head2 get_app_menus_list
-
-Get application menus list, needed for binding the command to load the
-screen.  We only need the name of the popup which is also the name of
-the screen (and also the name of the module).
-
-=cut
 
 sub get_app_menus_list {
     my $self = shift;
@@ -335,11 +261,6 @@ sub get_app_menus_list {
     return \@menulist;
 }
 
-=head2 make_popup_item
-
-Make popup item
-
-=cut
 
 sub make_popup_item {
     my ( $self, $menu, $item, $id ) = @_;
@@ -367,11 +288,6 @@ sub make_popup_item {
     return;
 }
 
-=head2 get_menu_popup_item
-
-Return a menu popup by name
-
-=cut
 
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
@@ -379,11 +295,6 @@ sub get_menu_popup_item {
     return $self->{$name};
 }
 
-=head2 get_menubar
-
-Return the menu bar handler
-
-=cut
 
 sub get_menubar {
     my $self = shift;
@@ -402,11 +313,6 @@ sub set_menu_state {
     return;
 }
 
-=head2 _create_toolbar
-
-Create toolbar
-
-=cut
 
 sub _create_toolbar {
     my $self = shift;
@@ -427,11 +333,6 @@ sub _create_toolbar {
     return;
 }
 
-=head2 toolbar_names
-
-Get Toolbar names as array reference from config.
-
-=cut
 
 sub toolbar_names {
     my $self = shift;
@@ -446,14 +347,6 @@ sub toolbar_names {
     return ( $toolbars, $attribs );
 }
 
-=head2 get_toolbar_merged_labels
-
-Merge separate labels from the toolbar config so we can translate
-them.
-
-TODO: Maybe get rid of toolbar.yml and make a data module...
-
-=cut
 
 sub get_toolbar_merged_labels {
     my $self = shift;
@@ -518,13 +411,6 @@ sub get_toolbar_merged_labels {
     return merge($toolcfg, $labels);
 }
 
-=head2 enable_tool
-
-Enable|disable tool bar button.
-
-State can come as 0|1 and normal|disabled.
-
-=cut
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -534,12 +420,6 @@ sub enable_tool {
     return;
 }
 
-=head2 create_statusbar
-
-Create a statusbar with 3 fields.  The first field have a fixed width,
-the rest have variable widths.
-
-=cut
 
 sub _create_statusbar {
     my $self = shift;
@@ -554,11 +434,6 @@ sub _create_statusbar {
     return;
 }
 
-=head2 get_statusbar
-
-Return the statusbar handler.
-
-=cut
 
 sub get_statusbar {
     my $self = shift;
@@ -566,11 +441,6 @@ sub get_statusbar {
     return $self->{_sb};
 }
 
-=head2 dialog_confirm
-
-Confirmation dialog.
-
-=cut
 
 sub dialog_confirm {
     my ( $self, $message, $details ) = @_;
@@ -597,11 +467,6 @@ sub dialog_confirm {
     }
 }
 
-=head2 dialog_info
-
-Informations message dialog.
-
-=cut
 
 sub dialog_info {
     my ( $self, $message, $details ) = @_;
@@ -612,11 +477,6 @@ sub dialog_info {
     return;
 }
 
-=head2 dialog_error
-
-Error message dialog.
-
-=cut
 
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
@@ -627,15 +487,6 @@ sub dialog_error {
     return;
 }
 
-=head2 create_notebook
-
-Create the NoteBook and the 3 panes.  The pane first named 'rec'
-contains widgets mostly of the type Entry, mapped to the fields of a
-table.  The second pane contains a MListbox widget and is used for
-listing the search results.  The third pane is for records from a
-dependent table.
-
-=cut
 
 sub create_notebook {
     my $self = shift;
@@ -709,11 +560,6 @@ sub get_nb_previous_page {
     return $nb->{nb_prev};
 }
 
-=head2 get_notebook
-
-Return the notebook handler. Duplicate method.
-
-=cut
 
 sub get_notebook {
     my ( $self, $page ) = @_;
@@ -726,11 +572,6 @@ sub get_notebook {
     }
 }
 
-=head2 destroy_notebook
-
-Destroy existing window, before the creation of an other.
-
-=cut
 
 sub destroy_notebook {
     my $self = shift;
@@ -740,11 +581,6 @@ sub destroy_notebook {
     return;
 }
 
-=head2 get_toolbar_btn
-
-Return a toolbar button by name.
-
-=cut
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
@@ -752,11 +588,6 @@ sub get_toolbar_btn {
     return $self->{_tb}->get_toolbar_btn($name);
 }
 
-=head2 get_toolbar
-
-Return the toolbar handler.
-
-=cut
 
 sub get_toolbar {
     my $self = shift;
@@ -764,11 +595,6 @@ sub get_toolbar {
     return $self->{_tb};
 }
 
-=head2 get_recordlist
-
-Return list control handler.
-
-=cut
 
 sub get_recordlist {
     my $self = shift;
@@ -776,11 +602,6 @@ sub get_recordlist {
     return $self->{_rc};
 }
 
-=head2 get_control_by_name
-
-Return the control instance by name.
-
-=cut
 
 sub get_control_by_name {
     my ( $self, $name ) = @_;
@@ -788,11 +609,6 @@ sub get_control_by_name {
     return $self->{$name},;
 }
 
-=head2 log_config_options
-
-Log configuration options with data from the Config module.
-
-=cut
 
 sub log_config_options {
     my $self = shift;
@@ -806,13 +622,6 @@ sub log_config_options {
     }
 }
 
-=head2 set_status
-
-Set status message.
-
-Color is ignored for wxPerl.
-
-=cut
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
@@ -845,11 +654,6 @@ sub set_status {
     return;
 }
 
-=head2 log_msg
-
-Log messages
-
-=cut
 
 sub log_msg {
     my ( $self, $msg ) = @_;
@@ -900,11 +704,6 @@ sub log_msg {
 #     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 # }
 
-=head2 toggle_status_cn
-
-Toggle the icon in the status bar
-
-=cut
 
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
@@ -920,11 +719,6 @@ sub toggle_status_cn {
     return;
 }
 
-=head2 make_list_header
-
-Make header for list
-
-=cut
 
 sub make_list_header {
     my ( $self, $header_look, $header_cols, $fields ) = @_;
@@ -959,13 +753,6 @@ sub make_list_header {
     return;
 }
 
-=head2 header_width
-
-Width config is in chars. Use CharWidth to compute the with in pixels.
-
-  pixels_with = chars_number x char_width
-
-=cut
 
 sub header_width {
     my ( $self, $field ) = @_;
@@ -983,11 +770,6 @@ sub header_width {
     return $field_attr;
 }
 
-=head2 list_header
-
-Make header for the list in the List tab.
-
-=cut
 
 sub list_header {
     my ( $self, $col, $colcnt ) = @_;
@@ -1011,11 +793,6 @@ sub list_header {
     return;
 }
 
-=head2 get_list_text_col
-
-Return text item from list control row and col
-
-=cut
 
 sub get_list_text_col {
     my ( $self, $row, $col ) = @_;
@@ -1023,11 +800,6 @@ sub get_list_text_col {
     return $self->get_recordlist->GetItemText( $row, $col );
 }
 
-=head2 get_list_text_row
-
-Get entire row text from a list control as array ref.
-
-=cut
 
 sub get_list_text_row {
     my ( $self, $row ) = @_;
@@ -1042,33 +814,18 @@ sub get_list_text_row {
     return \@row_text;
 }
 
-=head2 set_list_text
-
-Set text item from list control row and col
-
-=cut
 
 sub set_list_text {
     my ( $self, $row, $col, $text ) = @_;
     $self->get_recordlist->SetItemText( $row, $col, $text );
 }
 
-=head2 set_list_data
-
-Set item data from list control
-
-=cut
 
 sub set_list_data {
     my ( $self, $item, $data_href ) = @_;
     $self->get_recordlist->SetItemData( $item, $data_href );
 }
 
-=head2 get_list_data
-
-Return item data from list control
-
-=cut
 
 sub get_list_data {
     my ( $self, $item ) = @_;
@@ -1076,11 +833,6 @@ sub get_list_data {
     return $self->get_recordlist->GetItemData($item);
 }
 
-=head2 list_item_select_first
-
-Select the first item in list
-
-=cut
 
 sub list_item_select_first {
     my $self = shift;
@@ -1092,11 +844,6 @@ sub list_item_select_first {
     }
 }
 
-=head2 list_item_select_last
-
-Select the last item in list
-
-=cut
 
 sub list_item_select_last {
     my $self = shift;
@@ -1110,11 +857,6 @@ sub list_item_select_last {
     return;
 }
 
-=head2 get_list_max_index
-
-Return the max index from the list control
-
-=cut
 
 sub get_list_max_index {
     my $self = shift;
@@ -1122,11 +864,6 @@ sub get_list_max_index {
     return $self->get_recordlist->GetItemCount();
 }
 
-=head2 get_list_selected_index
-
-Return the selected index from the list control
-
-=cut
 
 sub get_list_selected_index {
     my $self = shift;
@@ -1151,33 +888,18 @@ sub get_list_selected_index {
 #     $self->set_list_data($indice, $file );
 # }
 
-=head2 list_string_item_insert
-
-Insert string item in list control
-
-=cut
 
 sub list_string_item_insert {
     my ( $self, $indice ) = @_;
     $self->get_recordlist->InsertStringItem( $indice, 'dummy' );
 }
 
-=head2 list_item_clear
-
-Delete list control item
-
-=cut
 
 sub list_item_clear {
     my ( $self, $item ) = @_;
     $self->get_recordlist->DeleteItem($item);
 }
 
-=head2 list_item_clear_all
-
-Delete all list control items
-
-=cut
 
 sub list_item_clear_all {
     my $self = shift;
@@ -1185,14 +907,6 @@ sub list_item_clear_all {
     $self->get_recordlist->DeleteAllItems;
 }
 
-=head2 list_remove_selected
-
-Remove the selected row from the list.
-
-First it compares the Pk and the Fk values from the screen, with the
-selected row contents in the list.
-
-=cut
 
 sub list_remove_selected {
     my ( $self, $pk_val, $fk_val ) = @_;
@@ -1228,11 +942,6 @@ sub list_remove_selected {
     return;
 }
 
-=head2 list_remove_item
-
-Remove item from list control and select the first item
-
-=cut
 
 sub list_remove_item {
     my $self = shift;
@@ -1249,11 +958,6 @@ sub list_remove_item {
     return $file;
 }
 
-=head2 list_init
-
-Delete the rows of the list.
-
-=cut
 
 sub list_init {
     my $self = shift;
@@ -1263,11 +967,6 @@ sub list_init {
     return;
 }
 
-=head2 list_populate
-
-Polulate list with data from query result.
-
-=cut
 
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
@@ -1311,11 +1010,6 @@ sub list_populate {
     return $record_count;
 }
 
-=head2 has_list_records
-
-Return number of records from list.
-
-=cut
 
 sub has_list_records {
     my $self = shift;
@@ -1337,11 +1031,6 @@ sub has_list_records {
     return $row_count;
 }
 
-=head2 list_read_selected
-
-Read and return selected row (column 0) from list
-
-=cut
 
 sub list_read_selected {
     my $self = shift;
@@ -1376,11 +1065,6 @@ sub list_read_selected {
     return \%selected;
 }
 
-=head2 list_raise
-
-Raise I<List> tab and set focus to list.
-
-=cut
 
 sub list_raise {
     my $self = shift;
@@ -1391,11 +1075,6 @@ sub list_raise {
     return;
 }
 
-=head2 on_list_item_activated
-
-Enter on list item activates record page.
-
-=cut
 
 sub on_list_item_activated {
     my ($self, $callback) = @_;
@@ -1407,11 +1086,6 @@ sub on_list_item_activated {
     return;
 }
 
-=head2 get_listcontrol
-
-Return list control handler.
-
-=cut
 
 sub get_listcontrol {
     my $self = shift;
@@ -1429,11 +1103,6 @@ sub on_notebook_page_changed {
     return;
 }
 
-=head2 get_geometry
-
-Return window geometry.
-
-=cut
 
 sub get_geometry {
     my $self = shift;
@@ -1456,11 +1125,6 @@ sub get_geometry {
     return $geom;
 }
 
-=head2 set_geometry
-
-Set window geometry
-
-=cut
 
 sub set_geometry {
     my ( $self, $geom ) = @_;
@@ -1472,11 +1136,6 @@ sub set_geometry {
     return;
 }
 
-=head2 on_close_window
-
-Destroy window on quit.
-
-=cut
 
 sub on_close_window {
     my $self = shift;
@@ -1518,11 +1177,6 @@ sub list_control_choices {
     return;
 }
 
-=head2 control_write_e
-
-Write to a Wx::TextCtrl widget.  If I<$value> not true, than only delete.
-
-=cut
 
 sub control_write_e {
     my ( $self, $field, $control_ref, $value ) = @_;
@@ -1540,11 +1194,6 @@ sub control_write_e {
     return;
 }
 
-=head2 control_write_t
-
-Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
-
-=cut
 
 sub control_write_t {
     my ( $self, $field ) = @_;
@@ -1554,11 +1203,6 @@ sub control_write_t {
     return;
 }
 
-=head2 control_write_d
-
-Write to a Wx::DatePickerCtrl widget.  If I<$value> not true, than clear.
-
-=cut
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $format ) = @_;
@@ -1587,11 +1231,6 @@ sub control_write_d {
     return;
 }
 
-=head2 control_write_m
-
-Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
-
-=cut
 
 sub control_write_m {
     my ( $self, $field, $control_ref, $value ) = @_;
@@ -1610,11 +1249,6 @@ sub control_write_m {
 
 #-- Read from controls
 
-=head2 control_read_e
-
-Read contents of a Wx::TextCtrl control.
-
-=cut
 
 sub control_read_e {
     my ( $self, $field, $control_ref ) = @_;
@@ -1629,11 +1263,6 @@ sub control_read_e {
     return $control->GetValue;
 }
 
-=head2 control_read_t
-
-Read contents of a Wx::Text control.
-
-=cut
 
 sub control_read_t {
     my ( $self, $field ) = @_;
@@ -1643,11 +1272,6 @@ sub control_read_t {
     return;
 }
 
-=head2 control_read_d
-
-Read contents of a Wx::DatePickerCtrl control.
-
-=cut
 
 sub control_read_d {
     my ( $self, $field, $control_ref ) = @_;
@@ -1668,11 +1292,6 @@ sub control_read_d {
     }
 }
 
-=head2 control_read_m
-
-Read contents of a Wx::ComboBox control.
-
-=cut
 
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
@@ -1687,11 +1306,6 @@ sub control_read_m {
     return $control->get_selected();
 }
 
-=head2 configure_controls
-
-Enable / disable controls and set background color.
-
-=cut
 
 sub configure_controls {
     my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
@@ -1711,11 +1325,6 @@ sub configure_controls {
     return;
 }
 
-=head2 nb_set_page_state
-
-TODO
-
-=cut
 
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
@@ -1723,11 +1332,6 @@ sub nb_set_page_state {
     return;
 }
 
-=head2 make_binding_entry
-
-Key is always ENTER.
-
-=cut
 
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;
@@ -1739,6 +1343,332 @@ sub make_binding_entry {
 
 1;
 
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::View;
+
+    $self->{_view} = Tpda3::Wx::View->new(
+        $model, undef, -1, 'Tpda3::wxPerl',
+        [ -1, -1 ],
+        [ -1, -1 ],
+        wxDEFAULT_FRAME_STYLE,
+    );
+
+=head2 new
+
+Constructor method.
+
+=head2 model
+
+Return model instance
+
+=head2 cfg
+
+Return config instance variable
+
+=head2 _set_model_callbacks
+
+Define the model callbacks.
+
+=head2 title
+
+Set window title.
+
+=head2 update_gui_components
+
+When the application status (mode) changes, update gui components.
+Screen controls (widgets) are not handled here, but in controller
+module.
+
+=head2 _create_menu
+
+Create the menubar and the menus. Menus are defined in configuration
+files.
+
+=head2 get_menubar_merged_labels
+
+Merge separate labels from the menu config so we can translate them.
+
+TODO: Maybe get rid of menubar.yml and make a data module...
+
+=head2 _create_app_menu
+
+Insert application menu. The menubars are inserted after the first
+item of the default menu.
+
+=head2 make_menus
+
+Make menus.
+
+=head2 get_app_menus_list
+
+Get application menus list, needed for binding the command to load the
+screen.  We only need the name of the popup which is also the name of
+the screen (and also the name of the module).
+
+=head2 make_popup_item
+
+Make popup item
+
+=head2 get_menu_popup_item
+
+Return a menu popup by name
+
+=head2 get_menubar
+
+Return the menu bar handler
+
+=head2 _create_toolbar
+
+Create toolbar
+
+=head2 toolbar_names
+
+Get Toolbar names as array reference from config.
+
+=head2 get_toolbar_merged_labels
+
+Merge separate labels from the toolbar config so we can translate
+them.
+
+TODO: Maybe get rid of toolbar.yml and make a data module...
+
+=head2 enable_tool
+
+Enable|disable tool bar button.
+
+State can come as 0|1 and normal|disabled.
+
+=head2 create_statusbar
+
+Create a statusbar with 3 fields.  The first field have a fixed width,
+the rest have variable widths.
+
+=head2 get_statusbar
+
+Return the statusbar handler.
+
+=head2 dialog_confirm
+
+Confirmation dialog.
+
+=head2 dialog_info
+
+Informations message dialog.
+
+=head2 dialog_error
+
+Error message dialog.
+
+=head2 create_notebook
+
+Create the NoteBook and the 3 panes.  The pane first named 'rec'
+contains widgets mostly of the type Entry, mapped to the fields of a
+table.  The second pane contains a MListbox widget and is used for
+listing the search results.  The third pane is for records from a
+dependent table.
+
+=head2 get_notebook
+
+Return the notebook handler. Duplicate method.
+
+=head2 destroy_notebook
+
+Destroy existing window, before the creation of an other.
+
+=head2 get_toolbar_btn
+
+Return a toolbar button by name.
+
+=head2 get_toolbar
+
+Return the toolbar handler.
+
+=head2 get_recordlist
+
+Return list control handler.
+
+=head2 get_control_by_name
+
+Return the control instance by name.
+
+=head2 log_config_options
+
+Log configuration options with data from the Config module.
+
+=head2 set_status
+
+Set status message.
+
+Color is ignored for wxPerl.
+
+=head2 log_msg
+
+Log messages
+
+=head2 toggle_status_cn
+
+Toggle the icon in the status bar
+
+=head2 make_list_header
+
+Make header for list
+
+=head2 header_width
+
+Width config is in chars. Use CharWidth to compute the with in pixels.
+
+  pixels_with = chars_number x char_width
+
+=head2 list_header
+
+Make header for the list in the List tab.
+
+=head2 get_list_text_col
+
+Return text item from list control row and col
+
+=head2 get_list_text_row
+
+Get entire row text from a list control as array ref.
+
+=head2 set_list_text
+
+Set text item from list control row and col
+
+=head2 set_list_data
+
+Set item data from list control
+
+=head2 get_list_data
+
+Return item data from list control
+
+=head2 list_item_select_first
+
+Select the first item in list
+
+=head2 list_item_select_last
+
+Select the last item in list
+
+=head2 get_list_max_index
+
+Return the max index from the list control
+
+=head2 get_list_selected_index
+
+Return the selected index from the list control
+
+=head2 list_string_item_insert
+
+Insert string item in list control
+
+=head2 list_item_clear
+
+Delete list control item
+
+=head2 list_item_clear_all
+
+Delete all list control items
+
+=head2 list_remove_selected
+
+Remove the selected row from the list.
+
+First it compares the Pk and the Fk values from the screen, with the
+selected row contents in the list.
+
+=head2 list_remove_item
+
+Remove item from list control and select the first item
+
+=head2 list_init
+
+Delete the rows of the list.
+
+=head2 list_populate
+
+Polulate list with data from query result.
+
+=head2 has_list_records
+
+Return number of records from list.
+
+=head2 list_read_selected
+
+Read and return selected row (column 0) from list
+
+=head2 list_raise
+
+Raise I<List> tab and set focus to list.
+
+=head2 on_list_item_activated
+
+Enter on list item activates record page.
+
+=head2 get_listcontrol
+
+Return list control handler.
+
+=head2 get_geometry
+
+Return window geometry.
+
+=head2 set_geometry
+
+Set window geometry
+
+=head2 on_close_window
+
+Destroy window on quit.
+
+=head2 control_write_e
+
+Write to a Wx::TextCtrl widget.  If I<$value> not true, than only delete.
+
+=head2 control_write_t
+
+Write to a Wx::StyledTextCtrl.  If I<$value> not true, than only delete.
+
+=head2 control_write_d
+
+Write to a Wx::DatePickerCtrl widget.  If I<$value> not true, than clear.
+
+=head2 control_write_m
+
+Write to a Wx::ComboBox widget.  If I<$value> not true, than only delete.
+
+=head2 control_read_e
+
+Read contents of a Wx::TextCtrl control.
+
+=head2 control_read_t
+
+Read contents of a Wx::Text control.
+
+=head2 control_read_d
+
+Read contents of a Wx::DatePickerCtrl control.
+
+=head2 control_read_m
+
+Read contents of a Wx::ComboBox control.
+
+=head2 configure_controls
+
+Enable / disable controls and set background color.
+
+=head2 nb_set_page_state
+
+TODO
+
+=head2 make_binding_entry
+
+Key is always ENTER.
+
 =head1 ACKNOWLEDGEMENTS
 
 Mark Dootson for clarification regarding the DatePicker controll.
+
+=cut

@@ -7,19 +7,6 @@ use warnings;
 
 use base 'Tpda3::Tk::Screen';
 
-=head1 SYNOPSIS
-
-    require Tpda3::App::Test::Customers;
-
-    my $scr = Tpda3::App::Test::Customers->new;
-
-    $scr->run_screen($args);
-
-=head2 run_screen
-
-The screen layout
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -325,3 +312,17 @@ sub run_screen {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::App::Test::Customers;
+
+    my $scr = Tpda3::App::Test::Customers->new;
+
+    $scr->run_screen($args);
+
+=head2 run_screen
+
+The screen layout
+
+=cut

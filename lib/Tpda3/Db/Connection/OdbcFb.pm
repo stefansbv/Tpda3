@@ -12,20 +12,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Db::Connection::OdbcFb;
-
-    my $db = Tpda3::Db::Connection::OdbcFb->new();
-
-    $db->db_connect($connection);
-
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $model ) = @_;
@@ -39,11 +25,6 @@ sub new {
     return $self;
 }
 
-=head2 db_connect
-
-Connect to the database.
-
-=cut
 
 sub db_connect {
     my ( $self, $conf ) = @_;
@@ -79,11 +60,6 @@ sub db_connect {
     return $self->{_dbh};
 }
 
-=head2 handle_error
-
-Log errors.
-
-=cut
 
 sub handle_error {
     my $self = shift;
@@ -106,13 +82,6 @@ sub handle_error {
     return;
 }
 
-=head2 parse_error
-
-Parse a database error message, and translate it for the user.
-
-RDBMS specific (and maybe version specific?).
-
-=cut
 
 sub parse_error {
     my ( $self, $fb ) = @_;
@@ -160,11 +129,6 @@ sub parse_error {
     return $message;
 }
 
-=head2 table_list
-
-Return list of tables from the database.
-
-=cut
 
 sub table_list {
     my $self = shift;
@@ -194,12 +158,6 @@ sub table_list {
     return $table_list;
 }
 
-=head2 table_info_short
-
-Table info 'short'.  The 'table_info' method from the OdbcFb driver
-doesn't seem to be reliable.
-
-=cut
 
 sub table_info_short {
     my ( $self, $table ) = @_;
@@ -272,11 +230,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-=head2 table_keys
-
-Get the primary key field name of the table.
-
-=cut
 
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
@@ -324,11 +277,6 @@ sub table_keys {
     return $pkf_aref;
 }
 
-=head2 table_exists
-
-Check if table exists in the database.
-
-=cut
 
 sub table_exists {
     my ( $self, $table ) = @_;
@@ -359,11 +307,6 @@ sub table_exists {
     return $val_ret;
 }
 
-=head2 sequences_list
-
-Return list of sequences from the database.
-
-=cut
 
 sub sequences_list {
     my $self = shift;
@@ -392,6 +335,58 @@ sub sequences_list {
     return $seq_list;
 }
 
+
+sub has_feature_returning { 1 }
+
+1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Db::Connection::OdbcFb;
+
+    my $db = Tpda3::Db::Connection::OdbcFb->new();
+
+    $db->db_connect($connection);
+
+=head2 new
+
+Constructor method.
+
+=head2 db_connect
+
+Connect to the database.
+
+=head2 handle_error
+
+Log errors.
+
+=head2 parse_error
+
+Parse a database error message, and translate it for the user.
+
+RDBMS specific (and maybe version specific?).
+
+=head2 table_list
+
+Return list of tables from the database.
+
+=head2 table_info_short
+
+Table info 'short'.  The 'table_info' method from the OdbcFb driver
+doesn't seem to be reliable.
+
+=head2 table_keys
+
+Get the primary key field name of the table.
+
+=head2 table_exists
+
+Check if table exists in the database.
+
+=head2 sequences_list
+
+Return list of sequences from the database.
+
 =head2 has_feature_returning
 
 Returns yes for OdbcFb, meaning that is has the
@@ -399,15 +394,11 @@ INSERT... RETURNING feature.
 
 Should check for the OdbcFb version?
 
-=cut
-
-sub has_feature_returning { 1 }
-
-1;
-
 =head1 ACKNOWLEDGEMENTS
 
 Information schema queries inspired from:
 
  - http://www.alberton.info/firebird_sql_meta_info.html by Lorenzo Alberton
  - Flamerobin Copyright (c) 2004-2013 The FlameRobin Development Team
+
+=cut

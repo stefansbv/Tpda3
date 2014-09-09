@@ -4,20 +4,10 @@ package Tpda3::Model::Table::Record;
 
 use Mouse;
 
-=head1 SYNOPSIS
-
-    my $rec = Tpda3::Model::Table::Record->new( name => 'key1', value => 100 );
-
-=cut
 
 has 'name'  => ( is  => 'ro', isa => 'Str' );
 has 'value' => ( is  => 'rw', isa => 'Maybe[Str]' );
 
-=head2 get_href
-
-Return a hash reference: { name => value }.
-
-=cut
 
 sub get_href {
     my $self = shift;
@@ -27,3 +17,13 @@ sub get_href {
 __PACKAGE__->meta->make_immutable;
 
 no Mouse;
+
+=head1 SYNOPSIS
+
+    my $rec = Tpda3::Model::Table::Record->new( name => 'key1', value => 100 );
+
+=head2 get_href
+
+Return a hash reference: { name => value }.
+
+=cut

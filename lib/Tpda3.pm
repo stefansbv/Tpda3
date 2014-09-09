@@ -19,6 +19,59 @@ BEGIN {
     bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;
 }
 
+
+sub new {
+    my ( $class, $args ) = @_;
+
+    my $self = {};
+
+    bless $self, $class;
+
+    $self->_init($args);
+
+    return $self;
+}
+
+
+sub _init {
+    my ( $self, $args ) = @_;
+
+    my $cfg = Tpda3::Config->instance($args);
+
+    my $widgetset = $cfg->application->{widgetset};
+
+    unless ($widgetset) {
+        die "The required configuration not found: 'widgetset'";
+    }
+
+    if ( uc $widgetset eq q{WX} ) {
+        require Tpda3::Wx::Controller;
+        $self->{gui} = Tpda3::Wx::Controller->new();
+    }
+    elsif ( uc $widgetset eq q{TK} ) {
+        require Tpda3::Tk::Controller;
+        $self->{gui} = Tpda3::Tk::Controller->new();
+    }
+    else {
+        die "Unknown widget set!: '$widgetset'";
+    }
+
+    $self->{gui}->start();    # stuff to run at start
+
+    return;
+}
+
+
+sub run {
+    my $self = shift;
+
+    $self->{gui}{_app}->MainLoop();
+
+    return;
+}
+
+1;
+
 =head1 SYNOPSIS
 
 B<Tpda3> is a classic desktop database application framework.
@@ -83,70 +136,14 @@ This is the main module of the application.
 
 Constructor method.
 
-=cut
-
-sub new {
-    my ( $class, $args ) = @_;
-
-    my $self = {};
-
-    bless $self, $class;
-
-    $self->_init($args);
-
-    return $self;
-}
-
 =head2 _init
 
 Initialize the configurations module and create the PerlTk or the
 wxPerl application instance.
 
-=cut
-
-sub _init {
-    my ( $self, $args ) = @_;
-
-    my $cfg = Tpda3::Config->instance($args);
-
-    my $widgetset = $cfg->application->{widgetset};
-
-    unless ($widgetset) {
-        die "The required configuration not found: 'widgetset'";
-    }
-
-    if ( uc $widgetset eq q{WX} ) {
-        require Tpda3::Wx::Controller;
-        $self->{gui} = Tpda3::Wx::Controller->new();
-    }
-    elsif ( uc $widgetset eq q{TK} ) {
-        require Tpda3::Tk::Controller;
-        $self->{gui} = Tpda3::Tk::Controller->new();
-    }
-    else {
-        die "Unknown widget set!: '$widgetset'";
-    }
-
-    $self->{gui}->start();    # stuff to run at start
-
-    return;
-}
-
 =head2 run
 
 Execute the application.
-
-=cut
-
-sub run {
-    my $self = shift;
-
-    $self->{gui}{_app}->MainLoop();
-
-    return;
-}
-
-1;
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -157,3 +154,5 @@ The implementation of the localization code is based on the work of
 David E. Wheeler.
 
 Thank You!
+
+=cut

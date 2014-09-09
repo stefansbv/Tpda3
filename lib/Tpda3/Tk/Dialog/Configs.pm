@@ -14,21 +14,6 @@ use File::Spec;
 require Tpda3::Config;
 require Tpda3::Config::Utils;
 
-=head1 SYNOPSIS
-
-Set and save configuaration options.
-
-    use Tpda3::Tk::Dialog::Configs;
-
-    my $fd = Tpda3::Tk::Dialog::Configs->new;
-
-    $fd->run_dialog($self);
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -46,25 +31,12 @@ sub new {
     return $self;
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{cfg};
 }
 
-=head2 _init
-
-Executable files have diferent names on different platforms
-Report Manager print preview: 'printrep.bin' on GNU/linux
-                               'printrepxp.exe' on MSW
-TODO: Add other platforms
-
-=cut
 
 sub _init {
     my $self = shift;
@@ -100,12 +72,6 @@ sub _init {
     return;
 }
 
-=head2 save_as_default
-
-Backup the I<main.yml> configuration file.  Write the current content
-of the widgets to the configuration file.
-
-=cut
 
 sub save_as_default {
     my $self = shift;
@@ -140,11 +106,6 @@ sub save_as_default {
     return;
 }
 
-=head2 save_yaml_main
-
-Create or update the I<main.yml> configuration file.
-
-=cut
 
 sub save_yaml_main {
     my ( $self, $section, $key, $value ) = @_;
@@ -156,12 +117,6 @@ sub save_yaml_main {
     return;
 }
 
-=head2 backup_main
-
-Make a backup file named I<main.yml.orig> if it doesn't exists yet,
-else make I<main.yml.old>.
-
-=cut
 
 sub backup_main {
     my $self = shift;
@@ -178,11 +133,6 @@ sub backup_main {
     return;
 }
 
-=head2 make_statusbar
-
-Create a status bar.
-
-=cut
 
 sub make_statusbar {
     my $self = shift;
@@ -202,11 +152,6 @@ sub make_statusbar {
     return;
 }
 
-=head2 _set_status
-
-Display message in the status bar.
-
-=cut
 
 sub _set_status {
     my ( $self, $text, $color ) = @_;
@@ -222,11 +167,6 @@ sub _set_status {
     return;
 }
 
-=head2 show_cfg_dialog
-
-Show the configuration dialog.
-
-=cut
 
 sub show_cfg_dialog {
     my ( $self, $view ) = @_;
@@ -459,11 +399,6 @@ sub show_cfg_dialog {
     return;
 }
 
-=head2 load_config
-
-Load the current configuration values into the widgets.
-
-=cut
 
 sub load_config {
     my $self = shift;
@@ -485,12 +420,6 @@ sub load_config {
     return;
 }
 
-=head2 update_value
-
-Callback to update the value of the paramater, using the file search
-dialog.
-
-=cut
 
 sub update_value {
     my ($self, $field, $type, $strict) = @_;
@@ -520,11 +449,6 @@ sub update_value {
     return;
 }
 
-=head2 dialog_file
-
-File dialog.
-
-=cut
 
 sub dialog_file {
     my ($self, $field) = @_;
@@ -553,11 +477,6 @@ sub dialog_file {
     return $path;
 }
 
-=head2 dialog_path
-
-Path dialog.
-
-=cut
 
 sub dialog_path {
     my ($self, $field) = @_;
@@ -581,14 +500,6 @@ sub dialog_path {
     return $path;
 }
 
-=head2 get_init_dir
-
-If there is a value in the filed, use the path as initial dir for the
-dialog, else use the default.
-
-TODO: check on MSW, what about vol?
-
-=cut
 
 sub get_init_dir {
     my ($self, $field) = @_;
@@ -603,11 +514,6 @@ sub get_init_dir {
     }
 }
 
-=head2 update_path_field
-
-Write into the path widget with colors.
-
-=cut
 
 sub update_path_field {
     my ($self, $field, $value, $type) = @_;
@@ -637,11 +543,6 @@ sub update_path_field {
 
 }
 
-=head2 dlg_exit
-
-Quit Dialog.
-
-=cut
 
 sub dlg_exit {
     my $self = shift;
@@ -652,3 +553,88 @@ sub dlg_exit {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+Set and save configuaration options.
+
+    use Tpda3::Tk::Dialog::Configs;
+
+    my $fd = Tpda3::Tk::Dialog::Configs->new;
+
+    $fd->run_dialog($self);
+
+=head2 new
+
+Constructor method.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 _init
+
+Executable files have diferent names on different platforms
+Report Manager print preview: 'printrep.bin' on GNU/linux
+                               'printrepxp.exe' on MSW
+TODO: Add other platforms
+
+=head2 save_as_default
+
+Backup the I<main.yml> configuration file.  Write the current content
+of the widgets to the configuration file.
+
+=head2 save_yaml_main
+
+Create or update the I<main.yml> configuration file.
+
+=head2 backup_main
+
+Make a backup file named I<main.yml.orig> if it doesn't exists yet,
+else make I<main.yml.old>.
+
+=head2 make_statusbar
+
+Create a status bar.
+
+=head2 _set_status
+
+Display message in the status bar.
+
+=head2 show_cfg_dialog
+
+Show the configuration dialog.
+
+=head2 load_config
+
+Load the current configuration values into the widgets.
+
+=head2 update_value
+
+Callback to update the value of the paramater, using the file search
+dialog.
+
+=head2 dialog_file
+
+File dialog.
+
+=head2 dialog_path
+
+Path dialog.
+
+=head2 get_init_dir
+
+If there is a value in the filed, use the path as initial dir for the
+dialog, else use the default.
+
+TODO: check on MSW, what about vol?
+
+=head2 update_path_field
+
+Write into the path widget with colors.
+
+=head2 dlg_exit
+
+Quit Dialog.
+
+=cut

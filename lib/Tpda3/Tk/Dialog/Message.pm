@@ -10,23 +10,6 @@ use Tk::DialogBox;
 
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-    require Tpda3::Tk::Dialog::Message;
-
-    my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
-
-    $dlg->message_dialog($message, $details, 'icon', 'type');
-
-Where icon can be one of: 'error', 'info', or 'question'.
-
-Where type can be one of: 'ok', 'close', 'yn', or 'ycn'.
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ($class, $view, $opts) = @_;
@@ -41,12 +24,6 @@ sub new {
     return $self;
 }
 
-=head2 message_dialog
-
-Define and show message dialog.  MsgBox doesn't allow to change the
-button labels.
-
-=cut
 
 sub message_dialog {
     my ( $self, $message, $details, $icon, $type ) = @_;
@@ -168,28 +145,6 @@ sub message_dialog {
     return $answer;
 }
 
-=head2 make_icon
-
-From:
-
- msgbox.tcl --
-
-    Implements messageboxes for platforms that do not have native
-    messagebox support.
-
- RCS: @(#) $Id: msgbox.tcl,v 1.30 2006/01/25 18:22:04 dgp Exp $
-
- Copyright (c) 1994-1997 Sun Microsystems, Inc.
-
- See the file "license.terms" for information on usage and redistribution
- of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-
-
- Translated to Perl/Tk by Slaven Rezic
-
- Version: 4.002
-
-=cut
 
 sub make_icon {
     my ( $self, $w_bitmap, $icon ) = @_;
@@ -351,3 +306,47 @@ static unsigned char w3_bits[] = {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    require Tpda3::Tk::Dialog::Message;
+
+    my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
+
+    $dlg->message_dialog($message, $details, 'icon', 'type');
+
+Where icon can be one of: 'error', 'info', or 'question'.
+
+Where type can be one of: 'ok', 'close', 'yn', or 'ycn'.
+
+=head2 new
+
+Constructor method.
+
+=head2 message_dialog
+
+Define and show message dialog.  MsgBox doesn't allow to change the
+button labels.
+
+=head2 make_icon
+
+From:
+
+ msgbox.tcl --
+
+    Implements messageboxes for platforms that do not have native
+    messagebox support.
+
+ RCS: @(#) $Id: msgbox.tcl,v 1.30 2006/01/25 18:22:04 dgp Exp $
+
+ Copyright (c) 1994-1997 Sun Microsystems, Inc.
+
+ See the file "license.terms" for information on usage and redistribution
+ of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+
+
+ Translated to Perl/Tk by Slaven Rezic
+
+ Version: 4.002
+
+=cut

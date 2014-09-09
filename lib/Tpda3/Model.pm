@@ -19,17 +19,6 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Model;
-
-    my $model = Tpda3::Model->new();
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -49,33 +38,18 @@ sub new {
     return $self;
 }
 
-=head2 cfg
-
-Return configuration instance object.
-
-=cut
 
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-=head2 _log
-
-Return log instance variable.
-
-=cut
 
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
 
-=head2 db_connect
-
-Connect to the database.
-
-=cut
 
 sub db_connect {
     my $self = shift;
@@ -89,11 +63,6 @@ sub db_connect {
     return;
 }
 
-=head2 dbh
-
-Return the database handler.
-
-=cut
 
 sub dbh {
     my $self = shift;
@@ -108,11 +77,6 @@ sub dbh {
     return;
 }
 
-=head2 dbc
-
-Return the Connection module handler.
-
-=cut
 
 sub dbc {
     my $self = shift;
@@ -120,46 +84,24 @@ sub dbc {
     return $db->dbc;
 }
 
-=head2 is_connected
-
-Return true if connected
-
-TODO: What if the connection is lost?
-
-=cut
 
 sub is_connected {
     my $self = shift;
     return $self->get_connection_observable->get;
 }
 
-=head2 get_connection_observable
-
-Get connection observable status
-
-=cut
 
 sub get_connection_observable {
     my $self = shift;
     return $self->{_connected};
 }
 
-=head2 get_stdout_observable
-
-Get STDOUT observable status
-
-=cut
 
 sub get_stdout_observable {
     my $self = shift;
     return $self->{_stdout};
 }
 
-=head2 _print
-
-Put a message on a text controll
-
-=cut
 
 sub _print {
     my ( $self, $data ) = @_;
@@ -167,11 +109,6 @@ sub _print {
     return;
 }
 
-=head2 set_mode
-
-Set mode
-
-=cut
 
 sub set_mode {
     my ( $self, $mode ) = @_;
@@ -179,11 +116,6 @@ sub set_mode {
     return;
 }
 
-=head2 is_mode
-
-Return true if is mode
-
-=cut
 
 sub is_mode {
     my ( $self, $ck_mode ) = @_;
@@ -197,37 +129,18 @@ sub is_mode {
     return;
 }
 
-=head2 get_appmode_observable
-
-Return add mode observable status
-
-=cut
 
 sub get_appmode_observable {
     my $self = shift;
     return $self->{_appmode};
 }
 
-=head2 get_appmode
-
-Return application mode
-
-=cut
 
 sub get_appmode {
     my $self = shift;
     return $self->get_appmode_observable->get;
 }
 
-=head2 set_scrdata_rec
-
-Set screen data status for the I<rec> tab.
-
- false = loaded
- true  = modified
- undef = unloaded
-
-=cut
 
 sub set_scrdata_rec {
     my ( $self, $state ) = @_;
@@ -235,15 +148,6 @@ sub set_scrdata_rec {
     return;
 }
 
-=head2 unset_scrdata_rec
-
-Clear data status for the I<rec> tab.
-
- false = loaded
- true  = modified
- undef = unloaded *
-
-=cut
 
 sub unset_scrdata_rec {
     my $self = shift;
@@ -251,45 +155,24 @@ sub unset_scrdata_rec {
     return;
 }
 
-=head2 get_scrdata_rec_observable
-
-Return screen data status for the I<rec> tab.
-
-=cut
 
 sub get_scrdata_rec_observable {
     my $self = shift;
     return $self->{_scrdata_rec};
 }
 
-=head2 is_modified
-
-Return true if screen data record is modified.
-
-=cut
 
 sub is_modified {
     my $self = shift;
     return $self->get_scrdata_rec_observable->get;
 }
 
-=head2 is_loaded
-
-Return true if screen data record is loaded, if is not then the value
-is undef.
-
-=cut
 
 sub is_loaded {
     my $self = shift;
     return defined $self->get_scrdata_rec_observable->get;
 }
 
-=head2 query_records_count
-
-Count records in table. TODO.
-
-=cut
 
 sub query_records_count {
     my ( $self, $opts ) = @_;
@@ -318,13 +201,6 @@ sub query_records_count {
     return $record_count;
 }
 
-=head2 query_records_find
-
-Count records in table.  Here we need the contents of the screen to
-build an sql where clause and also the column names from the
-I<columns> configuration.
-
-=cut
 
 sub query_records_find {
     my ( $self, $opts ) = @_;
@@ -353,11 +229,6 @@ sub query_records_find {
     return ($ary_ref, $search_limit);
 }
 
-=head2 query_filter_find
-
-Same as C<query_records_find> but returns an AoH suitable for TM fill.
-
-=cut
 
 sub query_filter_find {
     my ( $self, $opts, $debug ) = @_;
@@ -396,11 +267,6 @@ sub query_filter_find {
     return \@records;
 }
 
-=head2 query_record
-
-Return a record as hash reference
-
-=cut
 
 sub query_record {
     my ( $self, $opts ) = @_;
@@ -423,13 +289,6 @@ sub query_record {
     return $hash_ref;
 }
 
-=head2 table_batch_query
-
-Query records and return an AoH.
-
-Option to add row count field to the returned data structure.
-
-=cut
 
 sub table_batch_query {
     my ( $self, $opts ) = @_;
@@ -462,11 +321,6 @@ sub table_batch_query {
     return \@records;
 }
 
-=head2 query_dictionary
-
-Query a dictionary table
-
-=cut
 
 sub query_dictionary {
     my ( $self, $opts ) = @_;
@@ -495,34 +349,6 @@ sub query_dictionary {
     return $ary_ref;
 }
 
-=head2 build_sql_where
-
-Return a hash reference containing where clause attributes.
-
-Table columns (fields) used in the screen have a configuration named
-I<findtype> that is used to build the appropriate where clause.
-
-Valid configuration options are:
-
-=over
-
-=item contains - the field value contains the search string
-
-=item full   - the field value equals the search string
-
-=item date     - special case for date type fields
-
-=item none     - no search for this field
-
-=back
-
-Second parameter 'option' is passed to quote4like.
-
-If the search string equals with I<%> or I<!>, then generated where
-clause will be I<field1> IS NOT NULL and respectively I<field2> IS
-NULL.
-
-=cut
 
 sub build_sql_where {
     my ( $self, $opts ) = @_;
@@ -585,17 +411,6 @@ sub build_sql_where {
     return $where;
 }
 
-=head2 cmp_function
-
-Compare function to use in SQL::Abstract, falls back to I<LIKE> for
-unrecognised I>driver> names.
-
-For B<Postgresql> and B<Firebird> uses functions that ignore case.
-
-If the search string contains at least one upper case letter, make a
-case sensitive search, else case insensitive.
-
-=cut
 
 sub cmp_function {
     my ( $self, $search_str ) = @_;
@@ -639,37 +454,6 @@ sub cmp_function {
     return $cmp;
 }
 
-=head2 tbl_dict_query
-
-Query a table for codes.  Return S<< key -> value >>, pairs used to
-fill the I<choices> attributes of widgets like L<Tk::JComboBox>.
-
-There is a default table for codes named 'codificari' (named so, in
-the first version of TPDA).
-
-The I<codificari> table has the following structure:
-
-   id_ord    INTEGER NOT NULL
-   variabila VARCHAR(15)
-   filtru    VARCHAR(5)
-   cod       VARCHAR(5)
-   denumire  VARCHAR(25) NOT NULL
-
-The I<variabila> columns contains the name of the field, because this
-is a table used for many different codings.  When this table is used,
-a where clause is constructed to filter only the values coresponding
-to I<variabila>.
-
-There is another column named I<filtru> than can be used to restrict
-the values listed when they depend on the value of another widget in
-the current screen (not yet used!).
-
-If the configuration has an I<orderby> field use it else order by
-description (name).
-
-TODO: Change the field names
-
-=cut
 
 sub tbl_dict_query {
     my ( $self, $para, $label_lbl, $value_lbl ) = @_;
@@ -710,11 +494,6 @@ sub tbl_dict_query {
     return \@dictrows;
 }
 
-=head2 tbl_lookup_query
-
-Lookup query.
-
-=cut
 
 sub tbl_lookup_query {
     my ( $self, $para ) = @_;
@@ -745,11 +524,6 @@ sub tbl_lookup_query {
     return $row_rf;
 }
 
-=head2 get_codes
-
-Return the data structure used to fill the list of choices.
-
-=cut
 
 sub get_codes {
     my ( $self, $field, $para, $widget ) = @_;
@@ -760,29 +534,6 @@ sub get_codes {
     return $codes;
 }
 
-=head2 table_record_insert
-
-Insert new record in the DB.
-
-Using the RETURNING feature...
-
- Postgres version 8.2 or greater
- Firebird version 2.1 or greater
-
-BUG:
-
-For SQLite, instead of catching and reporting the first error it
-reports the last, but the relevant one is the first:
-
-DBD::SQLite::db prepare failed: near "RETURNING": syntax error ...
-
-Uses the B<last_insert_id> function if the database doesn't support the
-INSERT... RETURNING feature.
-
-The parameters for B{last_insert_id} are required. The $table
-parameter is ignord for CUBRID.
-
-=cut
 
 sub table_record_insert {
     my ( $self, $table, $pkcol, $record ) = @_;
@@ -819,11 +570,6 @@ sub table_record_insert {
     return $pk_id;
 }
 
-=head2 table_record_update
-
-Save screen data to a record in the DB.
-
-=cut
 
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
@@ -843,11 +589,6 @@ sub table_record_update {
     return;
 }
 
-=head2 table_record_select
-
-Select record from table.
-
-=cut
 
 sub table_record_select {
     my ( $self, $table, $where ) = @_;
@@ -867,16 +608,6 @@ sub table_record_select {
     return $hash_ref;
 }
 
-=head2 table_batch_insert
-
-Save records from Table widget into DB.
-
-Prepares the statement for every record, not only once!
-
-TODO: Experiment with the example code from the I<PERFORMANCE> section
-      in SQL::Abstract manual.
-
-=cut
 
 sub table_batch_insert {
     my ( $self, $table, $records ) = @_;
@@ -900,11 +631,6 @@ sub table_batch_insert {
     return;
 }
 
-=head2 table_record_delete
-
-Deletes all records using a required WHERE SQL clause.
-
-=cut
 
 sub table_record_delete {
     my ( $self, $table, $where ) = @_;
@@ -932,15 +658,6 @@ sub table_record_delete {
     return;
 }
 
-=head2 prepare_record_insert
-
-Inserts a record.
-
-The I<$record> parameter holds a complex AoH containing data colected
-from the Screen controls (widgets) and the metadata needed to
-construct the SQL commands.
-
-=cut
 
 sub prepare_record_insert {
     my ( $self, $record ) = @_;
@@ -986,35 +703,6 @@ sub prepare_record_insert {
     return $pk_id;
 }
 
-=head2 prepare_record_update
-
-Updates a record.
-
-The I<$record> parameter holds a complex AoH containing data colected
-from the Screen controls (widgets) and the meta-data needed to
-construct the SQL commands.
-
-There is a new setting in the Screen configuration in the 'deptable'
-section named I<updatestyle>.
-
-=over
-
-=item delete+add Delete all articles followed by re-insert
-
-This is the old style behavior of Tpda. All dependent records are
-deleted first and than reinserted with data from the TableMatrix
-widget.  This has the advantage of automatic renumbering of the
-articles, when an article is deleted - suitable for Orders.
-
-=item update    Update the existing articles, insert new
-
-The articles are not renumbered, as a consequence if an article is
-deleted, the I<artno> of the other articles is preserved and gaps may
-appear.
-
-=back
-
-=cut
 
 sub prepare_record_update {
     my ( $self, $record ) = @_;
@@ -1057,11 +745,6 @@ sub prepare_record_update {
     return;
 }
 
-=head2 prepare_record_delete
-
-Delete all detail records and then the record.
-
-=cut
 
 sub prepare_record_delete {
     my ( $self, $record ) = @_;
@@ -1092,12 +775,6 @@ sub prepare_record_delete {
     return;
 }
 
-=head2 table_batch_update
-
-Compare article number for data in TM with data in DB and decide what
-to insert, update or delete.
-
-=cut
 
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
@@ -1127,12 +804,6 @@ sub table_batch_update {
     return;
 }
 
-=head2 table_update_compare
-
-Compare data in TM with the data in DB row by row and update only if
-different.
-
-=cut
 
 sub table_update_compare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
@@ -1160,11 +831,6 @@ sub table_update_compare {
     return \@toupdate;
 }
 
-=head2 table_update_prepare
-
-Prepare data for batch update.
-
-=cut
 
 sub table_update_prepare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
@@ -1192,11 +858,6 @@ sub table_update_prepare {
     return;
 }
 
-=head2 table_insert_prepare
-
-Prepare data for batch insert.
-
-=cut
 
 sub table_insert_prepare {
     my ( $self, $to_insert, $depmeta, $depdata ) = @_;
@@ -1222,11 +883,6 @@ sub table_insert_prepare {
     return;
 }
 
-=head2 table_delete_prepare
-
-Prepare data for batch delete.
-
-=cut
 
 sub table_delete_prepare {
     my ( $self, $to_delete, $depmeta ) = @_;
@@ -1241,11 +897,6 @@ sub table_delete_prepare {
     return;
 }
 
-=head2 aoh_column_extract
-
-Extract only a column from an AoH data structure.
-
-=cut
 
 sub aoh_column_extract {
     my ( $self, $depdata, $column ) = @_;
@@ -1259,11 +910,6 @@ sub aoh_column_extract {
     return \@dep_data;
 }
 
-=head2 table_selectcol_as_array
-
-Return an array reference of column values.
-
-=cut
 
 sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
@@ -1289,12 +935,6 @@ sub table_selectcol_as_array {
     return $records;
 }
 
-=head2 record_compare
-
-Compare the data structure created when a new record was loaded, the
-witness record, with the current data structure from the screen.
-
-=cut
 
 sub record_compare {
     my ( $self, $witness, $record ) = @_;
@@ -1307,12 +947,6 @@ sub record_compare {
     return !$dc->Cmp;
 }
 
-=head2 user_message
-
-Parse the error string from the database and pass the relevant text to
-the C<status_message> method in the View class.
-
-=cut
 
 sub user_message {
     my ($self, $error) = @_;
@@ -1326,12 +960,6 @@ sub user_message {
     return $user_message;
 }
 
-=head2 db_exception
-
-Try to catch existing exceptions.  (Re)Throw an exception on SQL or
-Connection errors.
-
-=cut
 
 sub db_exception {
     my ( $self, $exc, $context ) = @_;
@@ -1377,30 +1005,6 @@ sub db_exception {
     return;
 }
 
-=head2 report_data
-
-Return data in custom data structures for the report style screens.
-
-The first data structure it's a AoH to be displayed in the Tpda3::TMSHR
-widget.
-
-  [
-    { 'nr_crt' => 1, 'firma' => 'Name 1' },
-    { 'nr_crt' => 2, 'firma' => 'Name 2' },
-    { 'nr_crt' => 3, 'firma' => 'Name 3' },
-  ];
-
-The second data structure is also an AoH used to retrieve the detail
-data for each row. Maps the widget row number with the PK col value of
-the database table.
-
-  [
-    { '1' => { 'id_firma' => 1 } },          # -> Name 1
-    { '2' => { 'id_firma' => 3 } },          # -> Name 3
-    { '3' => { 'id_firma' => 2 } },          # -> Name 2
-  ];
-
-=cut
 
 sub report_data {
     my ( $self, $mainmeta, $parentrow ) = @_;
@@ -1439,11 +1043,6 @@ sub report_data {
     return (\@records, \%levelmeta);
 }
 
-=head2 table_columns
-
-Return the table columns for the named table.
-
-=cut
 
 sub table_columns {
     my ($self, $table_name) = @_;
@@ -1459,22 +1058,12 @@ sub table_columns {
     return \@fields;
 }
 
-=head2 table_keys
-
-Return the table keys for the named table.
-
-=cut
 
 sub table_keys {
     my ($self, $table_name) = @_;
     return $self->dbc->table_keys($table_name);
 }
 
-=head2 get_template_datasources
-
-Return the template data sources from the template configuration.
-
-=cut
 
 sub get_template_datasources {
     my ($self, $id_tt) = @_;
@@ -1490,11 +1079,6 @@ sub get_template_datasources {
     return $datasources->[0];
 }
 
-=head2 other_data
-
-Get info about the datasources for the TT template from the templates table.
-
-=cut
 
 sub other_data {
     my ($self, $model_name) = @_;
@@ -1539,13 +1123,6 @@ sub other_data {
     );
 }
 
-=head2 update_or_insert
-
-Update or insert records in table.
-
-BUG: Specific to Firebird!
-
-=cut
 
 sub update_or_insert {
     my ($self, $table, $columns, $matching, $records) = @_;
@@ -1580,3 +1157,374 @@ sub update_or_insert {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Model;
+
+    my $model = Tpda3::Model->new();
+
+=head2 new
+
+Constructor method.
+
+=head2 cfg
+
+Return configuration instance object.
+
+=head2 _log
+
+Return log instance variable.
+
+=head2 db_connect
+
+Connect to the database.
+
+=head2 dbh
+
+Return the database handler.
+
+=head2 dbc
+
+Return the Connection module handler.
+
+=head2 is_connected
+
+Return true if connected
+
+TODO: What if the connection is lost?
+
+=head2 get_connection_observable
+
+Get connection observable status
+
+=head2 get_stdout_observable
+
+Get STDOUT observable status
+
+=head2 _print
+
+Put a message on a text controll
+
+=head2 set_mode
+
+Set mode
+
+=head2 is_mode
+
+Return true if is mode
+
+=head2 get_appmode_observable
+
+Return add mode observable status
+
+=head2 get_appmode
+
+Return application mode
+
+=head2 set_scrdata_rec
+
+Set screen data status for the I<rec> tab.
+
+ false = loaded
+ true  = modified
+ undef = unloaded
+
+=head2 unset_scrdata_rec
+
+Clear data status for the I<rec> tab.
+
+ false = loaded
+ true  = modified
+ undef = unloaded *
+
+=head2 get_scrdata_rec_observable
+
+Return screen data status for the I<rec> tab.
+
+=head2 is_modified
+
+Return true if screen data record is modified.
+
+=head2 is_loaded
+
+Return true if screen data record is loaded, if is not then the value
+is undef.
+
+=head2 query_records_count
+
+Count records in table. TODO.
+
+=head2 query_records_find
+
+Count records in table.  Here we need the contents of the screen to
+build an sql where clause and also the column names from the
+I<columns> configuration.
+
+=head2 query_filter_find
+
+Same as C<query_records_find> but returns an AoH suitable for TM fill.
+
+=head2 query_record
+
+Return a record as hash reference
+
+=head2 table_batch_query
+
+Query records and return an AoH.
+
+Option to add row count field to the returned data structure.
+
+=head2 query_dictionary
+
+Query a dictionary table
+
+=head2 build_sql_where
+
+Return a hash reference containing where clause attributes.
+
+Table columns (fields) used in the screen have a configuration named
+I<findtype> that is used to build the appropriate where clause.
+
+Valid configuration options are:
+
+=over
+
+=item contains - the field value contains the search string
+
+=item full   - the field value equals the search string
+
+=item date     - special case for date type fields
+
+=item none     - no search for this field
+
+=back
+
+Second parameter 'option' is passed to quote4like.
+
+If the search string equals with I<%> or I<!>, then generated where
+clause will be I<field1> IS NOT NULL and respectively I<field2> IS
+NULL.
+
+=head2 cmp_function
+
+Compare function to use in SQL::Abstract, falls back to I<LIKE> for
+unrecognised I>driver> names.
+
+For B<Postgresql> and B<Firebird> uses functions that ignore case.
+
+If the search string contains at least one upper case letter, make a
+case sensitive search, else case insensitive.
+
+=head2 tbl_dict_query
+
+Query a table for codes.  Return S<< key -> value >>, pairs used to
+fill the I<choices> attributes of widgets like L<Tk::JComboBox>.
+
+There is a default table for codes named 'codificari' (named so, in
+the first version of TPDA).
+
+The I<codificari> table has the following structure:
+
+   id_ord    INTEGER NOT NULL
+   variabila VARCHAR(15)
+   filtru    VARCHAR(5)
+   cod       VARCHAR(5)
+   denumire  VARCHAR(25) NOT NULL
+
+The I<variabila> columns contains the name of the field, because this
+is a table used for many different codings.  When this table is used,
+a where clause is constructed to filter only the values coresponding
+to I<variabila>.
+
+There is another column named I<filtru> than can be used to restrict
+the values listed when they depend on the value of another widget in
+the current screen (not yet used!).
+
+If the configuration has an I<orderby> field use it else order by
+description (name).
+
+TODO: Change the field names
+
+=head2 tbl_lookup_query
+
+Lookup query.
+
+=head2 get_codes
+
+Return the data structure used to fill the list of choices.
+
+=head2 table_record_insert
+
+Insert new record in the DB.
+
+Using the RETURNING feature...
+
+ Postgres version 8.2 or greater
+ Firebird version 2.1 or greater
+
+BUG:
+
+For SQLite, instead of catching and reporting the first error it
+reports the last, but the relevant one is the first:
+
+DBD::SQLite::db prepare failed: near "RETURNING": syntax error ...
+
+Uses the B<last_insert_id> function if the database doesn't support the
+INSERT... RETURNING feature.
+
+The parameters for B{last_insert_id} are required. The $table
+parameter is ignord for CUBRID.
+
+=head2 table_record_update
+
+Save screen data to a record in the DB.
+
+=head2 table_record_select
+
+Select record from table.
+
+=head2 table_batch_insert
+
+Save records from Table widget into DB.
+
+Prepares the statement for every record, not only once!
+
+TODO: Experiment with the example code from the I<PERFORMANCE> section
+      in SQL::Abstract manual.
+
+=head2 table_record_delete
+
+Deletes all records using a required WHERE SQL clause.
+
+=head2 prepare_record_insert
+
+Inserts a record.
+
+The I<$record> parameter holds a complex AoH containing data colected
+from the Screen controls (widgets) and the metadata needed to
+construct the SQL commands.
+
+=head2 prepare_record_update
+
+Updates a record.
+
+The I<$record> parameter holds a complex AoH containing data colected
+from the Screen controls (widgets) and the meta-data needed to
+construct the SQL commands.
+
+There is a new setting in the Screen configuration in the 'deptable'
+section named I<updatestyle>.
+
+=over
+
+=item delete+add Delete all articles followed by re-insert
+
+This is the old style behavior of Tpda. All dependent records are
+deleted first and than reinserted with data from the TableMatrix
+widget.  This has the advantage of automatic renumbering of the
+articles, when an article is deleted - suitable for Orders.
+
+=item update    Update the existing articles, insert new
+
+The articles are not renumbered, as a consequence if an article is
+deleted, the I<artno> of the other articles is preserved and gaps may
+appear.
+
+=back
+
+=head2 prepare_record_delete
+
+Delete all detail records and then the record.
+
+=head2 table_batch_update
+
+Compare article number for data in TM with data in DB and decide what
+to insert, update or delete.
+
+=head2 table_update_compare
+
+Compare data in TM with the data in DB row by row and update only if
+different.
+
+=head2 table_update_prepare
+
+Prepare data for batch update.
+
+=head2 table_insert_prepare
+
+Prepare data for batch insert.
+
+=head2 table_delete_prepare
+
+Prepare data for batch delete.
+
+=head2 aoh_column_extract
+
+Extract only a column from an AoH data structure.
+
+=head2 table_selectcol_as_array
+
+Return an array reference of column values.
+
+=head2 record_compare
+
+Compare the data structure created when a new record was loaded, the
+witness record, with the current data structure from the screen.
+
+=head2 user_message
+
+Parse the error string from the database and pass the relevant text to
+the C<status_message> method in the View class.
+
+=head2 db_exception
+
+Try to catch existing exceptions.  (Re)Throw an exception on SQL or
+Connection errors.
+
+=head2 report_data
+
+Return data in custom data structures for the report style screens.
+
+The first data structure it's a AoH to be displayed in the Tpda3::TMSHR
+widget.
+
+  [
+    { 'nr_crt' => 1, 'firma' => 'Name 1' },
+    { 'nr_crt' => 2, 'firma' => 'Name 2' },
+    { 'nr_crt' => 3, 'firma' => 'Name 3' },
+  ];
+
+The second data structure is also an AoH used to retrieve the detail
+data for each row. Maps the widget row number with the PK col value of
+the database table.
+
+  [
+    { '1' => { 'id_firma' => 1 } },          # -> Name 1
+    { '2' => { 'id_firma' => 3 } },          # -> Name 3
+    { '3' => { 'id_firma' => 2 } },          # -> Name 2
+  ];
+
+=head2 table_columns
+
+Return the table columns for the named table.
+
+=head2 table_keys
+
+Return the table keys for the named table.
+
+=head2 get_template_datasources
+
+Return the template data sources from the template configuration.
+
+=head2 other_data
+
+Get info about the datasources for the TT template from the templates table.
+
+=head2 update_or_insert
+
+Update or insert records in table.
+
+BUG: Specific to Firebird!
+
+=cut

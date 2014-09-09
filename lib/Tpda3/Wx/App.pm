@@ -10,20 +10,6 @@ use base qw(Wx::App);
 
 require Tpda3::Wx::View;
 
-=head1 SYNOPSIS
-
-    use Tpda3::Wx::App;
-    use Tpda3::Wx::Controller;
-
-    $gui = Tpda3::Wx::App->create();
-
-    $gui->MainLoop;
-
-=head2 create
-
-Constructor method.
-
-=cut
 
 sub create {
     my $self  = shift->new;
@@ -41,12 +27,26 @@ sub create {
     return $self;
 }
 
+
+sub OnInit {1}
+
+1;
+
+=head1 SYNOPSIS
+
+    use Tpda3::Wx::App;
+    use Tpda3::Wx::Controller;
+
+    $gui = Tpda3::Wx::App->create();
+
+    $gui->MainLoop;
+
+=head2 create
+
+Constructor method.
+
 =head2 OnInit
 
 Override OnInit from WxPerl
 
 =cut
-
-sub OnInit {1}
-
-1;

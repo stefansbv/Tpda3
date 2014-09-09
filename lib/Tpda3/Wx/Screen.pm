@@ -13,13 +13,6 @@ use Wx::ArtProvider qw(:artid);
 require Tpda3::Utils;
 require Tpda3::Config::Screen;
 
-=head1 SYNOPSIS
-
-=head2 new
-
-Constructor method.
-
-=cut
 
 sub new {
     my ( $class, $args ) = @_;
@@ -33,11 +26,6 @@ sub new {
     return $self;
 }
 
-=head2 run_screen
-
-The screen layout
-
-=cut
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -47,11 +35,6 @@ sub run_screen {
     return;
 }
 
-=head2 get_controls
-
-Get a data structure containing references to the widgets.
-
-=cut
 
 sub get_controls {
     my ($self, $field) = @_;
@@ -64,12 +47,6 @@ sub get_controls {
     }
 }
 
-=head2 get_tm_controls
-
-Get a data structure containing references to table (grid) widgets.
-If TM Id parameter is provided return a reference to that TM object.
-
-=cut
 
 sub get_tm_controls {
     my ( $self, $tm_ds ) = @_;
@@ -84,15 +61,6 @@ sub get_tm_controls {
     }
 }
 
-=head2 get_rq_controls
-
-Get a HoA reference data structure with the field names that are
-required to have values as keys and labels as values.
-
-Usually all fields from the table marked in the I<SQL> structure as
-I<NOT NULL>.
-
-=cut
 
 sub get_rq_controls {
     my $self = shift;
@@ -102,11 +70,6 @@ sub get_rq_controls {
     return $self->{rq_controls};
 }
 
-=head2 get_toolbar_btn
-
-Return a toolbar button when we know the its name
-
-=cut
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
@@ -114,12 +77,6 @@ sub get_toolbar_btn {
     return $self->{tb}->get_toolbar_btn($name);
 }
 
-=head2 enable_tool
-
-Toggle toolbar button.  If state is defined then set to state do not
-toggle.  State can come as 0 | 1 and normal | disabled.
-
-=cut
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -131,15 +88,6 @@ sub enable_tool {
     return;
 }
 
-=head2 get_bgcolor
-
-Return the background color of the main window.
-
-Must be setup like this in run_screen method of every screen
-
-...
-
-=cut
 
 sub get_bgcolor {
     my $self = shift;
@@ -147,13 +95,6 @@ sub get_bgcolor {
     return $self->{bg};
 }
 
-=head2 app_toolbar_names
-
-Configuration for toolbar buttons.
-
-Get Toolbar names as array reference from screen config.
-
-=cut
 
 sub app_toolbar_names {
     my ($self, $name) = @_;
@@ -164,12 +105,6 @@ sub app_toolbar_names {
     return ( $toolbars, $attribs );
 }
 
-=head2 make_toolbar_for_table
-
-Make toolbar for Table control, usually with I<add> and I<remove>
-buttons.
-
-=cut
 
 sub make_toolbar_for_table {
     my ( $self, $name, $tb_frame, $article_sbs ) = @_;
@@ -196,3 +131,60 @@ sub make_toolbar_for_table {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+=head2 new
+
+Constructor method.
+
+=head2 run_screen
+
+The screen layout
+
+=head2 get_controls
+
+Get a data structure containing references to the widgets.
+
+=head2 get_tm_controls
+
+Get a data structure containing references to table (grid) widgets.
+If TM Id parameter is provided return a reference to that TM object.
+
+=head2 get_rq_controls
+
+Get a HoA reference data structure with the field names that are
+required to have values as keys and labels as values.
+
+Usually all fields from the table marked in the I<SQL> structure as
+I<NOT NULL>.
+
+=head2 get_toolbar_btn
+
+Return a toolbar button when we know the its name
+
+=head2 enable_tool
+
+Toggle toolbar button.  If state is defined then set to state do not
+toggle.  State can come as 0 | 1 and normal | disabled.
+
+=head2 get_bgcolor
+
+Return the background color of the main window.
+
+Must be setup like this in run_screen method of every screen
+
+...
+
+=head2 app_toolbar_names
+
+Configuration for toolbar buttons.
+
+Get Toolbar names as array reference from screen config.
+
+=head2 make_toolbar_for_table
+
+Make toolbar for Table control, usually with I<add> and I<remove>
+buttons.
+
+=cut
