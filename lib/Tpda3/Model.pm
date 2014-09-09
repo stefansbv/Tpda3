@@ -1092,7 +1092,11 @@ sub other_data {
     my $id_tt         = $tt_aref->[0]{id_tt};
 
     # Common data for all templates
-    my $common_table = $self->get_template_datasources($id_tt)->{common_data};
+    my $tt_datasources = $self->get_template_datasources($id_tt);
+    my $common_table
+        = ( ref $tt_datasources eq 'HASH' )
+        ? $tt_datasources->{common_data}
+        : undef;
     my %common;
     if ($common_table) {
         $args             = {};
