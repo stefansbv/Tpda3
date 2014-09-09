@@ -1,9 +1,6 @@
 # tpda3
 # Main configuration
 ---
-interface:
-  toolbar: etc/interfaces/toolbar.yml
-  menubar: etc/interfaces/menubar.yml
 runtime:
   docspath: /tmp
 resource:
