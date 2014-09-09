@@ -1,28 +1,11 @@
 package Tpda3::Config::Menu;
 
+# ABSTRACT: Menu configurations
+
 use Mouse;
 use Locale::TextDomain 1.20 qw(Tpda3);
 use namespace::autoclean;
 
-=encoding utf8
-
-=head1 NAME
-
-Tpda3::Config::Menu
-
-=head1 VERSION
-
-Version 0.89
-
-=cut
-
-our $VERSION = 0.89;
-
-=head1 SYNOPSIS
-
-=head1 METHODS
-
-=cut
 
 has 'menu_names' => (
     traits  => ['Array'],
@@ -35,6 +18,7 @@ has 'menu_names' => (
         all_menus => 'elements',
     },
 );
+
 
 has 'menu' => (
     traits  => ['Hash'],
@@ -156,24 +140,4 @@ has 'menu' => (
 
 __PACKAGE__->meta->make_immutable;
 
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-None known.
-
-Please report any bugs or feature requests to the author.
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation.
-
-=cut
-
-1;    # End of Tpda3::Config::Menu
+1;

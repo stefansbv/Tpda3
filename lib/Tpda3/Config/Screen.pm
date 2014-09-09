@@ -15,11 +15,11 @@ sub new {
 
     my $self = {
         _cfg => Tpda3::Config->instance(),
-        _scr => $self->load_conf( $args->{scrcfg} ),
     };
 
     bless $self, $class;
 
+    $self->{_scr} = $self->load_conf( $args->{scrcfg} );
     $self->alter_toolbar_state;
 
     return $self;
@@ -35,10 +35,10 @@ sub cfg {
 sub load_conf {
     my ($self, $name) = @_;
 
-    my $config_file = $self->cfg->config_scr_file_name($name);
-    my $config_href = $self->cfg->config_data_from($config_file);
+    my $conf_file = $self->cfg->config_scr_file_name($name);
+    my $conf_href = $self->cfg->config_data_from($conf_file);
 
-    return $config_href;
+    return $conf_href;
 }
 
 
@@ -201,14 +201,12 @@ sub repo_table_header_info {
 
 sub app_dateformat {
     my $self = shift;
-
     return $self->cfg->application->{dateformat} || 'iso';
 }
 
 
 sub app_toolbar_attribs {
     my $self = shift;
-
     return $self->cfg->toolbar2;
 }
 
@@ -244,7 +242,7 @@ sub repo_table_columns_by_level {
 }
 
 
-sub alter_toolbar {
+sub alter_toolbar_state {
     my $self = shift;
 
     my $tb_m = $self->cfg->toolbar();
@@ -557,79 +555,4 @@ to the related Tk::TableMatrix widget, filtered by the I<level>.
 
 Columns with no level ...
 
-
-sub repo_table_columns_by_level {
-    my ( $self, $level ) = @_;
-
-    my $cols = $self->repotable('columns');
-
-    $level = 'level' . $level;
-    my $dss;
-
-    foreach my $col ( keys %{$cols} ) {
-        my $ds = ref $cols->{$col}{datasource}
-               ? $cols->{$col}{datasource}{$level}
-               : $cols->{$col}{datasource};
-        next unless $ds;
-        $dss->{$ds} = [] unless exists $dss->{$ds};
-        push @{ $dss->{$ds} }, $col;
-    }
-
-    return $dss;
-}
-
-
-sub alter_toolbar_state {
-    my $self = shift;
-
-    my $tb_m = $self->cfg->toolbar();
-    my $tb_a = $self->toolbar();
-
-    foreach my $tb ( keys %{$tb_a} ) {
-        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
-            foreach my $k ( keys %{ $tb_a->{$tb}{state}{$pg} } ) {
-                $tb_m->{$tb}{state}{$pg}{$k} = $tb_a->{$tb}{state}{$pg}{$k};
-            }
-        }
-    }
-
-    $self->cfg->toolbar($tb_m);
-
-    return;
-}
-
-=head1 AUTHOR
-
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to the author.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Tpda3::Config::Screen
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2010-2014 Stefan Suciu.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 dated June, 1991 or at your option
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License is available in the source tree;
-if not, write to the Free Software Foundation, Inc.,
-59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
 =cut
-
-1;    # End of Tpda3::Config::Screen
