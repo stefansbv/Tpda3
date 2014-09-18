@@ -4,8 +4,6 @@ package Tpda3::Config::Toolbar;
 
 use Mouse;
 use Locale::TextDomain 1.20 qw(Tpda3);
-use namespace::autoclean;
-
 
 has 'toolnames' => (
     traits  => ['Array'],
@@ -348,5 +346,7 @@ has 'tool' => (
 );
 
 __PACKAGE__->meta->make_immutable;
+
+no Mouse;
 
 1;

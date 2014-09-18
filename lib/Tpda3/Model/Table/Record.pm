@@ -4,10 +4,8 @@ package Tpda3::Model::Table::Record;
 
 use Mouse;
 
-
 has 'name'  => ( is  => 'ro', isa => 'Str' );
 has 'value' => ( is  => 'rw', isa => 'Maybe[Str]' );
-
 
 sub get_href {
     my $self = shift;

@@ -7,7 +7,6 @@ use Mouse::Util::TypeConstraints;
 
 require Tpda3::Model::Table::Record;
 
-
 subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
 
 coerce 'TableRecordObject', from 'ArrayRef', via {
@@ -44,7 +43,6 @@ has '_keys' => (
     },
 );
 
-
 sub find_index_for {
     my ($self, $name) = @_;
     my $key = $self->find_key( sub { $_->name eq $name } );
@@ -54,7 +52,6 @@ sub find_index_for {
     return $key;
 }
 
-
 sub update_key_field {
     my ($self, $name, $new_value) = @_;
 
@@ -63,7 +60,6 @@ sub update_key_field {
     $self->find_index_for($name)->value($new_value);
     return $new_value;
 }
-
 
 sub update_key_index {
     my ( $self, $index, $new_value ) = @_;

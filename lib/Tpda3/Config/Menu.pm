@@ -4,8 +4,6 @@ package Tpda3::Config::Menu;
 
 use Mouse;
 use Locale::TextDomain 1.20 qw(Tpda3);
-use namespace::autoclean;
-
 
 has 'menu_names' => (
     traits  => ['Array'],
@@ -18,7 +16,6 @@ has 'menu_names' => (
         all_menus => 'elements',
     },
 );
-
 
 has 'menu' => (
     traits  => ['Hash'],
@@ -139,5 +136,7 @@ has 'menu' => (
 );
 
 __PACKAGE__->meta->make_immutable;
+
+no Mouse;
 
 1;
