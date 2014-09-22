@@ -12,7 +12,6 @@ use Wx::Perl::ListCtrl;
 
 use base qw{Wx::Dialog};
 
-
 sub new {
     my $class = shift;
 
@@ -28,7 +27,6 @@ sub new {
 
     return $self;
 }
-
 
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
@@ -218,7 +216,6 @@ sub search_dialog {
     return $dlg;
 }
 
-
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
 
@@ -258,7 +255,6 @@ sub search_command {
     return;
 }
 
-
 sub get_selected_item {
     my $self = shift;
 
@@ -280,7 +276,6 @@ sub get_selected_item {
     return $row_data;
 }
 
-
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
 
@@ -291,7 +286,6 @@ sub refresh_message {
     return;
 }
 
-
 sub refresh_filter {
     my ( $self, $text, $color ) = @_;
 
@@ -300,7 +294,6 @@ sub refresh_filter {
 
     return;
 }
-
 
 sub make_list_header {
     my ( $self, $columns_aref, $header_attr ) = @_;
@@ -321,7 +314,6 @@ sub make_list_header {
 
     return;
 }
-
 
 sub choices {
     my ( $self, $choice ) = @_;

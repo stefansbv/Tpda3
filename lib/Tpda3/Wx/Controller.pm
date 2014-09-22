@@ -17,7 +17,6 @@ require Tpda3::Config::Utils;
 
 use base qw{Tpda3::Controller};
 
-
 sub new {
     my $class = shift;
 
@@ -42,7 +41,6 @@ sub new {
     return $self;
 }
 
-
 sub _init {
     my $self = shift;
 
@@ -53,7 +51,6 @@ sub _init {
     return;
 }
 
-
 sub start_delay {
     my $self = shift;
 
@@ -61,7 +58,6 @@ sub start_delay {
 
     return;
 }
-
 
 sub dialog_login {
     my $self = shift;
@@ -81,7 +77,6 @@ sub dialog_login {
     return $return_string;
 }
 
-
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
 
@@ -98,7 +93,6 @@ sub screen_module_class {
     return ( $module_class, $module_file );
 }
 
-
 sub _set_event_handlers_keys {
     my $self = shift;
 
@@ -108,7 +102,6 @@ sub _set_event_handlers_keys {
 
     return;
 }
-
 
 sub _set_event_handler_nb {
     my $self = shift;
@@ -144,13 +137,11 @@ sub _set_event_handler_nb {
     return;
 }
 
-
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
 
     return;
 }
-
 
 sub about {
     my $self = shift;
@@ -192,7 +183,6 @@ sub about {
 
     return;
 }
-
 
 sub guide {
     my $self = shift;

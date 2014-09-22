@@ -19,7 +19,6 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 
-
 sub new {
     my $type = shift;
 
@@ -33,19 +32,16 @@ sub new {
     return $self;
 }
 
-
 sub _log {
     my $self = shift;
 
     return $self->{_log};
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
-
 
 sub tex_from_template {
     my ($self, $rec, $model_file, $output_path) = @_;
@@ -105,7 +101,6 @@ sub tex_from_template {
     return path( $output_path, qq{$model.tex} );
 }
 
-
 sub pdf_from_latex {
     my ($self, $tex_file, $docspath, $suffix) = @_;
 
@@ -164,7 +159,6 @@ sub pdf_from_latex {
     return $output_pdf;
 }
 
-
 sub find_pdflatex {
     my $self = shift;
 
@@ -184,7 +178,6 @@ sub find_pdflatex {
     return;
 }
 
-
 sub check_pdflatex {
     my ($self, $exe) = @_;
 
@@ -197,7 +190,6 @@ sub check_pdflatex {
 
     return $exe;
 }
-
 
 sub extract_tt_fields {
     my ($self, $model_file) = @_;

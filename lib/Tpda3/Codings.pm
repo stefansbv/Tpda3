@@ -5,7 +5,6 @@ package Tpda3::Codings;
 use strict;
 use warnings;
 
-
 sub new {
     my ($class, $model) = @_;
 
@@ -18,7 +17,6 @@ sub new {
 
     return $self;
 }
-
 
 sub get_coding_init {
     my ( $self, $field, $para, $widget ) = @_;
@@ -58,7 +56,6 @@ sub get_coding_init {
 
     return $self->{_code}{$field};
 }
-
 
 sub get_coding {
     my ( $self, $field, $val ) = @_;

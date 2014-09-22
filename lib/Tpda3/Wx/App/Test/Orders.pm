@@ -22,7 +22,6 @@ use Tpda3::Wx::Grid::DataTable;
 
 Wx::XmlResource::AddSubclassFactory( Tpda3::Wx::Factory->new );
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -113,12 +112,10 @@ sub run_screen {
     return;
 }
 
-
 sub XRC {
     my ( $self, $object ) = @_;
     return  $self->{frame}->FindWindow(Wx::XmlResource::GetXRCID($object) );
 }
-
 
 sub make_bitmap {
     my ( $self, $icon ) = @_;

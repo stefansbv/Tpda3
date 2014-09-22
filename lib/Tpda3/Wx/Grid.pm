@@ -28,7 +28,6 @@ my %translation_table = (
     numeric      => 'double',
 );
 
-
 sub new {
     my ( $class, $parent, $columns ) = @_;
 
@@ -83,7 +82,6 @@ sub new {
 
     return $self;
 }
-
 
 sub on_key_down {
     my ( $self, $evt ) = @_;
@@ -192,7 +190,6 @@ sub set_selected {
     return;
 }
 
-
 sub fill {
     my ( $self, $record_ref ) = @_;
 
@@ -212,7 +209,6 @@ sub fill {
 
     return;
 }
-
 
 sub data_read {
     my $self = shift;

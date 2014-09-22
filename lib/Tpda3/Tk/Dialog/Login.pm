@@ -11,7 +11,6 @@ use Tk;
 require Tpda3::Config;
 require Tpda3::Utils;
 
-
 sub new {
     my $type = shift;
 
@@ -21,7 +20,6 @@ sub new {
 
     return $self;
 }
-
 
 sub login {
     my ( $self, $mw, $message ) = @_;

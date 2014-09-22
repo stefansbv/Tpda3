@@ -10,13 +10,11 @@ use Wx::Event qw(EVT_CALENDAR_SEL_CHANGED);
 use Wx::Calendar;
 use base qw(Wx::PlComboPopup);
 
-
 sub Init {
     my( $self ) = @_;
 
     $self->{value} = "";
 }
-
 
 sub Create {
     my( $self, $parent ) = @_;

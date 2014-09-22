@@ -13,7 +13,6 @@ use Tk::MListbox;
 use Tk::StatusBar;
 use Tk::JComboBox;
 
-
 sub new {
     my ($class, $opts) = @_;
 
@@ -23,7 +22,6 @@ sub new {
 
     return $self;
 }
-
 
 sub search_dialog {
     my ( $self, $view, $para, $filter ) = @_;
@@ -298,7 +296,6 @@ sub search_dialog {
     }
 }
 
-
 sub search_command {
     my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
 
@@ -345,7 +342,6 @@ sub search_command {
     return;
 }
 
-
 sub refresh_message {
     my ( $self, $text, $color ) = @_;
 
@@ -354,7 +350,6 @@ sub refresh_message {
 
     return;
 }
-
 
 sub refresh_filter_message {
     my ( $self, $text, $color ) = @_;

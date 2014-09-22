@@ -5,7 +5,6 @@ package Tpda3::Tk::Validation;
 use strict;
 use warnings;
 
-
 sub new {
     my ( $class, $scrcfg, $view ) = @_;
 
@@ -30,7 +29,6 @@ sub new {
     return $self;
 }
 
-
 sub init_cfgdata {
     my ( $self, $tm_ds ) = @_;
 
@@ -43,13 +41,11 @@ sub init_cfgdata {
     return;
 }
 
-
 sub column_name_from_idx {
     my ( $self, $tm_ds, $col_idx ) = @_;
 
     return $self->{$tm_ds}{$col_idx};
 }
-
 
 sub maintable_attribs {
     my ( $self, $column ) = @_;
@@ -59,7 +55,6 @@ sub maintable_attribs {
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
-
 sub deptable_attribs {
     my ( $self, $tm_ds, $column ) = @_;
 
@@ -68,7 +63,6 @@ sub deptable_attribs {
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
-
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
 
@@ -76,7 +70,6 @@ sub validate_entry {
 
     return $self->validate( $type, $p1, $valid_width, $numscale, $column );
 }
-
 
 sub validate_table_cell {
     my ( $self, $tm_ds, $row, $col, $old, $new, $cidx ) = @_;
@@ -88,7 +81,6 @@ sub validate_table_cell {
 
     return $self->validate( $type, $new, $valid_width, $numscale, $column );
 }
-
 
 sub validate {
     my ( $self, $proc, $p1, $maxlen, $numscale, $column ) = @_;
@@ -110,7 +102,6 @@ sub validate {
     return $retval;
 }
 
-
 sub alpha {
     my ( $self, $myvar, $maxlen ) = @_;
 
@@ -125,7 +116,6 @@ sub alpha {
         return 0;
     }
 }
-
 
 sub alphanum {
     my ( $self, $myvar, $maxlen ) = @_;
@@ -142,7 +132,6 @@ sub alphanum {
     }
 }
 
-
 sub alphanumplus {
     my ( $self, $myvar, $maxlen ) = @_;
 
@@ -158,7 +147,6 @@ sub alphanumplus {
     }
 }
 
-
 sub integer {
     my ( $self, $myvar, $maxlen ) = @_;
 
@@ -173,7 +161,6 @@ sub integer {
         return 0;
     }
 }
-
 
 sub numeric {
     my ( $self, $myvar, $maxlen, $numscale ) = @_;
@@ -197,7 +184,6 @@ sub numeric {
     }
 }
 
-
 sub anychar {
     my ( $self, $myvar, $maxlen ) = @_;
 
@@ -213,7 +199,6 @@ sub anychar {
     }
 }
 
-
 sub email {
     my ( $self, $myvar, $maxlen ) = @_;
 
@@ -228,7 +213,6 @@ sub email {
         return 0;
     }
 }
-
 
 sub date {
     my ( $self, $myvar, $maxlen ) = @_;

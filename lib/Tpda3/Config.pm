@@ -21,7 +21,6 @@ require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
 
-
 sub _new_instance {
     my ( $class, $args ) = @_;
 
@@ -49,7 +48,6 @@ sub _new_instance {
 
     return $self;
 }
-
 
 sub init_configurations {
     my ( $self, $args ) = @_;
@@ -106,7 +104,6 @@ sub init_configurations {
     return;
 }
 
-
 sub get_default_mnemonic {
     my $self = shift;
 
@@ -125,7 +122,6 @@ sub get_default_mnemonic {
     }
 }
 
-
 sub pick_default_mnemonic {
     my $self = shift;
 
@@ -139,7 +135,6 @@ sub pick_default_mnemonic {
 
     return 'test-tk';           # fallback to test-tk
 }
-
 
 sub set_default_mnemonic {
     my ($self, $mnemonic) = @_;
@@ -167,7 +162,6 @@ sub set_default_mnemonic {
     return;
 }
 
-
 sub make_accessors {
     my ( $self, $cfg_hr ) = @_;
 
@@ -180,7 +174,6 @@ sub make_accessors {
 
     return;
 }
-
 
 sub config_main_load {
     my ( $self, $args ) = @_;
@@ -204,23 +197,6 @@ sub config_main_load {
 
     return $maincfg;
 }
-
-
-# sub config_interfaces_load {
-#     my $self = shift;
-
-#     foreach my $section ( keys %{ $self->cfiface } ) {
-#         print " $section\n";
-#         next if $section =~ /^(menu|tool)bar$/; # *bar are deprecated, skip
-#         print " loding\n";
-#         my $res_file = catfile( $self->cfpath, $self->cfiface->{$section} );
-#         my $res_data_hr = $self->config_data_from($res_file);
-#         $self->make_accessors($res_data_hr);
-#     }
-
-#     return;
-# }
-
 
 sub config_runtime_load {
     my $self = shift;
@@ -249,7 +225,6 @@ sub config_runtime_load {
     return;
 }
 
-
 sub validate_config {
     my ( $self, $cfname ) = @_;
 
@@ -268,7 +243,6 @@ sub validate_config {
     return $@ ? 0 : 1;
 }
 
-
 sub config_file_name {
     my ( $self, $cfg_name, $cfg_file ) = @_;
 
@@ -276,7 +250,6 @@ sub config_file_name {
 
     return catfile( $self->configdir($cfg_name), $cfg_file);
 }
-
 
 sub list_mnemonics {
     my ( $self, $mnemonic ) = @_;
@@ -293,7 +266,6 @@ sub list_mnemonics {
 
     return;
 }
-
 
 sub list_mnemonics_all {
     my $self = shift;
@@ -321,7 +293,6 @@ sub list_mnemonics_all {
     return;
 }
 
-
 sub list_mnemonic_details_for {
     my ($self, $mnemonic) = @_;
 
@@ -347,7 +318,6 @@ sub list_mnemonic_details_for {
     return;
 }
 
-
 sub get_details_for {
     my ($self, $mnemonic) = @_;
 
@@ -363,7 +333,6 @@ sub get_details_for {
     return $conn_ref;
 }
 
-
 sub get_mnemonics {
     my $self = shift;
 
@@ -378,18 +347,15 @@ sub get_mnemonics {
     return \@mnemonics;
 }
 
-
 sub instance_file {
     my $self = shift;
     return catfile( $self->configdir, 'etc', 'instance.yml' );
 }
 
-
 sub administrator_file {
     my $self = shift;
     return catfile( $self->configdir, 'etc', 'administrator.yml' );
 }
-
 
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
@@ -400,14 +366,12 @@ sub config_save_instance {
     return;
 }
 
-
 sub config_load_instance {
     my $self = shift;
     my $cfg_hr = $self->config_data_from( $self->instance_file, 'notfatal' );
     $self->make_accessors($cfg_hr);
     return;
 }
-
 
 sub config_load_administrator {
     my $self = shift;
@@ -416,7 +380,6 @@ sub config_load_administrator {
     $self->make_accessors($cfg_hr);
     return;
 }
-
 
 sub toolbar_interface_reload {
     my $self = shift;
@@ -428,7 +391,6 @@ sub toolbar_interface_reload {
 
     return;
 }
-
 
 sub config_init {
     my ( $self, $cfname, $new_cfname ) = @_;
@@ -447,7 +409,6 @@ sub config_init {
     return;
 }
 
-
 sub configdir {
     my ( $self, $cfname ) = @_;
 
@@ -456,13 +417,11 @@ sub configdir {
     return catdir( $self->cfapps, $cfname );
 }
 
-
 sub sharedir {
     my ( $self, $cfname ) = @_;
     $cfname ||= $self->cfname;
     return catdir( dist_dir('Tpda3'), 'apps', $cfname );
 }
-
 
 sub configdir_populate {
     my ( $self, $cfname, $new_cfname ) = @_;
@@ -496,12 +455,10 @@ sub configdir_populate {
     return;
 }
 
-
 sub get_log_filename {
 
     return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
-
 
 sub config_data_from {
     my ( $self, $conf_file, $not_fatal ) = @_;
@@ -535,7 +492,6 @@ sub config_data_from {
     return;
 }
 
-
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
 
@@ -556,7 +512,6 @@ sub config_scr_file_name {
     }
 }
 
-
 sub list_config_files {
     my $self = shift;
 
@@ -572,7 +527,6 @@ sub list_config_files {
     return;
 }
 
-
 sub application_class {
     my ( $self, $widgetset, $module ) = @_;
 
@@ -581,7 +535,6 @@ sub application_class {
 
     return qq{Tpda3::${widgetset}::App::${module}};
 }
-
 
 sub resource_path_for {
     my ($self, $name, @type) = @_;
@@ -594,19 +547,16 @@ sub resource_path_for {
     }
 }
 
-
 sub resource_data_for {
     my ($self, $file_name, $res_path) = @_;
     my $cfg_file = $self->resource_path_for($file_name, $res_path);
     return $self->config_data_from($cfg_file);
 }
 
-
 sub menubar {
     my $self = shift;
     return $self->{_mb};
 }
-
 
 sub toolbar {
     my $self = shift;

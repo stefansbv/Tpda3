@@ -5,7 +5,6 @@ package Tpda3::Wx::App::Test;
 use strict;
 use warnings;
 
-
 sub application_name {
     my $name = "Test and demo application for Tpda3\n";
     $name .= "Author: Stefan Suciu\n";

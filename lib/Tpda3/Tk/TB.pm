@@ -10,13 +10,11 @@ use base qw{Tk::Derived Tk::ToolBar};
 
 Tk::Widget->Construct('TB');
 
-
 sub Populate {
     my ( $self, $args ) = @_;
     $self->SUPER::Populate($args);
     return;
 }
-
 
 sub make_toolbar_button {
     my ( $self, $name, $attribs ) = @_;
@@ -24,7 +22,6 @@ sub make_toolbar_button {
     $self->$type( $name, $attribs );
     return;
 }
-
 
 sub set_initial_mode {
     my ($self, $names) = @_;
@@ -50,7 +47,6 @@ sub set_initial_mode {
     return;
 }
 
-
 sub _item_normal {
     my ( $self, $name, $attribs ) = @_;
 
@@ -74,7 +70,6 @@ sub _item_normal {
     return;
 }
 
-
 sub _item_check {
     my ( $self, $name, $attribs ) = @_;
 
@@ -96,7 +91,6 @@ sub _item_check {
     return;
 }
 
-
 sub _item_legend {
     my ( $self, $name, $attribs ) = @_;
 
@@ -115,13 +109,11 @@ sub _item_legend {
     return;
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
     return $self->{$name};
 }
-
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -146,7 +138,6 @@ sub enable_tool {
 
     return;
 }
-
 
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;

@@ -7,7 +7,6 @@ use warnings;
 
 use base 'Tpda3::Tk::Screen';
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 

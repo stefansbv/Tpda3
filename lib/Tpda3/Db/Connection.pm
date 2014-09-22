@@ -12,7 +12,6 @@ use DBI;
 require Tpda3::Exceptions;
 require Tpda3::Config;
 
-
 sub new {
     my ($class, $model) = @_;
 
@@ -22,7 +21,6 @@ sub new {
 
     return $self;
 }
-
 
 sub _connect {
     my ($self, $model) = @_;

@@ -19,7 +19,6 @@ BEGIN {
     bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;
 }
 
-
 sub new {
     my ( $class, $args ) = @_;
 
@@ -31,7 +30,6 @@ sub new {
 
     return $self;
 }
-
 
 sub _init {
     my ( $self, $args ) = @_;
@@ -60,7 +58,6 @@ sub _init {
 
     return;
 }
-
 
 sub run {
     my $self = shift;

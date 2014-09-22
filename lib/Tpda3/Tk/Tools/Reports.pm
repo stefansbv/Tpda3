@@ -17,7 +17,6 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -208,7 +207,6 @@ sub run_screen {
 
     return;
 }
-
 
 sub report_file {
     my $self = shift;

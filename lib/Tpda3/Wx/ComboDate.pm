@@ -9,7 +9,6 @@ use Wx qw{wxTE_PROCESS_ENTER};
 use Tpda3::Wx::DatePopup;
 use base qw{Tpda3::Wx::ComboCtrl};
 
-
 sub new {
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;
 

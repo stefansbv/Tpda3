@@ -8,7 +8,6 @@ use warnings;
 use Wx qw (wxTE_PROCESS_ENTER);
 use base qw{Wx::ComboCtrl};
 
-
 sub new {
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;
 

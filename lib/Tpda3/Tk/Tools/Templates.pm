@@ -17,7 +17,6 @@ use File::ShareDir qw(dist_dir);
 require Tpda3::Config;
 require Tpda3::Utils;
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -111,7 +110,6 @@ sub run_screen {
 
     my $my_font = $eid_tt->cget('-font');    # font
 
-
     #--- Datasources
 
     my $frm_ds = $rec_page->LabFrame(
@@ -175,7 +173,6 @@ sub run_screen {
         -left      => [ %0,  $f1d ],
         -padbottom => 5,
     );
-
 
     #-- Frame bottom
 
@@ -275,7 +272,6 @@ sub run_screen {
 
     return;
 }
-
 
 sub template_file {
     my $self = shift;

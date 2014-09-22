@@ -13,7 +13,6 @@ use Wx::ArtProvider qw(:artid);
 require Tpda3::Utils;
 require Tpda3::Config::Screen;
 
-
 sub new {
     my ( $class, $args ) = @_;
 
@@ -26,7 +25,6 @@ sub new {
     return $self;
 }
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -34,7 +32,6 @@ sub run_screen {
 
     return;
 }
-
 
 sub get_controls {
     my ($self, $field) = @_;
@@ -46,7 +43,6 @@ sub get_controls {
         return $self->{controls};
     }
 }
-
 
 sub get_tm_controls {
     my ( $self, $tm_ds ) = @_;
@@ -61,7 +57,6 @@ sub get_tm_controls {
     }
 }
 
-
 sub get_rq_controls {
     my $self = shift;
 
@@ -70,13 +65,11 @@ sub get_rq_controls {
     return $self->{rq_controls};
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
     return $self->{tb}->get_toolbar_btn($name);
 }
-
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -88,13 +81,11 @@ sub enable_tool {
     return;
 }
 
-
 sub get_bgcolor {
     my $self = shift;
 
     return $self->{bg};
 }
-
 
 sub app_toolbar_names {
     my ($self, $name) = @_;
@@ -104,7 +95,6 @@ sub app_toolbar_names {
 
     return ( $toolbars, $attribs );
 }
-
 
 sub make_toolbar_for_table {
     my ( $self, $name, $tb_frame, $article_sbs ) = @_;

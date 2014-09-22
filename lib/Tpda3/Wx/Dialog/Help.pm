@@ -26,7 +26,6 @@ sub new {
     return bless( $self, $class );
 }
 
-
 sub show_html_help {
     my ($self, $guide_file) = @_;
 

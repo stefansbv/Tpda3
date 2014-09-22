@@ -15,13 +15,11 @@ use Tpda3::Utils;
 
 use base q{Tpda3::Tk::Screen};
 
-
 sub new {
     my $class = shift;
 
     return bless( {}, $class );
 }
-
 
 sub select_dialog {
     my ( $self, $view, $para, $filter ) = @_;

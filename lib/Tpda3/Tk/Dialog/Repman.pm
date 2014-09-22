@@ -19,7 +19,6 @@ require Tpda3::Lookup;
 
 use base q{Tpda3::Tk::Screen};
 
-
 sub new {
     my $class = shift;
 
@@ -34,7 +33,6 @@ sub new {
 
     return $self;
 }
-
 
 sub run_screen {
     my ( $self, $view ) = @_;
@@ -440,7 +438,6 @@ sub run_screen {
     return;
 }
 
-
 sub select_idx {
     my ($self, $sel) = @_;
 
@@ -451,7 +448,6 @@ sub select_idx {
     return;
 }
 
-
 sub dlg_exit {
     my $self = shift;
 
@@ -459,7 +455,6 @@ sub dlg_exit {
 
     return;
 }
-
 
 sub load_report_list {
     my ($self, $sc) = @_;
@@ -491,7 +486,6 @@ sub load_report_list {
 
     return;
 }
-
 
 sub load_report_details {
     my $self = shift;
@@ -550,7 +544,6 @@ sub load_report_details {
     return;
 }
 
-
 sub preview_report {
     my $self = shift;
 
@@ -581,7 +574,6 @@ sub preview_report {
     return;
 }
 
-
 sub get_parameters {
     my $self = shift;
 
@@ -609,7 +601,6 @@ sub get_parameters {
 
     return $parameters;
 }
-
 
 sub update_value {
     my ($self, $view, $p_no) = @_;

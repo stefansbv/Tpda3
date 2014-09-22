@@ -13,7 +13,6 @@ use Tk::widgets qw< Checkbutton >;
 
 Tk::Widget->Construct('TM');
 
-
 sub ClassInit {
     my ( $class, $mw ) = @_;
 
@@ -42,7 +41,6 @@ sub ClassInit {
     return;
 }
 
-
 sub Populate {
     my ( $self, $args ) = @_;
 
@@ -50,7 +48,6 @@ sub Populate {
 
     return $self;
 }
-
 
 sub init {
     my ( $self, $frame, $args ) = @_;
@@ -69,7 +66,6 @@ sub init {
     return;
 }
 
-
 sub get_row_count {
     my $self = shift;
 
@@ -78,7 +74,6 @@ sub get_row_count {
 
     return $rows_count;
 }
-
 
 sub set_tags {
     my $self = shift;
@@ -202,7 +197,6 @@ sub set_tags {
     return;
 }
 
-
 sub clear_all {
     my $self = shift;
 
@@ -216,7 +210,6 @@ sub clear_all {
 
     return;
 }
-
 
 sub fill {
     my ( $self, $record_ref ) = @_;
@@ -265,7 +258,6 @@ sub fill {
     return;
 }
 
-
 sub write_row {
     my ( $self, $row, $col, $record_ref ) = @_;
 
@@ -301,7 +293,6 @@ sub write_row {
 
     return $nr_col;
 }
-
 
 sub data_read {
     my ($self, $with_sel_name) = @_;
@@ -352,7 +343,6 @@ sub data_read {
     return ( \@tabledata, $sc );
 }
 
-
 sub cell_read {
     my ( $self, $row, $col ) = @_;
 
@@ -375,8 +365,6 @@ sub cell_read {
 
     return { $col_name => $cell_value };
 }
-
-
 
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
@@ -405,7 +393,6 @@ sub cell_write {
 
     return;
 }
-
 
 sub add_row {
     my $self = shift;
@@ -448,7 +435,6 @@ sub add_row {
     return $new_r;
 }
 
-
 sub remove_row {
     my ( $self, $row ) = @_;
 
@@ -479,7 +465,6 @@ sub remove_row {
     return;
 }
 
-
 sub get_active_row {
     my $self = shift;
 
@@ -492,7 +477,6 @@ sub get_active_row {
 
     return $r;
 }
-
 
 sub renum_row {
     my $self = shift;
@@ -508,7 +492,6 @@ sub renum_row {
     return;
 }
 
-
 sub tmatrix_make_selector {
     my ( $self, $c ) = @_;
 
@@ -521,7 +504,6 @@ sub tmatrix_make_selector {
 
     return;
 }
-
 
 sub embeded_buttons {
     my ( $self, $row, $col ) = @_;
@@ -553,7 +535,6 @@ sub embeded_buttons {
     return;
 }
 
-
 sub build_rbbutton {
     my ( $self, $row, $col, $selecolor ) = @_;
 
@@ -573,12 +554,10 @@ sub build_rbbutton {
     return $button;
 }
 
-
 sub get_selected {
     my $self = shift;
     return $self->{tm_sel};
 }
-
 
 sub set_selected {
     my ( $self, $selected_row ) = @_;
@@ -593,12 +572,10 @@ sub set_selected {
     return;
 }
 
-
 sub get_selector {
     my $self = shift;
     return $self->{selectorcol};
 }
-
 
 sub build_ckbutton {
     my ( $self, $row, $col ) = @_;
@@ -614,7 +591,6 @@ sub build_ckbutton {
 
     return $button;
 }
-
 
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
@@ -635,7 +611,6 @@ sub toggle_ckbutton {
     return;
 }
 
-
 sub is_checked {
     my ($self, $r, $c) = @_;
 
@@ -653,7 +628,6 @@ sub is_checked {
 
     return $is_checked;
 }
-
 
 sub count_is_checked {
     my ($self, $c) = @_;

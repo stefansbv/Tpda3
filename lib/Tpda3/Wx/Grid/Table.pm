@@ -19,7 +19,6 @@ my %default = (
     double  => 0.00,
 );
 
-
 sub new {
     my ( $class, $gdt, $grid ) = @_;
 
@@ -31,13 +30,11 @@ sub new {
     return $self;
 }
 
-
 sub GetView {
     my $self = shift;
 
     return $self->{view};
 }
-
 
 sub GetNumberRows {
     my $self = shift;
@@ -45,13 +42,11 @@ sub GetNumberRows {
     return $self->{gdt}->get_row_num;
 }
 
-
 sub GetNumberCols {
     my $self = shift;
 
     return $self->{gdt}->get_col_num;
 }
-
 
 sub IsEmptyCell {
     my ( $self, $row, $col ) = @_;
@@ -60,7 +55,6 @@ sub IsEmptyCell {
         ? 0
         : 1;
 }
-
 
 sub GetValue {
     my ( $self, $row, $col ) = @_;
@@ -84,7 +78,6 @@ sub get_data_all {
 
     return $self->{gdt}->get_row_data;
 }
-
 
 sub SetValue {
     my ( $self, $row, $col, $value ) = @_;
@@ -130,12 +123,10 @@ sub SetValueAsBool { shift->SetValue( @_ ); }
 
 ###
 
-
 sub InsertRows {
     my ( $self, $pos, $rows ) = @_;
     return 0;
 }
-
 
 sub AppendRows {
     my ( $self, $pos, $rows ) = @_;
@@ -164,7 +155,6 @@ sub AppendRows {
 
     return 1;
 }
-
 
 sub DeleteRows {
     my ( $self, $pos, $rows ) = @_;
@@ -198,13 +188,11 @@ sub DeleteRows {
     return 1;
 }
 
-
 sub GetRowLabelValue {
     my ($self, $row) = @_;
 
     return "r$row";
 }
-
 
 sub GetColLabelValue {
     my ($self, $col) = @_;
@@ -212,20 +200,17 @@ sub GetColLabelValue {
     return  $self->{gdt}->get_col_attrib($col,'label');
 }
 
-
 sub SetRowLabelValue {
     my ($self, $row, $label) = @_;
 
     return;
 }
 
-
 sub SetColLabelValue {
     my ($self, $col, $label) = @_;
 
     return;
 }
-
 
 sub GetAttr {
     my ( $self, $row, $col, $kind ) = @_;

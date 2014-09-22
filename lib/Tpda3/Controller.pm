@@ -28,7 +28,6 @@ require Tpda3::Lookup;
 require Tpda3::Selected;
 require Tpda3::Model::Table;
 
-
 sub new {
     my $class = shift;
 
@@ -50,7 +49,6 @@ sub new {
 
     return $self;
 }
-
 
 sub start {
     my $self = shift;
@@ -76,7 +74,6 @@ sub start {
 
     return;
 }
-
 
 sub connect_dialog {
     my $self = shift;
@@ -114,24 +111,20 @@ sub connect_dialog {
     return;
 }
 
-
 sub model {
     my $self = shift;
     return $self->{_model};
 }
-
 
 sub view {
     my $self = shift;
     return $self->{_view};
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
-
 
 sub table_key {
     my ($self, $page, $name) = @_;
@@ -145,12 +138,10 @@ sub table_key {
     return $self->{_tblkeys}{$page}{$name};
 }
 
-
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
-
 
 sub dialog_login {
     my $self = shift;
@@ -158,20 +149,17 @@ sub dialog_login {
     return;
 }
 
-
 sub message_dialog {
     my ($message, $details, $icon, $type) = @_;
     print 'message_tiler not implemented in ', __PACKAGE__, "\n";
     return;
 }
 
-
 sub message_tiler {
     my ($self, $message, $record);
     print 'message_tiler not implemented in ', __PACKAGE__, "\n";
     return;
 }
-
 
 sub _set_event_handlers {
     my $self = shift;
@@ -404,13 +392,11 @@ sub _set_event_handlers {
     return;
 }
 
-
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
     print '_init not implemented in ', __PACKAGE__, "\n";
     return;
 }
-
 
 sub toggle_detail_tab {
     my $self = shift;
@@ -425,7 +411,6 @@ sub toggle_detail_tab {
     }
     return;
 }
-
 
 sub on_page_rec_activate {
     my $self = shift;
@@ -468,13 +453,11 @@ sub on_page_rec_activate {
     return;
 }
 
-
 sub on_page_lst_activate {
     my $self = shift;
     $self->set_app_mode('sele');
     return;
 }
-
 
 sub on_page_det_activate {
     my $self = shift;
@@ -511,7 +494,6 @@ sub on_page_det_activate {
     return;
 }
 
-
 sub screen_detail_name {
     my $self = shift;
     my $screen = $self->scrcfg('rec')->screen('details');
@@ -527,7 +509,6 @@ sub screen_detail_name {
     return $dsm;
 }
 
-
 sub get_selected_and_store_key {
     my $self = shift;
 
@@ -541,7 +522,6 @@ sub get_selected_and_store_key {
 
     return;
 }
-
 
 sub tmx_read_selected {
     my $self = shift;
@@ -561,7 +541,6 @@ sub tmx_read_selected {
     return $det_params;
 }
 
-
 sub screen_detail_load {
     my ( $self, $dsm ) = @_;
     my $dscrstr = $self->screen_string('det');
@@ -570,7 +549,6 @@ sub screen_detail_load {
     }
     return;
 }
-
 
 sub get_dsm_name {
     my ( $self, $detscr ) = @_;
@@ -591,7 +569,6 @@ sub get_dsm_name {
     return $dsm[0]{name};
 }
 
-
 sub _set_menus_state {
     my ( $self, $state ) = @_;
     foreach my $menu (qw(mn_fm mn_fe mn_fc)) {
@@ -603,7 +580,6 @@ sub _set_menus_state {
     }
     return;
 }
-
 
 sub _check_app_menus {
     my $self = shift;
@@ -619,7 +595,6 @@ sub _check_app_menus {
     }
     return;
 }
-
 
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
@@ -707,7 +682,6 @@ sub setup_lookup_bindings_entry {
     return;
 }
 
-
 sub filter_field {
     my ($self, $filter_field) = @_;
 
@@ -718,7 +692,6 @@ sub filter_field {
     return { $filter_field => $filter_value };
 }
 
-
 sub setup_bindings_table {
     my $self = shift;
 
@@ -726,7 +699,6 @@ sub setup_bindings_table {
 
     return;
 }
-
 
 sub setup_select_bindings_entry {
     my ( $self, $page ) = @_;
@@ -803,7 +775,6 @@ sub setup_select_bindings_entry {
     return;
 }
 
-
 sub add_dispatch_for_lookup {
     my ( $self, $bnd ) = @_;
 
@@ -812,7 +783,6 @@ sub add_dispatch_for_lookup {
     return { $bindcol => \&lookup_call };
 }
 
-
 sub add_dispatch_for_method {
     my ( $self, $bnd ) = @_;
 
@@ -820,7 +790,6 @@ sub add_dispatch_for_method {
 
     return { $bindcol => \&method_call };
 }
-
 
 sub method_for {
     my ( $self, $dispatch, $bindings, $r, $c, $tm_ds ) = @_;
@@ -833,7 +802,6 @@ sub method_for {
 
     return $skip_cols;
 }
-
 
 sub lookup_call {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
@@ -861,7 +829,6 @@ sub lookup_call {
     return $skip_cols;
 }
 
-
 sub method_call {
     my ( $self, $bnd, $r, $c ) = @_;
 
@@ -880,7 +847,6 @@ sub method_call {
 
     return 1;    # skip_cols
 }
-
 
 sub get_lookup_setings {
     my ( $self, $bnd, $r, $c, $tm_ds ) = @_;
@@ -955,7 +921,6 @@ SWITCH: for ( ref $bindings->{field} ) {
     return $lk_para;
 }
 
-
 sub fields_cfg_array {
     my ( $self, $bindings, $tm_ds ) = @_;
 
@@ -983,7 +948,6 @@ sub fields_cfg_array {
 
     return \@cols;
 }
-
 
 sub fields_cfg_hash {
     my ( $self, $bindings, $tm_ds ) = @_;
@@ -1016,7 +980,6 @@ sub fields_cfg_hash {
     return \@cols;
 }
 
-
 sub set_app_mode {
     my ( $self, $mode ) = @_;
 
@@ -1039,14 +1002,12 @@ sub set_app_mode {
                  # probably missing something :) TODO!
 }
 
-
 sub is_record {
     my $self  = shift;
     my $table = $self->table_key( 'rec', 'main' );
     return if !$table or !$table->isa('Tpda3::Model::Table');
     return $table->get_key(0)->value;
 }
-
 
 sub on_screen_mode_idle {
     my $self = shift;
@@ -1072,7 +1033,6 @@ sub on_screen_mode_idle {
 
     return;
 }
-
 
 sub on_screen_mode_add {
     my $self = shift;
@@ -1104,7 +1064,6 @@ sub on_screen_mode_add {
     return;
 }
 
-
 sub on_screen_mode_find {
     my $self = shift;
 
@@ -1127,7 +1086,6 @@ sub on_screen_mode_find {
     return;
 }
 
-
 sub on_screen_mode_edit {
     my $self = shift;
 
@@ -1144,7 +1102,6 @@ sub on_screen_mode_edit {
     return;
 }
 
-
 sub on_screen_mode_sele {
     my $self = shift;
 
@@ -1153,7 +1110,6 @@ sub on_screen_mode_sele {
 
     return;
 }
-
 
 sub _control_states_init {
     my $self = shift;
@@ -1188,7 +1144,6 @@ sub _control_states_init {
     return;
 }
 
-
 sub scrcfg {
     my ( $self, $page ) = @_;
 
@@ -1208,7 +1163,6 @@ sub scrcfg {
 
     return;
 }
-
 
  sub scrobj {
     my ( $self, $page ) = @_;
@@ -1230,7 +1184,6 @@ sub scrcfg {
     return;
 }
 
-
 sub application_class {
     my $self = shift;
 
@@ -1239,7 +1192,6 @@ sub application_class {
     return;
 }
 
-
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
 
@@ -1247,7 +1199,6 @@ sub screen_module_class {
 
     return;
 }
-
 
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
@@ -1385,8 +1336,6 @@ sub screen_module_load {
     return 1;                       # to make ok from Test::More happy
 }
 
-
-
 sub screen_init_keys {
     my ($self, $page, $scrcfg) = @_;
 
@@ -1432,7 +1381,6 @@ sub screen_init_keys {
     return;
 }
 
-
 sub check_cfg_version {
     my $self = shift;
 
@@ -1465,11 +1413,9 @@ sub check_cfg_version {
     }
 }
 
-
 sub set_event_handler_screen {
     print 'set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
 }
-
 
 sub screen_module_detail_load {
     my ( $self, $module ) = @_;
@@ -1540,7 +1486,6 @@ sub screen_module_detail_load {
     return;
 }
 
-
 sub screen_string {
     my ( $self, $page ) = @_;
 
@@ -1563,7 +1508,6 @@ sub screen_string {
     return lc $scrstr;
 }
 
-
 sub save_geometry {
     my $self = shift;
 
@@ -1579,7 +1523,6 @@ sub save_geometry {
     return;
 }
 
-
 sub set_mnemonic {
     my $self = shift;
 
@@ -1587,7 +1530,6 @@ sub set_mnemonic {
 
     return;
 }
-
 
 sub set_geometry {
     my $self = shift;
@@ -1613,7 +1555,6 @@ sub set_geometry {
     return;
 }
 
-
 sub set_app_configs {
     my $self = shift;
 
@@ -1621,7 +1562,6 @@ sub set_app_configs {
 
     return;
 }
-
 
 sub screen_load_lists {
     my $self = shift;
@@ -1662,7 +1602,6 @@ sub screen_load_lists {
 
     return;
 }
-
 
 sub toggle_interface_controls {
     my $self = shift;
@@ -1718,7 +1657,6 @@ sub toggle_interface_controls {
     return;
 }
 
-
 sub toggle_screen_interface_controls {
     my $self = shift;
 
@@ -1743,7 +1681,6 @@ sub toggle_screen_interface_controls {
 
     return;
 }
-
 
 sub record_find_execute {
     my $self = shift;
@@ -1820,7 +1757,6 @@ sub record_find_execute {
     return;
 }
 
-
 sub record_find_count {
     my $self = shift;
 
@@ -1863,7 +1799,6 @@ sub record_find_count {
 
     return;
 }
-
 
 sub screen_report_print {
     my $self = shift;
@@ -1912,7 +1847,6 @@ sub screen_report_print {
 
     return;
 }
-
 
 sub screen_document_generate {
     my $self = shift;
@@ -1982,7 +1916,6 @@ sub screen_document_generate {
     return;
 }
 
-
 sub get_alternate_data_record {
     my ( $self, $datasource ) = @_;
 
@@ -2007,7 +1940,6 @@ sub get_alternate_data_record {
 
     return \@rec;
 }
-
 
 sub screen_read {
     my ($self, $all) = @_;
@@ -2044,7 +1976,6 @@ sub screen_read {
     return;
 }
 
-
 sub ctrl_read_from {
     my ($self, $field, $date_format) = @_;
 
@@ -2063,7 +1994,6 @@ sub ctrl_read_from {
 
     return $value;
 }
-
 
 sub clean_and_save_value {
     my ($self, $field, $value, $ctrltype) = @_;
@@ -2106,7 +2036,6 @@ sub clean_and_save_value {
 
     return;
 }
-
 
 sub screen_write {
     my ( $self, $record ) = @_;
@@ -2157,7 +2086,6 @@ sub screen_write {
     return;
 }
 
-
 sub ctrl_write_to {
     my ($self, $field, $value, $state, $date_format) = @_;
 
@@ -2176,7 +2104,6 @@ sub ctrl_write_to {
     return;
 }
 
-
 sub make_empty_record {
     my $self = shift;
 
@@ -2191,7 +2118,6 @@ sub make_empty_record {
     return $record;
 }
 
-
 sub tmatrix_get_selected {
     my $self = shift;
 
@@ -2205,7 +2131,6 @@ sub tmatrix_get_selected {
     return $sc;
 }
 
-
 sub tmatrix_set_selected {
     my ( $self, $row ) = @_;
 
@@ -2217,7 +2142,6 @@ sub tmatrix_set_selected {
 
     return;
 }
-
 
 sub toggle_mode_find {
     my $self = shift;
@@ -2236,7 +2160,6 @@ sub toggle_mode_find {
 
     return;
 }
-
 
 sub toggle_mode_add {
     my $self = shift;
@@ -2257,7 +2180,6 @@ sub toggle_mode_add {
 
     return;
 }
-
 
 sub controls_state_set {
     my ( $self, $set_state ) = @_;
@@ -2313,7 +2235,6 @@ sub controls_state_set {
     return;
 }
 
-
 sub format_number {
     my ( $self, $value, $numscale ) = @_;
 
@@ -2326,13 +2247,11 @@ sub format_number {
     return $value;
 }
 
-
 sub control_states {
     my ( $self, $state ) = @_;
 
     return $self->{control_states}{$state};
 }
-
 
 sub record_load_new {
     my ( $self, $selected_href ) = @_;
@@ -2350,7 +2269,6 @@ sub record_load_new {
     return;
 }
 
-
 sub record_reload {
     my $self = shift;
 
@@ -2365,7 +2283,6 @@ sub record_reload {
 
     return;
 }
-
 
 sub record_load {
     my $self = shift;
@@ -2420,7 +2337,6 @@ sub record_load {
     return;
 }
 
-
 sub event_record_delete {
     my $self = shift;
 
@@ -2436,7 +2352,6 @@ sub event_record_delete {
 
     return;
 }
-
 
 sub record_delete {
     my $self = shift;
@@ -2474,7 +2389,6 @@ sub record_delete {
     return;
 }
 
-
 sub record_clear {
     my $self = shift;
 
@@ -2488,7 +2402,6 @@ sub record_clear {
                                           # undef = unloaded
     return;
 }
-
 
 sub ask_to_save {
     my ($self, $page) = @_;
@@ -2519,7 +2432,6 @@ sub ask_to_save {
     return 1;
 }
 
-
 sub ask_to {
     my ( $self, $for_action ) = @_;
 
@@ -2542,7 +2454,6 @@ sub ask_to {
     # Message dialog
     return $self->view->dialog_confirm($message, $details, 'question', 'ycn');
 }
-
 
 sub record_save {
     my $self = shift;
@@ -2601,7 +2512,6 @@ sub record_save {
 
     return;
 }
-
 
 sub check_required_data {
     my ($self, $record) = @_;
@@ -2673,7 +2583,6 @@ sub check_required_data {
     return;
 }
 
-
 sub record_save_insert {
     my ( $self, $record ) = @_;
 
@@ -2695,8 +2604,6 @@ sub record_save_insert {
     return $pk_val;
 }
 
-
-
 sub list_update_add {
     my $self = shift;
 
@@ -2713,7 +2620,6 @@ sub list_update_add {
     return;
 }
 
-
 sub list_remove {
     my $self = shift;
 
@@ -2726,7 +2632,6 @@ sub list_remove {
 
     return;
 }
-
 
 sub record_changed {
     my $self = shift;
@@ -2745,7 +2650,6 @@ sub record_changed {
     return $self->model->record_compare( $witness, $record );
 }
 
-
 sub take_note {
     my $self = shift;
 
@@ -2758,7 +2662,6 @@ sub take_note {
 
     return;
 }
-
 
 sub restore_note {
     my $self = shift;
@@ -2773,7 +2676,6 @@ sub restore_note {
     return;
 }
 
-
 sub storable_file_name {
     my ( $self, $orig ) = @_;
 
@@ -2787,7 +2689,6 @@ sub storable_file_name {
 
     return $data_file;
 }
-
 
 sub get_screen_data_record {
     my ( $self, $for_sql, $all ) = @_;
@@ -2830,7 +2731,6 @@ sub get_screen_data_record {
     return \@record;
 }
 
-
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
 
@@ -2863,7 +2763,6 @@ sub main_table_metadata {
 
     return $metadata;
 }
-
 
 sub dep_table_metadata {
     my ( $self, $tm, $for_sql ) = @_;
@@ -2901,7 +2800,6 @@ sub dep_table_metadata {
     return $metadata;
 }
 
-
 sub report_table_metadata {
     my ( $self, $level ) = @_;
 
@@ -2934,7 +2832,6 @@ sub report_table_metadata {
     return $metadata;
 }
 
-
 sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
 
@@ -2942,7 +2839,6 @@ sub get_table_sumup_cols {
 
     return $metadata->{'=sumup'};
 }
-
 
 sub save_screendata {
     my ( $self, $data_file ) = @_;
@@ -2953,7 +2849,6 @@ sub save_screendata {
 
     return store( $record, $data_file );
 }
-
 
 sub restore_screendata {
     my ( $self, $data_file ) = @_;
@@ -2992,7 +2887,6 @@ sub restore_screendata {
     return 1;
 }
 
-
 sub screen_store_key_values {
     my ( $self, $record_href ) = @_;
 
@@ -3005,7 +2899,6 @@ sub screen_store_key_values {
 
     return;
 }
-
 
 sub screen_clear_key_values {
     my $self = shift;
@@ -3020,7 +2913,6 @@ sub screen_clear_key_values {
     return;
 }
 
-
 sub list_column_names {
     my $self = shift;
 
@@ -3034,7 +2926,6 @@ sub list_column_names {
     return $columns;
 }
 
-
 sub flatten_cfg {
     my ( $self, $level, $attribs ) = @_;
     my %flatten;
@@ -3046,7 +2937,6 @@ sub flatten_cfg {
     }
     return \%flatten;
 }
-
 
 sub record_merge_columns {
     my ($self, $record, $header) = @_;
@@ -3067,7 +2957,6 @@ sub record_merge_columns {
     return \%hr;
 }
 
-
 sub DESTROY {
     my $self = shift;
 
@@ -3087,7 +2976,6 @@ sub DESTROY {
     # }
 }
 
-
 sub on_quit {
     my $self = shift;
 
@@ -3095,7 +2983,6 @@ sub on_quit {
 
     $self->view->on_close_window(@_);
 }
-
 
 sub catch_db_exceptions {
     my ($self, $exc) = @_;
@@ -3126,7 +3013,6 @@ sub catch_db_exceptions {
     return;
 }
 
-
 sub catch_data_exceptions {
     my ($self, $exc) = @_;
 
@@ -3145,7 +3031,6 @@ sub catch_data_exceptions {
 
     return;
 }
-
 
 sub reset_tb_button_state {
     my $self = shift;

@@ -25,7 +25,6 @@ require Tpda3::Utils;
 require Tpda3::Wx::Notebook;
 require Tpda3::Wx::ToolBar;
 
-
 sub new {
     my $class = shift;
     my $model = shift;
@@ -66,20 +65,17 @@ sub new {
     return $self;
 }
 
-
 sub model {
     my $self = shift;
 
     $self->{_model};
 }
 
-
 sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
 }
-
 
 sub _set_model_callbacks {
     my $self = shift;
@@ -101,7 +97,6 @@ sub _set_model_callbacks {
     return;
 }
 
-
 sub title {
     my ($self, $string) = @_;
 
@@ -109,7 +104,6 @@ sub title {
 
     return;
 }
-
 
 sub update_gui_components {
     my $self = shift;
@@ -138,7 +132,6 @@ SWITCH: {
     return;
 }
 
-
 sub _create_menu {
     my $self = shift;
 
@@ -154,7 +147,6 @@ sub _create_menu {
 
     return;
 }
-
 
 sub get_menubar_merged_labels {
     my $self = shift;
@@ -194,7 +186,6 @@ sub get_menubar_merged_labels {
     return merge( $menucfg, $labels );
 }
 
-
 sub _create_app_menu {
     my $self = shift;
 
@@ -203,7 +194,6 @@ sub _create_app_menu {
 
     return;
 }
-
 
 sub make_menus {
     my ( $self, $attribs, $position ) = @_;
@@ -242,7 +232,6 @@ sub make_menus {
     return;
 }
 
-
 sub get_app_menus_list {
     my $self = shift;
 
@@ -260,7 +249,6 @@ sub get_app_menus_list {
 
     return \@menulist;
 }
-
 
 sub make_popup_item {
     my ( $self, $menu, $item, $id ) = @_;
@@ -288,13 +276,11 @@ sub make_popup_item {
     return;
 }
 
-
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
 
     return $self->{$name};
 }
-
 
 sub get_menubar {
     my $self = shift;
@@ -312,7 +298,6 @@ sub set_menu_state {
 
     return;
 }
-
 
 sub _create_toolbar {
     my $self = shift;
@@ -333,7 +318,6 @@ sub _create_toolbar {
     return;
 }
 
-
 sub toolbar_names {
     my $self = shift;
 
@@ -346,7 +330,6 @@ sub toolbar_names {
 
     return ( $toolbars, $attribs );
 }
-
 
 sub get_toolbar_merged_labels {
     my $self = shift;
@@ -411,7 +394,6 @@ sub get_toolbar_merged_labels {
     return merge($toolcfg, $labels);
 }
 
-
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
 
@@ -419,7 +401,6 @@ sub enable_tool {
 
     return;
 }
-
 
 sub _create_statusbar {
     my $self = shift;
@@ -434,13 +415,11 @@ sub _create_statusbar {
     return;
 }
 
-
 sub get_statusbar {
     my $self = shift;
 
     return $self->{_sb};
 }
-
 
 sub dialog_confirm {
     my ( $self, $message, $details ) = @_;
@@ -467,7 +446,6 @@ sub dialog_confirm {
     }
 }
 
-
 sub dialog_info {
     my ( $self, $message, $details ) = @_;
 
@@ -477,7 +455,6 @@ sub dialog_info {
     return;
 }
 
-
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
 
@@ -486,7 +463,6 @@ sub dialog_error {
 
     return;
 }
-
 
 sub create_notebook {
     my $self = shift;
@@ -560,7 +536,6 @@ sub get_nb_previous_page {
     return $nb->{nb_prev};
 }
 
-
 sub get_notebook {
     my ( $self, $page ) = @_;
 
@@ -572,7 +547,6 @@ sub get_notebook {
     }
 }
 
-
 sub destroy_notebook {
     my $self = shift;
 
@@ -581,13 +555,11 @@ sub destroy_notebook {
     return;
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
     return $self->{_tb}->get_toolbar_btn($name);
 }
-
 
 sub get_toolbar {
     my $self = shift;
@@ -595,20 +567,17 @@ sub get_toolbar {
     return $self->{_tb};
 }
 
-
 sub get_recordlist {
     my $self = shift;
 
     return $self->{_rc};
 }
 
-
 sub get_control_by_name {
     my ( $self, $name ) = @_;
 
     return $self->{$name},;
 }
-
 
 sub log_config_options {
     my $self = shift;
@@ -621,7 +590,6 @@ sub log_config_options {
         $self->log_msg("II Config: '$key' set to '$value'");
     }
 }
-
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
@@ -653,7 +621,6 @@ sub set_status {
 
     return;
 }
-
 
 sub log_msg {
     my ( $self, $msg ) = @_;
@@ -704,7 +671,6 @@ sub log_msg {
 #     $ctrl->Colourise( 0, $ctrl->GetTextLength );
 # }
 
-
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
 
@@ -718,7 +684,6 @@ sub toggle_status_cn {
 
     return;
 }
-
 
 sub make_list_header {
     my ( $self, $header_look, $header_cols, $fields ) = @_;
@@ -753,7 +718,6 @@ sub make_list_header {
     return;
 }
 
-
 sub header_width {
     my ( $self, $field ) = @_;
 
@@ -769,7 +733,6 @@ sub header_width {
 
     return $field_attr;
 }
-
 
 sub list_header {
     my ( $self, $col, $colcnt ) = @_;
@@ -793,13 +756,11 @@ sub list_header {
     return;
 }
 
-
 sub get_list_text_col {
     my ( $self, $row, $col ) = @_;
 
     return $self->get_recordlist->GetItemText( $row, $col );
 }
-
 
 sub get_list_text_row {
     my ( $self, $row ) = @_;
@@ -814,25 +775,21 @@ sub get_list_text_row {
     return \@row_text;
 }
 
-
 sub set_list_text {
     my ( $self, $row, $col, $text ) = @_;
     $self->get_recordlist->SetItemText( $row, $col, $text );
 }
-
 
 sub set_list_data {
     my ( $self, $item, $data_href ) = @_;
     $self->get_recordlist->SetItemData( $item, $data_href );
 }
 
-
 sub get_list_data {
     my ( $self, $item ) = @_;
 
     return $self->get_recordlist->GetItemData($item);
 }
-
 
 sub list_item_select_first {
     my $self = shift;
@@ -843,7 +800,6 @@ sub list_item_select_first {
         $self->get_recordlist->Select( 0, 1 );
     }
 }
-
 
 sub list_item_select_last {
     my $self = shift;
@@ -857,13 +813,11 @@ sub list_item_select_last {
     return;
 }
 
-
 sub get_list_max_index {
     my $self = shift;
 
     return $self->get_recordlist->GetItemCount();
 }
-
 
 sub get_list_selected_index {
     my $self = shift;
@@ -888,25 +842,21 @@ sub get_list_selected_index {
 #     $self->set_list_data($indice, $file );
 # }
 
-
 sub list_string_item_insert {
     my ( $self, $indice ) = @_;
     $self->get_recordlist->InsertStringItem( $indice, 'dummy' );
 }
-
 
 sub list_item_clear {
     my ( $self, $item ) = @_;
     $self->get_recordlist->DeleteItem($item);
 }
 
-
 sub list_item_clear_all {
     my $self = shift;
 
     $self->get_recordlist->DeleteAllItems;
 }
-
 
 sub list_remove_selected {
     my ( $self, $pk_val, $fk_val ) = @_;
@@ -942,7 +892,6 @@ sub list_remove_selected {
     return;
 }
 
-
 sub list_remove_item {
     my $self = shift;
 
@@ -958,7 +907,6 @@ sub list_remove_item {
     return $file;
 }
 
-
 sub list_init {
     my $self = shift;
 
@@ -966,7 +914,6 @@ sub list_init {
 
     return;
 }
-
 
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
@@ -1010,7 +957,6 @@ sub list_populate {
     return $record_count;
 }
 
-
 sub has_list_records {
     my $self = shift;
 
@@ -1030,7 +976,6 @@ sub has_list_records {
 
     return $row_count;
 }
-
 
 sub list_read_selected {
     my $self = shift;
@@ -1065,7 +1010,6 @@ sub list_read_selected {
     return \%selected;
 }
 
-
 sub list_raise {
     my $self = shift;
 
@@ -1074,7 +1018,6 @@ sub list_raise {
 
     return;
 }
-
 
 sub on_list_item_activated {
     my ($self, $callback) = @_;
@@ -1085,7 +1028,6 @@ sub on_list_item_activated {
 
     return;
 }
-
 
 sub get_listcontrol {
     my $self = shift;
@@ -1102,7 +1044,6 @@ sub on_notebook_page_changed {
 
     return;
 }
-
 
 sub get_geometry {
     my $self = shift;
@@ -1125,7 +1066,6 @@ sub get_geometry {
     return $geom;
 }
 
-
 sub set_geometry {
     my ( $self, $geom ) = @_;
 
@@ -1135,7 +1075,6 @@ sub set_geometry {
 
     return;
 }
-
 
 sub on_close_window {
     my $self = shift;
@@ -1177,7 +1116,6 @@ sub list_control_choices {
     return;
 }
 
-
 sub control_write_e {
     my ( $self, $field, $control_ref, $value ) = @_;
 
@@ -1194,7 +1132,6 @@ sub control_write_e {
     return;
 }
 
-
 sub control_write_t {
     my ( $self, $field ) = @_;
 
@@ -1202,7 +1139,6 @@ sub control_write_t {
 
     return;
 }
-
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $format ) = @_;
@@ -1231,7 +1167,6 @@ sub control_write_d {
     return;
 }
 
-
 sub control_write_m {
     my ( $self, $field, $control_ref, $value ) = @_;
 
@@ -1249,7 +1184,6 @@ sub control_write_m {
 
 #-- Read from controls
 
-
 sub control_read_e {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1263,7 +1197,6 @@ sub control_read_e {
     return $control->GetValue;
 }
 
-
 sub control_read_t {
     my ( $self, $field ) = @_;
 
@@ -1271,7 +1204,6 @@ sub control_read_t {
 
     return;
 }
-
 
 sub control_read_d {
     my ( $self, $field, $control_ref ) = @_;
@@ -1292,7 +1224,6 @@ sub control_read_d {
     }
 }
 
-
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1305,7 +1236,6 @@ sub control_read_m {
 
     return $control->get_selected();
 }
-
 
 sub configure_controls {
     my ($self, $control, $state, $bg_color, $fld_cfg) = @_;
@@ -1325,13 +1255,11 @@ sub configure_controls {
     return;
 }
 
-
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
 
     return;
 }
-
 
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;

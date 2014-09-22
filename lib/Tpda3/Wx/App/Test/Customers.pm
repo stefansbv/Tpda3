@@ -8,7 +8,6 @@ use warnings;
 use Wx qw{:everything};
 use base 'Tpda3::Wx::Screen';
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -286,9 +285,7 @@ sub run_screen {
     return;
 }
 
-
 sub gbpos { Wx::GBPosition->new(@_) }
-
 
 sub gbspan { Wx::GBSpan->new(@_) }
 

@@ -8,7 +8,6 @@ use warnings;
 use Wx qw(:everything);
 use base qw{Wx::ToolBar};
 
-
 sub new {
     my ( $class, $gui ) = @_;
 
@@ -24,7 +23,6 @@ sub new {
 
     return $self;
 }
-
 
 sub make_toolbar_buttons {
     my ( $self, $toolbars, $attribs, $ico_path ) = @_;
@@ -42,7 +40,6 @@ sub make_toolbar_buttons {
 
     return;
 }
-
 
 sub _item_normal {
     my ( $self, $name, $attribs, $ico_path ) = @_;
@@ -62,7 +59,6 @@ sub _item_normal {
     return;
 }
 
-
 sub _item_check {
     my ( $self, $name, $attribs, $ico_path ) = @_;
 
@@ -81,13 +77,11 @@ sub _item_check {
     return;
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
 
     return $self->{$name};
 }
-
 
 sub make_bitmap {
     my ( $self, $ico_path, $icon ) = @_;
@@ -96,7 +90,6 @@ sub make_bitmap {
 
     return $bmp;
 }
-
 
 sub _item_list {
 
@@ -124,7 +117,6 @@ sub _item_list {
     return;
 }
 
-
 sub get_choice_options {
     my ( $self, $index ) = @_;
 
@@ -139,7 +131,6 @@ sub get_choice_options {
         return $self->{options};
     }
 }
-
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
@@ -172,7 +163,6 @@ sub enable_tool {
 
     return;
 }
-
 
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;

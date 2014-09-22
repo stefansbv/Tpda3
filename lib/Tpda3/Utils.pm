@@ -10,7 +10,6 @@ use Encode qw(is_utf8 decode);
 
 require Tpda3::Exceptions;
 
-
 my $transformations = {
     datey   => \&year_month,
     dateym  => \&year_month,
@@ -20,7 +19,6 @@ my $transformations = {
     nothing => \&do_error,
     error   => \&do_error,
 };
-
 
 sub trim {
     my ( $self, @text ) = @_;
@@ -32,7 +30,6 @@ sub trim {
 
     return wantarray ? @text : "@text";
 }
-
 
 sub dateentry_parse_date {
 
@@ -70,7 +67,6 @@ sub dateentry_parse_date {
     return ( $y, $m, $d );
 }
 
-
 sub dateentry_format_date {
 
     my ( $self, $format, $y, $m, $d ) = @_;
@@ -104,7 +100,6 @@ sub dateentry_format_date {
     return $date;
 }
 
-
 sub sort_hash_by_id {
     my ( $self, $attribs ) = @_;
 
@@ -120,7 +115,6 @@ sub sort_hash_by_id {
 
     return wantarray ? @attribs : \@attribs;
 }
-
 
 sub filter_hash_by_keyvalue {
     my ($self, $attribs, $key, $value) = @_;
@@ -141,7 +135,6 @@ sub filter_hash_by_keyvalue {
     return \@attribs;
 }
 
-
 sub quote4like {
     my ( $self, $text, $option ) = @_;
 
@@ -155,7 +148,6 @@ sub quote4like {
         return qq{%$text%};                     # (C)ontains
     }
 }
-
 
 sub special_ops {
     my $self = shift;
@@ -189,7 +181,6 @@ sub special_ops {
     ];
 }
 
-
 sub process_date_string {
     my ( $self, $search_input ) = @_;
 
@@ -198,7 +189,6 @@ sub process_date_string {
 
     return $where;
 }
-
 
 sub identify_date_string {
     my ( $self, $is ) = @_;
@@ -213,7 +203,6 @@ sub identify_date_string {
         : $is =~ m/^(\d{4})$/                             ? "datey:$1"
         :                                                   "dataerr:$is";
 }
-
 
 sub format_query {
     my ( $self, $type ) = @_;
@@ -233,7 +222,6 @@ sub format_query {
     return $where;
 }
 
-
 sub year_month {
     my ( $year, $month ) = @_;
 
@@ -244,19 +232,16 @@ sub year_month {
     return $where;
 }
 
-
 sub date_string {
     my ($date) = @_;
     return $date;
 }
-
 
 sub do_error {
     my ($date) = @_;
     print "String not identified or empty!\n";
     return;
 }
-
 
 sub ins_underline_mark {
     my ( $self, $label, $position ) = @_;
@@ -269,7 +254,6 @@ sub ins_underline_mark {
     return $label;
 }
 
-
 sub deaccent {
     my ( $self, $text ) = @_;
 
@@ -277,7 +261,6 @@ sub deaccent {
 
     return $text;
 }
-
 
 sub check_path {
     my ($self, $path) = @_;
@@ -292,7 +275,6 @@ sub check_path {
     return;
 }
 
-
 sub check_file {
     my ($self, $file) = @_;
 
@@ -306,13 +288,11 @@ sub check_file {
     return;
 }
 
-
 sub decode_unless_utf {
     my ($self, $value) = @_;
     $value = decode( 'utf8', $value ) unless is_utf8($value);
     return $value;
 }
-
 
 sub parse_message {
     my ($self, $text) = @_;

@@ -13,7 +13,6 @@ use Tpda3::Config;
 use Exporter 'import';
 our @EXPORT_OK = qw(test_screen);
 
-
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -27,7 +26,6 @@ BEGIN {
 
     plan tests => 23;
 }
-
 
 sub test_screen {
     my ($args, $screen_module_package) = @_;

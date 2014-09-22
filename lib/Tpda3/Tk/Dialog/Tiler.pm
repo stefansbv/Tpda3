@@ -11,7 +11,6 @@ use Tk::Tiler;
 
 require Tpda3::Utils;
 
-
 sub new {
     my ($class, $view, $opts) = @_;
 
@@ -24,7 +23,6 @@ sub new {
 
     return $self;
 }
-
 
 sub message_tiler {
     my ( $self, $message, $record ) = @_;
@@ -108,7 +106,6 @@ sub message_tiler {
 
     return;
 }
-
 
 sub make_icon {
     my ( $self, $w_bitmap, $icon ) = @_;
@@ -304,8 +301,7 @@ From:
  See the file "license.terms" for information on usage and redistribution
  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-
- Translated to Perl/Tk by Slaven Rezic
+Translated to Perl/Tk by Slaven Rezic
 
  Version: 4.002
 

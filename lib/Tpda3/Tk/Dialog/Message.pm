@@ -10,7 +10,6 @@ use Tk::DialogBox;
 
 require Tpda3::Utils;
 
-
 sub new {
     my ($class, $view, $opts) = @_;
 
@@ -23,7 +22,6 @@ sub new {
 
     return $self;
 }
-
 
 sub message_dialog {
     my ( $self, $message, $details, $icon, $type ) = @_;
@@ -144,7 +142,6 @@ sub message_dialog {
 
     return $answer;
 }
-
 
 sub make_icon {
     my ( $self, $w_bitmap, $icon ) = @_;
@@ -343,7 +340,6 @@ From:
 
  See the file "license.terms" for information on usage and redistribution
  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-
 
  Translated to Perl/Tk by Slaven Rezic
 

@@ -19,7 +19,6 @@ require Tpda3::Observable;
 require Tpda3::Db;
 require Tpda3::Utils;
 
-
 sub new {
     my $class = shift;
 
@@ -38,18 +37,15 @@ sub new {
     return $self;
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
-
 
 sub db_connect {
     my $self = shift;
@@ -62,7 +58,6 @@ sub db_connect {
     }
     return;
 }
-
 
 sub dbh {
     my $self = shift;
@@ -77,31 +72,26 @@ sub dbh {
     return;
 }
 
-
 sub dbc {
     my $self = shift;
     my $db = Tpda3::Db->instance;
     return $db->dbc;
 }
 
-
 sub is_connected {
     my $self = shift;
     return $self->get_connection_observable->get;
 }
-
 
 sub get_connection_observable {
     my $self = shift;
     return $self->{_connected};
 }
 
-
 sub get_stdout_observable {
     my $self = shift;
     return $self->{_stdout};
 }
-
 
 sub _print {
     my ( $self, $data ) = @_;
@@ -109,13 +99,11 @@ sub _print {
     return;
 }
 
-
 sub set_mode {
     my ( $self, $mode ) = @_;
     $self->get_appmode_observable->set($mode);
     return;
 }
-
 
 sub is_mode {
     my ( $self, $ck_mode ) = @_;
@@ -129,18 +117,15 @@ sub is_mode {
     return;
 }
 
-
 sub get_appmode_observable {
     my $self = shift;
     return $self->{_appmode};
 }
 
-
 sub get_appmode {
     my $self = shift;
     return $self->get_appmode_observable->get;
 }
-
 
 sub set_scrdata_rec {
     my ( $self, $state ) = @_;
@@ -148,31 +133,26 @@ sub set_scrdata_rec {
     return;
 }
 
-
 sub unset_scrdata_rec {
     my $self = shift;
     $self->get_scrdata_rec_observable->unset();
     return;
 }
 
-
 sub get_scrdata_rec_observable {
     my $self = shift;
     return $self->{_scrdata_rec};
 }
-
 
 sub is_modified {
     my $self = shift;
     return $self->get_scrdata_rec_observable->get;
 }
 
-
 sub is_loaded {
     my $self = shift;
     return defined $self->get_scrdata_rec_observable->get;
 }
-
 
 sub query_records_count {
     my ( $self, $opts ) = @_;
@@ -201,7 +181,6 @@ sub query_records_count {
     return $record_count;
 }
 
-
 sub query_records_find {
     my ( $self, $opts ) = @_;
 
@@ -228,7 +207,6 @@ sub query_records_find {
 
     return ($ary_ref, $search_limit);
 }
-
 
 sub query_filter_find {
     my ( $self, $opts, $debug ) = @_;
@@ -267,7 +245,6 @@ sub query_filter_find {
     return \@records;
 }
 
-
 sub query_record {
     my ( $self, $opts ) = @_;
 
@@ -288,7 +265,6 @@ sub query_record {
 
     return $hash_ref;
 }
-
 
 sub table_batch_query {
     my ( $self, $opts ) = @_;
@@ -321,7 +297,6 @@ sub table_batch_query {
     return \@records;
 }
 
-
 sub query_dictionary {
     my ( $self, $opts ) = @_;
 
@@ -348,7 +323,6 @@ sub query_dictionary {
 
     return $ary_ref;
 }
-
 
 sub build_sql_where {
     my ( $self, $opts ) = @_;
@@ -411,7 +385,6 @@ sub build_sql_where {
     return $where;
 }
 
-
 sub cmp_function {
     my ( $self, $search_str ) = @_;
 
@@ -454,7 +427,6 @@ sub cmp_function {
     return $cmp;
 }
 
-
 sub tbl_dict_query {
     my ( $self, $para, $label_lbl, $value_lbl ) = @_;
 
@@ -494,7 +466,6 @@ sub tbl_dict_query {
     return \@dictrows;
 }
 
-
 sub tbl_lookup_query {
     my ( $self, $para ) = @_;
 
@@ -524,7 +495,6 @@ sub tbl_lookup_query {
     return $row_rf;
 }
 
-
 sub get_codes {
     my ( $self, $field, $para, $widget ) = @_;
 
@@ -533,7 +503,6 @@ sub get_codes {
 
     return $codes;
 }
-
 
 sub table_record_insert {
     my ( $self, $table, $pkcol, $record ) = @_;
@@ -570,7 +539,6 @@ sub table_record_insert {
     return $pk_id;
 }
 
-
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
 
@@ -589,7 +557,6 @@ sub table_record_update {
     return;
 }
 
-
 sub table_record_select {
     my ( $self, $table, $where ) = @_;
 
@@ -607,7 +574,6 @@ sub table_record_select {
 
     return $hash_ref;
 }
-
 
 sub table_batch_insert {
     my ( $self, $table, $records ) = @_;
@@ -630,7 +596,6 @@ sub table_batch_insert {
 
     return;
 }
-
 
 sub table_record_delete {
     my ( $self, $table, $where ) = @_;
@@ -656,7 +621,6 @@ sub table_record_delete {
 
     return;
 }
-
 
 sub prepare_record_insert {
     my ( $self, $record ) = @_;
@@ -702,7 +666,6 @@ sub prepare_record_insert {
     return $pk_id;
 }
 
-
 sub prepare_record_update {
     my ( $self, $record ) = @_;
 
@@ -744,7 +707,6 @@ sub prepare_record_update {
     return;
 }
 
-
 sub prepare_record_delete {
     my ( $self, $record ) = @_;
 
@@ -774,7 +736,6 @@ sub prepare_record_delete {
     return;
 }
 
-
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
 
@@ -803,7 +764,6 @@ sub table_batch_update {
     return;
 }
 
-
 sub table_update_compare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
 
@@ -829,7 +789,6 @@ sub table_update_compare {
 
     return \@toupdate;
 }
-
 
 sub table_update_prepare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
@@ -857,7 +816,6 @@ sub table_update_prepare {
     return;
 }
 
-
 sub table_insert_prepare {
     my ( $self, $to_insert, $depmeta, $depdata ) = @_;
 
@@ -882,7 +840,6 @@ sub table_insert_prepare {
     return;
 }
 
-
 sub table_delete_prepare {
     my ( $self, $to_delete, $depmeta ) = @_;
 
@@ -896,7 +853,6 @@ sub table_delete_prepare {
     return;
 }
 
-
 sub aoh_column_extract {
     my ( $self, $depdata, $column ) = @_;
 
@@ -908,7 +864,6 @@ sub aoh_column_extract {
 
     return \@dep_data;
 }
-
 
 sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
@@ -934,7 +889,6 @@ sub table_selectcol_as_array {
     return $records;
 }
 
-
 sub record_compare {
     my ( $self, $witness, $record ) = @_;
 
@@ -945,7 +899,6 @@ sub record_compare {
 
     return !$dc->Cmp;
 }
-
 
 sub user_message {
     my ($self, $error) = @_;
@@ -958,7 +911,6 @@ sub user_message {
 
     return $user_message;
 }
-
 
 sub db_exception {
     my ( $self, $exc, $context ) = @_;
@@ -1004,7 +956,6 @@ sub db_exception {
     return;
 }
 
-
 sub report_data {
     my ( $self, $mainmeta, $parentrow ) = @_;
 
@@ -1042,7 +993,6 @@ sub report_data {
     return (\@records, \%levelmeta);
 }
 
-
 sub table_columns {
     my ($self, $table_name) = @_;
 
@@ -1057,12 +1007,10 @@ sub table_columns {
     return \@fields;
 }
 
-
 sub table_keys {
     my ($self, $table_name) = @_;
     return $self->dbc->table_keys($table_name);
 }
-
 
 sub get_template_datasources {
     my ($self, $id_tt) = @_;
@@ -1077,7 +1025,6 @@ sub get_template_datasources {
 
     return $datasources->[0];
 }
-
 
 sub other_data {
     my ($self, $model_name) = @_;
@@ -1125,7 +1072,6 @@ sub other_data {
         \%specific,
     );
 }
-
 
 sub update_or_insert {
     my ($self, $table, $columns, $matching, $records) = @_;

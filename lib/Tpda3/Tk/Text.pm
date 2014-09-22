@@ -10,7 +10,6 @@ use base qw(Tk::Text);
 
 Construct Tk::Widget 'TT';
 
-
 sub ClassInit {
     my ( $class, $mw ) = @_;
 

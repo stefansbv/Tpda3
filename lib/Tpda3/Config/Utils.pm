@@ -17,7 +17,6 @@ use Try::Tiny;
 use YAML::Tiny;
 use Config::General;
 
-
 sub load_conf {
     my ( $self, $config_file ) = @_;
 
@@ -31,7 +30,6 @@ sub load_conf {
 
     return \%config;
 }
-
 
 sub load_yaml {
     my ( $self, $yaml_file ) = @_;
@@ -48,7 +46,6 @@ sub load_yaml {
     return $conf;
 }
 
-
 sub find_subdirs {
     my ( $self, $dir ) = @_;
 
@@ -63,7 +60,6 @@ sub find_subdirs {
     return \@dbs;
 }
 
-
 sub find_files {
     my ( $self, $dir, $ext ) = @_;
 
@@ -77,7 +73,6 @@ sub find_files {
 
     return \@justnames;
 }
-
 
 sub save_yaml {
     my ( $self, $yaml_file, $section, $key, $value ) = @_;
@@ -96,7 +91,6 @@ sub save_yaml {
     return;
 }
 
-
 sub create_path {
     my ( $self, $new_path ) = @_;
 
@@ -112,7 +106,6 @@ sub create_path {
 
     return;
 }
-
 
 sub copy_files {
     my ( $self, $src_fqn, $dst_p ) = @_;
@@ -131,8 +124,6 @@ sub copy_files {
 
     copy( $src_fqn, $dst_p ) or die $!;
 }
-
-
 
 sub get_license {
     my $self = shift;
@@ -156,7 +147,6 @@ END_LICENSE
         return $message;
     }
 }
-
 
 sub get_doc_file_by_name {
     my ($self, $doc_file) = @_;

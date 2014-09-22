@@ -14,7 +14,6 @@ use File::Spec;
 require Tpda3::Config;
 require Tpda3::Config::Utils;
 
-
 sub new {
     my $class = shift;
 
@@ -31,12 +30,10 @@ sub new {
     return $self;
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{cfg};
 }
-
 
 sub _init {
     my $self = shift;
@@ -72,7 +69,6 @@ sub _init {
     return;
 }
 
-
 sub save_as_default {
     my $self = shift;
 
@@ -106,7 +102,6 @@ sub save_as_default {
     return;
 }
 
-
 sub save_yaml_main {
     my ( $self, $section, $key, $value ) = @_;
 
@@ -116,7 +111,6 @@ sub save_yaml_main {
 
     return;
 }
-
 
 sub backup_main {
     my $self = shift;
@@ -132,7 +126,6 @@ sub backup_main {
 
     return;
 }
-
 
 sub make_statusbar {
     my $self = shift;
@@ -152,7 +145,6 @@ sub make_statusbar {
     return;
 }
 
-
 sub _set_status {
     my ( $self, $text, $color ) = @_;
 
@@ -166,7 +158,6 @@ sub _set_status {
 
     return;
 }
-
 
 sub show_cfg_dialog {
     my ( $self, $view ) = @_;
@@ -399,7 +390,6 @@ sub show_cfg_dialog {
     return;
 }
 
-
 sub load_config {
     my $self = shift;
 
@@ -419,7 +409,6 @@ sub load_config {
 
     return;
 }
-
 
 sub update_value {
     my ($self, $field, $type, $strict) = @_;
@@ -449,7 +438,6 @@ sub update_value {
     return;
 }
 
-
 sub dialog_file {
     my ($self, $field) = @_;
 
@@ -477,7 +465,6 @@ sub dialog_file {
     return $path;
 }
 
-
 sub dialog_path {
     my ($self, $field) = @_;
 
@@ -500,7 +487,6 @@ sub dialog_path {
     return $path;
 }
 
-
 sub get_init_dir {
     my ($self, $field) = @_;
 
@@ -513,7 +499,6 @@ sub get_init_dir {
         return $self->{initial_dir};
     }
 }
-
 
 sub update_path_field {
     my ($self, $field, $value, $type) = @_;
@@ -542,7 +527,6 @@ sub update_path_field {
     return;
 
 }
-
 
 sub dlg_exit {
     my $self = shift;

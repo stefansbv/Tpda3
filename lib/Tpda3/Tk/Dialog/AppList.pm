@@ -11,7 +11,6 @@ use Tk::widgets qw(StatusBar LabFrame JComboBox);
 require Tpda3::Config;
 require Tpda3::Tk::TM;
 
-
 sub new {
     my $class = shift;
 
@@ -26,13 +25,11 @@ sub new {
     return $self;
 }
 
-
 sub cfg {
     my $self = shift;
 
     return $self->{_cfg};
 }
-
 
 sub show_app_list {
     my ( $self, $view ) = @_;
@@ -287,7 +284,6 @@ sub show_app_list {
     return;
 }
 
-
 sub load_mnemonics {
     my $self = shift;
 
@@ -318,7 +314,6 @@ sub load_mnemonics {
     return;
 }
 
-
 sub select_default {
     my $self = shift;
 
@@ -333,7 +328,6 @@ sub select_default {
     return;
 }
 
-
 sub select_idx {
     my ($self, $sel) = @_;
 
@@ -345,7 +339,6 @@ sub select_idx {
 
     return;
 }
-
 
 sub load_mnemonic_details_for {
     my ( $self, $rec ) = @_;
@@ -378,7 +371,6 @@ sub load_mnemonic_details_for {
     return;
 }
 
-
 sub save_as_default {
     my $self = shift;
 
@@ -389,7 +381,6 @@ sub save_as_default {
 
     return;
 }
-
 
 sub _set_status {
     my ( $self, $text, $color ) = @_;
@@ -404,7 +395,6 @@ sub _set_status {
 
     return;
 }
-
 
 sub dlg_exit {
     my $self = shift;

@@ -6,7 +6,6 @@ use strict;
 use warnings;
 use utf8;
 
-
 sub new {
     my ($type, $opts) = @_;
 
@@ -33,7 +32,6 @@ sub new {
 
     return $self;
 }
-
 
 sub lookup {
     my ( $self, $view, $para, $filter ) = @_;

@@ -15,7 +15,6 @@ use Tpda3::Config::Screen;
 
 require Tpda3::Tk::Validation;
 
-
 sub new {
     my ( $class, $args ) = @_;
 
@@ -29,7 +28,6 @@ sub new {
     return $self;
 }
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -37,7 +35,6 @@ sub run_screen {
 
     return;
 }
-
 
 sub get_controls {
     my ($self, $field) = @_;
@@ -54,7 +51,6 @@ sub get_controls {
     }
 }
 
-
 sub get_tm_controls {
     my ( $self, $tm_ds ) = @_;
 
@@ -70,7 +66,6 @@ sub get_tm_controls {
     }
 }
 
-
 sub get_rq_controls {
     my $self = shift;
 
@@ -79,12 +74,10 @@ sub get_rq_controls {
     return $self->{rq_controls};
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $tm_ds, $name ) = @_;
     return $self->{tb}{$tm_ds}->get_toolbar_btn($name);
 }
-
 
 sub enable_tool {
     my ( $self, $tm_ds, $btn_name, $state ) = @_;
@@ -97,12 +90,10 @@ sub enable_tool {
     return;
 }
 
-
 sub get_bgcolor {
     my $self = shift;
     return $self->{bg};
 }
-
 
 sub make_toolbar_for_table {
     my ( $self, $toolbar, $tb_frame ) = @_;
@@ -119,7 +110,6 @@ sub make_toolbar_for_table {
     return;
 }
 
-
 sub tmatrix_add_row {
     my ( $self, $tm_ds ) = @_;
 
@@ -129,7 +119,6 @@ sub tmatrix_add_row {
 
     return;
 }
-
 
 sub tmatrix_remove_row {
     my ( $self, $tm_ds ) = @_;
@@ -142,7 +131,6 @@ sub tmatrix_remove_row {
     return;
 }
 
-
 sub app_toolbar_names {
     my ($self, $name) = @_;
 
@@ -152,12 +140,10 @@ sub app_toolbar_names {
     return ( $toolbars, $attribs );
 }
 
-
 sub screen_update {
     my $self = shift;
     return;
 }
-
 
 sub toolscr {
     my $self = shift;

@@ -19,7 +19,6 @@ require Tpda3::Tk::Dialog::Tiler;
 
 use base qw{Tpda3::Controller};
 
-
 sub new {
     my $class = shift;
 
@@ -43,7 +42,6 @@ sub new {
     return $self;
 }
 
-
 sub start_delay {
     my $self = shift;
 
@@ -57,7 +55,6 @@ sub start_delay {
     return;
 }
 
-
 sub _init {
     my $self = shift;
 
@@ -68,7 +65,6 @@ sub _init {
     return;
 }
 
-
 sub dialog_login {
     my ($self, $error) = @_;
 
@@ -77,7 +73,6 @@ sub dialog_login {
 
     return $pd->login( $self->view, $error );
 }
-
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
@@ -94,7 +89,6 @@ sub screen_module_class {
 
     return ( $module_class, $module_file );
 }
-
 
 sub _set_event_handlers_keys {
     my $self = shift;
@@ -151,7 +145,6 @@ sub _set_event_handlers_keys {
     return;
 }
 
-
 sub _set_event_handler_nb {
     my ( $self, $page ) = @_;
 
@@ -192,7 +185,6 @@ sub _set_event_handler_nb {
     return;
 }
 
-
 sub set_event_handler_screen {
     my ( $self, $btn_group ) = @_;
 
@@ -230,7 +222,6 @@ sub set_event_handler_screen {
 
     return;
 }
-
 
 sub setup_bindings_table {
     my $self = shift;
@@ -299,7 +290,6 @@ sub setup_bindings_table {
 
     return;
 }
-
 
 sub about {
     my $self = shift;
@@ -384,7 +374,6 @@ sub about {
     $dbox->Show();
 }
 
-
 sub guide {
     my ($self, $guide_chm) = @_;
 
@@ -416,7 +405,6 @@ sub guide {
     return;
 }
 
-
 sub repman {
     my $self = shift;
 
@@ -430,7 +418,6 @@ sub repman {
     return;
 }
 
-
 sub ttgen {
     my $self = shift;
 
@@ -443,7 +430,6 @@ sub ttgen {
 
     return;
 }
-
 
 sub tmshr_fill_table {
     my $self = shift;
@@ -473,7 +459,6 @@ sub tmshr_fill_table {
     my $nodename = $mainmeta->{pkcol};
     my $countcol = $mainmeta->{rowcount};
     my $sum_up_cols = $self->get_table_sumup_cols($level);
-
 
     my ($records, $levelmeta) = $self->model->report_data($mainmeta);
 
@@ -515,7 +500,6 @@ sub tmshr_fill_table {
     return;
 }
 
-
 sub tmshr_process_level {
     my ($self, $level, $uplevelds, $metadata, $countcol, $header, $tree) = @_;
 
@@ -545,7 +529,6 @@ sub tmshr_process_level {
     return $newleveldata;
 }
 
-
 sub tmshr_format_record {
     my ($self, $level, $rec, $header) = @_;
 
@@ -558,7 +541,6 @@ sub tmshr_format_record {
 
     return $rec;
 }
-
 
 sub tmshr_compute_value {
     my ($self, $field, $record, $attribs) = @_;
@@ -610,7 +592,6 @@ sub tmshr_compute_value {
     return $value;
 }
 
-
 sub tmshr_get_function {
     my ($self, $field, $funcdef) = @_;
 
@@ -637,7 +618,6 @@ sub tmshr_get_function {
     return $self->{$field};
 }
 
-
 sub tmshr_check_varnames {
     my ( $self, $vars ) = @_;
 
@@ -655,7 +635,6 @@ sub tmshr_check_varnames {
     return $check;
 }
 
-
 sub set_mnemonic {
     my $self = shift;
 
@@ -665,7 +644,6 @@ sub set_mnemonic {
 
     return;
 }
-
 
 sub set_app_configs {
     my $self = shift;
@@ -677,14 +655,12 @@ sub set_app_configs {
     return;
 }
 
-
 sub message_dialog {
     my ($self, $message, $details, $icon, $type) = @_;
     my $dlg = Tpda3::Tk::Dialog::Message->new($self->view);
     $dlg->message_dialog($message, $details, $icon, $type);
     return;
 }
-
 
 sub message_tiler {
     my ($self, $message, $record) = @_;

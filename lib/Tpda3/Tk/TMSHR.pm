@@ -14,7 +14,6 @@ use base qw{Tk::Derived Tk::TableMatrix::SpreadsheetHideRows};
 
 Tk::Widget->Construct('TMSHR');
 
-
 sub ClassInit {
     my ( $class, $mw ) = @_;
 
@@ -23,7 +22,6 @@ sub ClassInit {
     return;
 }
 
-
 sub Populate {
     my ( $self, $args ) = @_;
 
@@ -31,7 +29,6 @@ sub Populate {
 
     return $self;
 }
-
 
 sub make_header {
     my ( $self, $args ) = @_;
@@ -43,7 +40,6 @@ sub make_header {
 
     return;
 }
-
 
 sub set_tags {
     my $self = shift;
@@ -146,7 +142,6 @@ sub set_tags {
     return;
 }
 
-
 sub clear_all {
     my $self = shift;
 
@@ -162,7 +157,6 @@ sub clear_all {
 
     return;
 }
-
 
 sub fill_main {
     my ( $self, $record_ref, $countcol ) = @_;
@@ -186,7 +180,6 @@ sub fill_main {
     return;
 }
 
-
 sub fill_details {
     my ( $self, $record_ref ) = @_;
 
@@ -194,7 +187,6 @@ sub fill_details {
 
     return;
 }
-
 
 sub get_main_data {
     my $self = shift;
@@ -230,7 +222,6 @@ sub get_main_data {
 
     return (\@tabledata);
 }
-
 
 sub get_expdata {
     my $self = shift;

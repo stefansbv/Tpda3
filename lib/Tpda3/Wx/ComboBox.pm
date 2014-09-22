@@ -10,7 +10,6 @@ use Wx::Event qw(EVT_SET_FOCUS EVT_CHAR EVT_KEY_DOWN EVT_KEY_UP);
 
 use base qw( Wx::ComboBox );
 
-
 sub new {
     #my $class = shift;
     my ( $class, $parent, $id, $pos, $size, $style ) = @_;

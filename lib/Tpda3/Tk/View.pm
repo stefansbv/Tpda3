@@ -83,18 +83,15 @@ sub new {
     return $self;
 }
 
-
 sub model {
     my $self = shift;
     return $self->{_model};
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
-
 
 sub _set_model_callbacks {
     my $self = shift;
@@ -117,7 +114,6 @@ sub _set_model_callbacks {
     return;
 }
 
-
 sub set_modified_record {
     my $self = shift;
 
@@ -129,7 +125,6 @@ sub set_modified_record {
 
     return;
 }
-
 
 sub update_gui_components {
     my $self = shift;
@@ -160,7 +155,6 @@ SWITCH: {
     return;
 }
 
-
 sub set_geometry_main {
     my $self = shift;
 
@@ -182,26 +176,22 @@ sub set_geometry_main {
     return;
 }
 
-
 sub set_geometry {
     my ( $self, $geom ) = @_;
     $self->geometry($geom);
     return;
 }
 
-
 sub logger {
     my $self = shift;
     return $self->{_log};
 }
-
 
 sub log_msg {
     my ( $self, $msg ) = @_;
     $self->logger->info($msg);
     return;
 }
-
 
 sub _create_menu {
     my $self = shift;
@@ -220,7 +210,6 @@ sub _create_menu {
     return;
 }
 
-
 sub _create_app_menu {
     my $self    = shift;
 
@@ -234,7 +223,6 @@ sub _create_app_menu {
 
     return;
 }
-
 
 sub make_menus {
     my ( $self, $menu_name, $attribs, $position ) = @_;
@@ -265,7 +253,6 @@ sub make_menus {
     return $position;
 }
 
-
 sub get_app_menus_list {
     my $self = shift;
 
@@ -284,7 +271,6 @@ sub get_app_menus_list {
     return \@menulist;
 }
 
-
 sub make_popup_item {
     my ( $self, $menu, $item ) = @_;
 
@@ -301,7 +287,6 @@ sub make_popup_item {
     return;
 }
 
-
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
     die "Popup item name is required" unless $name;
@@ -310,13 +295,11 @@ sub get_menu_popup_item {
     return $self->{_menu}{$name};
 }
 
-
 sub set_menu_state {
         my ( $self, $menu, $state ) = @_;
         $self->get_menu_popup_item($menu)->configure( -state => $state );
         return;
 }
-
 
 sub _create_statusbar {
     my $self = shift;
@@ -379,13 +362,11 @@ sub _create_statusbar {
     return;
 }
 
-
 sub get_statusbar {
     my ( $self, $sb_id ) = @_;
     $sb_id = 'ms' unless $sb_id; # default label: 'ms'
     return $self->{_sb}{$sb_id};
 }
-
 
 sub status_message {
     my ($self, $text) = @_;
@@ -406,7 +387,6 @@ sub status_message {
 
     return;
 }
-
 
 sub set_status {
     my ( $self, $text, $sb_id, $color ) = @_;
@@ -436,7 +416,6 @@ sub set_status {
     return;
 }
 
-
 sub temporized_clear {
     my $self = shift;
 
@@ -455,7 +434,6 @@ sub temporized_clear {
     return;
 }
 
-
 sub _create_toolbar {
     my $self = shift;
 
@@ -473,7 +451,6 @@ sub _create_toolbar {
 
     return;
 }
-
 
 sub create_notebook {
     my ($self) = @_;    # , $det_page
@@ -530,7 +507,6 @@ sub create_notebook {
     return;
 }
 
-
 sub create_notebook_panel {
     my ( $self, $panel, $label ) = @_;
     $self->{_nb}{$panel} = $self->{_nb}->add(
@@ -541,13 +517,11 @@ sub create_notebook_panel {
     return;
 }
 
-
 sub remove_notebook_panel {
     my ( $self, $panel ) = @_;
     $self->{_nb}->delete($panel);
     return;
 }
-
 
 sub get_notebook {
     my ( $self, $page ) = @_;
@@ -559,13 +533,11 @@ sub get_notebook {
     }
 }
 
-
 sub destroy_notebook {
     my $self = shift;
     $self->{_nb}->destroy if Tk::Exists( $self->{_nb} );
     return;
 }
-
 
 sub get_nb_current_page {
     my $self = shift;
@@ -574,7 +546,6 @@ sub get_nb_current_page {
     return $nb->raised();
 }
 
-
 sub set_nb_current {
     my ( $self, $page ) = @_;
     $self->{nb_prev} = $self->{nb_curr};    # previous tab name
@@ -582,12 +553,10 @@ sub set_nb_current {
     return;
 }
 
-
 sub get_nb_previous_page {
     my $self = shift;
     return $self->{nb_prev};
 }
-
 
 sub notebook_page_clean {
     my ( $self, $page ) = @_;
@@ -601,13 +570,11 @@ sub notebook_page_clean {
     return;
 }
 
-
 sub nb_set_page_state {
     my ($self, $page, $state) = @_;
     $self->get_notebook()->pageconfigure( $page, -state => $state );
     return;
 }
-
 
 sub dialog_confirm {
     my ( $self, $message, $details, $icon, $type ) = @_;
@@ -617,7 +584,6 @@ sub dialog_confirm {
 
     return $dlg->message_dialog($message, $details, $icon, $type);
 }
-
 
 sub dialog_info {
     my ( $self, $message, $details, $type ) = @_;
@@ -635,7 +601,6 @@ sub dialog_info {
     return $dialog_i->Show();
 }
 
-
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
     my $dialog_e = $self->MsgBox(
@@ -648,19 +613,16 @@ sub dialog_error {
     return $dialog_e->Show();
 }
 
-
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
     return $self->{_tb}->get_toolbar_btn($name);
 }
-
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
     $self->{_tb}->enable_tool( $btn_name, $state );
     return;
 }
-
 
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
@@ -679,13 +641,11 @@ sub toggle_status_cn {
     return;
 }
 
-
 sub on_close_window {
     my $self = shift;
     $self->destroy();
     return;
 }
-
 
 sub get_geometry {
     my $self = shift;
@@ -706,12 +666,10 @@ sub get_geometry {
     return $geom;
 }
 
-
 sub get_recordlist {
     my $self = shift;
     return $self->{_rc};
 }
-
 
 sub make_list_header {
     my ( $self, $header_look, $header_cols, $fields ) = @_;
@@ -745,7 +703,6 @@ sub make_list_header {
     return;
 }
 
-
 sub list_header {
     my ( $self, $colattr, $colcnt ) = @_;
 
@@ -778,14 +735,12 @@ sub list_header {
     return;
 }
 
-
 sub list_init {
     my $self = shift;
     $self->get_recordlist->selectionClear( 0, 'end' );
     $self->get_recordlist->delete( 0, 'end' );
     return;
 }
-
 
 sub list_populate {
     my ( $self, $ary_ref ) = @_;
@@ -833,14 +788,12 @@ sub list_populate {
     return $record_count;
 }
 
-
 sub list_raise {
     my $self = shift;
     $self->{_nb}->raise('lst');
     $self->get_recordlist->focus;
     return;
 }
-
 
 sub has_list_records {
     my $self = shift;
@@ -861,7 +814,6 @@ sub has_list_records {
 
     return $row_count;
 }
-
 
 sub list_read_selected {
     my $self = shift;
@@ -917,7 +869,6 @@ sub list_read_selected {
     return \%selected;
 }
 
-
 sub list_remove_selected {
     my ( $self, $keys ) = @_;
 
@@ -955,7 +906,6 @@ sub list_remove_selected {
     return;
 }
 
-
 sub list_locate {
     my ( $self, $pk_val, $fk_val ) = @_;
 
@@ -987,13 +937,11 @@ sub list_locate {
     return $idx;
 }
 
-
 sub event_handler_for_menu {
     my ( $self, $name, $calllback ) = @_;
     $self->get_menu_popup_item($name)->configure( -command => $calllback );
     return;
 }
-
 
 sub event_handler_for_tb_button {
     my ( $self, $name, $calllback ) = @_;
@@ -1001,14 +949,12 @@ sub event_handler_for_tb_button {
     return;
 }
 
-
 sub list_control_choices {
     my ($self, $control, $choices) = @_;
     $control->removeAllItems();
     $control->configure( -choices => $choices );
     return;
 }
-
 
 sub control_write_e {
     my ( $self, $field, $control_ref, $value, $state, undef, $fgcolor, $bgcolor ) = @_;
@@ -1037,7 +983,6 @@ sub control_write_e {
     return;
 }
 
-
 sub control_write_t {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
 
@@ -1060,7 +1005,6 @@ sub control_write_t {
 
     return;
 }
-
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $date_format ) = @_;
@@ -1090,7 +1034,6 @@ sub control_write_d {
     return;
 }
 
-
 sub control_write_m {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
 
@@ -1114,7 +1057,6 @@ sub control_write_m {
 
     return;
 }
-
 
 sub control_write_c {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
@@ -1142,7 +1084,6 @@ sub control_write_c {
     return;
 }
 
-
 sub control_write_r {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
 
@@ -1169,7 +1110,6 @@ sub control_write_r {
 
 #-- Read
 
-
 sub control_read_e {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1183,7 +1123,6 @@ sub control_read_e {
     return $control->get;
 }
 
-
 sub control_read_t {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1196,7 +1135,6 @@ sub control_read_t {
 
     return $control->get( '0.0', 'end' );
 }
-
 
 sub control_read_d {
     my ( $self, $field, $control_ref, $date_format ) = @_;
@@ -1226,7 +1164,6 @@ sub control_read_d {
     return $value;
 }
 
-
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1239,7 +1176,6 @@ sub control_read_m {
 
     return ${ $control_ref->[0] };           # value from variable
 }
-
 
 sub control_read_c {
     my ( $self, $field, $control_ref ) = @_;
@@ -1254,7 +1190,6 @@ sub control_read_c {
     return ${ $control_ref->[0] };           # value from variable
 }
 
-
 sub control_read_r {
     my ( $self, $field, $control_ref ) = @_;
 
@@ -1268,7 +1203,6 @@ sub control_read_r {
     return ${ $control_ref->[0] };           # value from variable
 }
 
-
 sub configure_controls {
     my ($self, $ctrl_ref, $ctrl_state, $bg_color) = @_;
 
@@ -1278,7 +1212,6 @@ sub configure_controls {
     return;
 }
 
-
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;
 
@@ -1286,7 +1219,6 @@ sub make_binding_entry {
 
     return;
 }
-
 
 sub lookup_description {
     my ($self, $para) = @_;
@@ -1296,7 +1228,6 @@ sub lookup_description {
     return $descr_caen->[0];
 }
 
-
 sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
 
@@ -1304,7 +1235,6 @@ sub tbl_selection_query {
 
     return $ary_ref;
 }
-
 
 sub tbl_selection_count {
     my ($self, $para) = @_;
@@ -1314,7 +1244,6 @@ sub tbl_selection_count {
     return $records_count;
 }
 
-
 sub query_proxy {
     my ($self, $method, $para) = @_;
 
@@ -1323,7 +1252,6 @@ sub query_proxy {
     return $record;
 }
 
-
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
 
@@ -1331,7 +1259,6 @@ sub table_record_update {
 
     return;
 }
-
 
 sub generate_doc {
     my ($self, $model_file, $record, $sufix) = @_;
@@ -1424,7 +1351,6 @@ sub generate_doc {
     return;
 }
 
-
 sub io_exception {
     my ($self, $exc, $context) = @_;
 
@@ -1449,7 +1375,6 @@ sub io_exception {
 
     return;
 }
-
 
 sub Tk::Error {
     my ( $self, $error, @locations ) = @_;

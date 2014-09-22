@@ -10,7 +10,6 @@ use base qw(Wx::App);
 
 require Tpda3::Wx::View;
 
-
 sub create {
     my $self  = shift->new;
     my $model = shift;
@@ -26,7 +25,6 @@ sub create {
 
     return $self;
 }
-
 
 sub OnInit {1}
 

@@ -11,7 +11,6 @@ require Tpda3::Db::Connection;
 
 use base qw(Class::Singleton);
 
-
 sub _new_instance {
     my ($class, $model) = @_;
 
@@ -20,7 +19,6 @@ sub _new_instance {
     return bless { conn => $conn }, $class;
 }
 
-
 sub db_connect {
     my ($self, $model) = @_;
     my $conn = Tpda3::Db::Connection->new($model);
@@ -28,18 +26,15 @@ sub db_connect {
     return $self;
 }
 
-
 sub dbh {
     my $self = shift;
     return $self->{conn}{dbh};
 }
 
-
 sub dbc {
     my $self = shift;
     return $self->{conn}{dbc};
 }
-
 
 sub DESTROY {
     my $self = shift;

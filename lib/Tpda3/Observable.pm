@@ -5,7 +5,6 @@ package Tpda3::Observable;
 use strict;
 use warnings;
 
-
 sub new {
     my ( $class, $value ) = @_;
 
@@ -19,7 +18,6 @@ sub new {
     return $self;
 }
 
-
 sub add_callback {
     my ( $self, $callback ) = @_;
 
@@ -28,7 +26,6 @@ sub add_callback {
     return $self;
 }
 
-
 sub del_callback {
     my ( $self, $callback ) = @_;
 
@@ -36,7 +33,6 @@ sub del_callback {
 
     return $self;
 }
-
 
 sub _docallbacks {
     my $self = shift;
@@ -48,7 +44,6 @@ sub _docallbacks {
     return;
 }
 
-
 sub set {
     my ( $self, $data ) = @_;
 
@@ -58,13 +53,11 @@ sub set {
     return;
 }
 
-
 sub get {
     my $self = shift;
 
     return $self->{_data};
 }
-
 
 sub unset {
     my $self = shift;

@@ -22,7 +22,6 @@ require Tpda3::Generator;
 
 use base q{Tpda3::Tk::Screen};
 
-
 sub _init {
     my ($self) = @_;
 
@@ -32,18 +31,15 @@ sub _init {
     return;
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
 
-
 sub model {
     my $self = shift;
     return $self->{model};
 }
-
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -251,13 +247,11 @@ sub run_screen {
     return;
 }
 
-
 sub update_labels {
     my ($self, $name, $value) = @_;
     $self->{$name}->configure(-text => $value) if defined $value;
     return;
 }
-
 
 sub update_statistics {
     my $self = shift;
@@ -270,7 +264,6 @@ sub update_statistics {
 
     return;
 }
-
 
 sub update_column_required {
     my $self = shift;
@@ -285,7 +278,6 @@ sub update_column_required {
 
     return;
 }
-
 
 sub list_of_variables {
     my $self = shift;
@@ -305,14 +297,12 @@ sub list_of_variables {
     return $fields_aref;
 }
 
-
 sub on_load_record {
     my $self = shift;
     $self->update_column_required;
     $self->update_statistics;
     return;
 }
-
 
 sub read_db_table {
     my $self = shift;
@@ -330,13 +320,11 @@ sub read_db_table {
     return $db_data;
 }
 
-
 sub read_table_widget {
     my ($self, $with_sel_name) = @_;
     my ($data) = $self->{tmx}->data_read($with_sel_name);
     return $data;
 }
-
 
 sub get_data_diff {
     my $self = shift;
@@ -350,7 +338,6 @@ sub get_data_diff {
 
     return (\@to_delete, \@to_insert);
 }
-
 
 sub update_table_widget {
     my $self = shift;
@@ -377,7 +364,6 @@ sub update_table_widget {
 
     return;
 }
-
 
 sub save_table_widget {
     my $self = shift;
@@ -414,7 +400,6 @@ sub save_table_widget {
 
     return;
 }
-
 
 sub set_row_status {
     my ($self, $r, $cell_text) = @_;

@@ -10,7 +10,6 @@ use base qw(Tk::Entry);
 
 Construct Tk::Widget 'MEntry';
 
-
 sub ClassInit {
     my ( $class, $mw ) = @_;
 

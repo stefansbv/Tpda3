@@ -12,7 +12,6 @@ my @maindata;                  # TODO: find better way to collect data
 my $expdata  = {};
 my $colslist = [];
 
-
 sub new {
     my ( $class, $options ) = @_;
 
@@ -25,7 +24,6 @@ sub new {
     return $self;
 }
 
-
 sub set_header {
     my ($self, $args) = @_;
 
@@ -33,7 +31,6 @@ sub set_header {
 
     return;
 }
-
 
 sub set_attributes {
     my ( $self, $field, $val ) = @_;
@@ -43,13 +40,11 @@ sub set_attributes {
     return;
 }
 
-
 sub get_attributes {
     my ( $self, $field ) = @_;
 
     return $self->attributes->{$field};
 }
-
 
 sub by_name {
     my ( $self, $name ) = @_;
@@ -70,7 +65,6 @@ sub by_name {
     return wantarray ? @found : @found ? $found[0] : undef;
 }
 
-
 sub get_tree_data {
     my ( $self, $name ) = @_;
 
@@ -78,7 +72,6 @@ sub get_tree_data {
 
     return (\@maindata, $expdata);
 }
-
 
 sub process_node {
     my ($node, $options) = @_;
@@ -103,7 +96,6 @@ sub process_node {
     return 1;
 }
 
-
 sub collect_main_data {
     my $node = shift;
 
@@ -115,7 +107,6 @@ sub collect_main_data {
 
     return;
 }
-
 
 sub collect_detail_data {
     my ($node) = @_;
@@ -159,7 +150,6 @@ sub collect_detail_data {
     return;
 }
 
-
 sub clear_totals {
     my ( $self, $fields, $numscale ) = @_;
 
@@ -178,7 +168,6 @@ sub clear_totals {
     return;
 }
 
-
 sub format_numbers {
     my ( $self, $fields, $numscale ) = @_;
 
@@ -196,7 +185,6 @@ sub format_numbers {
 
     return;
 }
-
 
 sub sum_up {
     my ( $self, $fields, $numscale ) = @_;
@@ -220,7 +208,6 @@ sub sum_up {
 
     return;
 }
-
 
 sub print_wealth {
     my ( $self, $field ) = @_;

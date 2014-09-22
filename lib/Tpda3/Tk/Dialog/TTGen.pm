@@ -24,7 +24,6 @@ require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
 
-
 sub new {
     my $class = shift;
 
@@ -41,48 +40,40 @@ sub new {
     return $self;
 }
 
-
 sub dbc {
     my $self = shift;
     return $self->{_db}->dbc;
 }
-
 
 sub dbh {
     my $self = shift;
     return $self->{_db}->dbh;
 }
 
-
 sub _cfg {
     my $self = shift;
     return $self->{_cfg};
 }
-
 
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
 
-
 sub scrcfg {
     my $self = shift;
     return $self->{scrcfg};
 }
-
 
 sub model {
     my $self = shift;
     return $self->{model};
 }
 
-
 sub view {
     my $self = shift;
     return $self->{view};
 }
-
 
 sub run_screen {
     my ( $self, $view ) = @_;
@@ -392,7 +383,6 @@ sub run_screen {
     return;
 }
 
-
 sub select_idx {
     my ($self, $sel) = @_;
     my $idx = $sel -1 ;
@@ -401,13 +391,11 @@ sub select_idx {
     return;
 }
 
-
 sub dlg_exit {
     my $self = shift;
     $self->{tlw}->destroy;
     return;
 }
-
 
 sub load_template_list {
     my ($self, $sc) = @_;
@@ -439,7 +427,6 @@ sub load_template_list {
 
     return;
 }
-
 
 sub load_tt_details {
     my $self = shift;
@@ -482,7 +469,6 @@ sub load_tt_details {
 
     return;
 }
-
 
 sub batch_generate_doc {
     my $self = shift;

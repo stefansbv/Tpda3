@@ -12,7 +12,6 @@ use Tk::MListbox;
 use Tk::StatusBar;
 use Tk::JComboBox;
 
-
 sub new {
     my ($class, $opts) = @_;
 
@@ -22,7 +21,6 @@ sub new {
 
     return $self;
 }
-
 
 sub select_dialog {
     my ( $self, $view, $para ) = @_;
@@ -176,7 +174,6 @@ sub select_dialog {
     }
 }
 
-
 sub select_command {
     my ( $self, $model, $para ) = @_;
 
@@ -211,7 +208,6 @@ sub select_command {
 
     return;
 }
-
 
 sub refresh_message {
     my ( $self, $text, $color ) = @_;

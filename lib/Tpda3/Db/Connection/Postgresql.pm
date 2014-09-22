@@ -12,7 +12,6 @@ use Try::Tiny;
 
 require Tpda3::Exceptions;
 
-
 sub new {
     my ($class, $model) = @_;
 
@@ -24,7 +23,6 @@ sub new {
 
     return $self;
 }
-
 
 sub db_connect {
     my ( $self, $conf ) = @_;
@@ -62,7 +60,6 @@ sub db_connect {
     return $self->{_dbh};
 }
 
-
 sub handle_error {
     my $self = shift;
 
@@ -83,7 +80,6 @@ sub handle_error {
 
     return;
 }
-
 
 sub parse_error {
     my ($self, $pg) = @_;
@@ -145,7 +141,6 @@ sub parse_error {
     return $message;
 }
 
-
 sub table_info_short {
     my ( $self, $table ) = @_;
 
@@ -181,7 +176,6 @@ sub table_info_short {
     return $flds_ref;
 }
 
-
 sub table_exists {
     my ( $self, $table ) = @_;
 
@@ -209,7 +203,6 @@ sub table_exists {
 
     return $val_ret;
 }
-
 
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
@@ -247,13 +240,11 @@ sub table_keys {
     return $pkf;
 }
 
-
 sub table_deps {
     my ( $self, $table ) = @_;
 
     return;
 }
-
 
 sub table_list {
     my $self = shift;
@@ -284,7 +275,6 @@ sub table_list {
     return $table_list;
 }
 
-
 sub sequences_list {
     my $self = shift;
 
@@ -314,7 +304,6 @@ sub sequences_list {
 
     return $seq_list;
 }
-
 
 sub constraints_list {
     my ($self, $table) = @_;
@@ -358,7 +347,6 @@ sub constraints_list {
 
     return $flds_ref;
 }
-
 
 sub has_feature_returning { 1 }
 

@@ -11,7 +11,6 @@ use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Tk::TM;
 
-
 sub run_screen {
     my ( $self, $nb ) = @_;
 
@@ -358,7 +357,6 @@ sub run_screen {
     return;
 }
 
-
 sub calculate_order_line {
     my ( $self, $row ) = @_;
 
@@ -394,7 +392,6 @@ sub calculate_order_line {
 
     return;
 }
-
 
 sub calculate_order {
     my ( $self, $xt ) = @_;
@@ -437,26 +434,22 @@ sub calculate_order {
     return;
 }
 
-
 sub on_load_record {
     my $self = shift;
     $self->{view}->set_status( '', 'ms'); # clear status message
     return;
 }
 
-
 sub on_mode_add {
     my $self = shift;
     return;
 }
-
 
 sub on_mode_edit {
     my $self = shift;
 
     return;
 }
-
 
 sub on_mode_idle {
     my $self = shift;

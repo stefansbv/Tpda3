@@ -12,7 +12,6 @@ use base qw{Wx::Dialog};
 
 require Tpda3::Config;
 
-
 sub new {
     my $class = shift;
 
@@ -22,7 +21,6 @@ sub new {
 
     return $self;
 }
-
 
 sub login {
     my ( $class, $view ) = @_;

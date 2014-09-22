@@ -10,7 +10,6 @@ use Wx::AUI;
 
 use base qw{Wx::AuiNotebook};
 
-
 sub new {
     my ( $class, $gui ) = @_;
 
@@ -23,7 +22,6 @@ sub new {
         wxAUI_NB_TAB_FIXED_WIDTH,
     );
 
-
     $self->{pages} = {
         0 => 'rec',
         1 => 'lst',
@@ -35,7 +33,6 @@ sub new {
 
     return $self;
 }
-
 
 sub create_notebook_page {
     my ( $self, $name, $label ) = @_;

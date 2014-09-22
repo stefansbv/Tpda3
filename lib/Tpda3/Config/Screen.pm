@@ -9,7 +9,6 @@ use Data::Diver qw( Dive );
 
 require Tpda3::Config;
 
-
 sub new {
     my ( $class, $args ) = @_;
 
@@ -25,12 +24,10 @@ sub new {
     return $self;
 }
 
-
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
 }
-
 
 sub load_conf {
     my ($self, $name) = @_;
@@ -41,84 +38,70 @@ sub load_conf {
     return $conf_href;
 }
 
-
 sub screen {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'screen', @args );
 }
-
 
 sub defaultreport {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'defaultreport', @args );
 }
 
-
 sub defaultdocument {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'defaultdocument', @args );
 }
-
 
 sub lists_ds {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'lists_ds', @args );
 }
 
-
 sub list_header {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'list_header', @args );
 }
-
 
 sub bindings {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'bindings', @args );
 }
 
-
 sub bindings_select {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'bindings_select', @args );
 }
-
 
 sub tablebindings {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'tablebindings', @args );
 }
 
-
 sub deptable {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'deptable', @args );
 }
-
 
 sub repotable {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'repotable', @args );
 }
 
-
 sub scrtoolbar {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'scrtoolbar', @args );
 }
-
 
 sub toolbar {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'toolbar', @args );
 }
 
-
 sub maintable {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'maintable', @args );
 }
-
 
 sub has_screen_details {
     my $self = shift;
@@ -131,7 +114,6 @@ sub has_screen_details {
         return $screen;
     }
 }
-
 
 sub screen_toolbars {
     my ( $self, $name ) = @_;
@@ -150,7 +132,6 @@ sub screen_toolbars {
     return \@toolbars;
 }
 
-
 sub scr_toolbar_names {
     my ($self, $name) = @_;
 
@@ -161,13 +142,11 @@ sub scr_toolbar_names {
     return (\@tbnames, \%tbattrs);
 }
 
-
 sub scr_toolbar_groups {
     my $self = shift;
     my @group_labels = keys %{ $self->scrtoolbar };
     return \@group_labels;
 }
-
 
 sub dep_table_header_info {
     my ( $self, $tm_ds ) = @_;
@@ -184,7 +163,6 @@ sub dep_table_header_info {
     return $href;
 }
 
-
 sub repo_table_header_info {
     my $self = shift;
 
@@ -198,18 +176,15 @@ sub repo_table_header_info {
     return $href;
 }
 
-
 sub app_dateformat {
     my $self = shift;
     return $self->cfg->application->{dateformat} || 'iso';
 }
 
-
 sub app_toolbar_attribs {
     my $self = shift;
     return $self->cfg->toolbar2;
 }
-
 
 sub dep_table_has_selectorcol {
     my ( $self, $tm_ds ) = @_;
@@ -219,7 +194,6 @@ sub dep_table_has_selectorcol {
 
     return $sc;
 }
-
 
 sub repo_table_columns_by_level {
     my ( $self, $level ) = @_;
@@ -240,7 +214,6 @@ sub repo_table_columns_by_level {
 
     return $dss;
 }
-
 
 sub alter_toolbar_state {
     my $self = shift;
