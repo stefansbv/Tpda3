@@ -4,7 +4,7 @@ Note: The main development focus is on the PerlTk interface, at least
       until I find (and learn to use) equivalent Wx controls for the
       screens, with the same functionality as the PerlTk widgets have.
 
-* To do [75%]
+* To do [69%]
   - [X] Improve exception handling, error reporting and user messages;
   - [X] Test Log::Dispatch::FileRotate. Removed;
   - [X] Implement language support (translations);
@@ -23,6 +23,8 @@ Note: The main development focus is on the PerlTk interface, at least
     - [ ] Add custom Perl distributions with Tpda3;
     - [ ] Add installers for Linux and Windows;
   - [X] Fix the mnemonic list in the "default application" dialog;
+  - [ ] Use localized date and number format (DateTime::Locale and Number::Format)
+
 
 
 * Someday, maybe [0%]
