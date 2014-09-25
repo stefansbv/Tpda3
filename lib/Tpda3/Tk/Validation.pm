@@ -167,12 +167,8 @@ sub numeric {
 
     $numscale = 0 unless ( defined $numscale );
 
-    my $pattern = sprintf "\^\-?[0-9]{0,%d}([\\.,][0-9]{0,%d})?\$",
+    my $pattern = sprintf "\^\-?[0-9]{0,%d}(\\.[0-9]{0,%d})?\$",
         $maxlen - $numscale - 1, $numscale;
-
-# TODO:
-# my $pattern =
-#     qr/^\-?\p{IsDigit}{0,$maxlen -$numscale -1}(\.\p{IsDigit}{0,$numscale})?$/x;
 
     if ( $myvar =~ m/$pattern/ ) {
         $self->{view}->set_status( '', 'ms' );    # clear messages
