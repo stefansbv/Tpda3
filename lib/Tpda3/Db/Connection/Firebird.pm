@@ -55,9 +55,10 @@ sub db_connect {
     );
 
     # Default date format: ISO
-    $self->{_dbh}{ib_timestampformat} = '%y-%m-%d %H:%M';
-    $self->{_dbh}{ib_dateformat}      = '%Y-%m-%d';
-    $self->{_dbh}{ib_timeformat}      = '%H:%M';
+    $self->{_dbh}{ib_time_all} = 'ISO';
+    # $self->{_dbh}{ib_timestampformat} = '%y-%m-%d %H:%M';
+    # $self->{_dbh}{ib_dateformat}      = '%Y-%m-%d';
+    # $self->{_dbh}{ib_timeformat}      = '%H:%M';
 
     return $self->{_dbh};
 }
