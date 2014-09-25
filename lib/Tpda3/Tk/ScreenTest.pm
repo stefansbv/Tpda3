@@ -28,7 +28,7 @@ BEGIN {
 }
 
 sub test_screen {
-    my ($args, $screen_module_package) = @_;
+    my ($args, $screen_module_package, $delay) = @_;
 
     my $screen_name = ( split /::/, $screen_module_package )[-1];
     #diag "screen_name is $screen_name";
@@ -43,7 +43,7 @@ sub test_screen {
         'created Tpda3::Controller instance '
     );
 
-    my $delay = 1;
+    $delay //= 1;
 
     #- Test the test screens :)
 
@@ -95,7 +95,6 @@ sub test_screen {
     #-- Quit
 
     $delay++;
-
     $ctrl->{_view}->after(
         $delay * 200,
         sub {
@@ -104,7 +103,6 @@ sub test_screen {
     );
 
     $app->run;
-
 }
 
 1;
