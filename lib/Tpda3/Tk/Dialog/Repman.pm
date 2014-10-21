@@ -8,6 +8,8 @@ use utf8;
 
 use IO::File;
 use File::Spec::Functions;
+use Capture::Tiny ':all';
+use Locale::TextDomain 1.20 qw(Tpda3);
 
 use Tk;
 
@@ -16,6 +18,7 @@ require Tpda3::Tk::TB;
 require Tpda3::Tk::TM;
 require Tpda3::Utils;
 require Tpda3::Lookup;
+require Tpda3::Tk::Dialog::Message;
 
 use base q{Tpda3::Tk::Screen};
 
@@ -30,6 +33,8 @@ sub new {
     $self->{_rl} = undef;    # report titles list
     $self->{_rd} = undef;    # report details
     $self->{cfg} = Tpda3::Config->instance();
+
+    $self->{params} = [];
 
     return $self;
 }
@@ -440,19 +445,15 @@ sub run_screen {
 
 sub select_idx {
     my ($self, $sel) = @_;
-
     my $idx = $sel -1 ;
     $self->{tmx}->set_selected($sel);
     $self->load_report_details();
-
     return;
 }
 
 sub dlg_exit {
     my $self = shift;
-
     $self->{tlw}->destroy;
-
     return;
 }
 
@@ -533,12 +534,16 @@ sub load_report_details {
 
     #-- parameters
 
+    $self->{params} = [];
     foreach my $i ( 1 .. 3 ) {
         my $field = "parahnt$i";
         my $idx = $i - 1;
         my $value = $self->{_rdd}[$idx]{hint};
         $eobj->{$field}[1]->delete( 0, 'end' );
-        $eobj->{$field}[1]->insert( 0, $value ) if $value;
+        if (defined $value) {
+            $eobj->{$field}[1]->insert( 0, $value );
+            push @{ $self->{params} }, $value;
+        }
     }
 
     return;
@@ -550,26 +555,43 @@ sub preview_report {
     # Get report filename
     my $report_file = $self->{_rd}[0]{repofile};
 
-    my $parameters = $self->get_parameters();
-    print "Parameters: [ $parameters ]\n";
+    my $params = $self->get_parameters;
+    if ( scalar @{ $self->{params} } > 0 and not $params ) {
+        my $msg = __ "Parameters are required!";
+        my $lst = join ', ', @{ $self->{params} };
+        my $det = __x( "Input the required parameters for {list}",
+                       list => $lst );
+        my $dlg = Tpda3::Tk::Dialog::Message->new( $self->{tlw} );
+        $dlg->message_dialog( $msg, $det, 'info', 'ok' );
+        return;
+    }
 
     my $report_path = catfile( $self->{cfg}->configdir, 'rep', $report_file );
     unless ( -f $report_path ) {
         print "Report file not found: $report_path\n";
+        my $msg = __ "Configuration error";
+        my $det = __x( "Report file not found: {file}", file => $report_path );
+        my $dlg = Tpda3::Tk::Dialog::Message->new( $self->{tlw} );
+        $dlg->message_dialog( $msg, $det, 'error', 'ok' );
         return;
     }
-    print "Report file: $report_path\n";
 
     # Metaviewxp param for pages:  -from 1 -to 1
 
-    my $report_exe  = $self->{cfg}->cfextapps->{repman}{exe_path};
-    print "repman exe: $report_exe \n";
+    my $cmd = $self->{cfg}->cfextapps->{repman}{exe_path};
 
-    my $cmd = qq{"$report_exe" -preview $parameters "$report_path"};
-    print $cmd. "\n";
-    if ( system $cmd ) {
-        print "metaprintxp failed\n";
+    my @args = ('-preview', $params, $report_path);
+
+    my ($stdout, $stderr, $exit) = capture {
+        system( $cmd, @args );
+    };
+    if ($stderr) {
+        my $msg = __ "Report Manager";
+        my $det = __x( "Message: {error}", error => $stderr );
+        my $dlg = Tpda3::Tk::Dialog::Message->new( $self->{tlw} );
+        $dlg->message_dialog( $msg, $det, 'info', 'ok' );
     }
+    print "Report Manager exited with value $exit\n";
 
     return;
 }
@@ -579,7 +601,7 @@ sub get_parameters {
 
     my $eobj = $self->get_controls();
 
-    my $parameters = q{};    # empty
+    my $params = q{};    # empty
 
     foreach my $i ( 1 .. 3 ) {
         my $field_def = "paradef$i";
@@ -593,13 +615,13 @@ sub get_parameters {
 
             my $ii  = $i - 1;
             my $rdd = $self->{_rdd}[$ii];
-            my $fld = $rdd->{resultfield};
+            my $fld = uc $rdd->{resultfield};
 
-            $parameters .= "-param$fld=$val ";
+            $params .= "-param$fld=$val ";
         }
     }
 
-    return $parameters;
+    return $params;
 }
 
 sub update_value {
