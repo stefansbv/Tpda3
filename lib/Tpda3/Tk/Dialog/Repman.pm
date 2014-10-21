@@ -11,8 +11,6 @@ use File::Spec::Functions;
 use Capture::Tiny ':all';
 use Locale::TextDomain 1.20 qw(Tpda3);
 
-use Tk;
-
 require Tpda3::Config;
 require Tpda3::Tk::TB;
 require Tpda3::Tk::TM;
@@ -362,6 +360,8 @@ sub run_screen {
 
     #- Detalii
 
+    my $my_font = $eid_rep->cget('-font');
+
     my $tdescr = $frm_bottom->Scrolled(
         'Text',
         -width      => 40,
@@ -369,6 +369,7 @@ sub run_screen {
         -wrap       => 'word',
         -scrollbars => 'e',
         -background => 'white',
+        -font       => $my_font
     );
     $tdescr->pack(
         -expand => 1,
@@ -376,8 +377,6 @@ sub run_screen {
         -padx   => 5,
         -pady   => 5,
     );
-
-    my $fonttdes = $tdescr->cget('-font');
 
     # Entry objects
     $self->{controls} = {
@@ -529,7 +528,10 @@ sub load_report_details {
         my $start_idx = $field eq 'descr' ? "1.0" : 0; # 'descr' is Text
         my $value = $self->{_rd}->[0]{$field};
         $eobj->{$field}[1]->delete( $start_idx, 'end' );
-        $eobj->{$field}[1]->insert( $start_idx, $value ) if $value;
+        if ($value) {
+            $value = Tpda3::Utils->decode_unless_utf($value);
+            $eobj->{$field}[1]->insert( $start_idx, $value );
+        }
     }
 
     #-- parameters
@@ -537,12 +539,15 @@ sub load_report_details {
     $self->{params} = [];
     foreach my $i ( 1 .. 3 ) {
         my $field = "parahnt$i";
+        my $v_fld = "paraval$i";
         my $idx = $i - 1;
         my $value = $self->{_rdd}[$idx]{hint};
         $eobj->{$field}[1]->delete( 0, 'end' );
         if (defined $value) {
             $eobj->{$field}[1]->insert( 0, $value );
             push @{ $self->{params} }, $value;
+            $eobj->{$field}[1]->configure( '-bg' => 'lightblue' );
+            $eobj->{$v_fld}[1]->configure( '-bg' => 'white' );
         }
     }
 
