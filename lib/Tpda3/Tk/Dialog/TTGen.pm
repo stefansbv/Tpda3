@@ -118,7 +118,7 @@ sub run_screen {
         }
     };
 
-    $self->{tb4}->make_toolbar_button( 'tb4qt', $attribs->{$name} );
+    $self->{tb4}->make_toolbar_button( 'tb4qt', $attribs->{tb4qt} );
 
     #-- end ToolBar
 
