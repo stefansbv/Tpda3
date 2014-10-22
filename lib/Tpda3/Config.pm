@@ -15,6 +15,7 @@ use File::Copy::Recursive ();
 use List::Util qw(first);
 use Try::Tiny;
 
+require Tpda3::Utils;
 require Tpda3::Config::Menu;
 require Tpda3::Config::Toolbar;
 require Tpda3::Config::Utils;
@@ -150,13 +151,12 @@ sub set_default_mnemonic {
         die "Invalid menmonic: $mnemonic\n";
     }
 
-    #- Set
+    #- Save
 
     print "Setting default to: '$mnemonic'...\r";
-
-    Tpda3::Config::Utils->save_yaml( $self->default, 'default', 'mnemonic',
-        $mnemonic );
-
+    my $data = {};
+    $data->{default}{mnemonic} = $mnemonic;
+    Tpda3::Utils->write_yaml( $self->default, $data );
     print "Setting default to: '$mnemonic'... done\n";
 
     return;
@@ -359,10 +359,9 @@ sub administrator_file {
 
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
-
-    Tpda3::Config::Utils->save_yaml( $self->instance_file,
-        'geometry', $key, $value );
-
+    my $data = {};
+    $data->{geometry}{$key} = $value;
+    Tpda3::Utils->write_yaml( $self->instance_file, $data );
     return;
 }
 
@@ -483,7 +482,7 @@ sub config_data_from {
         return Tpda3::Config::Utils->load_conf($conf_file);
     }
     elsif ( $suf =~ m{yml} ) {
-        return Tpda3::Config::Utils->load_yaml($conf_file);
+        return Tpda3::Utils->read_yaml($conf_file);
     }
     else {
         die "Config file: $conf_file has wrong suffix ($suf)";

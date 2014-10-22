@@ -7,6 +7,8 @@ use warnings;
 use utf8;
 
 use Encode qw(is_utf8 decode);
+use Try::Tiny;
+use YAML::Tiny;
 
 require Tpda3::Exceptions;
 
@@ -314,6 +316,37 @@ sub parse_message {
     }
 
     return ($text, $color);
+}
+
+sub read_yaml {
+    my ($self, $file) = @_;
+    unless ( -f $file ) {
+        Exception::IO::FileNotFound->throw(
+            message  => 'Configuration file not found.',
+            pathname => $file,
+        );
+    }
+    my $yaml = try { YAML::Tiny->read($file) }
+    catch {
+        Exception::Config::YAML->throw(
+            usermsg => 'Failed to load the resource file.',
+            logmsg  => $_,
+        );
+    };
+    return $yaml->[0];
+}
+
+sub write_yaml {
+    my ($self, $file, $data) = @_;
+    my $yaml = YAML::Tiny->new($data);
+    try   { $yaml->write($file) }
+    catch {
+        Exception::Config::YAML->throw(
+            usermsg => "Failed to write resource file '$file'",
+            logmsg  => $_,
+        );
+    };
+    return;
 }
 
 1;

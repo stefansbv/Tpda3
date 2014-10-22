@@ -14,7 +14,6 @@ use File::ShareDir qw(dist_dir);
 use File::Slurp;
 use File::Spec::Functions;
 use Try::Tiny;
-use YAML::Tiny;
 use Config::General;
 
 sub load_conf {
@@ -29,21 +28,6 @@ sub load_conf {
     my %config = $conf->getall;
 
     return \%config;
-}
-
-sub load_yaml {
-    my ( $self, $yaml_file ) = @_;
-
-    my $conf;
-    try {
-        $conf = YAML::Tiny::LoadFile($yaml_file);
-    }
-    catch {
-        my $msg = YAML::Tiny->errstr;
-        die " but failed to load because:\n $msg\n";
-    };
-
-    return $conf;
 }
 
 sub find_subdirs {
@@ -74,23 +58,6 @@ sub find_files {
     return \@justnames;
 }
 
-sub save_yaml {
-    my ( $self, $yaml_file, $section, $key, $value ) = @_;
-
-    my $yaml
-        = ( -f $yaml_file )
-        ? YAML::Tiny->read($yaml_file)
-        : YAML::Tiny->new;
-
-    $yaml->[0]->{$section}{$key} = $value;
-
-    $yaml->write($yaml_file);
-
-    print "'$yaml_file' created.\n";
-
-    return;
-}
-
 sub create_path {
     my ( $self, $new_path ) = @_;
 
@@ -109,7 +76,6 @@ sub create_path {
 
 sub copy_files {
     my ( $self, $src_fqn, $dst_p ) = @_;
-
     if ( !-f $src_fqn ) {
         print "\nSource not found:\n $src_fqn\n";
         print "\nBACKUP and remove the configurations path,\n";
@@ -121,7 +87,6 @@ sub copy_files {
         print "Destination path not found:\n $dst_p\n";
         die;
     }
-
     copy( $src_fqn, $dst_p ) or die $!;
 }
 
@@ -150,7 +115,6 @@ END_LICENSE
 
 sub get_doc_file_by_name {
     my ($self, $doc_file) = @_;
-
     return catfile( dist_dir('Tpda3'), 'doc', $doc_file);
 }
 
@@ -167,11 +131,6 @@ sub get_doc_file_by_name {
 Load a generic config file in Config::General format and return the
 Perl data structure.
 
-=head2 load_yaml
-
-Use YAML::Tiny to load a YAML file and return as a Perl hash data
-structure.
-
 =head2 find_subdirs
 
 Find subdirectories of a directory, not recursively
@@ -180,14 +139,6 @@ Find subdirectories of a directory, not recursively
 
 Find files in directory at depth 1, not recursively.  Optionally filter
 by extension.
-
-=head2 save_yaml
-
-Read a YAML file or create a new one if it doesn't exists. Alter the
-data structure using the provided parameters. Save the YAML file.
-
-For deeper nested data structures the B<value> parameter can be a hash
-reference.
 
 =head2 create_path
 

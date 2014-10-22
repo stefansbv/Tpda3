@@ -40,6 +40,11 @@ use Exception::Base (
         has               => [qw( usermsg logmsg )],
         string_attributes => [qw( usermsg )],
     },
+    'Exception::Config::YAML' => {
+        isa               => 'Exception::Config',
+        has               => [qw( usermsg logmsg )],
+        string_attributes => [qw( usermsg logmsg )],
+    },
     'Exception::Data',
     'Exception::Data::Missing' => {
         isa               => 'Exception::Data',

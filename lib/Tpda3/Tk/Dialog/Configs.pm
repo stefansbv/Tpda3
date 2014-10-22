@@ -11,14 +11,14 @@ use Tk::widgets qw(JFileDialog);
 use File::Copy;
 use File::Spec;
 
+require Tpda3::Exceptions;
 require Tpda3::Config;
-require Tpda3::Config::Utils;
+require Tpda3::Utils;
 
 sub new {
     my $class = shift;
 
     my $self = {};
-
     $self->{tb4} = {};       # ToolBar
     $self->{tlw} = {};       # TopLevel
     $self->{cfg} = Tpda3::Config->instance();
@@ -65,96 +65,6 @@ sub _init {
      : $os =~ /mswin/i  ? 'NOT USED'
      : $os =~ /linux/i  ? 'chm viewer'
      :                    '';
-
-    return;
-}
-
-sub save_as_default {
-    my $self = shift;
-
-    $self->_set_status('');    # clear
-
-    $self->backup_main();
-
-    #- External apps section in main.yml
-
-    my $appscfg_ref = $self->cfg->cfextapps;
-
-    foreach my $field ( qw{repman latex chm_viewer} ) {
-        my $value = $self->{controls}{$field}[1]->get();
-        $self->save_yaml_main( 'externalapps', $field,
-            { 'exe_path', $value } )
-            if $value;
-    }
-
-    #- Runtime section in main.yml
-
-    my $runcfg_ref = $self->cfg->cfrun;
-
-    foreach my $field ( keys %{$runcfg_ref} ) {
-        my $value = $self->{controls}{$field}[1]->get();
-        $self->save_yaml_main( 'runtime', 'docspath', $value )
-            if $value;
-    }
-
-    $self->_set_status('Configuration updated');
-
-    return;
-}
-
-sub save_yaml_main {
-    my ( $self, $section, $key, $value ) = @_;
-
-    my $main_yml = $self->cfg->cfmainyml;
-
-    Tpda3::Config::Utils->save_yaml( $main_yml, $section, $key, $value );
-
-    return;
-}
-
-sub backup_main {
-    my $self = shift;
-
-    my $yml_file = $self->cfg->cfmainyml;
-
-    my $ext = (-f "$yml_file.orig") ? 'old' : 'orig';
-
-    my $bak_file = "$yml_file.$ext";
-
-    copy( $yml_file, $bak_file )
-        or die "can't copy $yml_file to $bak_file: $!";
-
-    return;
-}
-
-sub make_statusbar {
-    my $self = shift;
-
-    #-- StatusBar
-
-    my $sb = $self->{tlw}->StatusBar();
-
-    # Dummy label for left space
-    my $ldumy = $sb->addLabel(
-        -width  => 1,
-        -relief => 'flat',
-    );
-
-    $self->{_sb}{ms} = $sb->addLabel( -relief => 'flat' );
-
-    return;
-}
-
-sub _set_status {
-    my ( $self, $text, $color ) = @_;
-
-    my $sb_label = $self->{_sb}{'ms'};
-
-    return unless ( $sb_label and $sb_label->isa('Tk::Label') );
-
-    # ms
-    $sb_label->configure( -text       => $text )  if defined $text;
-    $sb_label->configure( -foreground => $color ) if defined $color;
 
     return;
 }
@@ -361,9 +271,9 @@ sub show_cfg_dialog {
     );
 
     my $test_b = $frm_bottom->Button(
-        -text    => 'Set',
+        -text    => 'Save',
         -width   => 10,
-        -command => sub { $self->save_as_default() },
+        -command => sub { $self->save_config },
     );
     $test_b->pack( -side => 'left', -padx => 20, -pady => 5 );
 
@@ -390,23 +300,43 @@ sub show_cfg_dialog {
     return;
 }
 
+sub make_statusbar {
+    my $self = shift;
+    my $sb = $self->{tlw}->StatusBar();
+
+    # Dummy label for left space
+    my $ldumy = $sb->addLabel(
+        -width  => 1,
+        -relief => 'flat',
+    );
+    $self->{_sb}{ms} = $sb->addLabel( -relief => 'flat' );
+    return;
+}
+
+sub _set_status {
+    my ( $self, $text, $color ) = @_;
+    my $sb_label = $self->{_sb}{'ms'};
+    return unless ( $sb_label and $sb_label->isa('Tk::Label') );
+    $sb_label->configure( -text       => $text )  if defined $text;
+    $sb_label->configure( -foreground => $color ) if defined $color;
+    return;
+}
+
 sub load_config {
     my $self = shift;
+    my $data = Tpda3::Utils->read_yaml( $self->cfg->cfmainyml );
 
-    #- externalapps section in main.yml
-    my $appscfg_ref = $self->cfg->cfextapps;
-    foreach my $field ( keys %{$appscfg_ref} ) {
-        my $path = $appscfg_ref->{$field}{exe_path};
-        $self->update_path_field( $field, $path, 'file' );
+    #- External apps section in main.yml
+    foreach my $field ( qw{repman latex chm_viewer} ) {
+        my $value = $data->{externalapps}{$field}{exe_path};
+        $self->update_field( $field, $value, 'file' );
     }
 
-    #- runtime section in main.yml
-    my $runcfg_ref = $self->cfg->cfrun;
-    foreach my $field ( keys %{$runcfg_ref} ) {
-        my $path = $runcfg_ref->{$field};
-        $self->update_path_field( $field, $path, 'path' );
+    #- Runtime section in main.yml
+    foreach my $field ( qw{docspath} ) {
+        my $value = $data->{runtime}{$field};
+        $self->update_field( $field, $value, 'path' );
     }
-
     return;
 }
 
@@ -417,94 +347,62 @@ sub update_value {
 
     my $sub_name = "dialog_$type";
     my $path = $self->$sub_name($field);
+    return unless $path;
 
-    $self->update_path_field($field, $path, $type);
+    $self->update_field($field, $path, $type);
 
     # Check if file name match the desired one
     if ( $type eq 'file' ) {
         if ($strict) {
             my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
-            unless ( $self->{$field} eq $file ) {
-                $self->_set_status( "Wrong file '$file'!", 'blue' );
-            }
+            my $name = $self->{$field};
+            $self->_set_status(
+                "Wrong file '$file', expecting '$name'!", 'red' )
+                unless $name eq $file;
         }
         else {
-            unless ( $path and -x $path ) {
-                $self->_set_status( "No file!", 'blue' );
-            }
+            $self->_set_status( "No file!", 'red' ) unless $path and -x $path;
         }
     }
-
     return;
 }
 
 sub dialog_file {
     my ($self, $field) = @_;
-
     my $initialdir = $self->get_init_dir($field);
-
-    my $types = [ [ 'Executable', $self->{$field} ], [ 'All Files', '*', ], ];
-    my $path = $self->{tlw}->getOpenFile(
-        -filetypes  => $types,
-        -initialdir => $initialdir,
+    my $dialog = $self->{tlw}->JFileDialog(
+        -Title   => 'Select file',
+        -Create  => 0,
+        -Path    => $initialdir,
+        -FPat    => '*',
+        -ShowAll => 'NO',
     );
-
-    # my $file_dlg = $self->{tlw}->JFileDialog(
-    #     -Title  => 'Select file',
-    #     -Create => 0,
-    #     -Path   => $initialdir,
-    #     -FPat    => '*',
-    #     -ShowAll => 'NO',
-    # );
-    # my $path = $file_dlg->Show(-Horiz => 1);
-
-    unless ($path and -f $path) {
-        $self->_set_status('Error, file not found', 'red');
-    }
-
+    my $path = $dialog->Show( -Horiz => 1 );
+    return unless $path;
+    $self->_set_status( 'Error, file not found', 'red' ) unless -f $path;
     return $path;
 }
 
 sub dialog_path {
     my ($self, $field) = @_;
-
     my $initialdir = $self->get_init_dir($field);
-
-    my $path = $self->{tlw}->Tk::chooseDirectory(
-        -initialdir => '~',
-        -title      => 'Select folder',
+    my $dialog = $self->{tlw}->JFileDialog(
+        -Title   => 'Select path',
+        -Create  => 0,
+        -Path    => '~',
+        -SelDir  => 1,
+        -ShowAll => 'NO',
     );
-
-    if ( !defined $path ) {
-        $self->_set_status( 'Canceled.', 'blue' );
-        return;
+    my $path = $dialog->Show( -Horiz => 1 );
+    unless ( $path and -d $path ) {
+        $self->_set_status( 'Error, path not found', 'red' );
     }
-    if ( !-d $path ) {
-        $self->_set_status( 'Error, path not found', 'orange' );
-        return;
-    }
-
     return $path;
 }
 
-sub get_init_dir {
-    my ($self, $field) = @_;
-
-    my $path = $self->{controls}{$field}[1]->get();
-
-    if ($path) {
-        return ( File::Spec->splitpath($path) )[1]; # dir
-    }
-    else {
-        return $self->{initial_dir};
-    }
-}
-
-sub update_path_field {
+sub update_field {
     my ($self, $field, $value, $type) = @_;
-
     return unless $field and $value;
-
     eval {
         my $state = $self->{controls}{$field}[1]->cget('-state');
         $self->{controls}{$field}[1]->configure( -state => 'normal' );
@@ -516,24 +414,64 @@ sub update_path_field {
     if ($@) {
         warn "Error: $@";
     }
-
     my $color
         = $type eq 'path'
         ? ( -d $value ? 'darkgreen' : 'darkred' )
         : ( -f $value ? 'darkgreen' : 'darkred' );
 
     $self->{controls}{$field}[1]->configure( -fg => $color );
-
     return;
-
 }
 
 sub dlg_exit {
     my $self = shift;
-
     $self->{tlw}->destroy;
+    return;
+}
+
+sub save_config {
+    my $self = shift;
+
+    $self->_set_status('');    # clear
+    $self->backup_config;
+
+    my $data = Tpda3::Utils->read_yaml( $self->cfg->cfmainyml );
+
+    #- External apps section in main.yml
+    foreach my $field ( qw{repman latex chm_viewer} ) {
+        my $value = $self->{controls}{$field}[1]->get();
+        print "field = $field, value = $value\n";
+        $data->{externalapps}{$field}{exe_path} = $value;
+    }
+
+    #- Runtime section in main.yml
+    foreach my $field ( qw{docspath} ) {
+        my $value = $self->{controls}{$field}[1]->get();
+        print "field = $field, value = $value\n";
+        $data->{runtime}{$field} = $value;
+    }
+
+    Tpda3::Utils->write_yaml( $self->cfg->cfmainyml, $data );
+    $self->_set_status('Configuration updated.');
 
     return;
+}
+
+sub backup_config {
+    my $self = shift;
+    my $yml_file = $self->cfg->cfmainyml;
+    my $ext = (-f "$yml_file.orig") ? 'old' : 'orig';
+    my $bak_file = "$yml_file.$ext";
+    copy( $yml_file, $bak_file )
+        or die "can't copy $yml_file to $bak_file: $!";
+    return;
+}
+
+sub get_init_dir {
+    my ($self, $field) = @_;
+    my $path = $self->{controls}{$field}[1]->get();
+    return ( File::Spec->splitpath($path) )[1] if $path;
+    return $self->{initial_dir};
 }
 
 1;
@@ -563,16 +501,12 @@ Report Manager print preview: 'printrep.bin' on GNU/linux
                                'printrepxp.exe' on MSW
 TODO: Add other platforms
 
-=head2 save_as_default
+=head2 save_config
 
 Backup the I<main.yml> configuration file.  Write the current content
 of the widgets to the configuration file.
 
-=head2 save_yaml_main
-
-Create or update the I<main.yml> configuration file.
-
-=head2 backup_main
+=head2 backup_config
 
 Make a backup file named I<main.yml.orig> if it doesn't exists yet,
 else make I<main.yml.old>.
@@ -613,7 +547,7 @@ dialog, else use the default.
 
 TODO: check on MSW, what about vol?
 
-=head2 update_path_field
+=head2 update_field
 
 Write into the path widget with colors.
 

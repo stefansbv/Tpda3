@@ -255,7 +255,7 @@ sub show_app_list {
     );
 
     my $test_b = $frm_bottom->Button(
-        -text    => 'Set',
+        -text    => 'Save',
         -width   => 10,
         -command => sub { $self->save_as_default() },
     );
