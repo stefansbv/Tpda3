@@ -8,7 +8,7 @@ use utf8;
 
 use IO::File;
 use File::Spec::Functions;
-use Capture::Tiny ':all';
+use Capture::Tiny qw(capture);
 use Locale::TextDomain 1.20 qw(Tpda3);
 
 require Tpda3::Config;
@@ -585,7 +585,9 @@ sub preview_report {
 
     my $cmd = $self->{cfg}->cfextapps->{repman}{exe_path};
 
-    my @args = ('-preview', $params, $report_path);
+    my @args = ('-preview');
+    push @args, $params if $params;
+    push @args, $report_path;
 
     my ($stdout, $stderr, $exit) = capture {
         system( $cmd, @args );
