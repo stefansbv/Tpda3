@@ -1164,7 +1164,7 @@ sub scrcfg {
     return;
 }
 
- sub scrobj {
+sub scrobj {
     my ( $self, $page ) = @_;
 
     $page ||= $self->view->get_nb_current_page();
@@ -1909,6 +1909,13 @@ sub screen_document_generate {
             $val = Tpda3::Utils->decode_unless_utf($val);
         }
         $rec->{$key} = $val;
+    }
+
+    # Execute a method in the screen instance that can be used to
+    # alter the record ex: for adding new vars to the TT template
+    my $method = 'alter_record';             # a default method name
+    if ($self->scrobj()->can($method)) {
+        $rec = $self->scrobj()->$method($rec);
     }
 
     $self->view->generate_doc( $model_file, $rec);
