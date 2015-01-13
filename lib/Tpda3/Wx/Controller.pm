@@ -1,6 +1,6 @@
 package Tpda3::Wx::Controller;
 
-# ABSTRACT: # ABSTRACT: The Controller, specific for the Wx interface
+# ABSTRACT: The Controller, specific for the Wx interface
 
 use strict;
 use warnings;
