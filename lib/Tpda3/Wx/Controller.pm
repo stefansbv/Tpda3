@@ -24,38 +24,31 @@ sub new {
 
     $self->_init;
 
-    my $loglevel_old = $self->_log->level();
-
     $self->_log->trace('Controller new');
 
     $self->_control_states_init();
 
     $self->_set_event_handlers();
+    $self->_set_event_handlers_keys();
 
     $self->_set_menus_state('disabled');    # disable find mode menus
 
     $self->_check_app_menus();               # disable if no screen
-
-    $self->_log->level($loglevel_old);     # restore default log level
 
     return $self;
 }
 
 sub _init {
     my $self = shift;
-
     my $app = Tpda3::Wx::App->create($self->model);
     $self->{_app}  = $app;
     $self->{_view} = $app->{_view};
-
     return;
 }
 
 sub start_delay {
     my $self = shift;
-
     $self->connect_dialog();
-
     return;
 }
 

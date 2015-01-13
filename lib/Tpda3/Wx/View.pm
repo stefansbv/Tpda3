@@ -6,9 +6,9 @@ use strict;
 use warnings;
 use Carp;
 
-use POSIX qw (floor ceil);
-use Log::Log4perl qw(get_logger);
 use File::Spec::Functions qw(abs2rel);
+use Log::Log4perl qw(get_logger);
+use POSIX qw (floor ceil);
 use Hash::Merge qw(merge);
 use Locale::TextDomain 1.20 qw(Tpda3);
 
@@ -67,13 +67,11 @@ sub new {
 
 sub model {
     my $self = shift;
-
     $self->{_model};
 }
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -99,9 +97,7 @@ sub _set_model_callbacks {
 
 sub title {
     my ($self, $string) = @_;
-
     $self->SetTitle($string);
-
     return;
 }
 
@@ -134,102 +130,58 @@ SWITCH: {
 
 sub _create_menu {
     my $self = shift;
-
     my $menu = Wx::MenuBar->new;
-
     $self->{_menu} = $menu;
-
-    my $attribs = $self->get_menubar_merged_labels;
-
-    $self->make_menus($attribs);
-
+    my $conf = $self->cfg->menubar;
+    my $poz;
+    foreach my $name ( $conf->all_menus ) {
+        my $attribs_app = $conf->get_menu($name);
+        $poz = $self->make_menus($name, $attribs_app, $poz );
+    }
     $self->SetMenuBar($menu);
-
     return;
 }
 
-sub get_menubar_merged_labels {
-    my $self = shift;
-
-    my $labels = {
-        'menu_admin' => {
-            'label' => __ 'Admin',
-            'popup' => {
-                '1' => { 'label' => __ 'Set default app' },
-                '2' => { 'label' => __ 'Configurations' },
-                '3' => { 'label' => __ 'Edit reports data' },
-                '4' => { 'label' => __ 'Edit templates data' },
-            },
-        },
-        'menu_help' => {
-            'label' => __ 'Help',
-            'popup' => {
-                '1' => { 'label' => __ 'Manual' },
-                '2' => { 'label' => __ 'About' },
-            },
-        },
-        'menu_app' => {
-            'label' => __ 'App',
-            'popup' => {
-                '1' => { 'label' => __ 'Toggle find mode' },
-                '2' => { 'label' => __ 'Execute search' },
-                '3' => { 'label' => __ 'Execute count' },
-                '4' => { 'label' => __ 'Preview report' },
-                '5' => { 'label' => __ 'Generate document' },
-                '6' => { 'label' => __ 'Quit' },
-            },
-        }
-    };
-
-    my $menucfg = $self->cfg->menubar;
-
-    return merge( $menucfg, $labels );
-}
-
 sub _create_app_menu {
-    my $self = shift;
+    my $self    = shift;
+    my $attribs = $self->cfg->appmenubar;
+    my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
-    # Insert starting with position 1
-    $self->make_menus( $self->cfg->appmenubar, 1 );
-
+    my $pos = 1;                             # start with pos=1
+    foreach my $name ( @{$menus} ) {
+        $pos = $self->make_menus( $name, $attribs->{$name}, $pos );
+    }
     return;
 }
 
 sub make_menus {
-    my ( $self, $attribs, $position ) = @_;
+    my ( $self, $menu_name, $attribs, $position ) = @_;
 
     $position = $position ||= 0;    # default
 
-    my $menus = Tpda3::Utils->sort_hash_by_id($attribs);
+    $self->{$menu_name} = Wx::Menu->new();
 
-    #- Create menus
-    foreach my $menu_name ( @{$menus} ) {
-
-        $self->{$menu_name} = Wx::Menu->new();
-
-        my @popups
-            = sort { $a <=> $b } keys %{ $attribs->{$menu_name}{popup} };
-        foreach my $id (@popups) {
-            $self->make_popup_item(
-                $self->{$menu_name},
-                $attribs->{$menu_name}{popup}{$id},
-                $attribs->{$menu_name}{id} . $id,    # menu Id
-            );
-        }
-
-        $self->{_menu}->Insert(
-            $position,
+    my @popups = sort { $a <=> $b } keys %{ $attribs->{popup} };
+    foreach my $id (@popups) {
+        $self->make_popup_item(
             $self->{$menu_name},
-            Tpda3::Utils->ins_underline_mark(
-                $attribs->{$menu_name}{label},
-                $attribs->{$menu_name}{underline}
-            ),
+            $attribs->{popup}{$id},
+            $attribs->{id} . $id,    # menu Id
         );
-
-        $position++;
     }
 
-    return;
+    $self->{_menu}->Insert(
+        $position,
+        $self->{$menu_name},
+        Tpda3::Utils->ins_underline_mark(
+            $attribs->{label},
+            $attribs->{underline}
+        ),
+    );
+
+    $position++;
+
+    return $position;
 }
 
 sub get_app_menus_list {
@@ -278,13 +230,11 @@ sub make_popup_item {
 
 sub get_menu_popup_item {
     my ( $self, $name ) = @_;
-
     return $self->{$name};
 }
 
 sub get_menubar {
     my $self = shift;
-
     return $self->{_menu};
 }
 
@@ -303,102 +253,26 @@ sub _create_toolbar {
     my $self = shift;
 
     my $tb = Tpda3::Wx::ToolBar->new( $self ); # wxADJUST_MINSIZE
-
-    my ( $toolbars, $attribs ) = $self->toolbar_names();
-
     my $ico_path = $self->cfg->cfico;
 
-    $tb->make_toolbar_buttons( $toolbars, $attribs, $ico_path );
+    my $conf     = $self->cfg->toolbar;
+    my @toolbars = $conf->all_buttons;
+
+    foreach my $name (@toolbars) {
+        my $attribs = $conf->get_tool($name);
+        $tb->make_toolbar_button( $name, $attribs, $ico_path  );
+    }
 
     $self->SetToolBar($tb);
-
     $self->{_tb} = $self->GetToolBar;
     $self->{_tb}->Realize;
 
     return;
 }
 
-sub toolbar_names {
-    my $self = shift;
-
-    # Get ToolBar button atributes
-    my $attribs = $self->get_toolbar_merged_labels;
-
-    # TODO: Change the config file so we don't need this sorting anymore
-    # or better keep them sorted and ready to use in config
-    my $toolbars = Tpda3::Utils->sort_hash_by_id($attribs);
-
-    return ( $toolbars, $attribs );
-}
-
-sub get_toolbar_merged_labels {
-    my $self = shift;
-
-    my $labels = {
-        tb_rr => {
-            tooltip => __ 'Reload record',
-            help    => __ 'Reload record',
-        },
-        tb_fm => {
-            tooltip => __ 'Toggle find mode',
-            help    => __ 'Toggle find mode',
-        },
-        tb_qt => {
-            tooltip => __ 'Quit',
-            help    => __ 'Quit the application',
-        },
-        tb_tr => {
-            tooltip => __ 'Paste record',
-            help    => __ 'Paste record',
-        },
-        tb_fe => {
-            tooltip => __ 'Execute search',
-            help    => __ 'Execute search',
-        },
-        tb_sv => {
-            tooltip => __ 'Save record',
-            help    => __ 'Save record',
-        },
-        tb_pr => {
-            tooltip => __ 'Print preview',
-            help    => __ 'Print preview default report',
-        },
-        tb_ad => {
-            tooltip => __ 'Add record',
-            help    => __ 'Add record',
-        },
-        tb_at => {
-            tooltip => __ 'Save current window geometry',
-            help    => __ 'Save current window geometry',
-        },
-        tb_rm => {
-            tooltip => __ 'Remove record',
-            help    => __ 'Remove record',
-        },
-        tb_gr => {
-            tooltip => __ 'Generate document',
-            help    => __ 'Generate default document',
-        },
-        tb_tn => {
-            tooltip => __ 'Copy record',
-            help    => __ 'Copy record',
-        },
-        tb_fc => {
-            tooltip => __ 'Execute count',
-            help    => __ 'Execute count',
-        },
-    };
-
-    my $toolcfg = $self->cfg->toolbar;
-
-    return merge($toolcfg, $labels);
-}
-
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
-
     $self->{_tb}->enable_tool( $btn_name, $state );
-
     return;
 }
 
@@ -417,7 +291,6 @@ sub _create_statusbar {
 
 sub get_statusbar {
     my $self = shift;
-
     return $self->{_sb};
 }
 
@@ -514,7 +387,6 @@ sub create_notebook {
 
 sub get_nb_current_page {
     my $self = shift;
-
     return $self->get_notebook->get_current;
 }
 
@@ -530,15 +402,12 @@ sub set_nb_current {
 
 sub get_nb_previous_page {
     my $self = shift;
-
     my $nb = $self->get_notebook;
-
     return $nb->{nb_prev};
 }
 
 sub get_notebook {
     my ( $self, $page ) = @_;
-
     if ($page) {
         return $self->{_nb}{$page};
     }
@@ -549,42 +418,34 @@ sub get_notebook {
 
 sub destroy_notebook {
     my $self = shift;
-
     $self->{_nb}->Destroy if ref $self->{_nb};
-
     return;
 }
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
-
     return $self->{_tb}->get_toolbar_btn($name);
 }
 
 sub get_toolbar {
     my $self = shift;
-
     return $self->{_tb};
 }
 
 sub get_recordlist {
     my $self = shift;
-
     return $self->{_rc};
 }
 
 sub get_control_by_name {
     my ( $self, $name ) = @_;
-
     return $self->{$name},;
 }
 
 sub log_config_options {
     my $self = shift;
-
     my $cfg  = Tpda3::Config->instance();
     my $path = $cfg->output;
-
     foreach my $key ( keys %{$path} ) {
         my $value = $path->{$key};
         $self->log_msg("II Config: '$key' set to '$value'");
@@ -624,11 +485,8 @@ sub set_status {
 
 sub log_msg {
     my ( $self, $msg ) = @_;
-
     my $log = get_logger();
-
     $log->info($msg);
-
     return;
 }
 
@@ -758,20 +616,16 @@ sub list_header {
 
 sub get_list_text_col {
     my ( $self, $row, $col ) = @_;
-
     return $self->get_recordlist->GetItemText( $row, $col );
 }
 
 sub get_list_text_row {
     my ( $self, $row ) = @_;
-
     my $col_cnt = $self->get_recordlist->GetColumnCount() - 1;
-
     my @row_text;
     foreach my $col ( 0 .. $col_cnt ) {
         push @row_text, $self->get_list_text_col( $row, $col );
     }
-
     return \@row_text;
 }
 
@@ -787,15 +641,12 @@ sub set_list_data {
 
 sub get_list_data {
     my ( $self, $item ) = @_;
-
     return $self->get_recordlist->GetItemData($item);
 }
 
 sub list_item_select_first {
     my $self = shift;
-
     my $items_no = $self->get_list_max_index();
-
     if ( $items_no > 0 ) {
         $self->get_recordlist->Select( 0, 1 );
     }
@@ -803,25 +654,20 @@ sub list_item_select_first {
 
 sub list_item_select_last {
     my $self = shift;
-
     my $lst = $self->get_recordlist;
     my $idx = $self->get_list_max_index() - 1;
-
     $self->{_rc}->Select( $idx, 1 );
     $self->{_rc}->EnsureVisible($idx);
-
     return;
 }
 
 sub get_list_max_index {
     my $self = shift;
-
     return $self->get_recordlist->GetItemCount();
 }
 
 sub get_list_selected_index {
     my $self = shift;
-
     return $self->get_recordlist->GetSelection();
 }
 
@@ -854,7 +700,6 @@ sub list_item_clear {
 
 sub list_item_clear_all {
     my $self = shift;
-
     $self->get_recordlist->DeleteAllItems;
 }
 
@@ -1012,36 +857,27 @@ sub list_read_selected {
 
 sub list_raise {
     my $self = shift;
-
     $self->get_notebook->SetSelection(1);           # 1 is 'lst' ?
     $self->list_item_select_last();
-
     return;
 }
 
 sub on_list_item_activated {
     my ($self, $callback) = @_;
-
     my $lc = $self->get_listcontrol;
-
     EVT_LIST_ITEM_ACTIVATED $self, $lc, $callback;
-
     return;
 }
 
 sub get_listcontrol {
     my $self = shift;
-
     return $self->{_rc};
 }
 
 sub on_notebook_page_changed {
     my ($self, $callback) = @_;
-
     my $nb = $self->get_notebook();
-
     EVT_AUINOTEBOOK_PAGE_CHANGED $self, $nb->GetId, $callback;
-
     return;
 }
 
@@ -1078,9 +914,7 @@ sub set_geometry {
 
 sub on_close_window {
     my $self = shift;
-
     $self->Close(1);
-
     return;
 }
 
@@ -1088,21 +922,15 @@ sub on_close_window {
 
 sub event_handler_for_menu {
     my ($self, $name, $calllback) = @_;
-
     my $menu_id = $self->get_menu_popup_item($name)->GetId;
-
     EVT_MENU $self, $menu_id, $calllback;
-
     return;
 }
 
 sub event_handler_for_tb_button {
     my ($self, $name, $calllback) = @_;
-
     my $tb_id = $self->get_toolbar_btn($name)->GetId;
-
     EVT_TOOL $self, $tb_id, $calllback;
-
     return;
 }
 
@@ -1110,9 +938,7 @@ sub event_handler_for_tb_button {
 
 sub list_control_choices {
     my ($self, $control, $choices) = @_;
-
     $control->add_choices($choices);
-
     return;
 }
 
@@ -1199,22 +1025,17 @@ sub control_read_e {
 
 sub control_read_t {
     my ( $self, $field ) = @_;
-
     croak qq(Use 'e' type for '$field' widget!);
-
     return;
 }
 
 sub control_read_d {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( defined $control and $control->isa('Wx::DatePickerCtrl') ) {
         carp qq(Widget for reading date '$field' not found);
         return;
     }
-
     my $datetime = $control->GetValue();
     my $invalid  = Wx::DateTime->new();
     if($datetime->IsEqualTo($invalid)) {
@@ -1226,14 +1047,11 @@ sub control_read_d {
 
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( defined $control and $control->isa('Wx::ComboBox') ) {
         carp qq(Widget for reading combobox '$field' not found);
         return;
     }
-
     return $control->get_selected();
 }
 
@@ -1263,9 +1081,7 @@ sub nb_set_page_state {
 
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;
-
     EVT_TEXT_ENTER $self, $control, $calllback;
-
     return;
 }
 
@@ -1349,10 +1165,6 @@ Return the menu bar handler
 =head2 _create_toolbar
 
 Create toolbar
-
-=head2 toolbar_names
-
-Get Toolbar names as array reference from config.
 
 =head2 get_toolbar_merged_labels
 

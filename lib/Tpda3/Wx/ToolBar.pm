@@ -24,19 +24,18 @@ sub new {
     return $self;
 }
 
-sub make_toolbar_buttons {
-    my ( $self, $toolbars, $attribs, $ico_path ) = @_;
+sub make_toolbar_button {
+    my ( $self, $name, $attribs, $ico_path ) = @_;
 
-    # Create buttons in ID order; use sub defined by 'type'
-    foreach my $name ( @{$toolbars} ) {
-        my $type = $attribs->{$name}{type};
-        $self->$type( $name, $attribs->{$name}, $ico_path );
+    # Create button; use sub defined by 'type'
+    my $type = $attribs->{type};
+    $self->$type( $name, $attribs, $ico_path );
 
-        # Initial state disabled, except quit and attach button
-        next if $name eq 'tb_qt';
-        next if $name eq 'tb_at';
-        $self->enable_tool( $name, 0 );    # 0 = disabled
-    }
+    # Initial state disabled, except quit and attach button
+    return if $name eq 'tb_qt';
+    return if $name eq 'tb_at';
+
+    $self->enable_tool( $name, 0 );    # 0 = disabled
 
     return;
 }

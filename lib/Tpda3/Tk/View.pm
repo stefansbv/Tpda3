@@ -196,23 +196,18 @@ sub log_msg {
 sub _create_menu {
     my $self = shift;
     $self->{_menu} = $self->Menu();
-
     my $conf = $self->cfg->menubar;
-
     my $poz;
     foreach my $name ( $conf->all_menus ) {
         my $attribs_app = $conf->get_menu($name);
         $poz = $self->make_menus($name, $attribs_app, $poz );
     }
-
     $self->configure( -menu => $self->{_menu} );
-
     return;
 }
 
 sub _create_app_menu {
     my $self    = shift;
-
     my $attribs = $self->cfg->appmenubar;
     my $menus   = Tpda3::Utils->sort_hash_by_id($attribs);
 
@@ -220,7 +215,6 @@ sub _create_app_menu {
     foreach my $menu_name ( @{$menus} ) {
         $pos = $self->make_menus( $menu_name, $attribs->{$menu_name}, $pos );
     }
-
     return;
 }
 
@@ -237,7 +231,6 @@ sub make_menus {
             $self->{_menu}{$menu_name},
             $attribs->{popup}{$id},
         );
-        # p $attribs->{popup}{$id}
     }
 
     $self->{_menu}->insert(
@@ -1521,10 +1514,6 @@ Temporized clear for messages.
 =head2 _create_toolbar
 
 Create toolbar
-
-=head2 toolbar_names
-
-Get Toolbar names as array reference from config.
 
 =head2 get_toolbar_merged_labels
 
