@@ -1,13 +1,60 @@
+
+## 0.98.1 (2015-01-13)
+
+- Features
+  - A default in screen method for altering the record passed to TT.
+- Bugfix
+  - Fix the too many parameters error from Report Manager's printrep.
+
+
+## 0.98 (2014-10-22)
+
+- Changes
+  - Refactor and fix the configs dialog.
+  - Refactor system call in Repman dialog.
+- Bugfix
+  - Fix TTGen dialog.
+  - Fix Text entry coding, add bg color to param entries.
+  - Remove setlocale, revert to allow only point (.) as decimal separator.
+  - Use the short form for setting ISO time in Firebird.pm.
+  - Add a delay param in screen test sub, for slower systems.
+
+
+## 0.96 (2014-09-18)
+
+- Changes
+  - Use the Basic plugin bundle in disi.ini.
+  - Update the translation files.
+
+
+## 0.95 (2014-09-09)
+
+- Bugfix
+  - Fix bug in the Orders screen (old API syntax leftover).
+- Changes
+  - Add Tk::JFileDialog as requirement to dist.ini.
+  - Remove the Tk Help module, adapt POSs for dzil, fix load_conf
+  - Add the menubar and toolbar methods in the config.
+  - Check if the 'get_template_datasources' method returns a hashref.
+  - Move POD to the end of the files.
+  - Ignore DistZilla produces files (Árpád Szász)
+- Features (provided by Árpád Szász. Thanks!)
+  - Add PerlApp support
+
+
 ## 0.94 (2014-09-01)
+
 - Bugfix
   - Fix bug #5.
   - PerlApp project files
+
 
 ## 0.90 (2014-08-02)
 
 - Bugfix
   - Do not reload detail tab data if already loaded. Fix for the #3 bug.
   - Cleanup READMEs.
+
 
 ### 0.89 (2014-07-22)
 
@@ -19,6 +66,7 @@
 - Changes
   - Refactor extract_tt_fields from Tpda3/Generator.
 
+
 ## 0.88 (2014-06-15)
 
 - Features
@@ -29,10 +77,12 @@
 - Bugfix
   - Fix loading detail data for templates.
 
+
 ## 0.86 (2014-05-31)
 
 - Changes
   - Remove Log::Dispatch::FileRotate from required.
+
 
 ## 0.85 (2014-05-31)
 
@@ -41,10 +91,12 @@
 - Changes
   - Add the Tpda3 system tables to the Fb, Pg and SQLite schemas.
 
+
 ## 0.84 (2014-04-16)
 
 - Changes
   - Refactor TemplDet screen, update Reports and Templates screens.
+
 
 ## 0.83 (2014-04-12)
 
@@ -62,6 +114,7 @@
   - Convert format of dates from ISO to configured, for generated documents.
   - Fix utf8 problems when the ODBC driver is used.
 
+
 ## 0.82 (2014-04-08)
 
 - Changes
@@ -73,6 +126,7 @@
   - Use short paths on Windows.
   - Fix utf8 encoding problems in generated TeX document.
 
+
 ## 0.81 (2014-04-06)
 
 - Changes
@@ -83,6 +137,7 @@
   - Add dialog and screen for Templates.
   - Add info methods to the OdbcFb module.
   - Generator new parameter: suffix, for generated pdf name.
+
 
 ## 0.80 (2014-03-09)
 
@@ -101,6 +156,7 @@
   - Use Git::CommitBuild plugin.
   - Move Wx tests to a lib
 
+
 ## 0.69 (2013-10-19)
 
 - Bugfix
@@ -110,6 +166,7 @@
 - Features
   - Replace the old help module with a manual in CHM format for all platforms
   - Small advance for the Wx implmentation
+
 
 ## 0.68 (2013-05-09)
 
