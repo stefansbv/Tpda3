@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: stefan@s2i2.ro\n"
 "POT-Creation-Date: 2014-09-09 19:58+0300\n"
-"PO-Revision-Date: 2014-06-11 10:27+0200\n"
+"PO-Revision-Date: 2015-03-30 18:28+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Poedit 1.5.7\n"
+"X-Generator: Poedit 1.7.5\n"
 
 #: lib/Tpda3/Controller.pm:448 blib/lib/Tpda3/Controller.pm:538
 msgid "Not selected"
@@ -105,7 +105,7 @@ msgstr "Înregistrare nouă"
 
 #: lib/Tpda3/Controller.pm:2538 blib/lib/Tpda3/Controller.pm:3325
 msgid "Delete record"
-msgstr "Șterg Înregistrarea"
+msgstr "Șterg înregistrarea"
 
 #: lib/Tpda3/Controller.pm:2539 blib/lib/Tpda3/Controller.pm:3326
 msgid "Confirm record delete?"
@@ -135,7 +135,7 @@ msgstr "Înregistrare copiată"
 
 #: lib/Tpda3/Controller.pm:2755 blib/lib/Tpda3/Controller.pm:3617
 msgid "Record copy failed"
-msgstr "Copiere Înregistrare eșuată"
+msgstr "Copiere înregistrare eșuată"
 
 #: lib/Tpda3/Controller.pm:2768 blib/lib/Tpda3/Controller.pm:3636
 msgid "Record restored"
@@ -188,30 +188,30 @@ msgstr "Despre"
 msgid "App"
 msgstr "Aplicație"
 
-#: lib/Tpda3/Wx/View.pm:182 lib/Tpda3/Wx/View.pm:360 lib/Tpda3/Wx/View.pm:361
-#: lib/Tpda3/Config/Menu.pm:35 lib/Tpda3/Config/Toolbar.pm:55
-#: lib/Tpda3/Config/Toolbar.pm:56 blib/lib/Tpda3/Wx/View.pm:253
-#: blib/lib/Tpda3/Wx/View.pm:477 blib/lib/Tpda3/Wx/View.pm:478
-#: blib/lib/Tpda3/Tk/View.pm:331 blib/lib/Tpda3/Tk/View.pm:707
-#: blib/lib/Tpda3/Tk/View.pm:708
+#: lib/Tpda3/Wx/View.pm:182 lib/Tpda3/Wx/View.pm:360
+#: lib/Tpda3/Wx/View.pm:361 lib/Tpda3/Config/Menu.pm:35
+#: lib/Tpda3/Config/Toolbar.pm:55 lib/Tpda3/Config/Toolbar.pm:56
+#: blib/lib/Tpda3/Wx/View.pm:253 blib/lib/Tpda3/Wx/View.pm:477
+#: blib/lib/Tpda3/Wx/View.pm:478 blib/lib/Tpda3/Tk/View.pm:331
+#: blib/lib/Tpda3/Tk/View.pm:707 blib/lib/Tpda3/Tk/View.pm:708
 msgid "Toggle find mode"
 msgstr "Comută mod căutare"
 
-#: lib/Tpda3/Wx/View.pm:183 lib/Tpda3/Wx/View.pm:372 lib/Tpda3/Wx/View.pm:373
-#: lib/Tpda3/Config/Menu.pm:42 lib/Tpda3/Config/Toolbar.pm:127
-#: lib/Tpda3/Config/Toolbar.pm:128 blib/lib/Tpda3/Wx/View.pm:254
-#: blib/lib/Tpda3/Wx/View.pm:489 blib/lib/Tpda3/Wx/View.pm:490
-#: blib/lib/Tpda3/Tk/View.pm:332 blib/lib/Tpda3/Tk/View.pm:719
-#: blib/lib/Tpda3/Tk/View.pm:720
+#: lib/Tpda3/Wx/View.pm:183 lib/Tpda3/Wx/View.pm:372
+#: lib/Tpda3/Wx/View.pm:373 lib/Tpda3/Config/Menu.pm:42
+#: lib/Tpda3/Config/Toolbar.pm:127 lib/Tpda3/Config/Toolbar.pm:128
+#: blib/lib/Tpda3/Wx/View.pm:254 blib/lib/Tpda3/Wx/View.pm:489
+#: blib/lib/Tpda3/Wx/View.pm:490 blib/lib/Tpda3/Tk/View.pm:332
+#: blib/lib/Tpda3/Tk/View.pm:719 blib/lib/Tpda3/Tk/View.pm:720
 msgid "Execute search"
 msgstr "Execută căutare"
 
-#: lib/Tpda3/Wx/View.pm:184 lib/Tpda3/Wx/View.pm:404 lib/Tpda3/Wx/View.pm:405
-#: lib/Tpda3/Config/Menu.pm:49 lib/Tpda3/Config/Toolbar.pm:319
-#: lib/Tpda3/Config/Toolbar.pm:320 blib/lib/Tpda3/Wx/View.pm:255
-#: blib/lib/Tpda3/Wx/View.pm:521 blib/lib/Tpda3/Wx/View.pm:522
-#: blib/lib/Tpda3/Tk/View.pm:333 blib/lib/Tpda3/Tk/View.pm:751
-#: blib/lib/Tpda3/Tk/View.pm:752
+#: lib/Tpda3/Wx/View.pm:184 lib/Tpda3/Wx/View.pm:404
+#: lib/Tpda3/Wx/View.pm:405 lib/Tpda3/Config/Menu.pm:49
+#: lib/Tpda3/Config/Toolbar.pm:319 lib/Tpda3/Config/Toolbar.pm:320
+#: blib/lib/Tpda3/Wx/View.pm:255 blib/lib/Tpda3/Wx/View.pm:521
+#: blib/lib/Tpda3/Wx/View.pm:522 blib/lib/Tpda3/Tk/View.pm:333
+#: blib/lib/Tpda3/Tk/View.pm:751 blib/lib/Tpda3/Tk/View.pm:752
 msgid "Execute count"
 msgstr "Execută numărare"
 
@@ -300,7 +300,7 @@ msgstr "Generează document implicit"
 #: blib/lib/Tpda3/Wx/View.pm:517 blib/lib/Tpda3/Wx/View.pm:518
 #: blib/lib/Tpda3/Tk/View.pm:747 blib/lib/Tpda3/Tk/View.pm:748
 msgid "Copy record"
-msgstr "Copiere Înregistrare"
+msgstr "Copiere înregistrare"
 
 #: lib/Tpda3/Tk/View.pm:495 blib/lib/Tpda3/Tk/View.pm:788
 msgid "Record"
@@ -373,7 +373,8 @@ msgstr "Golește"
 #: blib/lib/Tpda3/Tk/Dialog/Search.pm:71
 #: blib/lib/Tpda3/Tk/Dialog/Message.pm:76
 #: blib/lib/Tpda3/Tk/Dialog/Message.pm:152
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:64 blib/lib/Tpda3/Tk/Dialog/Select.pm:70
+#: blib/lib/Tpda3/Tk/Dialog/Select.pm:64
+#: blib/lib/Tpda3/Tk/Dialog/Select.pm:70
 #: blib/lib/Tpda3/Tk/Dialog/Login.pm:62
 msgid "Cancel"
 msgstr "Renunț"
@@ -403,7 +404,8 @@ msgstr "Rezultat"
 #: lib/Tpda3/Tk/Dialog/Message.pm:40 lib/Tpda3/Tk/Dialog/Message.pm:43
 #: lib/Tpda3/Tk/Dialog/Login.pm:32 lib/Tpda3/Tk/Dialog/Login.pm:119
 #: blib/lib/Tpda3/Tk/Dialog/Message.pm:71
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:74 blib/lib/Tpda3/Tk/Dialog/Login.pm:62
+#: blib/lib/Tpda3/Tk/Dialog/Message.pm:74
+#: blib/lib/Tpda3/Tk/Dialog/Login.pm:62
 #: blib/lib/Tpda3/Tk/Dialog/Login.pm:149
 msgid "OK"
 msgstr "Accept"
@@ -431,7 +433,8 @@ msgstr "Nu"
 msgid "Dialog"
 msgstr "Dialog"
 
-#: lib/Tpda3/Tk/Dialog/Message.pm:103 blib/lib/Tpda3/Tk/Dialog/Message.pm:135
+#: lib/Tpda3/Tk/Dialog/Message.pm:103
+#: blib/lib/Tpda3/Tk/Dialog/Message.pm:135
 msgid "Question"
 msgstr "Întrebare"
 

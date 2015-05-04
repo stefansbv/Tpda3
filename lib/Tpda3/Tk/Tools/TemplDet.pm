@@ -8,7 +8,6 @@ use utf8;
 
 use Tk::widgets qw(DateEntry JComboBox Checkbutton RadiobuttonGroup);
 use POSIX qw (strftime);
-use Date::Calc qw(check_date);
 use File::Spec::Functions;
 use List::Compare;
 use List::MoreUtils qw(any);

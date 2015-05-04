@@ -1,5 +1,4 @@
 # Lines starting with '#' are considered comments.
-# Lines starting with '#' are considered comments.
 *.db
 *.html
 *.log
