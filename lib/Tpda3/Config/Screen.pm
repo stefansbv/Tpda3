@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Data::Diver qw( Dive );
+use Hash::Merge;
 
 require Tpda3::Config;
 
@@ -217,20 +218,11 @@ sub repo_table_columns_by_level {
 
 sub alter_toolbar_state {
     my $self = shift;
-
-    my $tb_m = $self->cfg->toolbar();
-    my $tb_a = $self->toolbar();
-
-    foreach my $tb ( keys %{$tb_a} ) {
-        foreach my $pg ( keys %{ $tb_a->{$tb}{state} } ) {
-            foreach my $k ( keys %{ $tb_a->{$tb}{state}{$pg} } ) {
-                $tb_m->{$tb}{state}{$pg}{$k} = $tb_a->{$tb}{state}{$pg}{$k};
-            }
-        }
-    }
-
-    $self->cfg->toolbar($tb_m);
-
+    my $tb_orig_ref = $self->cfg->toolbar->tool;
+    my $tb_scrn_ref = $self->toolbar;
+    my $merged = Hash::Merge->new('RIGHT_PRECEDENT')
+        ->merge( $tb_orig_ref, $tb_scrn_ref );
+    $self->cfg->toolbar->tool($merged);
     return;
 }
 

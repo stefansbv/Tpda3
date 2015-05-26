@@ -48,6 +48,7 @@ sub db_connect {
             RaiseError       => 0,
             PrintError       => 0,
             LongReadLen      => 524288,
+            LongTruncOk      => 1,
             HandleError      => sub { $self->handle_error() },
             odbc_enable_utf8 => 1,
         }

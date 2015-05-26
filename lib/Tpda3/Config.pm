@@ -359,9 +359,12 @@ sub administrator_file {
 
 sub config_save_instance {
     my ( $self, $key, $value ) = @_;
-    my $data = Tpda3::Utils->read_yaml( $self->instance_file);
-    $data->{geometry}{$key} = $value;
-    Tpda3::Utils->write_yaml( $self->instance_file, $data );
+    my $data = {};
+    try { $data = Tpda3::Utils->read_yaml( $self->instance_file ) }
+    finally {
+        $data->{geometry}{$key} = $value;
+        Tpda3::Utils->write_yaml( $self->instance_file, $data );
+    };
     return;
 }
 
