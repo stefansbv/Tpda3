@@ -562,7 +562,7 @@ sub preview_report {
 
     my $params = $self->get_parameters;
     if ( scalar @{ $self->{params} } > 0 and not $params ) {
-        my $msg = __ "Parameters are required!";
+        my $msg = __ "Input a valid interval, please";
         my $lst = join ', ', @{ $self->{params} };
         my $det = __x( "Input the required parameters for {list}",
                        list => $lst );

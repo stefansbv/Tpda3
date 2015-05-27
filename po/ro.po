@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: stefan@s2i2.ro\n"
-"POT-Creation-Date: 2014-09-09 19:58+0300\n"
-"PO-Revision-Date: 2015-03-30 18:28+0200\n"
+"POT-Creation-Date: 2015-05-27 17:10+0300\n"
+"PO-Revision-Date: 2015-05-27 17:11+0200\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -17,460 +17,409 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Poedit 1.7.5\n"
+"X-Generator: Poedit 1.7.6\n"
 
-#: lib/Tpda3/Controller.pm:448 blib/lib/Tpda3/Controller.pm:538
+#: lib/Tpda3/Config/Menu.pm:27
+msgid "App"
+msgstr "Aplicație"
+
+#: lib/Tpda3/Config/Menu.pm:32 lib/Tpda3/Config/Toolbar.pm:53
+#: lib/Tpda3/Config/Toolbar.pm:54
+msgid "Toggle find mode"
+msgstr "Comută mod căutare"
+
+#: lib/Tpda3/Config/Menu.pm:39 lib/Tpda3/Config/Toolbar.pm:125
+#: lib/Tpda3/Config/Toolbar.pm:126
+msgid "Execute search"
+msgstr "Execută căutare"
+
+#: lib/Tpda3/Config/Menu.pm:46 lib/Tpda3/Config/Toolbar.pm:317
+#: lib/Tpda3/Config/Toolbar.pm:318
+msgid "Execute count"
+msgstr "Execută numărare"
+
+#: lib/Tpda3/Config/Menu.pm:53
+msgid "Preview report"
+msgstr "Vizualizare raport"
+
+#: lib/Tpda3/Config/Menu.pm:60 lib/Tpda3/Config/Toolbar.pm:269
+msgid "Generate document"
+msgstr "Generează document"
+
+#: lib/Tpda3/Config/Menu.pm:67 lib/Tpda3/Config/Toolbar.pm:77
+msgid "Quit"
+msgstr "Ieșire"
+
+#: lib/Tpda3/Config/Menu.pm:76
+msgid "Admin"
+msgstr "Administrare"
+
+#: lib/Tpda3/Config/Menu.pm:81
+msgid "Default app"
+msgstr "Aplicația implicită"
+
+#: lib/Tpda3/Config/Menu.pm:88
+msgid "Configurations"
+msgstr "Configurări"
+
+#: lib/Tpda3/Config/Menu.pm:95
+msgid "Reports data"
+msgstr "Rapoarte"
+
+#: lib/Tpda3/Config/Menu.pm:102
+msgid "Templates data"
+msgstr "Modele"
+
+#: lib/Tpda3/Config/Menu.pm:111
+msgid "Help"
+msgstr "Ajutor"
+
+#: lib/Tpda3/Config/Menu.pm:116
+msgid "Manual"
+msgstr "Manual"
+
+#: lib/Tpda3/Config/Menu.pm:123
+msgid "About"
+msgstr "Despre"
+
+#: lib/Tpda3/Config/Toolbar.pm:29 lib/Tpda3/Config/Toolbar.pm:30
+msgid "Reload record"
+msgstr "Reîncărcare înregistrare"
+
+#: lib/Tpda3/Config/Toolbar.pm:78
+msgid "Quit the application"
+msgstr "Părăsește aplicația"
+
+#: lib/Tpda3/Config/Toolbar.pm:101 lib/Tpda3/Config/Toolbar.pm:102
+msgid "Paste record"
+msgstr "Inserez înregistrarea"
+
+#: lib/Tpda3/Config/Toolbar.pm:149 lib/Tpda3/Config/Toolbar.pm:150
+msgid "Save record"
+msgstr "Salvez înregistrarea"
+
+#: lib/Tpda3/Config/Toolbar.pm:173
+msgid "Print preview"
+msgstr "Previzualizare"
+
+#: lib/Tpda3/Config/Toolbar.pm:174
+msgid "Print preview default report"
+msgstr "Vizualizare raport implicit"
+
+#: lib/Tpda3/Config/Toolbar.pm:197 lib/Tpda3/Config/Toolbar.pm:198
+msgid "Add record"
+msgstr "Adaug înregistrare"
+
+#: lib/Tpda3/Config/Toolbar.pm:221 lib/Tpda3/Config/Toolbar.pm:222
+msgid "Save current window geometry"
+msgstr "Salvează geometria ferestrei"
+
+#: lib/Tpda3/Config/Toolbar.pm:245 lib/Tpda3/Config/Toolbar.pm:246
+msgid "Remove record"
+msgstr "Șterg înregistrarea"
+
+#: lib/Tpda3/Config/Toolbar.pm:270
+msgid "Generate default document"
+msgstr "Generează document implicit"
+
+#: lib/Tpda3/Config/Toolbar.pm:293 lib/Tpda3/Config/Toolbar.pm:294
+msgid "Copy record"
+msgstr "Copiere înregistrare"
+
+#: lib/Tpda3/Controller.pm:433
 msgid "Not selected"
 msgstr "Neselectat"
 
-#: lib/Tpda3/Controller.pm:505 blib/lib/Tpda3/Controller.pm:595
+#: lib/Tpda3/Controller.pm:488
 msgid "Record loaded (d)"
 msgstr "Înregistrare încărcată (d)"
 
-#: lib/Tpda3/Controller.pm:1318 blib/lib/Tpda3/Controller.pm:1733
+#: lib/Tpda3/Controller.pm:1269
 msgid "Details"
 msgstr "Detalii"
 
-#: lib/Tpda3/Controller.pm:1795 blib/lib/Tpda3/Controller.pm:2365
+#: lib/Tpda3/Controller.pm:1732
 msgid "record"
 msgid_plural "records"
 msgstr[0] "înregistrare"
 msgstr[1] "înregistrări"
 msgstr[2] "înregistrări"
 
-#: lib/Tpda3/Controller.pm:1797 blib/lib/Tpda3/Controller.pm:2367
+#: lib/Tpda3/Controller.pm:1734
 msgid "first"
 msgstr "primele"
 
-#: lib/Tpda3/Controller.pm:1801 blib/lib/Tpda3/Controller.pm:2371
+#: lib/Tpda3/Controller.pm:1738
 #, perl-brace-format
 msgid "{pre} {count} {post}"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:1861 blib/lib/Tpda3/Controller.pm:2437
+#: lib/Tpda3/Controller.pm:1797
 msgid "records"
 msgstr "înregistrări"
 
-#: lib/Tpda3/Controller.pm:1881 blib/lib/Tpda3/Controller.pm:2462
+#: lib/Tpda3/Controller.pm:1816
 msgid "Load a record, first"
 msgstr "Reîncărcare înregistrare"
 
-#: lib/Tpda3/Controller.pm:1934 lib/Tpda3/Controller.pm:2386
-#: lib/Tpda3/Controller.pm:2575 blib/lib/Tpda3/Controller.pm:2520
-#: blib/lib/Tpda3/Controller.pm:3139 blib/lib/Tpda3/Controller.pm:3368
-#: blib/lib/Tpda3/Controller.pm:3432
+#: lib/Tpda3/Controller.pm:1868 lib/Tpda3/Controller.pm:2310
+#: lib/Tpda3/Controller.pm:2493
 msgid "Empty record"
 msgstr "Înregistrare goală"
 
-#: lib/Tpda3/Controller.pm:1942 blib/lib/Tpda3/Controller.pm:2528
+#: lib/Tpda3/Controller.pm:1876
 msgid "Report failed!"
 msgstr "Raportare eșuată"
 
-#: lib/Tpda3/Controller.pm:1949 blib/lib/Tpda3/Controller.pm:2535
+#: lib/Tpda3/Controller.pm:1883
 msgid "Output path not found"
 msgstr "Calea de ieșire nu a fost găsită"
 
-#: lib/Tpda3/Controller.pm:2347 blib/lib/Tpda3/Controller.pm:3085
+#: lib/Tpda3/Controller.pm:2273
 msgid "Record loaded (r)"
 msgstr "Înregistrare încărcată (r)"
 
-#: lib/Tpda3/Controller.pm:2361 blib/lib/Tpda3/Controller.pm:3107
+#: lib/Tpda3/Controller.pm:2286
 msgid "Reloaded"
 msgstr "Reîncărcat"
 
-#: lib/Tpda3/Controller.pm:2435 blib/lib/Tpda3/Controller.pm:3198
+#: lib/Tpda3/Controller.pm:2358
 msgid "Deleted"
 msgstr "Șters"
 
-#: lib/Tpda3/Controller.pm:2510 blib/lib/Tpda3/Controller.pm:3291
+#: lib/Tpda3/Controller.pm:2430
 msgid "Not saved"
 msgstr "Nesalvat"
 
-#: lib/Tpda3/Controller.pm:2513 blib/lib/Tpda3/Controller.pm:3294
+#: lib/Tpda3/Controller.pm:2433
 msgid "Canceled"
 msgstr "Abandonat"
 
-#: lib/Tpda3/Controller.pm:2530 blib/lib/Tpda3/Controller.pm:3317
+#: lib/Tpda3/Controller.pm:2449
 msgid "Record changed"
 msgstr "Înregistrare modificată"
 
-#: lib/Tpda3/Controller.pm:2531 lib/Tpda3/Controller.pm:2535
-#: blib/lib/Tpda3/Controller.pm:3318 blib/lib/Tpda3/Controller.pm:3322
+#: lib/Tpda3/Controller.pm:2450 lib/Tpda3/Controller.pm:2454
 msgid "Save record?"
 msgstr "Salvez înregistrarea?"
 
-#: lib/Tpda3/Controller.pm:2534 blib/lib/Tpda3/Controller.pm:3321
+#: lib/Tpda3/Controller.pm:2453
 msgid "New record"
 msgstr "Înregistrare nouă"
 
-#: lib/Tpda3/Controller.pm:2538 blib/lib/Tpda3/Controller.pm:3325
+#: lib/Tpda3/Controller.pm:2457
 msgid "Delete record"
 msgstr "Șterg înregistrarea"
 
-#: lib/Tpda3/Controller.pm:2539 blib/lib/Tpda3/Controller.pm:3326
+#: lib/Tpda3/Controller.pm:2458
 msgid "Confirm record delete?"
 msgstr "Confirmați ștergerea înregistrării?"
 
-#: lib/Tpda3/Controller.pm:2566 lib/Tpda3/Controller.pm:2587
-#: blib/lib/Tpda3/Controller.pm:3359 blib/lib/Tpda3/Controller.pm:3383
+#: lib/Tpda3/Controller.pm:2484 lib/Tpda3/Controller.pm:2505
 msgid "Saved"
 msgstr "Salvat"
 
-#: lib/Tpda3/Controller.pm:2590 blib/lib/Tpda3/Controller.pm:3386
+#: lib/Tpda3/Controller.pm:2508
 msgid "Not in edit|add mode!"
 msgstr "Nu este în mod editare|adăugare"
 
-#: lib/Tpda3/Controller.pm:2668 lib/Tpda3/Tk/View.pm:1378
-#: blib/lib/Tpda3/Controller.pm:3500
+#: lib/Tpda3/Controller.pm:2585 lib/Tpda3/Tk/View.pm:1298
 msgid "Please, fill in data for:"
 msgstr "Rog, completați datele pentru:"
 
-#: lib/Tpda3/Controller.pm:2737 blib/lib/Tpda3/Controller.pm:3593
+#: lib/Tpda3/Controller.pm:2649
 msgid "Changed record check failed!"
 msgstr "Verificarea la modificare eșuată!"
 
-#: lib/Tpda3/Controller.pm:2754 blib/lib/Tpda3/Controller.pm:3616
+#: lib/Tpda3/Controller.pm:2665
 msgid "Record copied"
 msgstr "Înregistrare copiată"
 
-#: lib/Tpda3/Controller.pm:2755 blib/lib/Tpda3/Controller.pm:3617
+#: lib/Tpda3/Controller.pm:2666
 msgid "Record copy failed"
 msgstr "Copiere înregistrare eșuată"
 
-#: lib/Tpda3/Controller.pm:2768 blib/lib/Tpda3/Controller.pm:3636
+#: lib/Tpda3/Controller.pm:2678
 msgid "Record restored"
 msgstr "Înregistrare restaurată"
 
-#: lib/Tpda3/Controller.pm:2769 blib/lib/Tpda3/Controller.pm:3637
+#: lib/Tpda3/Controller.pm:2679
 msgid "Record restore failed"
 msgstr "Restaurare înregistrare eșuată"
 
-#: lib/Tpda3/Wx/View.pm:164 lib/Tpda3/Config/Menu.pm:79
-#: blib/lib/Tpda3/Wx/View.pm:237 blib/lib/Tpda3/Tk/View.pm:315
-msgid "Admin"
-msgstr "Administrare"
-
-#: lib/Tpda3/Wx/View.pm:166 blib/lib/Tpda3/Wx/View.pm:239
-#: blib/lib/Tpda3/Tk/View.pm:317
-msgid "Set default app"
-msgstr "Aplicația implicită"
-
-#: lib/Tpda3/Wx/View.pm:167 lib/Tpda3/Config/Menu.pm:91
-#: blib/lib/Tpda3/Wx/View.pm:240 blib/lib/Tpda3/Tk/View.pm:318
-msgid "Configurations"
-msgstr "Configurări"
-
-#: lib/Tpda3/Wx/View.pm:168 blib/lib/Tpda3/Wx/View.pm:234
-#: blib/lib/Tpda3/Tk/View.pm:312
-msgid "Edit reports data"
-msgstr "Editare listă rapoarte"
-
-#: lib/Tpda3/Wx/View.pm:169
-msgid "Edit templates data"
-msgstr "Editare listă modele"
-
-#: lib/Tpda3/Wx/View.pm:173 lib/Tpda3/Config/Menu.pm:114
-#: blib/lib/Tpda3/Wx/View.pm:244 blib/lib/Tpda3/Tk/View.pm:322
-msgid "Help"
-msgstr "Ajutor"
-
-#: lib/Tpda3/Wx/View.pm:175 lib/Tpda3/Config/Menu.pm:119
-msgid "Manual"
-msgstr "Manual"
-
-#: lib/Tpda3/Wx/View.pm:176 lib/Tpda3/Config/Menu.pm:126
-#: blib/lib/Tpda3/Wx/View.pm:247 blib/lib/Tpda3/Tk/View.pm:325
-msgid "About"
-msgstr "Despre"
-
-#: lib/Tpda3/Wx/View.pm:180 lib/Tpda3/Config/Menu.pm:30
-#: blib/lib/Tpda3/Wx/View.pm:251 blib/lib/Tpda3/Tk/View.pm:329
-msgid "App"
-msgstr "Aplicație"
-
-#: lib/Tpda3/Wx/View.pm:182 lib/Tpda3/Wx/View.pm:360
-#: lib/Tpda3/Wx/View.pm:361 lib/Tpda3/Config/Menu.pm:35
-#: lib/Tpda3/Config/Toolbar.pm:55 lib/Tpda3/Config/Toolbar.pm:56
-#: blib/lib/Tpda3/Wx/View.pm:253 blib/lib/Tpda3/Wx/View.pm:477
-#: blib/lib/Tpda3/Wx/View.pm:478 blib/lib/Tpda3/Tk/View.pm:331
-#: blib/lib/Tpda3/Tk/View.pm:707 blib/lib/Tpda3/Tk/View.pm:708
-msgid "Toggle find mode"
-msgstr "Comută mod căutare"
-
-#: lib/Tpda3/Wx/View.pm:183 lib/Tpda3/Wx/View.pm:372
-#: lib/Tpda3/Wx/View.pm:373 lib/Tpda3/Config/Menu.pm:42
-#: lib/Tpda3/Config/Toolbar.pm:127 lib/Tpda3/Config/Toolbar.pm:128
-#: blib/lib/Tpda3/Wx/View.pm:254 blib/lib/Tpda3/Wx/View.pm:489
-#: blib/lib/Tpda3/Wx/View.pm:490 blib/lib/Tpda3/Tk/View.pm:332
-#: blib/lib/Tpda3/Tk/View.pm:719 blib/lib/Tpda3/Tk/View.pm:720
-msgid "Execute search"
-msgstr "Execută căutare"
-
-#: lib/Tpda3/Wx/View.pm:184 lib/Tpda3/Wx/View.pm:404
-#: lib/Tpda3/Wx/View.pm:405 lib/Tpda3/Config/Menu.pm:49
-#: lib/Tpda3/Config/Toolbar.pm:319 lib/Tpda3/Config/Toolbar.pm:320
-#: blib/lib/Tpda3/Wx/View.pm:255 blib/lib/Tpda3/Wx/View.pm:521
-#: blib/lib/Tpda3/Wx/View.pm:522 blib/lib/Tpda3/Tk/View.pm:333
-#: blib/lib/Tpda3/Tk/View.pm:751 blib/lib/Tpda3/Tk/View.pm:752
-msgid "Execute count"
-msgstr "Execută numărare"
-
-#: lib/Tpda3/Wx/View.pm:185 lib/Tpda3/Config/Menu.pm:56
-#: blib/lib/Tpda3/Wx/View.pm:256 blib/lib/Tpda3/Tk/View.pm:334
-msgid "Preview report"
-msgstr "Vizualizare raport"
-
-#: lib/Tpda3/Wx/View.pm:186 lib/Tpda3/Wx/View.pm:396
-#: lib/Tpda3/Config/Menu.pm:63 lib/Tpda3/Config/Toolbar.pm:271
-#: blib/lib/Tpda3/Wx/View.pm:513 blib/lib/Tpda3/Tk/View.pm:743
-msgid "Generate document"
-msgstr "Generează document"
-
-#: lib/Tpda3/Wx/View.pm:187 lib/Tpda3/Wx/View.pm:364
-#: lib/Tpda3/Config/Menu.pm:70 lib/Tpda3/Config/Toolbar.pm:79
-#: blib/lib/Tpda3/Wx/View.pm:257 blib/lib/Tpda3/Wx/View.pm:481
-#: blib/lib/Tpda3/Tk/View.pm:335 blib/lib/Tpda3/Tk/View.pm:711
-msgid "Quit"
-msgstr "Ieșire"
-
-#: lib/Tpda3/Wx/View.pm:356 lib/Tpda3/Wx/View.pm:357
-#: lib/Tpda3/Config/Toolbar.pm:31 lib/Tpda3/Config/Toolbar.pm:32
-#: blib/lib/Tpda3/Wx/View.pm:473 blib/lib/Tpda3/Wx/View.pm:474
-#: blib/lib/Tpda3/Tk/View.pm:703 blib/lib/Tpda3/Tk/View.pm:704
-msgid "Reload record"
-msgstr "Reîncărcare înregistrare"
-
-#: lib/Tpda3/Wx/View.pm:365 lib/Tpda3/Config/Toolbar.pm:80
-#: blib/lib/Tpda3/Wx/View.pm:482 blib/lib/Tpda3/Tk/View.pm:712
-msgid "Quit the application"
-msgstr "Părăsește aplicația"
-
-#: lib/Tpda3/Wx/View.pm:368 lib/Tpda3/Wx/View.pm:369
-#: lib/Tpda3/Config/Toolbar.pm:103 lib/Tpda3/Config/Toolbar.pm:104
-#: blib/lib/Tpda3/Wx/View.pm:485 blib/lib/Tpda3/Wx/View.pm:486
-#: blib/lib/Tpda3/Tk/View.pm:715 blib/lib/Tpda3/Tk/View.pm:716
-msgid "Paste record"
-msgstr "Inserez înregistrarea"
-
-#: lib/Tpda3/Wx/View.pm:376 lib/Tpda3/Wx/View.pm:377
-#: lib/Tpda3/Config/Toolbar.pm:151 lib/Tpda3/Config/Toolbar.pm:152
-#: blib/lib/Tpda3/Wx/View.pm:493 blib/lib/Tpda3/Wx/View.pm:494
-#: blib/lib/Tpda3/Tk/View.pm:723 blib/lib/Tpda3/Tk/View.pm:724
-msgid "Save record"
-msgstr "Salvez înregistrarea"
-
-#: lib/Tpda3/Wx/View.pm:380 lib/Tpda3/Config/Toolbar.pm:175
-#: blib/lib/Tpda3/Wx/View.pm:497 blib/lib/Tpda3/Tk/View.pm:727
-msgid "Print preview"
-msgstr "Previzualizare"
-
-#: lib/Tpda3/Wx/View.pm:381 lib/Tpda3/Config/Toolbar.pm:176
-#: blib/lib/Tpda3/Wx/View.pm:498 blib/lib/Tpda3/Tk/View.pm:728
-msgid "Print preview default report"
-msgstr "Vizualizare raport implicit"
-
-#: lib/Tpda3/Wx/View.pm:384 lib/Tpda3/Wx/View.pm:385
-#: lib/Tpda3/Config/Toolbar.pm:199 lib/Tpda3/Config/Toolbar.pm:200
-#: blib/lib/Tpda3/Wx/View.pm:501 blib/lib/Tpda3/Wx/View.pm:502
-#: blib/lib/Tpda3/Tk/View.pm:731 blib/lib/Tpda3/Tk/View.pm:732
-msgid "Add record"
-msgstr "Adaug înregistrare"
-
-#: lib/Tpda3/Wx/View.pm:388 lib/Tpda3/Wx/View.pm:389
-#: lib/Tpda3/Config/Toolbar.pm:223 lib/Tpda3/Config/Toolbar.pm:224
-#: blib/lib/Tpda3/Wx/View.pm:505 blib/lib/Tpda3/Wx/View.pm:506
-#: blib/lib/Tpda3/Tk/View.pm:735 blib/lib/Tpda3/Tk/View.pm:736
-msgid "Save current window geometry"
-msgstr "Salvează geometria ferestrei"
-
-#: lib/Tpda3/Wx/View.pm:392 lib/Tpda3/Wx/View.pm:393
-#: lib/Tpda3/Config/Toolbar.pm:247 lib/Tpda3/Config/Toolbar.pm:248
-#: blib/lib/Tpda3/Wx/View.pm:509 blib/lib/Tpda3/Wx/View.pm:510
-#: blib/lib/Tpda3/Tk/View.pm:739 blib/lib/Tpda3/Tk/View.pm:740
-msgid "Remove record"
-msgstr "Șterg înregistrarea"
-
-#: lib/Tpda3/Wx/View.pm:397 lib/Tpda3/Config/Toolbar.pm:272
-#: blib/lib/Tpda3/Wx/View.pm:514 blib/lib/Tpda3/Tk/View.pm:744
-msgid "Generate default document"
-msgstr "Generează document implicit"
-
-#: lib/Tpda3/Wx/View.pm:400 lib/Tpda3/Wx/View.pm:401
-#: lib/Tpda3/Config/Toolbar.pm:295 lib/Tpda3/Config/Toolbar.pm:296
-#: blib/lib/Tpda3/Wx/View.pm:517 blib/lib/Tpda3/Wx/View.pm:518
-#: blib/lib/Tpda3/Tk/View.pm:747 blib/lib/Tpda3/Tk/View.pm:748
-msgid "Copy record"
-msgstr "Copiere înregistrare"
-
-#: lib/Tpda3/Tk/View.pm:495 blib/lib/Tpda3/Tk/View.pm:788
-msgid "Record"
-msgstr "Înregistrare"
-
-#: lib/Tpda3/Tk/View.pm:496 blib/lib/Tpda3/Tk/View.pm:789
-msgid "List"
-msgstr "Listă"
-
-#: lib/Tpda3/Tk/View.pm:501 blib/lib/Tpda3/Tk/View.pm:794
-msgid "Search results"
-msgstr "Rezultat căutare"
-
-#: lib/Tpda3/Tk/View.pm:628 lib/Tpda3/Tk/View.pm:642
-#: lib/Tpda3/Tk/Dialog/Message.pm:103 blib/lib/Tpda3/Tk/View.pm:994
-#: blib/lib/Tpda3/Tk/View.pm:1014
-msgid "Info"
-msgstr "Info"
-
-#: lib/Tpda3/Tk/View.pm:1389
-msgid "Failed to generate TeX"
-msgstr "Generare TeX eșuată "
-
-#: lib/Tpda3/Tk/View.pm:1406 blib/lib/Tpda3/Controller.pm:2545
-#: blib/lib/Tpda3/Controller.pm:2562
-msgid "Failed to generate PDF"
-msgstr "Generare PDF eșuată "
-
-#: lib/Tpda3/Tk/View.pm:1469 lib/Tpda3/Tk/Dialog/Message.pm:103
-#: blib/lib/Tpda3/Tk/View.pm:1946
-msgid "Error"
-msgstr "Eroare"
-
-#: lib/Tpda3/Tk/Dialog/TTGen.pm:510 lib/Tpda3/Tk/Dialog/TTGen.pm:537
-msgid "Range error"
-msgstr "Interval eronat"
-
-#: lib/Tpda3/Tk/Dialog/TTGen.pm:511
-msgid "A valid range is required!"
-msgstr "Este necesar un interval valid!"
-
-#: lib/Tpda3/Tk/Dialog/TTGen.pm:538
-msgid "No records to proces, the table is empty!"
-msgstr "Nu sunt înregistrări de procesat, tabelul este gol!"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:34 blib/lib/Tpda3/Tk/Dialog/Search.pm:64
-msgid "Search"
-msgstr "Căutare"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:35 lib/Tpda3/Tk/Dialog/Search.pm:260
-#: lib/Tpda3/Tk/Dialog/Select.pm:34 lib/Tpda3/Tk/Dialog/Select.pm:144
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:65
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:289
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:64
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:174
-msgid "Load"
-msgstr "Încarcă"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:35 lib/Tpda3/Tk/Dialog/Search.pm:43
-#: lib/Tpda3/Tk/Dialog/Search.pm:261 blib/lib/Tpda3/Tk/Dialog/Search.pm:65
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:73
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:290
-msgid "Clear"
-msgstr "Golește"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:35 lib/Tpda3/Tk/Dialog/Search.pm:41
-#: lib/Tpda3/Tk/Dialog/Message.pm:46 lib/Tpda3/Tk/Dialog/Message.pm:132
-#: lib/Tpda3/Tk/Dialog/Select.pm:34 lib/Tpda3/Tk/Dialog/Select.pm:40
-#: lib/Tpda3/Tk/Dialog/Login.pm:32 blib/lib/Tpda3/Tk/Dialog/Search.pm:65
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:71
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:76
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:152
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:64
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:70
-#: blib/lib/Tpda3/Tk/Dialog/Login.pm:62
-msgid "Cancel"
-msgstr "Renunț"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:83 blib/lib/Tpda3/Tk/Dialog/Search.pm:113
-msgid "contains"
-msgstr "conține"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:84 blib/lib/Tpda3/Tk/Dialog/Search.pm:114
-msgid "starts"
-msgstr "începe cu"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:85 blib/lib/Tpda3/Tk/Dialog/Search.pm:115
-msgid "ends"
-msgstr "se termină cu"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:99 blib/lib/Tpda3/Tk/Dialog/Search.pm:129
-msgid "Find"
-msgstr "Caută"
-
-#: lib/Tpda3/Tk/Dialog/Search.pm:120 lib/Tpda3/Tk/Dialog/Select.pm:53
-#: blib/lib/Tpda3/Tk/Dialog/Search.pm:150
-#: blib/lib/Tpda3/Tk/Dialog/Select.pm:83
-msgid "Result"
-msgstr "Rezultat"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:40 lib/Tpda3/Tk/Dialog/Message.pm:43
-#: lib/Tpda3/Tk/Dialog/Login.pm:32 lib/Tpda3/Tk/Dialog/Login.pm:119
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:71
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:74
-#: blib/lib/Tpda3/Tk/Dialog/Login.pm:62
-#: blib/lib/Tpda3/Tk/Dialog/Login.pm:149
-msgid "OK"
-msgstr "Accept"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:44 lib/Tpda3/Tk/Dialog/Tiler.pm:36
-msgid "Close"
-msgstr "Închide"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:45 lib/Tpda3/Tk/Dialog/Message.pm:46
-#: lib/Tpda3/Tk/Dialog/Message.pm:132 blib/lib/Tpda3/Tk/Dialog/Message.pm:75
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:76
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:152
-msgid "Yes"
-msgstr "Da"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:45 lib/Tpda3/Tk/Dialog/Message.pm:46
-#: lib/Tpda3/Tk/Dialog/Message.pm:132 blib/lib/Tpda3/Tk/Dialog/Message.pm:75
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:76
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:152
-msgid "No"
-msgstr "Nu"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:51 lib/Tpda3/Tk/Dialog/Tiler.pm:35
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:81
-msgid "Dialog"
-msgstr "Dialog"
-
-#: lib/Tpda3/Tk/Dialog/Message.pm:103
-#: blib/lib/Tpda3/Tk/Dialog/Message.pm:135
-msgid "Question"
-msgstr "Întrebare"
-
-#: lib/Tpda3/Tk/Dialog/Select.pm:33 blib/lib/Tpda3/Tk/Dialog/Select.pm:63
-msgid "Select"
-msgstr "Select"
-
-#: lib/Tpda3/Tk/Dialog/Login.pm:31 lib/Tpda3/Tk/Dialog/Login.pm:39
-#: blib/lib/Tpda3/Tk/Dialog/Login.pm:61 blib/lib/Tpda3/Tk/Dialog/Login.pm:69
+#: lib/Tpda3/Tk/Dialog/Login.pm:29 lib/Tpda3/Tk/Dialog/Login.pm:37
 msgid "Login"
 msgstr "Conexiune"
 
-#: lib/Tpda3/Tk/Dialog/Login.pm:51 blib/lib/Tpda3/Tk/Dialog/Login.pm:81
+#: lib/Tpda3/Tk/Dialog/Login.pm:30 lib/Tpda3/Tk/Dialog/Login.pm:117
+#: lib/Tpda3/Tk/Dialog/Message.pm:38 lib/Tpda3/Tk/Dialog/Message.pm:41
+msgid "OK"
+msgstr "Accept"
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:30 lib/Tpda3/Tk/Dialog/Message.pm:44
+#: lib/Tpda3/Tk/Dialog/Message.pm:130 lib/Tpda3/Tk/Dialog/Search.pm:33
+#: lib/Tpda3/Tk/Dialog/Search.pm:39 lib/Tpda3/Tk/Dialog/Select.pm:32
+#: lib/Tpda3/Tk/Dialog/Select.pm:38
+msgid "Cancel"
+msgstr "Renunț"
+
+#: lib/Tpda3/Tk/Dialog/Login.pm:49
 msgid "User"
 msgstr "Utilizator"
 
-#: lib/Tpda3/Tk/Dialog/Login.pm:70 blib/lib/Tpda3/Tk/Dialog/Login.pm:100
+#: lib/Tpda3/Tk/Dialog/Login.pm:68
 msgid "Password"
 msgstr "Parola"
 
-#: lib/Tpda3/Config/Menu.pm:84
-msgid "Default app"
-msgstr "Aplicația implicită"
+#: lib/Tpda3/Tk/Dialog/Message.pm:42 lib/Tpda3/Tk/Dialog/Tiler.pm:34
+msgid "Close"
+msgstr "Închide"
 
-#: lib/Tpda3/Config/Menu.pm:98
-msgid "Reports data"
-msgstr "Rapoarte"
+#: lib/Tpda3/Tk/Dialog/Message.pm:43 lib/Tpda3/Tk/Dialog/Message.pm:44
+#: lib/Tpda3/Tk/Dialog/Message.pm:130
+msgid "Yes"
+msgstr "Da"
 
-#: lib/Tpda3/Config/Menu.pm:105
-msgid "Templates data"
-msgstr "Modele"
+#: lib/Tpda3/Tk/Dialog/Message.pm:43 lib/Tpda3/Tk/Dialog/Message.pm:44
+#: lib/Tpda3/Tk/Dialog/Message.pm:130
+msgid "No"
+msgstr "Nu"
 
-#: blib/lib/Tpda3/Wx/View.pm:232 blib/lib/Tpda3/Tk/View.pm:310
-msgid "Tools"
-msgstr "Unelte"
+#: lib/Tpda3/Tk/Dialog/Message.pm:49 lib/Tpda3/Tk/Dialog/Tiler.pm:33
+msgid "Dialog"
+msgstr "Dialog"
 
-#: blib/lib/Tpda3/Wx/View.pm:246 blib/lib/Tpda3/Tk/View.pm:324
-msgid "Guide"
-msgstr "Ghid"
+#: lib/Tpda3/Tk/Dialog/Message.pm:101 lib/Tpda3/Tk/View.pm:1387
+msgid "Error"
+msgstr "Eroare"
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:101 lib/Tpda3/Tk/View.pm:587
+#: lib/Tpda3/Tk/View.pm:600
+msgid "Info"
+msgstr "Info"
+
+#: lib/Tpda3/Tk/Dialog/Message.pm:101
+msgid "Question"
+msgstr "Întrebare"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:565
+msgid "Input a valid interval, please"
+msgstr "Rog, introduceți un interval valid"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:567
+#, perl-brace-format
+msgid "Input the required parameters for {list}"
+msgstr "Introduceți parametrii necesari pentru {list}"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:577
+msgid "Configuration error"
+msgstr "Eroare de configurare"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:578
+#, perl-brace-format
+msgid "Report file not found: {file}"
+msgstr "Fișierul raport nu a fost găsit: {file}"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:596
+msgid "Report Manager"
+msgstr "Report Manager"
+
+#: lib/Tpda3/Tk/Dialog/Repman.pm:597
+#, perl-brace-format
+msgid "Message: {error}"
+msgstr "Mesaj: {error}"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:32
+msgid "Search"
+msgstr "Căutare"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:33 lib/Tpda3/Tk/Dialog/Search.pm:258
+#: lib/Tpda3/Tk/Dialog/Select.pm:32 lib/Tpda3/Tk/Dialog/Select.pm:142
+msgid "Load"
+msgstr "Încarcă"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:33 lib/Tpda3/Tk/Dialog/Search.pm:41
+#: lib/Tpda3/Tk/Dialog/Search.pm:259
+msgid "Clear"
+msgstr "Golește"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:81
+msgid "contains"
+msgstr "conține"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:82
+msgid "starts"
+msgstr "începe cu"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:83
+msgid "ends"
+msgstr "se termină cu"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:97
+msgid "Find"
+msgstr "Caută"
+
+#: lib/Tpda3/Tk/Dialog/Search.pm:118 lib/Tpda3/Tk/Dialog/Select.pm:51
+msgid "Result"
+msgstr "Rezultat"
+
+#: lib/Tpda3/Tk/Dialog/Select.pm:31
+msgid "Select"
+msgstr "Select"
+
+#: lib/Tpda3/Tk/Dialog/TTGen.pm:496 lib/Tpda3/Tk/Dialog/TTGen.pm:523
+msgid "Range error"
+msgstr "Interval eronat"
+
+#: lib/Tpda3/Tk/Dialog/TTGen.pm:497
+msgid "A valid range is required!"
+msgstr "Este necesar un interval valid!"
+
+#: lib/Tpda3/Tk/Dialog/TTGen.pm:524
+msgid "No records to proces, the table is empty!"
+msgstr "Nu sunt înregistrări de procesat, tabelul este gol!"
+
+#: lib/Tpda3/Tk/View.pm:465
+msgid "Record"
+msgstr "Înregistrare"
+
+#: lib/Tpda3/Tk/View.pm:466
+msgid "List"
+msgstr "Listă"
+
+#: lib/Tpda3/Tk/View.pm:471
+msgid "Search results"
+msgstr "Rezultat căutare"
+
+#: lib/Tpda3/Tk/View.pm:1309
+msgid "Failed to generate TeX"
+msgstr "Generare TeX eșuată "
+
+#: lib/Tpda3/Tk/View.pm:1326
+msgid "Failed to generate PDF"
+msgstr "Generare PDF eșuată "
+
+#~ msgid "&App"
+#~ msgstr "&Aplicație"
+
+#~ msgid "&Quit"
+#~ msgstr "&Ieșire"
+
+#, fuzzy
+#~ msgid "Parameters are required!"
+#~ msgstr "Este necesar un interval valid!"
+
+#~ msgid "Set default app"
+#~ msgstr "Aplicația implicită"
+
+#~ msgid "Edit reports data"
+#~ msgstr "Editare listă rapoarte"
+
+#~ msgid "Edit templates data"
+#~ msgstr "Editare listă modele"
+
+#~ msgid "Tools"
+#~ msgstr "Unelte"
+
+#~ msgid "Guide"
+#~ msgstr "Ghid"
