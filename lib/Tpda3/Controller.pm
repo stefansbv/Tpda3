@@ -1227,8 +1227,8 @@ sub screen_module_load {
         }
     }
 
-    # reload toolbar - if? altered by prev screen
-#    $self->cfg->toolbar_interface_reload();
+    # Recreate the toolbar
+    $self->cfg->toolbar_interface_reload;
 
     # Make new NoteBook widget and setup callback
     $self->view->create_notebook();

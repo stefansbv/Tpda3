@@ -184,7 +184,6 @@ sub config_main_load {
 
     my $main_hr = {
         cfmainyml => $main_fqn,
-        cfiface   => $maincfg->{interface},
         cfrun     => $maincfg->{runtime},
         cfextapps => $maincfg->{externalapps},
         cfico     => catdir( $self->cfpath, $maincfg->{resource}{icons} ),
@@ -385,12 +384,7 @@ sub config_load_administrator {
 
 sub toolbar_interface_reload {
     my $self = shift;
-
-    my $res_file    = catfile( $self->cfpath, $self->cfiface->{toolbar} );
-    print "res_file $res_file\n";
-    my $res_data_hr = $self->config_data_from($res_file);
-    $self->make_accessors($res_data_hr);
-
+    $self->{_tb} = Tpda3::Config::Toolbar->new;
     return;
 }
 
@@ -688,7 +682,7 @@ example for the Admin menu.  This configuration file is optional.
 
 =head2 toolbar_interface_reload
 
-Reload toolbar.
+Recreate the toolbar.
 
 =head2 config_init
 
