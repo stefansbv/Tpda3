@@ -41,21 +41,21 @@ sub test_screen {
 
     use_ok($screen_module_package);
 
-    ok( my $a = Tpda3->new($args), 'New Tpda3 app' );
+    ok( my $app = Tpda3->new($args), 'New Tpda3 app' );
 
     # Create controller
-    my $ctrl = $a->{gui};
+    my $ctrl = $app->{gui};
     ok( $ctrl->isa('Tpda3::Controller'),
         'created Tpda3::Controller instance '
     );
 
     #- Test the test screens :)
 
-    my $timer = Wx::Timer->new( $a->{gui}{_view}, 1 );
+    my $timer = Wx::Timer->new( $app->{gui}{_view}, 1 );
     $timer->Start( 100, 1 );    # one shot
 
-    EVT_TIMER $a->{gui}{_view}, 1, sub {
-        ok( $a->{gui}->screen_module_load($screen_name), 'Load Screen' );
+    EVT_TIMER $app->{gui}{_view}, 1, sub {
+        ok( $app->{gui}->screen_module_load($screen_name), 'Load Screen' );
 
         my $obj_rec = $ctrl->scrobj('rec');
         ok( $obj_rec->isa($screen_module_package),
@@ -78,28 +78,28 @@ sub test_screen {
 
     #-- Test application states
 
-    my $timer2 = Wx::Timer->new( $a->{gui}{_view}, 2 );
+    my $timer2 = Wx::Timer->new( $app->{gui}{_view}, 2 );
     $timer2->Start(1000);
 
     # TODO: Add delay between mode changes(?)
 
-    EVT_TIMER $a->{gui}{_view}, 2, sub {
+    EVT_TIMER $app->{gui}{_view}, 2, sub {
         foreach my $state (qw{find idle add idle edit idle}) {
-            ok( $a->{gui}->set_app_mode($state), "Set app mode '$state'" );
+            ok( $app->{gui}->set_app_mode($state), "Set app mode '$state'" );
         }
         $timer2->Stop();
     };
 
     #-- Quit
 
-    my $timer3 = Wx::Timer->new( $a->{gui}{_view}, 3 );
+    my $timer3 = Wx::Timer->new( $app->{gui}{_view}, 3 );
     $timer3->Start(1000);
 
-    EVT_TIMER $a->{gui}{_view}, 3, sub {
-        $a->{gui}->on_quit;
+    EVT_TIMER $app->{gui}{_view}, 3, sub {
+        $app->{gui}->on_quit;
     };
 
-    $a->run;
+    $app->run;
 
 }
 
