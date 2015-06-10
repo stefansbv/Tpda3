@@ -29,8 +29,8 @@ sub db_connect {
 
     my $log = get_logger();
 
-    my ( $dbname, $host, $port ) = @{$conf}{qw(dbname host port)};
-    my ( $driver, $user, $pass ) = @{$conf}{qw(driver user pass)};
+    my ( $dbname, $host, $port )        = @{$conf}{qw(dbname host port)};
+    my ( $driver, $user, $pass, $role ) = @{$conf}{qw(driver user pass role)};
 
     $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
@@ -41,6 +41,7 @@ sub db_connect {
 
     my $dsn = qq{dbi:Firebird:dbname=$dbname;host=$host;port=$port};
     $dsn .= q{;ib_dialect=3;ib_charset=UTF8};
+    $dsn .= qq{;ib_role=$role} if $role;
 
     $self->{_dbh} = DBI->connect(
         $dsn, $user, $pass,
@@ -138,7 +139,7 @@ sub table_list {
 
     $log->info('Geting list of tables');
 
-    my $sql = q{SELECT TRIM(LOWER(RDB$RELATION_NAME))
+    my $sql = q{SELECT TRIM(LOWER(RDB$RELATION_NAME)) AS table_name
                    FROM RDB$RELATIONS
                     WHERE RDB$SYSTEM_FLAG=0
                       AND RDB$VIEW_BLR IS NULL
@@ -157,6 +158,115 @@ sub table_list {
     };
 
     return $table_list;
+}
+
+sub view_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of procedures');
+
+    my $sql = q{SELECT DISTINCT TRIM(LOWER(RDB$VIEW_NAME)) AS view_name
+                    FROM RDB$VIEW_RELATIONS;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $view_list;
+    try {
+        $view_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $view_list;
+}
+
+sub procedure_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of procedures');
+
+    my $sql = q{SELECT TRIM(LOWER(RDB$PROCEDURE_NAME)) AS proc_name
+                    FROM RDB$PROCEDURES;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $proc_list;
+    try {
+        $proc_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $proc_list;
+}
+
+sub trigger_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of triggers');
+
+    my $sql = q{SELECT TRIM(LOWER(RDB$TRIGGER_NAME)) AS trigger_name,
+                       TRIM(LOWER(RDB$RELATION_NAME)) AS table_name
+                    FROM RDB$TRIGGERS
+                    WHERE RDB$SYSTEM_FLAG=0;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $triggers;
+    try {
+        $triggers = $self->{_dbh}->selectall_arrayref(
+            $sql, { Slice => {} }
+        );                                   # return an AoH
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $triggers;
+}
+
+sub sequences_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of generators');
+
+    my $sql = q{SELECT TRIM(LOWER(RDB$GENERATOR_NAME)) AS gen_name
+                    FROM RDB$GENERATORS
+                    WHERE RDB$SYSTEM_FLAG=0;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $seq_list;
+    try {
+        $seq_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $seq_list;
 }
 
 sub table_info_short {
@@ -303,33 +413,6 @@ sub table_exists {
     };
 
     return $val_ret;
-}
-
-sub sequences_list {
-    my $self = shift;
-
-    my $log = get_logger();
-
-    $log->info('Geting list of generators');
-
-    my $sql = q{SELECT TRIM(RDB$GENERATOR_NAME)
-                    FROM RDB$GENERATORS
-                    WHERE RDB$SYSTEM_FLAG=0;
-    };
-
-    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
-    $self->{_dbh}->{RaiseError} = 0;
-
-    my $seq_list;
-    try {
-        $seq_list = $self->{_dbh}->selectcol_arrayref($sql);
-    }
-    catch {
-        $log->fatal("Transaction aborted because $_")
-            or print STDERR "$_\n";
-    };
-
-    return $seq_list;
 }
 
 sub has_feature_returning { 1 }

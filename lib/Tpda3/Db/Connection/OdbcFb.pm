@@ -39,7 +39,7 @@ sub db_connect {
     $log->trace( " > Port     = ", $port   ? $port   : '?', "\n" );
     $log->trace( " > User     = ", $user   ? $user   : '?', "\n" );
 
-    my $dsn = qq{dbi:ODBC:DSN=$dbname};
+    my $dsn = qq{dbi:ODBC:DSN=$dbname}; # option: Role = ROLENAME in odbc.ini
 
     $self->{_dbh} = DBI->connect(
         $dsn, $user, $pass,
@@ -133,7 +133,7 @@ sub table_list {
 
     $log->info('Geting list of tables');
 
-    my $sql = q{SELECT TRIM(LOWER(RDB$RELATION_NAME))
+    my $sql = q{SELECT TRIM(LOWER(RDB$RELATION_NAME)) AS table_name
                    FROM RDB$RELATIONS
                     WHERE RDB$SYSTEM_FLAG=0
                       AND RDB$VIEW_BLR IS NULL
@@ -152,6 +152,88 @@ sub table_list {
     };
 
     return $table_list;
+}
+
+sub view_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of procedures');
+
+    my $sql = q{SELECT DISTINCT TRIM(LOWER(RDB$VIEW_NAME)) AS view_name
+                    FROM RDB$VIEW_RELATIONS;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $view_list;
+    try {
+        $view_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $view_list;
+}
+
+sub procedure_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of procedures');
+
+    my $sql = q{SELECT TRIM(LOWER(RDB$PROCEDURE_NAME)) AS proc_name
+                    FROM RDB$PROCEDURES;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $proc_list;
+    try {
+        $proc_list = $self->{_dbh}->selectcol_arrayref($sql);
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $proc_list;
+}
+
+sub trigger_list {
+    my $self = shift;
+
+    my $log = get_logger();
+
+    $log->info('Geting list of triggers');
+
+    my $sql = q{SELECT TRIM(LOWER(RDB$TRIGGER_NAME)) AS trigger_name,
+                       TRIM(LOWER(RDB$RELATION_NAME)) AS table_name
+                    FROM RDB$TRIGGERS
+                    WHERE RDB$SYSTEM_FLAG=0;
+    };
+
+    $self->{_dbh}->{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}->{RaiseError} = 0;
+
+    my $triggers;
+    try {
+        $triggers = $self->{_dbh}->selectall_arrayref(
+            $sql, { Slice => {} }
+        );                                   # return an AoH
+    }
+    catch {
+        $log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $triggers;
 }
 
 sub table_info_short {
