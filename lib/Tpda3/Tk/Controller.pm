@@ -346,7 +346,7 @@ sub about {
         return;
     }
     else {
-        $APP_VER  = $app_class->VERSION;
+        $APP_VER  = $app_class->VERSION || q{(devel)};
         $APP_NAME = $app_class->application_name();
     }
 
