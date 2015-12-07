@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use Tk;
-use base qw(Tk::Text);
+use base qw(Tk::Derived Tk::Text);
 
 Construct Tk::Widget 'TT';
 
@@ -28,7 +28,7 @@ Create new binding for the L<< <KeyRelease> >> event type.
 
     use Tpda3::Tk::Text;
 
-    my $entry = Text->new();
+    my $entry = TT->new();
 
 =head2 ClassInit
 

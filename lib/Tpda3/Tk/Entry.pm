@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use Tk;
-use base qw(Tk::Entry);
+use base qw(Tk::Derived Tk::Entry);
 
 Construct Tk::Widget 'MEntry';
 
@@ -28,6 +28,6 @@ Create new binding for the L<< <KeyRelease> >> event type.
 
     use Tpda3::Tk::Entry;
 
-    my $entry = Entry->new();
+    my $entry = MEntry->new();
 
 =cut
