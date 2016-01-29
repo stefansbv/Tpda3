@@ -31,3 +31,4 @@ t/tex/output/test.*
 perlapp/*.exe
 perlapp/*.bin
 Tpda3-*
+test-scripts/
