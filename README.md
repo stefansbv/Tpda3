@@ -1,9 +1,9 @@
 Tpda3 (Tiny Perl Database Application 3)
 ========================================
 Ștefan Suciu
-2015-01-13
+2016-01-29
 
-Version: 0.98.1
+Version: 0.98.8
 
 Tpda3 is a classic desktop database application framework and
 run-time, written in Perl.  The graphical user interface is based on
