@@ -10,6 +10,7 @@ use Tk::widgets qw(DateEntry JComboBox);    #  MatchingBE
 use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Tk::TM;
+use Tpda3::Tk::Text;
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -257,7 +258,7 @@ sub run_screen {
     #- Comments (comments)
 
     my $tcomments = $frame2->Scrolled(
-        'Text',
+        'MText',
         -width      => 33,
         -height     => 6,
         -wrap       => 'word',
