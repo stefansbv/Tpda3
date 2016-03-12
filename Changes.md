@@ -1,3 +1,23 @@
+## 0.98.8 (2016-01-29)
+
+- Changes
+  - Tpda3::Tk::Text - rename the widget.
+
+## 0.98.7 (2015-06-10)
+
+- Changes
+  - Add an optional 'ib_role' config to the Firebird connection.
+- Bugfix
+  - Fix issue #8 Toolbar button stay disabled when switching from a
+    screen that alters the default states.
+  - Fix message, update ro translations.
+
+## 0.98.5 (2015-05-26)
+
+- Bugfix
+  - Fix save geometry.
+- Changes
+  - Sync Wx menus and toolbar code with Tk.
 
 ## 0.98.1 (2015-01-13)
 

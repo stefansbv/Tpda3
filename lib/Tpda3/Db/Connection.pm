@@ -7,18 +7,14 @@ use warnings;
 use Log::Log4perl qw(get_logger);
 use Scalar::Util qw(blessed);
 use Try::Tiny;
-use DBI;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
 
 sub new {
     my ($class, $model) = @_;
-
     my $self = bless {}, $class;
-
     $self->_connect($model);
-
     return $self;
 }
 

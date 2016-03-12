@@ -14,13 +14,9 @@ require Tpda3::Exceptions;
 
 sub new {
     my ( $class, $model ) = @_;
-
     my $self = {};
-
     $self->{model} = $model;
-
     bless $self, $class;
-
     return $self;
 }
 
