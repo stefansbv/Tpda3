@@ -114,7 +114,7 @@ has '_msg_dict' => (
     },
 );
 
-has '_log' => (
+has 'log' => (
     is      => 'ro',
     isa     => 'Log::Log4perl::Logger',
     default => sub {
@@ -125,37 +125,24 @@ has '_log' => (
 sub db_connect {
     my $self = shift;
     my $engine = $self->target->engine;
+    $self->get_connection_observable->set(1);
+    $self->_print('info#Connected');
     $self->{_dbh} = $engine->dbh;
-    say "Wohooo";
-
-    # # Connect to database or retry to connect
-    # if (Tpda3::Db->has_instance) {
-    #     $self->{_dbh} = Tpda3::Db->instance->db_connect($self)->dbh;
-    # }
-    # else {
-    #     $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
-    # }
     return;
 }
 
 sub dbh {
     my $self = shift;
-    # if ( Tpda3::Db->has_instance ) {
-    #     my $db = Tpda3::Db->instance;
-    #     return $db->dbh if $self->is_connected;
-    # }
-    # Exception::Db::Connect->throw(
-    #     usermsg => 'Please restart and login',
-    #     logmsg  => 'error#Not connected',
-    # );
-    my $engine = $self->target->engine;
-    return $engine->dbh;
+    return $self->{_dbh} if $self->{_dbh}->isa('DBI::db');
+    Exception::Db::Connect->throw(
+        usermsg => 'Please restart and login',
+        logmsg  => 'error#Not connected',
+    );
 }
 
 sub dbc {
     my $self = shift;
-    my $db = Tpda3::Db->instance;
-    return $db->dbc;
+    return $self->target->engine;
 }
 
 sub is_connected {
@@ -777,8 +764,8 @@ sub table_record_delete {
     die "Empty TABLE name in DELETE command!" unless $table;
     die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
-    $self->_log->debug("Deleting from $table: ");
-    # $self->_log->debug( sub { Dumper($where) } );
+    $self->log->debug("Deleting from $table: ");
+    # $self->log->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
@@ -1277,7 +1264,7 @@ Constructor method.
 
 Return configuration instance object.
 
-=head2 _log
+=head2 log
 
 Return log instance variable.
 

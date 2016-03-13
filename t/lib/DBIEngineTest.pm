@@ -58,10 +58,9 @@ sub run {
         ok $engine, 'Engine instantiated';
 
         throws_ok { $engine->dbh->do('INSERT blah INTO __bar_____') }
-            'Tpda3::X',
+            'Exception::Db::SQL',
             'Database error should be converted to Tpda3 exception';
-        is $@->ident, $class->key, 'Ident should be the engine';
-        ok $@->message, 'The message should be from the translation';
+        ok $@->usermsg, 'The message should be from the translation';
 
 
         #######################################################################

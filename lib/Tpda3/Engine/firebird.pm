@@ -5,10 +5,11 @@ package Tpda3::Engine::firebird;
 use 5.010001;
 use Moose;
 use Locale::TextDomain qw(App-Tpda3Dev);
-use Tpda3::X qw(hurl);
 use Try::Tiny;
 use Regexp::Common;
 use namespace::autoclean;
+
+use Tpda3::Exceptions;
 
 extends 'Tpda3::Engine';
 sub dbh;                                     # required by DBIEngine;
@@ -40,8 +41,11 @@ has dbh => (
                     = ( $type eq 'errstr' )
                     ? $error
                     : $self->get_message($type);
-                hurl firebird => __x( $message, name => $error );
-                },
+                Exception::Db::SQL->throw(
+                    logmsg  => $error,
+                    usermsg => $message,
+                );
+            },
         });
     }
 );
@@ -49,7 +53,8 @@ has dbh => (
 sub parse_error {
     my ( $self, $err ) = @_;
 
-    # say "FB: >$err<";
+    $self->log->error("EE: $err");
+
     my $message_type
         = $err eq q{} ? "nomessage"
         : $err =~ m/operation for file ($RE{quoted})/smi ? "dbnotfound:$1"
@@ -79,7 +84,7 @@ sub driver { 'DBD::Firebird 1.11' }
 sub get_info {
     my ($self, $table, $key_field) = @_;
 
-    hurl "The 'table' parameter is required for 'get_info'" unless $table;
+    die "The 'table' parameter is required for 'get_info'" unless $table;
 
     $key_field ||= 'name';
 
@@ -144,10 +149,8 @@ sub get_info {
         $flds_ref = $sth->fetchall_hashref($key_field);
     }
     catch {
-        hurl firebird => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $flds_ref;
@@ -156,7 +159,7 @@ sub get_info {
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
 
-    hurl "The 'table' parameter is required for 'table_keys'" unless $table;
+    die "The 'table' parameter is required for 'table_keys'" unless $table;
 
     my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY';
 
@@ -191,10 +194,8 @@ sub table_keys {
         $pkf_aref = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        hurl firebird => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $pkf_aref;
@@ -203,7 +204,7 @@ sub table_keys {
 sub get_columns {
     my ($self, $table) = @_;
 
-    hurl "The 'table' parameter is required for 'get_columns'" unless $table;
+    die "The 'table' parameter is required for 'get_columns'" unless $table;
 
     my $sql = qq(SELECT LOWER(r.RDB\$FIELD_NAME) AS name
                     FROM RDB\$RELATION_FIELDS r
@@ -220,10 +221,8 @@ sub get_columns {
         $column_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        hurl firebird => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $column_list;
@@ -232,7 +231,7 @@ sub get_columns {
 sub table_exists {
     my ( $self, $table ) = @_;
 
-    hurl "The 'table' parameter is required for 'table_exists'" unless $table;
+    die "The 'table' parameter is required for 'table_exists'" unless $table;
 
     my $sql = qq(SELECT COUNT(RDB\$RELATION_NAME)
                      FROM RDB\$RELATIONS
@@ -246,9 +245,8 @@ sub table_exists {
         ($val_ret) = $self->dbh->selectrow_array($sql);
     }
     catch {
-        # XXX Wide character in die at .../Throwable.pm line 75. ???
-        hurl firebird =>
-            __x( "XXX Transaction aborted because: {error}", error => $_ );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $val_ret;
@@ -272,8 +270,8 @@ sub table_list {
         $table_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        hurl firebird =>
-            __x( "XXX Transaction aborted because: {error}", error => $_ );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $table_list;

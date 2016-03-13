@@ -7,7 +7,6 @@ use utf8;
 use Moose::Role;
 use DBI;
 use Try::Tiny;
-use Tpda3::X qw(hurl);
 use Locale::TextDomain qw(App-Tpda3Dev);
 use SQL::Abstract;
 use namespace::autoclean;
@@ -40,75 +39,6 @@ sub rollback_work {
     my $self = shift;
     $self->dbh->rollback;
     return $self;
-}
-
-sub insert {
-    my ($self, $table, $row) = @_;
-    my ( $stmt, @bind );
-    try {
-        ( $stmt, @bind ) = $self->sql->insert( $table, $row );
-        $self->dbh->prepare($stmt)->execute(@bind);
-    }
-    catch {
-        print "EE: $_\n";                    # XXX
-        hurl insert => __x(
-            'Insert failed: "{error}" for record "{record}"',
-            error  => $_,
-            record => join '|', map { $_ || q( ) } @bind,
-        );
-    };
-    return;
-}
-
-sub lookup {
-    my ($self, $table, $fields, $where) = @_;
-    my ( $sql, @bind ) = $self->sql->select( $table, $fields, $where );
-    my @records;
-    try {
-        my $sth = $self->dbh->prepare($sql);
-        $sth->execute(@bind);
-        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
-            push( @records, $record );
-        }
-    }
-    catch {
-        hurl insert => __x('Select failed: {error}', error => $_);
-    };
-    return \@records;
-}
-
-sub records_aoa {
-    my ($self, $table, $fields, $where) = @_;
-    die "The 'table' parameter is required" unless $table;
-    $fields //= '*';                         # or all fields
-    my $ary_ref;
-    try {
-        my ( $stmt, @bind ) = $self->sql->select( $table, $fields, $where );
-        $ary_ref = $self->dbh->selectall_arrayref( $stmt, undef, @bind );
-    }
-    catch {
-        hurl insert => __x('Select failed: {error}', error => $_);
-    };
-    return $ary_ref;
-}
-
-sub records_aoh {
-    my ($self, $table, $fields, $where, $orderby) = @_;
-    die "The 'table' parameter is required" unless $table;
-    $fields //= '*';                         # or all fields
-    my ( $sql, @bind ) = $self->sql->select( $table, $fields, $where, $orderby );
-    my @records;
-    try {
-        my $sth = $self->dbh->prepare($sql);
-        $sth->execute(@bind);
-        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
-            push( @records, $record );
-        }
-    }
-    catch {
-        hurl insert => __x('Select failed: {error}', error => $_);
-    };
-    return \@records;
 }
 
 no Moose::Role;

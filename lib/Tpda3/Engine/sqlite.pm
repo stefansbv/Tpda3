@@ -5,10 +5,11 @@ package Tpda3::Engine::sqlite;
 use 5.010001;
 use Moose;
 use Locale::TextDomain 1.20 qw(Tpda3);
-use Tpda3::X qw(hurl);
 use Try::Tiny;
 use Regexp::Common;
 use namespace::autoclean;
+
+use Tpda3::Exceptions;
 
 extends 'Tpda3::Engine';
 sub dbh;                                     # required by DBIEngine;
@@ -33,9 +34,12 @@ has dbh => (
             FetchHashKeyName => 'NAME_lc',
             HandleError      => sub {
                 my ($err, $dbh) = @_;
-                my ($type, $name) = $self->parse_error($err);
+                my ($type, $error) = $self->parse_error($err);
                 my $message = $self->get_message($type);
-                hurl sqlite => __x( $message, name => $name );
+                Exception::Db::SQL->throw(
+                    logmsg  => $error,
+                    usermsg => $message,
+                );
             },
             Callbacks         => {
                 connected => sub {
@@ -51,8 +55,7 @@ has dbh => (
 sub parse_error {
     my ($self, $err) = @_;
 
-    # my $log = get_logger();
-    # $log->error("EE: $err");
+    $self->log->error("EE: $err");
 
     my $message_type =
          $err eq q{}                                        ? "nomessage"
@@ -120,8 +123,7 @@ sub get_info {
 sub table_exists {
     my ( $self, $table ) = @_;
 
-    my $log = get_logger();
-    $log->info("Checking if $table table exists");
+    $self->log->info("Checking if $table table exists");
 
     my $sql = qq( SELECT COUNT(name)
                 FROM sqlite_master
@@ -129,7 +131,7 @@ sub table_exists {
                     AND name = '$table';
     );
 
-    $log->trace("SQL= $sql");
+    $self->log->trace("SQL= $sql");
 
     my $dbh = $self->dbh;
     my $val_ret;
@@ -137,7 +139,7 @@ sub table_exists {
         ($val_ret) = $dbh->selectrow_array($sql);
     }
     catch {
-        $log->fatal("Transaction aborted because $_")
+        $self->log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -156,8 +158,6 @@ sub table_keys {
 sub table_list {
     my $self = shift;
 
-    my $log = get_logger();
-
     my $sql = qq( SELECT name
                 FROM sqlite_master
                 WHERE type = 'table';
@@ -169,7 +169,7 @@ sub table_list {
         $table_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $log->fatal("Transaction aborted because $_")
+        $self->log->fatal("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 

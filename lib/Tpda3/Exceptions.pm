@@ -1,6 +1,6 @@
 package Tpda3::Exceptions;
 
-# ABSTRACT: Exceptions
+# ABSTRACT: Tpda3 Exceptions
 
 use strict;
 use warnings;
@@ -8,14 +8,22 @@ use warnings;
 use Exception::Base (
     verbosity => 3,
     'Exception::Db',
+    'Exception::Db::UnknownEngine' => {
+        isa               => 'Exception::Db',
+        string_attributes => [qw( message )],
+    },
+    'Exception::Db::MissingTarget' => {
+        isa               => 'Exception::Db',
+        string_attributes => [qw( message )],
+    },
     'Exception::Db::Connect' => {
         isa               => 'Exception::Db',
-        has               => [qw( usermsg logmsg attrib )],
+        has               => [qw( usermsg logmsg )],
         string_attributes => [qw( usermsg )],
     },
     'Exception::Db::SQL' => {
         isa               => 'Exception::Db',
-        has               => [qw( usermsg logmsg attrib )],
+        has               => [qw( usermsg logmsg )],
         string_attributes => [qw( usermsg )],
     },
     'Exception::IO',

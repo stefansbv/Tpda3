@@ -5,7 +5,6 @@ package Tpda3::Target;
 use 5.010001;
 use Moose;
 use Moose::Util::TypeConstraints;
-use Tpda3::X qw(hurl);
 use Locale::TextDomain qw(Tpda3);
 use URI::db;
 use namespace::autoclean;

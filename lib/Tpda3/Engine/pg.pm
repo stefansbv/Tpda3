@@ -5,10 +5,11 @@ package Tpda3::Engine::pg;
 use 5.010001;
 use Moose;
 use Locale::TextDomain 1.20 qw(App-Tpda3Dev);
-use Tpda3::X qw(hurl);
 use Try::Tiny;
 use Regexp::Common;
 use namespace::autoclean;
+
+use Tpda3::Exceptions;
 
 extends 'Tpda3::Engine';
 sub dbh;                                     # required by DBIEngine;
@@ -33,9 +34,13 @@ has dbh => (
             FetchHashKeyName => 'NAME_lc',
             HandleError      => sub {
                 my ($err, $dbh) = @_;
-                my ($type, $name) = $self->parse_error($err);
+                my ($type, $error) = $self->parse_error($err);
                 my $message = $self->get_message($type);
-                hurl pg => __x( $message, name => $name );
+                Exception::Db::SQL->throw(
+                    logmsg  => $error,
+                    usermsg => $message,
+                );
+
             },
         });
     }
@@ -43,6 +48,8 @@ has dbh => (
 
 sub parse_error {
     my ($self, $err) = @_;
+
+    $self->log->error("EE: $err");
 
     my $message_type =
          $err eq q{}                                          ? "nomessage"
@@ -76,7 +83,7 @@ sub driver { 'DBD::Pg 2.0' }
 sub get_info {
     my ($self, $table) = @_;
 
-    hurl "The 'table' parameter is required for 'get_info'" unless $table;
+    die "The 'table' parameter is required for 'get_info'" unless $table;
 
     my $sql = qq( SELECT ordinal_position  AS pos
                     , column_name       AS name
@@ -102,10 +109,8 @@ sub get_info {
         $flds_ref = $sth->fetchall_hashref('name');
     }
     catch {
-        hurl pg => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     # Pg has different names for the columns type than Firebird, so we
@@ -127,7 +132,7 @@ sub get_info {
 sub get_columns {
     my ($self, $table) = @_;
 
-    hurl "The 'table' parameter is required for 'get_columns'" unless $table;
+    die "The 'table' parameter is required for 'get_columns'" unless $table;
 
     my $sql = qq( SELECT column_name AS name
                FROM information_schema.columns
@@ -144,10 +149,8 @@ sub get_columns {
         $column_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        hurl pg => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $column_list;
@@ -156,7 +159,7 @@ sub get_columns {
 sub table_exists {
     my ( $self, $table ) = @_;
 
-    hurl "The 'table' parameter is required for 'table_exists'" unless $table;
+    die "The 'table' parameter is required for 'table_exists'" unless $table;
 
     my $sql = qq( SELECT COUNT(table_name)
                 FROM information_schema.tables
@@ -171,10 +174,8 @@ sub table_exists {
         ($val_ret) = $self->dbh->selectrow_array($sql);
     }
     catch {
-        hurl pg => __x(
-            'Transaction aborted because: {error}',
-            error    => $_,
-        );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $val_ret;
@@ -199,8 +200,8 @@ sub table_list {
         $table_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        hurl pg =>
-            __x( "XXX Transaction aborted because: {error}", error => $_ );
+        $self->log->fatal("Transaction aborted because $_")
+            or print STDERR "$_\n";
     };
 
     return $table_list;

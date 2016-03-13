@@ -3,6 +3,6 @@
 ---
 connection:
   driver: sqlite
-  host:   localhost
-  dbname: classicmodels
+  host:
+  dbname: classicmodels.db
   port:

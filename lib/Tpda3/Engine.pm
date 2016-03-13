@@ -6,8 +6,10 @@ use 5.010001;
 use Moose;
 use Try::Tiny;
 use Locale::TextDomain qw(Tpda3);
-use Tpda3::X qw(hurl);
+use Log::Log4perl qw(get_logger :levels);
 use namespace::autoclean;
+
+use Tpda3::Exceptions;
 
 has target => (
     is       => 'ro',
@@ -20,30 +22,39 @@ has target => (
     }
 );
 
+has 'log' => (
+    is      => 'ro',
+    isa     => 'Log::Log4perl::Logger',
+    default => sub {
+        return get_logger(),
+    },
+);
+
 sub database { shift->destination }
 
 sub load {
     my ( $class, $p ) = @_;
 
     # We should have a target param.
-    my $target = $p->{target} or hurl 'Missing "target" parameter to load()';
-
-    # Load the engine class.
-    my $ekey = $target->engine_key or hurl engine => __(
-        'No engine specified; use --engine or set core.engine'
+    my $target = $p->{target} or Exception::Db::MissingTarget->throw(
+        message => 'Missing "target" parameter to load()',
     );
 
+    # Load the engine class.
+    my $ekey = $target->engine_key or die 'No engine specified!';
+
     my $pkg = __PACKAGE__ . '::' . $target->engine_key;
-    eval "require $pkg" or hurl "Unable to load $pkg";
-    return $pkg->new( $p );
+    eval "require $pkg" or Exception::Db::UnknownEngine->throw(
+        message => "Unable to load $pkg",
+    );
+    return $pkg->new($p);
 }
 
 sub driver { shift->key }
 
 sub key {
     my $class = ref $_[0] || shift;
-    hurl engine => __ 'No engine specified; use --engine or set core.engine'
-        if $class eq __PACKAGE__;
+    die 'No engine specified!' if $class eq __PACKAGE__;
     my $pkg = quotemeta __PACKAGE__;
     $class =~ s/^$pkg\:://;
     return $class;
@@ -55,7 +66,7 @@ sub use_driver {
     my $self = shift;
     my $driver = $self->driver;
     eval "use $driver";
-    hurl $self->key => __x(
+    die $self->key . __x(
         '{driver} required to manage {engine}',
         driver  => $driver,
         engine  => $self->name,

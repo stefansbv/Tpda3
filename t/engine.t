@@ -11,7 +11,6 @@ use Test::Exception;
 use Locale::TextDomain qw(Tpda3);
 use Tpda3;
 use Tpda3::Target;
-use Tpda3::X qw(hurl);
 use lib 't/lib';
 
 my $CLASS;
@@ -28,7 +27,6 @@ ENGINE: {
     # Stub out a engine.
     package Tpda3::Engine::whu;
     use Moose;
-    use Tpda3::X qw(hurl);
     extends 'Tpda3::Engine';
     $INC{'App/Tpda3Dev/Engine/whu.pm'} = __FILE__;
 
@@ -38,7 +36,7 @@ ENGINE: {
     )) {
         no strict 'refs';
         *$meth = sub {
-            hurl 'AAAH!' if $die eq $meth;
+            die 'AAAH!' if $die eq $meth;
             push @SEEN => [ $meth => $_[1] ];
         };
     }
@@ -77,23 +75,19 @@ $target = Tpda3::Target->new(
     uri      => 'db:nonexistent:',
 );
 throws_ok { $CLASS->load( { target => $target } ) }
-    'Tpda3::X', 'Should get error for unsupported engine';
+    'Exception::Db::UnknownEngine', 'Should get error for unsupported engine';
 is $@->message, 'Unable to load Tpda3::Engine::nonexistent',
     'Should get load error message';
-like $@->previous_exception, qr/\QCan't locate/,
-    'Should have relevant previoius exception';
 
 # Test handling of an invalid engine.
 throws_ok { $CLASS->load({ engine => 'nonexistent', target => $target }) }
-    'Tpda3::X', 'Should die on invalid engine';
+    'Exception::Db::UnknownEngine', 'Should die on invalid engine';
 is $@->message, __('Unable to load Tpda3::Engine::nonexistent'),
     'Should get load error message';
-like $@->previous_exception, qr/\QCan't locate/,
-    'Should have relevant previoius exception';
 
 NOENGINE: {
     # Test handling of no target.
-    throws_ok { $CLASS->load({}) } 'Tpda3::X',
+    throws_ok { $CLASS->load({}) } 'Exception::Db::MissingTarget',
             'No target should die';
     is $@->message, 'Missing "target" parameter to load()',
         'It should be the expected message';
