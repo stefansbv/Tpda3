@@ -22,33 +22,33 @@ subtest 'Connection config from test-tk' => sub {
     ok my $db = Tpda3::Connection->new, 'new instance';
     like $db->uri_db, qr/^db:sqlite/,  'the uri built from a connection file';
     is $db->driver,   'sqlite',        'the engine';
-    is $db->host,     'localhost',     'the host';
+    is $db->host,     undef,           'the host';
     is $db->port,     undef,           'the port';
-    is $db->dbname,   'classicmodels', 'the dbname';
+    is $db->dbname,   'classicmodels.db', 'the dbname';
     is $db->user,     undef,           'the user name';
     is $db->role,     undef,           'the role name';
-    like $db->uri, qr/classicmodels$/, 'the uri';
+    like $db->uri, qr/classicmodels/, 'the uri';
 };
 
 subtest 'Connection config from test-wx' => sub {
     my $args = {
         cfname => 'test-wx',
-        user   => 'user',
-        pass   => 'pass',
+        user   => undef,
+        pass   => undef,
         cfpath => 'share/',
     };
     my $c1 = Tpda3::Config->instance($args);
     ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
 
     ok my $db = Tpda3::Connection->new, 'new instance';
-    like $db->uri_db, qr/^db:sqlite/,  'the uri built from a connection file';
-    is $db->driver,   'sqlite',        'the engine';
-    is $db->host,     'localhost',     'the host';
-    is $db->port,     undef,           'the port';
-    is $db->dbname,   'classicmodels', 'the dbname';
-    is $db->user,     undef,           'the user name';
-    is $db->role,     undef,           'the role name';
-    like $db->uri, qr/classicmodels$/, 'the uri';
+    like $db->uri_db, qr/^db:sqlite/, 'the uri built from a connection file';
+    is $db->driver,   'sqlite',       'the engine';
+    is $db->host,     undef,          'the host';
+    is $db->port,     undef,          'the port';
+    is $db->dbname, 'classicmodels.db', 'the dbname';
+    is $db->user,   undef,              'the user name';
+    is $db->role,   undef,              'the role name';
+    like $db->uri,  qr/classicmodels/, 'the uri';
 };
 
 done_testing;
