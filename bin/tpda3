@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Getopt::Long;
+use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 
 use Tpda3;
