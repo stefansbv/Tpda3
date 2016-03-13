@@ -2,10 +2,8 @@ package Tpda3::Model;
 
 # ABSTRACT: The Model
 
-use 5.010;
-use strict;
-use warnings;
-
+use feature 'say';
+use Mouse;
 use Data::Compare;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
@@ -16,9 +14,9 @@ use Tpda3::Exceptions;
 use Tpda3::Config;
 use Tpda3::Codings;
 use Tpda3::Observable;
-use Tpda3::Db;
+use Tpda3::Connection;
+use Tpda3::Target;
 use Tpda3::Utils;
-
 use Tpda3::Model::Update;
 use Tpda3::Model::Update::Compare;
 
@@ -60,29 +58,98 @@ sub _log {
     return $self->{_log};
 }
 
+has 'info_db' => (
+    is      => 'ro',
+    isa     => 'Tpda3::Connection',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return Tpda3::Connection->new;
+    },
+);
+
+has 'target' => (
+    is      => 'ro',
+    isa     => 'Tpda3::Target',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->info_db->dbname;       # need to call this before 'uri'
+        return Tpda3::Target->new(
+            uri => $self->info_db->uri,
+        );
+    },
+);
+
+my $observables = [
+    qw{
+        _connected
+        _stdout
+        _appmode
+        _scrdata_rec
+      }
+];
+
+has $observables => (
+    is      => 'ro',
+    isa     => 'Tpda3::Observable',
+    default => sub {
+        return Tpda3::Observable->new;
+    },
+);
+
+has 'cfg' => (
+    is      => 'ro',
+    isa     => 'Tpda3::Config',
+    default => sub {
+        return Tpda3::Config->instance;
+    },
+);
+
+has '_msg_dict' => (
+    is      => 'ro',
+    isa     => 'Maybe[HashRef]',
+    default => sub {
+        return {},
+    },
+);
+
+has '_log' => (
+    is      => 'ro',
+    isa     => 'Log::Log4perl::Logger',
+    default => sub {
+        return get_logger(),
+    },
+);
+
 sub db_connect {
     my $self = shift;
-    # Connect to database or retry to connect
-    if (Tpda3::Db->has_instance) {
-        $self->{_dbh} = Tpda3::Db->instance->db_connect($self)->dbh;
-    }
-    else {
-        $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
-    }
+    my $engine = $self->target->engine;
+    $self->{_dbh} = $engine->dbh;
+    say "Wohooo";
+
+    # # Connect to database or retry to connect
+    # if (Tpda3::Db->has_instance) {
+    #     $self->{_dbh} = Tpda3::Db->instance->db_connect($self)->dbh;
+    # }
+    # else {
+    #     $self->{_dbh} = Tpda3::Db->instance($self)->dbh;
+    # }
     return;
 }
 
 sub dbh {
     my $self = shift;
-    if ( Tpda3::Db->has_instance ) {
-        my $db = Tpda3::Db->instance;
-        return $db->dbh if $self->is_connected;
-    }
-    Exception::Db::Connect->throw(
-        usermsg => 'Please restart and login',
-        logmsg  => 'error#Not connected',
-    );
-    return;
+    # if ( Tpda3::Db->has_instance ) {
+    #     my $db = Tpda3::Db->instance;
+    #     return $db->dbh if $self->is_connected;
+    # }
+    # Exception::Db::Connect->throw(
+    #     usermsg => 'Please restart and login',
+    #     logmsg  => 'error#Not connected',
+    # );
+    my $engine = $self->target->engine;
+    return $engine->dbh;
 }
 
 sub dbc {
