@@ -6,7 +6,6 @@ use 5.010001;
 use Moose;
 use Try::Tiny;
 use Locale::TextDomain qw(Tpda3);
-use Log::Log4perl qw(get_logger :levels);
 use namespace::autoclean;
 
 use Tpda3::Exceptions;
@@ -20,14 +19,6 @@ has target => (
         uri         => 'uri',
         destination => 'name',
     }
-);
-
-has 'log' => (
-    is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
-    default => sub {
-        return get_logger(),
-    },
 );
 
 sub database { shift->destination }
@@ -68,8 +59,8 @@ sub use_driver {
     eval "use $driver";
     die $self->key . __x(
         '{driver} required to manage {engine}',
-        driver  => $driver,
-        engine  => $self->name,
+        driver => $driver,
+        engine => $self->name,
     ) if $@;
     return $self;
 }

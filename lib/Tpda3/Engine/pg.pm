@@ -4,7 +4,7 @@ package Tpda3::Engine::pg;
 
 use 5.010001;
 use Moose;
-use Locale::TextDomain 1.20 qw(App-Tpda3Dev);
+use Locale::TextDomain 1.20 qw(Tpda3);
 use Try::Tiny;
 use Regexp::Common;
 use namespace::autoclean;
@@ -16,42 +16,69 @@ sub dbh;                                     # required by DBIEngine;
 with qw(Tpda3::Role::DBIEngine
         Tpda3::Role::DBIMessages);
 
-has dbh => (
+has conn => (
     is      => 'rw',
-    isa     => 'DBI::db',
+    isa     => 'DBIx::Connector',
     lazy    => 1,
+    clearer => 'reset_conn',
     default => sub {
         my $self = shift;
         my $uri  = $self->uri;
+        my $dsn  = $uri->dbi_dsn;
         $self->use_driver;
-        my $dsn = $uri->dbi_dsn;
-        return DBI->connect($dsn, scalar $uri->user, scalar $uri->password, {
+        $self->logger->debug("Connecting: $dsn");
+        return DBIx::Connector->new($dsn, $uri->user, $uri->password, {
             $uri->query_params,
             PrintError       => 0,
             RaiseError       => 0,
             AutoCommit       => 1,
             pg_enable_utf8   => 1,
             FetchHashKeyName => 'NAME_lc',
-            HandleError      => sub {
-                my ($err, $dbh) = @_;
-                my ($type, $error) = $self->parse_error($err);
-                my $message = $self->get_message($type);
-                Exception::Db::SQL->throw(
-                    logmsg  => $error,
-                    usermsg => $message,
-                );
-
-            },
+            HandleError      => sub { $self->handle_error(@_) },
         });
     }
 );
 
+has dbh => (
+    is      => 'rw',
+    isa     => 'DBI::db',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->conn->dbh;
+    },
+);
+
+sub handle_error {
+    my ( $self, $err,  $dbh )  = @_;
+    my ( $name, $param ) = $self->parse_error($err);
+    if ( defined $dbh and $dbh->isa('DBI::db') ) {
+        my $message = ( $name eq 'unknown' )
+            ? $dbh->errstr
+            : $self->get_message($name);
+        Exception::Db::SQL->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    else {
+        my $message = ( $name eq 'unknown' )
+            ? DBI->errstr
+            : $self->get_message($name);
+        Exception::Db::Connect->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    return;
+}
+
 sub parse_error {
     my ($self, $err) = @_;
 
-    $self->log->error("EE: $err");
+    $self->logger->error("DBErr: $err");
 
-    my $message_type =
+    my $message_name =
          $err eq q{}                                          ? "nomessage"
        : $err =~ m/database ($RE{quoted}) does not exist/smi  ? "dbnotfound:$1"
        : $err =~ m/column ($RE{quoted}) of relation ($RE{quoted}) does not exist/smi
@@ -67,13 +94,14 @@ sub parse_error {
        : $err =~ m/Key ($RE{balanced}{-parens=>'()'})=/smi    ? "duplicate:$1"
        : $err =~ m/permission denied for relation/smi         ? "relforbid"
        : $err =~ m/could not connect to server/smi            ? "servererror"
+       : $err =~ m/server not available/smi                   ? "servererror"
        : $err =~ m/not connected/smi                          ? "notconn"
        :                                                       "unknown";
 
-    my ( $type, $name ) = split /:/, $message_type, 2;
-    $name = $name ? $name : '';
+    my ( $name, $param ) = split /:/x, $message_name, 2;
+    $param = $param ? $param : '';
 
-    return ($type, $name);
+    return ($name, $param);
 }
 
 sub key    { 'pg' }
@@ -83,7 +111,7 @@ sub driver { 'DBD::Pg 2.0' }
 sub get_info {
     my ($self, $table) = @_;
 
-    die "The 'table' parameter is required for 'get_info'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $sql = qq( SELECT ordinal_position  AS pos
                     , column_name       AS name
@@ -109,7 +137,7 @@ sub get_info {
         $flds_ref = $sth->fetchall_hashref('name');
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -129,10 +157,43 @@ sub get_info {
     return $flds_type;
 }
 
+sub table_keys {
+    my ( $self, $table, $foreign ) = @_;
+
+    die "Missing required arguments: table" unless $table;
+
+    my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY';
+
+    my $sql = qq( SELECT kcu.column_name
+                   FROM information_schema.table_constraints tc
+                     LEFT JOIN information_schema.key_column_usage kcu
+                          ON tc.constraint_catalog = kcu.constraint_catalog
+                            AND tc.constraint_schema = kcu.constraint_schema
+                            AND tc.constraint_name = kcu.constraint_name
+                   WHERE tc.table_name = '$table'
+                     AND tc.constraint_type = '$type';
+    );
+
+    my $dbh = $self->dbh;
+    $self->{_dbh}{AutoCommit} = 1;    # disable transactions
+    $self->{_dbh}{RaiseError} = 0;
+
+    my $pkf;
+    try {
+        $pkf = $dbh->selectcol_arrayref($sql);
+    }
+    catch {
+        $self->logger->error("Transaction aborted because $_")
+            or print STDERR "$_\n";
+    };
+
+    return $pkf;
+}
+
 sub get_columns {
     my ($self, $table) = @_;
 
-    die "The 'table' parameter is required for 'get_columns'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $sql = qq( SELECT column_name AS name
                FROM information_schema.columns
@@ -149,7 +210,7 @@ sub get_columns {
         $column_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -159,7 +220,7 @@ sub get_columns {
 sub table_exists {
     my ( $self, $table ) = @_;
 
-    die "The 'table' parameter is required for 'table_exists'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $sql = qq( SELECT COUNT(table_name)
                 FROM information_schema.tables
@@ -174,7 +235,7 @@ sub table_exists {
         ($val_ret) = $self->dbh->selectrow_array($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -200,12 +261,14 @@ sub table_list {
         $table_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
     return $table_list;
 }
+
+sub has_feature_returning { 1 }
 
 __PACKAGE__->meta->make_immutable;
 

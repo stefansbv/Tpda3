@@ -5,21 +5,21 @@ package Tpda3::Role::DBIEngine;
 use 5.010001;
 use utf8;
 use Moose::Role;
-use DBI;
+use DBIx::Connector;
 use Try::Tiny;
 use Locale::TextDomain qw(App-Tpda3Dev);
-use SQL::Abstract;
+use Log::Log4perl qw(get_logger :levels);
 use namespace::autoclean;
-
-with 'MooX::Log::Any';
+#with 'MooX::Log::Any';
 
 requires 'dbh';
 
-has 'sql' => (
+has 'logger' => (
     is      => 'ro',
-    isa     => 'SQL::Abstract',
+    isa     => 'Log::Log4perl::Logger',
+    lazy    => 1,
     default => sub {
-        return SQL::Abstract->new;
+        return get_logger(),
     },
 );
 

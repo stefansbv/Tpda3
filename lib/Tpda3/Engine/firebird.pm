@@ -4,9 +4,10 @@ package Tpda3::Engine::firebird;
 
 use 5.010001;
 use Moose;
-use Locale::TextDomain qw(App-Tpda3Dev);
+use Locale::TextDomain qw(Tpda3);
 use Try::Tiny;
 use Regexp::Common;
+use Log::Log4perl qw(:levels);
 use namespace::autoclean;
 
 use Tpda3::Exceptions;
@@ -16,16 +17,18 @@ sub dbh;                                     # required by DBIEngine;
 with qw(Tpda3::Role::DBIEngine
         Tpda3::Role::DBIMessages);
 
-has dbh => (
+has conn => (
     is      => 'rw',
-    isa     => 'DBI::db',
+    isa     => 'DBIx::Connector',
     lazy    => 1,
+    clearer => 'reset_conn',
     default => sub {
         my $self = shift;
         my $uri  = $self->uri;
+        my $dsn  = $uri->dbi_dsn . ';ib_dialect=3;ib_charset=UTF8';
         $self->use_driver;
-        my $dsn = $uri->dbi_dsn . ';ib_dialect=3;ib_charset=UTF8';
-        return DBI->connect($dsn, scalar $uri->user, scalar $uri->password, {
+        $self->logger->debug("Connecting: $dsn");
+        return DBIx::Connector->new($dsn, $uri->user, $uri->password, {
             $uri->query_params,
             PrintError       => 0,
             RaiseError       => 0,
@@ -34,28 +37,51 @@ has dbh => (
             ib_time_all      => 'ISO',
             FetchHashKeyName => 'NAME_lc',
             LongReadLen      => 524288,
-            HandleError => sub {
-                my ( $err,  $dbh )  = @_;
-                my ( $type, $error ) = $self->parse_error($err);
-                my $message
-                    = ( $type eq 'errstr' )
-                    ? $error
-                    : $self->get_message($type);
-                Exception::Db::SQL->throw(
-                    logmsg  => $error,
-                    usermsg => $message,
-                );
-            },
+            HandleError      => sub { $self->handle_error(@_) },
         });
-    }
+     },
 );
+
+has dbh => (
+    is      => 'rw',
+    isa     => 'DBI::db',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->conn->dbh;
+    },
+);
+
+sub handle_error {
+    my ( $self, $err,  $dbh )  = @_;
+    my ( $name, $param ) = $self->parse_error($err);
+    if ( defined $dbh and $dbh->isa('DBI::db') ) {
+        my $message = ( $name eq 'unknown' )
+            ? $dbh->errstr
+            : $self->get_message($name);
+        Exception::Db::SQL->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    else {
+        my $message = ( $name eq 'unknown' )
+            ? DBI->errstr
+            : $self->get_message($name);
+        Exception::Db::Connect->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    return;
+}
 
 sub parse_error {
     my ( $self, $err ) = @_;
 
-    $self->log->error("EE: $err");
+    $self->logger->error("DBErr: $err");
 
-    my $message_type
+    my $message_name
         = $err eq q{} ? "nomessage"
         : $err =~ m/operation for file ($RE{quoted})/smi ? "dbnotfound:$1"
         : $err =~ m/\-Table unknown\s*\-(.*)\-/smi       ? "relnotfound:$1"
@@ -68,13 +94,12 @@ sub parse_error {
         : $err =~ m/not connected/smi                    ? "notconn"
         :                                                  "unknown";
 
+    my ( $name, $param ) = split /:/x, $message_name, 2;
+    return ('errstr', $err) if $ name eq "unknown";
+    $param = $param ? $param : '';
+    $name =~ s{\n\-}{\ }xgsm;         # remove the dashes from the messag
 
-    my ( $type, $name ) = split /:/x, $message_type, 2;
-    return ('errstr', $err) if $ type eq "unknown";
-    $name = $name ? $name : '';
-    $name =~ s{\n\-}{\ }xgsm;                  # cleanup
-
-    return ($type, $name);
+    return ($name, $param);
 }
 
 sub key    { 'firebird' }
@@ -84,7 +109,7 @@ sub driver { 'DBD::Firebird 1.11' }
 sub get_info {
     my ($self, $table, $key_field) = @_;
 
-    die "The 'table' parameter is required for 'get_info'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     $key_field ||= 'name';
 
@@ -149,7 +174,7 @@ sub get_info {
         $flds_ref = $sth->fetchall_hashref($key_field);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -159,7 +184,7 @@ sub get_info {
 sub table_keys {
     my ( $self, $table, $foreign ) = @_;
 
-    die "The 'table' parameter is required for 'table_keys'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY';
 
@@ -194,7 +219,7 @@ sub table_keys {
         $pkf_aref = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -204,7 +229,7 @@ sub table_keys {
 sub get_columns {
     my ($self, $table) = @_;
 
-    die "The 'table' parameter is required for 'get_columns'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $sql = qq(SELECT LOWER(r.RDB\$FIELD_NAME) AS name
                     FROM RDB\$RELATION_FIELDS r
@@ -221,7 +246,7 @@ sub get_columns {
         $column_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -231,7 +256,7 @@ sub get_columns {
 sub table_exists {
     my ( $self, $table ) = @_;
 
-    die "The 'table' parameter is required for 'table_exists'" unless $table;
+    die "Missing required arguments: table" unless $table;
 
     my $sql = qq(SELECT COUNT(RDB\$RELATION_NAME)
                      FROM RDB\$RELATIONS
@@ -245,7 +270,7 @@ sub table_exists {
         ($val_ret) = $self->dbh->selectrow_array($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
@@ -270,7 +295,7 @@ sub table_list {
         $table_list = $dbh->selectcol_arrayref($sql);
     }
     catch {
-        $self->log->fatal("Transaction aborted because $_")
+        $self->logger->error("Transaction aborted because $_")
             or print STDERR "$_\n";
     };
 
