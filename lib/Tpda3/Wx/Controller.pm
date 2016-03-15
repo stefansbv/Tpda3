@@ -38,7 +38,7 @@ sub _init {
     return;
 }
 
-sub start_delay {
+sub start_dialog_withdelay {
     my $self = shift;
     $self->connect_dialog();
     return;
@@ -189,7 +189,7 @@ Constructor method.
 
 Init App.
 
-=head2 start_delay
+=head2 start_dialog_withdelay
 
 Show message, delay the database connection. Delay not yet
 implemented.

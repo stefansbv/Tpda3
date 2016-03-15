@@ -34,7 +34,7 @@ sub new {
     return $self;
 }
 
-sub start_delay {
+sub start_dialog_withdelay {
     my $self = shift;
     $self->{_view}->after(
         500,
@@ -678,7 +678,7 @@ sub status_message_delay {
 
 Constructor method.
 
-=head2 start_delay
+=head2 start_dialog_withdelay
 
 Show message, delay the database connection.
 
