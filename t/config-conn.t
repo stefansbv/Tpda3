@@ -7,19 +7,19 @@ use Test::More;
 use Test::Exception;
 
 use Tpda3::Config;
-use Tpda3::Connection;
+use Tpda3::Config::Connection;
 
 subtest 'Connection config from test-tk' => sub {
     my $args = {
         cfname => 'test-tk',
-        user   => 'user',
-        pass   => 'pass',
+        user   => undef,
+        pass   => undef,
         cfpath => 'share/',
     };
     my $c1 = Tpda3::Config->instance($args);
     ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
 
-    ok my $db = Tpda3::Connection->new, 'new instance';
+    ok my $db = Tpda3::Config::Connection->new, 'new instance';
     like $db->uri_db, qr/^db:sqlite/,  'the uri built from a connection file';
     is $db->driver,   'sqlite',        'the engine';
     is $db->host,     undef,           'the host';
@@ -40,7 +40,7 @@ subtest 'Connection config from test-wx' => sub {
     my $c1 = Tpda3::Config->instance($args);
     ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
 
-    ok my $db = Tpda3::Connection->new, 'new instance';
+    ok my $db = Tpda3::Config::Connection->new, 'new instance';
     like $db->uri_db, qr/^db:sqlite/, 'the uri built from a connection file';
     is $db->driver,   'sqlite',       'the engine';
     is $db->host,     undef,          'the host';

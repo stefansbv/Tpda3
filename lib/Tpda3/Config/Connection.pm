@@ -1,4 +1,4 @@
-package Tpda3::Connection;
+package Tpda3::Config::Connection;
 
 # ABSTRACT: Make URI from connection file
 
@@ -24,13 +24,16 @@ has 'connection' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return $self->config->connection;
+        my $conn = $self->config->connection;
+        $conn->{user} = $self->config->user; # add the user and pass to
+        $conn->{pass} = $self->config->pass; #  the connection options
+        return $conn;
     },
 );
 
 has 'uri' => (
-    is       => 'rw',
-    isa      => 'Str',
+    is  => 'rw',
+    isa => 'Str',
 );
 
 has 'driver' => (
@@ -101,9 +104,10 @@ sub _build_uri {
     my $uri  = URI::db->new;
     $uri->engine( $conn->{driver} );
     $uri->dbname( $conn->{dbname} );
-    $uri->host( $conn->{host} ) if $conn->{host};
-    $uri->port( $conn->{port} ) if $conn->{port};
-    $uri->user( $conn->{user} ) if $conn->{user};
+    $uri->host( $conn->{host} )     if $conn->{host};
+    $uri->port( $conn->{port} )     if $conn->{port};
+    $uri->user( $conn->{user} )     if $conn->{user};
+    $uri->password( $conn->{pass} ) if $conn->{pass};
 
     # Workaround to add a role param
     if ( my $role = $conn->{role} ) {
