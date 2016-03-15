@@ -1,4 +1,4 @@
-#! perl
+#!/usr/bin/env perl
 #
 # Create a test database and load the SQL schema.  The connect_to_db
 # code is borrowed from the Test module of the DBD::SQLite
@@ -133,11 +133,9 @@ sub load_table_data {
     my $ok_done = 1;
     try {
         my $st = $dbh->prepare($sql);
-
         while ( my $row = $csv->getline($fh) ) {
             $st->execute( @{$row} );
         }
-
         $dbh->commit;    # commit the changes if we got this far
     }
     catch {
@@ -172,3 +170,5 @@ sub data_file_list {
 
     return \@files;
 }
+
+1;
