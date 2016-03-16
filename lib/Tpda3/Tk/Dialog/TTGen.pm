@@ -1,6 +1,6 @@
 package Tpda3::Tk::Dialog::TTGen;
 
-# ABSTRACT: Dialog for generating documentes from templates
+# ABSTRACT: Dialog for generating documents from templates
 
 use strict;
 use warnings;
@@ -38,16 +38,6 @@ sub new {
     $self->{_log} = get_logger();
 
     return $self;
-}
-
-sub dbc {
-    my $self = shift;
-    return $self->{_db}->dbc;
-}
-
-sub dbh {
-    my $self = shift;
-    return $self->{_db}->dbh;
 }
 
 sub _cfg {
