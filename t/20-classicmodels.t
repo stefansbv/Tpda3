@@ -1,8 +1,6 @@
 #
-# Tpda3::Db test script
+# Create the classicmodels SQLite database
 #
-# Inspired from the Class::Singleton test script by Andy Wardley
-
 use strict;
 use warnings;
 
