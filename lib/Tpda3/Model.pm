@@ -14,7 +14,7 @@ use Tpda3::Exceptions;
 use Tpda3::Config;
 use Tpda3::Codings;
 use Tpda3::Observable;
-use Tpda3::Connection;
+use Tpda3::Config::Connection;
 use Tpda3::Target;
 use Tpda3::Utils;
 use Tpda3::Model::Update;
@@ -60,11 +60,11 @@ sub _log {
 
 has 'info_db' => (
     is      => 'ro',
-    isa     => 'Tpda3::Connection',
+    isa     => 'Tpda3::Config::Connection',
     lazy    => 1,
     default => sub {
         my $self = shift;
-        return Tpda3::Connection->new;
+        return Tpda3::Config::Connection->new;
     },
 );
 
@@ -124,25 +124,32 @@ has 'log' => (
 
 sub db_connect {
     my $self = shift;
-    my $engine = $self->target->engine;
+    try {
+        my $engine = $self->target->engine;
+        $engine->reset_conn;
+        $self->{_dbh} = $engine->dbh;
+    }
+    catch {
+        $self->db_exception($_, 'Connection failed');
+    };
     $self->get_connection_observable->set(1);
     $self->_print('info#Connected');
-    $self->{_dbh} = $engine->dbh;
     return;
 }
 
 sub dbh {
     my $self = shift;
     return $self->{_dbh} if $self->{_dbh}->isa('DBI::db');
-    Exception::Db::Connect->throw(
-        usermsg => 'Please restart and login',
-        logmsg  => 'error#Not connected',
-    );
 }
 
 sub dbc {
     my $self = shift;
     return $self->target->engine;
+}
+
+sub conn {
+    my $self = shift;
+    return $self->target->engine->conn;
 }
 
 sub is_connected {
@@ -234,9 +241,13 @@ sub query_records_count {
 
     my $record_count;
     try {
-        my $sth = $self->dbh->prepare($stmt);
-        $sth->execute(@bind);
-        ($record_count) = $sth->fetchrow_array();
+        my $sth = $self->conn->run(
+            fixup => sub {
+                my $sth = $_->prepare($stmt);
+                $sth->execute(@bind);
+                ($record_count) = $sth->fetchrow_array();
+                return $sth;
+            });
     }
     catch {
         $self->db_exception($_, 'Count failed');
@@ -265,15 +276,18 @@ sub query_records_find {
 
     my $search_limit = $self->cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
-    my $ary_ref;
+    my $aref;
     try {
-        $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
+        $aref = $self->conn->run(
+            fixup => sub {
+                my $aref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
+                return $aref;
+            });
     }
     catch {
         $self->db_exception($_, 'Find failed');
     };
-
-    return ($ary_ref, $search_limit);
+    return ($aref, $search_limit);
 }
 
 sub query_filter_find {
@@ -1040,30 +1054,52 @@ sub user_message {
 sub db_exception {
     my ( $self, $exc, $context ) = @_;
 
+<<<<<<< HEAD
     say "Exception: '$exc'";
     say "Context  : '$context'";
 
     if ( my $e = Exception::Base->catch($exc) ) {
         say "Catched!";
+=======
+    # print "Exception: '$exc'\n";
+    # print "Context  : '$context'\n";
+
+    if ( my $e = Exception::Base->catch($exc) ) {
+        # print "Catched!\n";
+>>>>>>> Convert find and count methods to use Connector.
 
         if ( $e->isa('Exception::Db::Connect') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
+<<<<<<< HEAD
             say "ExceptionConnect: $usermsg :: $logmsg";
+=======
+            # print "Exc Conn: $usermsg :: $logmsg\n";
+>>>>>>> Convert find and count methods to use Connector.
             $e->throw;    # rethrow the exception
         }
         elsif ( $e->isa('Exception::Db::SQL') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
+<<<<<<< HEAD
             say "ExceptionSQL: $usermsg :: $logmsg";
+=======
+            # print "Exc SQL: $usermsg :: $logmsg\n";
+>>>>>>> Convert find and count methods to use Connector.
             $e->throw;    # rethrow the exception
         }
         else {
 
             # Throw other exception
+<<<<<<< HEAD
             say "ExceptioOther new";
             my $message = $self->user_message($exc);
             say "Message:   '$message'";
+=======
+            # print "Exc Other new\n";
+            my $message = $self->user_message($exc);
+            # print "Message:   '$message'\n";
+>>>>>>> Convert find and count methods to use Connector.
             Exception::Db::SQL->throw(
                 logmsg  => $message,
                 usermsg => $context,
@@ -1071,7 +1107,10 @@ sub db_exception {
         }
     }
     else {
+<<<<<<< HEAD
         say "New thrown (model)";
+=======
+>>>>>>> Convert find and count methods to use Connector.
         Exception::Db::SQL->throw(
             logmsg  => "error#$exc",
             usermsg => $context,
@@ -1120,16 +1159,7 @@ sub report_data {
 
 sub table_columns {
     my ($self, $table_name) = @_;
-
-    my $table_info = $self->dbc->table_info_short($table_name);
-    my @fields;
-    foreach my $k ( sort { $a <=> $b } keys %{$table_info} ) {
-        my $name = $table_info->{$k}{name};
-        my $info = $table_info->{$k};
-        push @fields, $name;
-    }
-
-    return \@fields;
+    return $self->dbc->get_columns($table_name);
 }
 
 sub table_keys {
