@@ -52,30 +52,6 @@ has dbh => (
     },
 );
 
-sub handle_error {
-    my ( $self, $err,  $dbh )  = @_;
-    my ( $name, $param ) = $self->parse_error($err);
-    if ( defined $dbh and $dbh->isa('DBI::db') ) {
-        my $message = ( $name eq 'unknown' )
-            ? $dbh->errstr
-            : $self->get_message($name);
-        Exception::Db::SQL->throw(
-            logmsg  => $err,
-            usermsg => __x( $message, name => $param ),
-        );
-    }
-    else {
-        my $message = ( $name eq 'unknown' )
-            ? DBI->errstr
-            : $self->get_message($name);
-        Exception::Db::Connect->throw(
-            logmsg  => $err,
-            usermsg => __x( $message, name => $param ),
-        );
-    }
-    return;
-}
-
 sub parse_error {
     my ( $self, $err ) = @_;
 

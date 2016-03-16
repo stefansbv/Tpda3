@@ -58,11 +58,35 @@ sub use_driver {
     my $driver = $self->driver;
     eval "use $driver";
     die $self->key . __x(
-        '{driver} required to manage {engine}',
+        ' {driver} required to manage {engine}',
         driver => $driver,
         engine => $self->name,
     ) if $@;
     return $self;
+}
+
+sub handle_error {
+    my ( $self, $err,  $dbh )  = @_;
+    my ( $name, $param ) = $self->parse_error($err);
+    if ( defined $dbh and $dbh->isa('DBI::db') ) {
+        my $message = ( $name eq 'unknown' )
+            ? $dbh->errstr
+            : $self->get_message($name);
+        Exception::Db::SQL->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    else {
+        my $message = ( $name eq 'unknown' )
+            ? DBI->errstr
+            : $self->get_message($name);
+        Exception::Db::Connect->throw(
+            logmsg  => $err,
+            usermsg => __x( $message, name => $param ),
+        );
+    }
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;
