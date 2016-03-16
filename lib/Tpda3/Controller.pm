@@ -62,15 +62,28 @@ sub start {
 
     # Connect if user and pass or if driver is SQLite
     my $driver = lc $self->cfg->connection->{driver};
-    if (   ( $self->cfg->user and $self->cfg->pass )
-        or ( $driver eq 'sqlite' ) )
-    {
-        $self->model->db_connect();
+    if ( $self->cfg->user and $self->cfg->pass ) {
+        try {
+            $self->model->db_connect();
+        }
+        catch {
+            $self->start_dialog_withdelay; # executes $self->connect_dialog
+        };
         return;
+    }
+    else {
+        if ( $driver eq 'sqlite' ) {
+            try {
+                $self->model->db_connect();
+            }
+            catch {
+                print "EE: $_\n";
+            };
+        }
     }
 
     # Retry until connected or canceled
-    $self->start_delay()
+    $self->start_dialog_withdelay()
         unless ( $self->model->is_connected
         or $self->cfg->connection->{driver} eq 'sqlite' );
 
@@ -94,8 +107,10 @@ sub connect_dialog {
 
         # Try to connect only if user and pass are provided
         if ($self->cfg->user and $self->cfg->pass ) {
+            $self->model->target->uri->user($self->cfg->user);
+            $self->model->target->uri->password($self->cfg->pass);
             try {
-                $self->model->db_connect();
+                $self->model->db_connect;
             }
             catch {
                 if ( my $e = Exception::Base->catch($_) ) {
