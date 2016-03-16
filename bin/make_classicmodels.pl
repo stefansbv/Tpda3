@@ -1,15 +1,6 @@
 #!/usr/bin/env perl
-#
-# Create a test database and load the SQL schema.  The connect_to_db
-# code is borrowed from the Test module of the DBD::SQLite
-# distribution.
-#
-# In this particular case the load order for tables is not important.
-#
-# This script is part of the Tpda3 application.
-# Copyleft 2011-2013 Ștefan Suciu
-#
-
+# PODNAME: make_classicmodels.pl
+# ABSTRACT: The Tpda3 application framework and runtime
 use strict;
 use warnings;
 
@@ -172,3 +163,17 @@ sub data_file_list {
 }
 
 1;
+
+__END__
+
+=encoding utf8
+
+=head1 Description
+
+Create a test database and load the SQL schema.  The connect_to_db
+code is borrowed from the Test module of the DBD::SQLite distribution.
+In this particular case the load order for tables is not important.
+
+This script is part of the Tpda3 application.
+
+=cut
