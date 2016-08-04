@@ -331,7 +331,7 @@ sub about {
 
     # Framework version
     my $PROGRAM_NAME = 'Tiny Perl Database Application 3';
-    my $PROGRAM_VER  = $Tpda3::VERSION || 'devel';
+    my $PROGRAM_VER  = $Tpda3::VERSION || 'development';
 
     # Get application version
     my $app_class = $self->cfg->application_class();
