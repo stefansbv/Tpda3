@@ -531,15 +531,13 @@ sub log_msg {
 
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
-
+    ( my $dbname = $self->cfg->connection->{dbname} ) =~ s{\..+$}{}; # rm extension
     if ($status) {
-        $self->set_status( $self->cfg->connection->{dbname},
-            'db', 'darkgreen' );
+        $self->set_status( $dbname, 'db', 'darkgreen' );
     }
     else {
         $self->set_status( '', 'db' );
     }
-
     return;
 }
 

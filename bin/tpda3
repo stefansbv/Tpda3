@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Getopt::Long qw(GetOptions pod2usage);
+use Getopt::Long;
 use Pod::Usage;
 
 use Tpda3;
@@ -95,9 +95,8 @@ exit 0;
 #- Print version
 
 sub tpda3_version {
-    my $ver = $Tpda3::VERSION;
-    print
-"Tpda3 (Tiny Perl Database Application 3) v$ver\n(C) 2010-2015 Stefan Suciu\n\n";
+    my $ver = $Tpda3::VERSION ? 'v'.$Tpda3::VERSION : 'development';
+    print "Tpda3 (Tiny Perl Database Application 3) $ver\n(C) 2010-2015 Stefan Suciu\n\n";
 }
 
 =head1 SYNOPSIS

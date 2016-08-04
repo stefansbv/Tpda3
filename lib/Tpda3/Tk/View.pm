@@ -619,9 +619,7 @@ sub enable_tool {
 
 sub toggle_status_cn {
     my ( $self, $status ) = @_;
-
-    my $dbname = $self->cfg->connection->{dbname};
-
+    ( my $dbname = $self->cfg->connection->{dbname} ) =~ s{\..+$}{}; # rm extension
     if ($status) {
         $self->set_status( 'connectyes16', 'cn' );
         $self->set_status( $dbname, 'db', 'darkgreen' );
@@ -630,7 +628,6 @@ sub toggle_status_cn {
         $self->set_status( 'connectno16', 'cn' );
         $self->set_status( $dbname, 'db', 'darkred' );
     }
-
     return;
 }
 

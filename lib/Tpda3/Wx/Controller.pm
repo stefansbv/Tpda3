@@ -142,7 +142,7 @@ sub about {
     # Framework version
     my $PROGRAM_NAME = ' Tpda3 ';
     my $PROGRAM_DESC = 'Tiny Perl Database Application 3';
-    my $PROGRAM_VER  = $Tpda3::VERSION;
+    my $PROGRAM_VER  = $Tpda3::VERSION || 'development';
     my $LICENSE = Tpda3::Config::Utils->get_license();
 
     # Get application version
