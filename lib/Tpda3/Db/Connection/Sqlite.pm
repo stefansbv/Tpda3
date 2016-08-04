@@ -33,13 +33,13 @@ sub db_connect {
 
     my ($dbname, $driver) = @{$conf}{qw(dbname driver)};
 
-    $log->trace("Database driver is: $driver");
-    $log->trace("Parameters:");
-    $log->trace(" > Database = ", $dbname ? $dbname : '?', "\n");
-
     # Fixed path for SQLite databases
     # TODO: use other paths
     my $dbfile = $conf->{dbfile} = get_testdb_filename($dbname);
+
+    $log->trace("Database driver is: $driver");
+    $log->trace("Parameters:");
+    $log->trace(" > Database = ", $dbfile ? $dbfile : '?', "\n");
 
     my $dsn = qq{dbi:SQLite:dbname=$dbfile};
 
@@ -219,7 +219,8 @@ sub table_list {
 
 sub get_testdb_filename {
     my $dbname = shift;
-    return catfile(File::HomeDir->my_data, "$dbname.db");
+    $dbname   .= '.db' unless $dbname =~ m{\.db$};
+    return catfile(File::HomeDir->my_data, $dbname);
 }
 
 sub has_feature_returning { 0 }
