@@ -25,8 +25,8 @@ ok( $c1->isa('Tpda3::Config'), 'created Tpda3::Config instance 1' );
 
 # Make a test database for SQLite
 if ( $c1->connection->{driver} =~ m{sqlite}xi ) {
-    my $rv = make_database();
-    if ($rv != -1) {
+    my $rv = make_database();                # 0E0 is true
+    if (!$rv && $rv != -1) {
         # -1 means return value (number of rows) is not applicable
         BAIL_OUT("Dubious return value from 'make_database': $rv");
     }
