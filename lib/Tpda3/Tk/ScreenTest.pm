@@ -11,7 +11,7 @@ use Tpda3;
 use Tpda3::Config;
 
 use Exporter 'import';
-our @EXPORT_OK = qw(test_screen);
+our @EXPORT_OK = qw(get_ctrl test_screen);
 
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
@@ -24,24 +24,32 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 23;
+#    plan tests => 23;
 }
 
-sub test_screen {
-    my ($args, $screen_module_package, $delay) = @_;
-
-    my $screen_name = ( split /::/, $screen_module_package )[-1];
-    #diag "screen_name is $screen_name";
-
-    use_ok($screen_module_package);
-
-    ok( my $app = Tpda3->new($args), 'New Tpda3 app' );
+sub get_ctrl {
+    my $app = shift;
 
     # Create controller
     my $ctrl = $app->{gui};
     ok( $ctrl->isa('Tpda3::Controller'),
         'created Tpda3::Controller instance '
     );
+
+    return $ctrl;
+}
+
+sub test_screen {
+    my ($args, $screen_module_package, $delay) = @_;
+
+    ok( my $app = Tpda3->new($args), 'New Tpda3 app' );
+
+    my $screen_name = ( split /::/, $screen_module_package )[-1];
+    #diag "screen_name is $screen_name";
+
+    use_ok($screen_module_package);
+
+    my $ctrl = get_ctrl($app);
 
     $delay //= 1;
 
