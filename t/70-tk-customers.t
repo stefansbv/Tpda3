@@ -4,6 +4,7 @@
 
 use strict;
 use warnings;
+use Test::More;
 
 use lib qw( lib ../lib );
 
@@ -18,4 +19,4 @@ my $args = {
 
 test_screen($args, 'Tpda3::Tk::App::Test::Customers');
 
-# done
+done_testing();
