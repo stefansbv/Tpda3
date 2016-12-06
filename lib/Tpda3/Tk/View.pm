@@ -4,6 +4,7 @@ package Tpda3::Tk::View;
 
 use strict;
 use warnings;
+use Carp;
 
 use File::Spec::Functions qw(abs2rel catfile splitpath);
 use Log::Log4perl qw(get_logger);
@@ -407,6 +408,15 @@ sub set_status {
     }
 
     return;
+}
+
+sub get_status_msg {
+    my ($self, $sb_id) = @_;
+    my $sb_label = $self->get_statusbar($sb_id);
+    croak "Not a Tk::Label!"
+        unless ( $sb_label and $sb_label->isa('Tk::Label') );
+    my $text = $sb_label->cget( '-text' );
+    return $text;
 }
 
 sub temporized_clear {
@@ -956,7 +966,7 @@ sub control_write_e {
         return;
     }
 
-    $state = $state || $control->cget ('-state');
+    $state = $state || $control->cget('-state');
 
     $value = q{} unless defined $value;    # empty
 
@@ -983,7 +993,7 @@ sub control_write_t {
         return;
     }
 
-    $state = $state || $control->cget ('-state');
+    $state = $state || $control->cget('-state');
 
     $value = q{} unless defined $value;    # Empty
 
@@ -1034,7 +1044,7 @@ sub control_write_m {
         return;
     }
 
-    $state = $state || $control->cget ('-state');
+    $state = $state || $control->cget('-state');
 
     if ($value) {
         $control->setSelected( $value, -type => 'value' );
@@ -1503,6 +1513,10 @@ Message types:
 
 Display message in the status bar.  Colour name can also be passed to
 the method in the message string separated by a # char.
+
+=head2 get_status_msg
+
+Return the current status message text.
 
 =head2 temporized_clear
 
