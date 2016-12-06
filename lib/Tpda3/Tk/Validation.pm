@@ -31,60 +31,46 @@ sub new {
 
 sub init_cfgdata {
     my ( $self, $tm_ds ) = @_;
-
     my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns');
     my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
     my %cols      = map { $_ => $cols->[$_] } 0 .. $#{$cols};
-
     $self->{$tm_ds} = \%cols;
-
     return;
 }
 
 sub column_name_from_idx {
     my ( $self, $tm_ds, $col_idx ) = @_;
-
     return $self->{$tm_ds}{$col_idx};
 }
 
 sub maintable_attribs {
     my ( $self, $column ) = @_;
-
     my $table_cfg = $self->{_scf}->maintable('columns', $column);
-
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
 sub deptable_attribs {
     my ( $self, $tm_ds, $column ) = @_;
-
     my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns', $column);
-
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
 sub validate_entry {
     my ( $self, $column, $p1 ) = @_;
-
     my ( $type, $valid_width, $numscale ) = $self->maintable_attribs($column);
-
     return $self->validate( $type, $p1, $valid_width, $numscale, $column );
 }
 
 sub validate_table_cell {
     my ( $self, $tm_ds, $row, $col, $old, $new, $cidx ) = @_;
-
     my $column = $self->column_name_from_idx( $tm_ds, $col );
-
     my ( $type, $valid_width, $numscale )
         = $self->deptable_attribs( $tm_ds, $column );
-
     return $self->validate( $type, $new, $valid_width, $numscale, $column );
 }
 
 sub validate {
     my ( $self, $proc, $p1, $maxlen, $numscale, $column ) = @_;
-
     if ( !$proc ) {
         print "EE: Config error for '$column', no proc for validation!\n";
         return;
@@ -98,17 +84,14 @@ sub validate {
         print "WW: Validation for '$proc' not yet implemented!";
         $retval = 1;
     }
-
     return $retval;
 }
 
 sub alpha {
     my ( $self, $myvar, $maxlen ) = @_;
-
     my $pattern = qr/^\p{IsAlpha}{0,$maxlen}$/;
-
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -123,7 +106,7 @@ sub alphanum {
     my $pattern = qr/^[\p{IsAlnum} +-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -138,7 +121,7 @@ sub alphanumplus {
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -153,7 +136,7 @@ sub integer {
     my $pattern = qr/^[+-]?\p{IsDigit}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -171,7 +154,7 @@ sub numeric {
         $maxlen - $numscale - 1, $numscale;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -186,7 +169,7 @@ sub anychar {
     my $pattern = qr/^\p{IsPrint}{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -201,7 +184,7 @@ sub email {
     my $pattern = qr/^[\p{IsAlnum}\p{IsP} %&@,.+-]{0,$maxlen}$/;
 
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
@@ -212,15 +195,17 @@ sub email {
 
 sub date {
     my ( $self, $myvar, $maxlen ) = @_;
-
-    my $pattern = sprintf "\^[0-9]{2}\.[0-9]{2}\.[0-9]{4}\$", $maxlen;
-
+    if ( length $myvar > $maxlen ) {
+        $self->{view}->set_status( "date:invalid", 'ms' );
+        return 0;
+    }
+    my $pattern = qr/^[0-9]{2}\.[0-9]{2}\.[0-9]{4}$/;
     if ( $myvar =~ m/$pattern/ ) {
-        $self->{view}->set_status( '', 'ms' );    # clear messages
+        $self->{view}->set_status( '', 'ms' );    # clear message
         return 1;
     }
     else {
-        $self->{view}->set_status( "date:$maxlen", 'ms' );
+        $self->{view}->set_status( 'date:invalid', 'ms' );
         return 0;
     }
 }
