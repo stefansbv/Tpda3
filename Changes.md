@@ -1,3 +1,8 @@
+## 0.99   (2016-12-06)
+
+- Changes
+  - Remove plan from screen tests.  Important - must update all screen tests!
+
 ## 0.98.8 (2016-01-29)
 
 - Changes
