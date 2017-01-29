@@ -114,7 +114,7 @@ has '_msg_dict' => (
     },
 );
 
-has 'log' => (
+has 'logger' => (
     is      => 'ro',
     isa     => 'Log::Log4perl::Logger',
     default => sub {
@@ -778,8 +778,8 @@ sub table_record_delete {
     die "Empty TABLE name in DELETE command!" unless $table;
     die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
 
-    $self->log->debug("Deleting from $table: ");
-    # $self->log->debug( sub { Dumper($where) } );
+    $self->logger->debug("Deleting from $table: ");
+    # $self->logger->debug( sub { Dumper($where) } );
 
     my ( $stmt, @bind ) = $sql->delete( $table, $where );
 
