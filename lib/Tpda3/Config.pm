@@ -42,7 +42,6 @@ sub _new_instance {
 
     # If no config name don't bother to load this
     if ( $args->{cfname} ) {
-        #$self->config_interfaces_load();
         $self->config_runtime_load();       # application configs
         $self->config_load_administrator(); # administrator configs
     }
@@ -612,13 +611,6 @@ module.
 Load the main configuration file and return a HoH data structure.
 
 Make accessors.
-
-=head2 config_interfaces_load
-
-Process the main configuration file and automaticaly load all the
-interface defined configuration files.  That means if we add a YAML
-configuration file to the tree, all defined values should be available
-at restart.
 
 =head2 config_runtime_load
 
