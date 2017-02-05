@@ -143,6 +143,7 @@ sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;
 
     my $tb_btn = $self->get_toolbar_btn($btn_name);
+    return unless $tb_btn;
 
     if ($state) {
         $tb_btn->select;
