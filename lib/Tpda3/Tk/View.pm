@@ -1214,49 +1214,38 @@ sub configure_controls {
 
 sub make_binding_entry {
     my ($self, $control, $key, $calllback) = @_;
-
+    return unless $control and $control->isa('Tk::Entry');
     $control->bind( $key => $calllback, );
-
     return;
 }
 
 sub lookup_description {
     my ($self, $para) = @_;
-
     my $descr_caen = $self->model->tbl_lookup_query($para);
-
     return $descr_caen->[0];
 }
 
 sub tbl_selection_query {
     my ($self, $para, $debug) = @_;
-
     my $ary_ref = $self->model->query_filter_find($para, $debug);
-
     return $ary_ref;
 }
 
 sub tbl_selection_count {
     my ($self, $para) = @_;
-
     my $records_count = $self->model->query_records_count($para);
-
     return $records_count;
 }
 
 sub query_proxy {
     my ($self, $method, $para) = @_;
-
     my $record = $self->model->$method($para);
-
     return $record;
 }
 
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
-
     $self->model->table_record_update($table, $record, $where);
-
     return;
 }
 
