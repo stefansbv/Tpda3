@@ -398,23 +398,23 @@ sub cmp_function {
     my $cmp;
   SWITCH: for ($driver) {
         /^$/ && warn "EE: Unknown database driver name!\n";
-        /cubrid/i && do {
+        /cubrid/xi && do {
             $cmp = $ignore_case ? '-LIKE' : '-LIKE';
             last SWITCH;
         };
-        /firebird/i && do {
+        /fb|firebird/xi && do {
             $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
             last SWITCH;
         };
-        /postgresql/i && do {
+        /pg|postgresql/xi && do {
             $cmp = $ignore_case ? '-ILIKE' : '-LIKE';
             last SWITCH;
         };
-        /sqlite/i && do {
+        /sqlite/xi && do {
             $cmp = $ignore_case ? '-LIKE' : '-LIKE';
             last SWITCH;
         };
-        /odbcfb/i && do {
+        /odbcfb/xi && do {
             $cmp = $ignore_case ? '-CONTAINING' : '-LIKE';
             last SWITCH;
         };

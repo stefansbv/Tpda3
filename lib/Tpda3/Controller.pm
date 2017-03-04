@@ -771,7 +771,6 @@ sub setup_select_bindings_entry {
             }
         );
     }
-
     return;
 }
 

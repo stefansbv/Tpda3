@@ -40,7 +40,7 @@ SWITCH: for ($driver) {
             $db = Tpda3::Db::Connection::Cubrid->new($model);
             last SWITCH;
         };
-        /firebird/xi && do {
+        /fb|firebird/xi && do {
             require Tpda3::Db::Connection::Firebird;
             $db = Tpda3::Db::Connection::Firebird->new($model);
             last SWITCH;
