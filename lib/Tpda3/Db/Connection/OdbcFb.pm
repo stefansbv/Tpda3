@@ -1,6 +1,6 @@
 package Tpda3::Db::Connection::OdbcFb;
 
-# ABSTRACT: Connect with ODBC to a Firebird database
+# ABSTRACT: Connect with ODBC to a Firebird
 
 use strict;
 use warnings;
@@ -466,6 +466,16 @@ Returns yes for OdbcFb, meaning that is has the
 INSERT... RETURNING feature.
 
 Should check for the OdbcFb version?
+
+database
+
+Connect without DSN:
+
+http://www.easysoft.com/developer/languages/perl/dbd_odbc_tutorial_part_1.html#unixodbc_env
+
+    my $dsn = dbi:ODBC:Driver={Firebird/InterBase(r) driver};Server=localhost;Port=3050;Database=employee
+
+    my $dbh = DBI->connect($dsn) or die "$DBI::errstr\n";
 
 =head1 ACKNOWLEDGEMENTS
 
