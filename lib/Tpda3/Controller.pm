@@ -501,11 +501,15 @@ sub screen_detail_name {
     if ( ref $screen ) {
         if ( ref $screen->{detail} eq 'ARRAY' ) {
             $dsm = $self->get_dsm_name($screen);
+            if ($dsm eq 'default') {
+                $dsm = $screen->{default};
+            }
         }
     }
     else {
         $dsm = $screen;
     }
+    print " DSM is $dsm\n";
     return $dsm;
 }
 
@@ -566,7 +570,12 @@ sub get_dsm_name {
 
     my @dsm = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
 
-    return $dsm[0]{name};
+    if ( my $name = $dsm[0]{name} ) {
+        return $name;
+    }
+    else {
+        return 'default';
+    }
 }
 
 sub _set_menus_state {
@@ -3197,7 +3206,8 @@ Check if the detail screen module is loaded, and load if it's not.
 =head2 get_dsm_name
 
 Find the selected row in the TM. Read it and return the name of the
-detail screen module to load.
+detail screen module to load.  If there is no name to match, return
+C<default>.
 
 The configuration is like this:
 
@@ -3212,8 +3222,9 @@ The configuration is like this:
               'name'  => 'Consult'
           }
       ],
-      'filter' => 'id_act',
-      'match'  => 'cod_tip'
+      'filter'  => 'id_act',
+      'match'   => 'cod_tip'
+      'default' => 'ScreenName'
   };
 
 =head2 _set_menus_state
