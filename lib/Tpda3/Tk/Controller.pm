@@ -76,7 +76,6 @@ sub dialog_login {
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
-
     my $module_class;
     if ($from_tools) {
         $module_class = "Tpda3::Tk::Tools::${module}";
@@ -84,9 +83,7 @@ sub screen_module_class {
     else {
         $module_class = $self->cfg->application_class() . "::${module}";
     }
-
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
-
     return ( $module_class, $module_file );
 }
 

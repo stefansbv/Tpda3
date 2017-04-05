@@ -92,7 +92,7 @@ sub enable_tool {
 
 sub get_bgcolor {
     my $self = shift;
-    return $self->{bg};
+    return $self->{bg} // 'white';
 }
 
 sub make_toolbar_for_table {

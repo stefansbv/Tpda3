@@ -9,7 +9,6 @@ use utf8;
 use Tk;
 
 use Tpda3::Config;
-#use Tpda3::Tk::TB;
 use Tpda3::Tk::TM;
 use Tpda3::Utils;
 
@@ -17,7 +16,6 @@ use base q{Tpda3::Tk::Screen};
 
 sub new {
     my $class = shift;
-
     return bless( {}, $class );
 }
 
