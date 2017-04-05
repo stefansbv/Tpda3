@@ -416,7 +416,6 @@ sub on_page_rec_activate {
     my $self = shift;
 
     $self->view->set_status( '', 'ms' );    # clear
-
     if ( $self->model->is_mode('sele') ) {
         $self->set_app_mode('edit');
     }
@@ -432,21 +431,19 @@ sub on_page_rec_activate {
     unless ($selected_href) {
         $self->view->set_status(__ 'Not selected', 'ms', 'orange');
         $self->set_app_mode('idle');
-
         return;
     }
 
     #- Compare Key values, load record only if different
 
-    my @current
-        = $self->table_key( 'rec', 'main' )->map_keys( sub { $_->value } );
-    my @selected = values %{$selected_href};
-
-    my $dc   = Data::Compare->new(\@selected, \@current);
-    my $diff = $dc->Cmp ? 0 : 1;
-    # print "R: different? ", $diff ? 'YES ' : 'NO ', "\n";
-
-    $self->record_load_new($selected_href) if $diff;
+    if ( my $table_key = $self->table_key( 'rec', 'main' ) ) {
+        my @current  = $table_key->map_keys( sub { $_->value } );
+        my @selected = values %{$selected_href};
+        my $dc       = Data::Compare->new( \@selected, \@current );
+        my $diff     = $dc->Cmp ? 0 : 1;
+        print "R: different? ", $diff ? 'YES ' : 'NO ', "\n" if $self->cfg->verbose;
+        $self->record_load_new($selected_href) if $diff;
+    }
 
     $self->toggle_detail_tab;
 
@@ -471,21 +468,21 @@ sub on_page_det_activate {
 
     #- Compare Key values, load detail record only if different
 
-    my @current
-        = $self->table_key( 'det', 'main' )->map_keys( sub { $_->value } );
-    my $selected_pk_href = $self->view->list_read_selected();
-    my @selected = values %{$selected_pk_href};
-    my $selected_fk_href = $self->tmx_read_selected;
-    push @selected, values %{$selected_fk_href};
-
-    my $dc   = Data::Compare->new(\@selected, \@current);
-    my $diff = $dc->Cmp ? 0 : 1;
-    # print "D: different? ", $diff ? 'YES ' : 'NO ', "\n";
-
-    if ( $diff ) {
-        $self->get_selected_and_store_key;
-        $self->record_load();   # load detail record
-        $self->view->set_status( __ 'Record loaded (d)', 'ms', 'blue' );
+    if ( my $table_key = $self->table_key( 'det', 'main' ) ) {
+        my @current = $table_key->map_keys( sub { $_->value } );
+        my $selected_pk_href = $self->view->list_read_selected();
+        my @selected         = values %{$selected_pk_href};
+        my $selected_fk_href = $self->tmx_read_selected;
+        push @selected, values %{$selected_fk_href};
+        my $dc = Data::Compare->new( \@selected, \@current );
+        my $diff = $dc->Cmp ? 0 : 1;
+        print "D: different? ", $diff ? 'YES ' : 'NO ', "\n"
+            if $self->cfg->verbose;
+        if ($diff) {
+            $self->get_selected_and_store_key;
+            $self->record_load();    # load detail record
+            $self->view->set_status( __ 'Record loaded (d)', 'ms', 'blue' );
+        }
     }
 
     $self->set_app_mode('edit');
@@ -496,21 +493,21 @@ sub on_page_det_activate {
 
 sub screen_detail_name {
     my $self = shift;
-    my $screen = $self->scrcfg('rec')->screen('details');
-    my $dsm;
-    if ( ref $screen ) {
-        if ( ref $screen->{detail} eq 'ARRAY' ) {
-            $dsm = $self->get_dsm_name($screen);
-            if ($dsm eq 'default') {
-                $dsm = $screen->{default};
+    my $sdn;
+    if ( my $screen_cfg = $self->scrcfg('rec') ) {
+        if ( my $screen = $screen_cfg->screen('details') ) {
+            if ( ref $screen->{detail} ) {
+                $sdn = $self->get_dsm_name($screen);
+                if ($sdn eq 'default') {
+                    $sdn = $screen->{default};
+                }
+            }
+            else {
+                $sdn = $screen;
             }
         }
     }
-    else {
-        $dsm = $screen;
-    }
-    print " DSM is $dsm\n";
-    return $dsm;
+    return $sdn;
 }
 
 sub get_selected_and_store_key {
@@ -556,26 +553,32 @@ sub screen_detail_load {
 
 sub get_dsm_name {
     my ( $self, $detscr ) = @_;
-
     my $row = $self->tmatrix_get_selected;
 
     return unless defined $row and $row > 0;
 
-    my $col_name = $detscr->{match};
-
-    my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-    my $rec = $tmx->cell_read( $row, $col_name );
-
-    my $col_value = $rec->{$col_name};
-
-    my @dsm = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
-
-    if ( my $name = $dsm[0]{name} ) {
-        return $name;
+    if ( my $col_name = $detscr->{match} ) {
+        my $tmx       = $self->scrobj('rec')->get_tm_controls('tm1');
+        my $rec       = $tmx->cell_read( $row, $col_name );
+        my $col_value = $rec->{$col_name};
+        if ( ref $detscr->{detail} eq 'HASH' ) {
+            if ( my $name = $detscr->{detail}{name} ) {
+                if ($detscr->{detail}{value} eq $col_value ) {
+                    return $name;
+                }
+            }
+        }
+        if ( ref $detscr->{detail} eq 'ARRAY' ) {
+            my @dsm = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
+            if ( my $name = $dsm[0]{name} ) {
+                return $name;
+            }
+        }
+        else {
+            return 'default';
+        }
     }
-    else {
-        return 'default';
-    }
+    return;
 }
 
 sub _set_menus_state {
@@ -1194,25 +1197,19 @@ sub scrobj {
 
 sub application_class {
     my $self = shift;
-
     print 'application_class not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
-
     print 'screen_module_class not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
-
     print "Loading >$module<\n" if $self->cfg->verbose;
-
     my $rscrstr = lc $module;
 
     # Destroy existing NoteBook widget
@@ -1671,7 +1668,7 @@ sub toggle_screen_interface_controls {
     my $page = $self->view->get_nb_current_page();
     my $mode = $self->model->get_appmode;
 
-    return if $page eq 'lst';
+    return if $page eq 'lst' or $page eq 'det';
 
     #- Toolbar (table)
 
@@ -2202,7 +2199,10 @@ sub controls_state_set {
     $self->_log->trace("Screen 'rec' controls state is '$set_state'");
 
     my $page = $self->view->get_nb_current_page();
-    my $bg   = $self->scrobj($page)->get_bgcolor();
+
+    return unless $page;
+
+    my $bg = $self->scrobj($page)->get_bgcolor();
 
     my $ctrl_ref = $self->scrobj($page)->get_controls();
     return unless scalar keys %{$ctrl_ref};
@@ -3226,6 +3226,14 @@ The configuration is like this:
       'match'   => 'cod_tip'
       'default' => 'ScreenName'
   };
+
+It can also be a hash reference if there is only one detail screen in
+the configuration:
+
+      'detail' => {
+          'value' => 'CS',
+          'name'  => 'Cursuri'
+      },
 
 =head2 _set_menus_state
 
