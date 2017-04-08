@@ -96,7 +96,7 @@ exit 0;
 
 sub tpda3_version {
     my $ver = $Tpda3::VERSION ? 'v'.$Tpda3::VERSION : 'development';
-    print "Tpda3 (Tiny Perl Database Application 3) $ver\n(C) 2010-2015 Stefan Suciu\n\n";
+    print "Tpda3 (Tiny Perl Database Application 3) $ver\n(C) 2010-2017 Stefan Suciu\n\n";
 }
 
 =head1 SYNOPSIS
