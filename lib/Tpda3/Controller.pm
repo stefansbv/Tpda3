@@ -151,7 +151,7 @@ sub dialog_login {
 
 sub message_dialog {
     my ($message, $details, $icon, $type) = @_;
-    print 'message_tiler not implemented in ', __PACKAGE__, "\n";
+    print 'message_dialog not implemented in ', __PACKAGE__, "\n";
     return;
 }
 
