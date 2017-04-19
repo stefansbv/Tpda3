@@ -7,6 +7,7 @@ use warnings;
 use utf8;
 
 use Tk;
+use Tk::widgets qw(DialogBox LabFrame);
 
 use Tpda3::Config;
 use Tpda3::Tk::TM;
@@ -140,7 +141,7 @@ sub select_dialog {
 
     #-- TM header
 
-    # my $header = $self->{scrcfg}->dep_table_header_info('tm2');
+    my $header = $self->{scrcfg}->dep_table_header_info('tm2');
 
     # $self->{_tm}->init( $frm_top, $header );
 
@@ -191,7 +192,7 @@ sub select_dialog {
 
     my $fd = Tpda3::Tk::Dialog::SSelect->new;
 
-    $fd->search($self);
+    $fd->select_dialog($self);
 
 =head2 new
 
