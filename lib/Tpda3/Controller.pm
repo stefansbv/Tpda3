@@ -459,10 +459,11 @@ sub on_page_lst_activate {
 sub on_page_det_activate {
     my $self = shift;
 
-    if ( my $dsm = $self->screen_detail_name ) {
-        $self->screen_detail_load($dsm);
+    if ( my $sdn = $self->screen_detail_name ) {
+        $self->screen_detail_load($sdn);
     }
     else {
+        $self->status_message_delay("warn#No detail screen");
         return $self->view->get_notebook()->raise('rec');
     }
 
@@ -497,9 +498,8 @@ sub screen_detail_name {
     if ( my $screen_cfg = $self->scrcfg('rec') ) {
         if ( my $screen = $screen_cfg->screen('details') ) {
             if ( ref $screen->{detail} ) {
-                $sdn = $self->get_dsm_name($screen);
-                if ($sdn eq 'default') {
-                    $sdn = $screen->{default};
+                if ( $sdn = $self->get_sdn_name($screen) ) {
+                    $sdn = $screen->{default} if $sdn eq 'default';
                 }
             }
             else {
@@ -543,15 +543,15 @@ sub tmx_read_selected {
 }
 
 sub screen_detail_load {
-    my ( $self, $dsm ) = @_;
+    my ( $self, $sdn ) = @_;
     my $dscrstr = $self->screen_string('det');
-    unless ( $dscrstr && ( $dscrstr eq lc($dsm) ) ) {
-        $self->screen_module_detail_load($dsm); # load detail screen
+    unless ( $dscrstr && ( $dscrstr eq lc($sdn) ) ) {
+        $self->screen_module_detail_load($sdn); # load detail screen
     }
     return;
 }
 
-sub get_dsm_name {
+sub get_sdn_name {
     my ( $self, $detscr ) = @_;
     my $row = $self->tmatrix_get_selected;
 
@@ -569,8 +569,8 @@ sub get_dsm_name {
             }
         }
         if ( ref $detscr->{detail} eq 'ARRAY' ) {
-            my @dsm = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
-            if ( my $name = $dsm[0]{name} ) {
+            my @sdn = grep { $_->{value} eq $col_value } @{ $detscr->{detail} };
+            if ( my $name = $sdn[0]{name} ) {
                 return $name;
             }
         }
@@ -3203,7 +3203,7 @@ column.
 
 Check if the detail screen module is loaded, and load if it's not.
 
-=head2 get_dsm_name
+=head2 get_sdn_name
 
 Find the selected row in the TM. Read it and return the name of the
 detail screen module to load.  If there is no name to match, return

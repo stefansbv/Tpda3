@@ -666,6 +666,19 @@ sub message_tiler {
     return;
 }
 
+sub status_message_delay {
+    my ($self, $msg) = @_;
+    $msg //= '';
+    $self->{_view}->after(
+        500,
+        sub {
+            $self->{_view}->status_message($msg);
+        }
+    );
+
+    return;
+}
+
 1;
 
 =head1 SYNOPSIS
@@ -820,5 +833,9 @@ Show a Tpda3::Tk::Dialog::Message dialog instance.
 =head2 message_tiler
 
 Show aTpda3::Tk::Dialog::Tiler dialog instance.
+
+=head2 status_message_delay
+
+A status message that appears with a short delay.
 
 =cut
