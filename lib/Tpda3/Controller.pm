@@ -2505,7 +2505,7 @@ sub record_save {
 
         try   { $self->check_required_data($record); }
         catch { $self->catch_data_exceptions($_);    };
-        use Data::Printer; p $record;
+
         try   { $self->model->prepare_record_update($record); }
         catch { $self->catch_db_exceptions($_);               };
 
