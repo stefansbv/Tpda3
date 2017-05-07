@@ -1002,7 +1002,7 @@ sub set_app_mode {
 
     $self->toggle_screen_interface_controls;
 
-    if ( my $method_name = $self->{method_for}{$mode} ) {
+    if ( my $method_name = $self->{method_for_mode}{$mode} ) {
         $self->$method_name();
     }
     else {
@@ -1144,7 +1144,7 @@ sub _control_states_init {
         },
     };
 
-    $self->{method_for} = {
+    $self->{method_for_mode} = {
         add  => 'on_screen_mode_add',
         find => 'on_screen_mode_find',
         idle => 'on_screen_mode_idle',
@@ -2132,26 +2132,20 @@ sub make_empty_record {
 
 sub tmatrix_get_selected {
     my $self = shift;
-
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-
     my $sc;
     if ( blessed $tmx ) {
         $sc = $tmx->get_selected();
     }
-
     return $sc;
 }
 
 sub tmatrix_set_selected {
     my ( $self, $row ) = @_;
-
     my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
-
     if ( blessed $tmx ) {
         $tmx->set_selected($row);
     }
-
     return;
 }
 
@@ -2349,6 +2343,11 @@ sub record_load {
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                          # undef = unloaded
 
+    # Trigger 'on_record_loaded' method in screen if defined
+    $self->scrobj($page)->on_record_loaded
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_record_loaded');
+
     return;
 }
 
@@ -2506,7 +2505,7 @@ sub record_save {
 
         try   { $self->check_required_data($record); }
         catch { $self->catch_data_exceptions($_);    };
-
+        use Data::Printer; p $record;
         try   { $self->model->prepare_record_update($record); }
         catch { $self->catch_db_exceptions($_);               };
 
@@ -3337,9 +3336,10 @@ table to execute the appropriate function when the return key is
 pressed inside a cell.
 
 There are two functions defined, I<lookup> and I<method>.  The first
-activates the C<Tpda3::XX::Dialog::Search> module, to look-pu value
-key translations from a database table and fill the configured cells
-with the results.  The second can call a method in the current screen.
+activates the C<Tpda3::XX::Dialog::Search> module, to look-up the
+value key translations from a database table and fill the configured
+cells with the results.  The second can call a method in the current
+screen.
 
 =head2 setup_select_bindings_entry
 
