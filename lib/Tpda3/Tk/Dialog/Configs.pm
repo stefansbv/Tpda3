@@ -2,6 +2,7 @@ package Tpda3::Tk::Dialog::Configs;
 
 # ABSTRACT: Dialog for user configuration options
 
+use 5.010001;
 use strict;
 use warnings;
 use utf8;
@@ -10,6 +11,7 @@ use Tk;
 use Tk::widgets qw(JFileDialog);
 use File::Copy;
 use File::Spec;
+use File::HomeDir;
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -45,6 +47,11 @@ sub _init {
      : $os =~ /mswin/i  ? 'C:/'
      : $os =~ /linux/i  ? '/'
      :                    '';
+
+    # Documents base dir
+
+    my $docs = File::HomeDir->my_documents;
+    $self->{documents_dir} = $docs;
 
     # External apps
 
@@ -236,30 +243,58 @@ sub show_cfg_dialog {
         -ipady  => 3,
     );
 
-    #-- docspath
-    my $ldocspath = $frm_middle->Label( -text => 'Documents output' );
-    $ldocspath->form(
+    #-- docsoutpath
+
+    my $ldocsoutpath = $frm_middle->Label( -text => 'Documents output' );
+    $ldocsoutpath->form(
         -top     => [ %0, 0 ],
         -left    => [ %0, 0 ],
         -padleft => 5,
     );
-    my $edocspath = $frm_middle->MEntry(
+    my $edocsoutpath = $frm_middle->MEntry(
         -width              => 36,
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
     );
-    $edocspath->form(
-        -top     => [ '&', $ldocspath, 0 ],
+    $edocsoutpath->form(
+        -top     => [ '&', $ldocsoutpath, 0 ],
         -left    => [ %0, $f1d ],
     );
 
     #-- button
     $frm_middle->Button(
         -image   => 'folderopen16',
-        -command => sub { $self->update_value('docspath', 'path') },
+        -command => sub { $self->update_value('docsoutpath', 'path') },
     )->form(
-        -top  => [ '&', $ldocspath, 0 ],
-        -left => [ $edocspath, 3 ],
+        -top  => [ '&', $ldocsoutpath, 0 ],
+        -left => [ $edocsoutpath, 3 ],
+    );
+
+    #-- docsbasepath
+
+    my $ldocsbasepath = $frm_middle->Label( -text => 'Documents' );
+    $ldocsbasepath->form(
+        -top     => [ $ldocsoutpath, 8 ],
+        -left    => [ %0, 0 ],
+        -padleft => 5,
+    );
+    my $edocsbasepath = $frm_middle->MEntry(
+        -width              => 36,
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+    );
+    $edocsbasepath->form(
+        -top     => [ '&', $ldocsbasepath, 0 ],
+        -left    => [ %0, $f1d ],
+    );
+
+    #-- button
+    $frm_middle->Button(
+        -image   => 'folderopen16',
+        -command => sub { $self->update_value('docsbasepath', 'path') },
+    )->form(
+        -top  => [ '&', $ldocsbasepath, 0 ],
+        -left => [ $edocsoutpath, 3 ],
     );
 
     #-  Frame bottom - Buttons
@@ -289,10 +324,11 @@ sub show_cfg_dialog {
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
     $self->{controls} = {
-        repman     => [ undef, $erepman ],
-        latex      => [ undef, $elatex ],
-        chm_viewer => [ undef, $echm_viewer ],
-        docspath   => [ undef, $edocspath ],
+        repman       => [ undef, $erepman ],
+        latex        => [ undef, $elatex ],
+        chm_viewer   => [ undef, $echm_viewer ],
+        docsoutpath     => [ undef, $edocsoutpath ],
+        docsbasepath => [ undef, $edocsbasepath ],
     };
 
     $self->load_config();
@@ -333,8 +369,21 @@ sub load_config {
     }
 
     #- Runtime section in main.yml
-    foreach my $field ( qw{docspath} ) {
-        my $value = $data->{runtime}{$field};
+    my ($docspath, $value);
+    foreach my $field ( qw{docspath docsoutpath docsbasepath} ) {
+        if ($field eq 'docspath') {
+            if ( exists $data->{runtime}{$field} ) {
+                say "'docspath' is deprecated, using 'docsoutpath' instead";
+                $docspath = $data->{runtime}{$field};
+                next;
+            }
+        }
+        if ($field eq 'docsoutpath') {
+            $value = $data->{runtime}{$field} || $docspath;
+        }
+        if ($field eq 'docsbasepath') {
+            $value = $data->{runtime}{$field};
+        }
         $self->update_field( $field, $value, 'path' );
     }
     return;
@@ -445,10 +494,14 @@ sub save_config {
     }
 
     #- Runtime section in main.yml
-    foreach my $field ( qw{docspath} ) {
+    foreach my $field ( qw{docsoutpath docsbasepath} ) {
         my $value = $self->{controls}{$field}[1]->get();
         print "field = $field, value = $value\n";
         $data->{runtime}{$field} = $value;
+    }
+
+    if ( my $deleted = delete $data->{runtime}{docspath} ) {
+        say "removed deprecated docspath: $deleted";
     }
 
     Tpda3::Utils->write_yaml( $self->cfg->cfmainyml, $data );
