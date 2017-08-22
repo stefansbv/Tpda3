@@ -1,8 +1,10 @@
 # tpda3
 # Main configuration
+# docspath is deprecated, use docsoutpath instead
 ---
 runtime:
-  docspath: /tmp
+  docsbasepath: D:/Documente/Fiset
+  docsoutpath: D:/Documente
 resource:
   icons: etc/interfaces/icons
 externalapps:
