@@ -105,6 +105,12 @@ sub dateentry_format_date {
 sub sort_hash_by_id {
     my ( $self, $attribs ) = @_;
 
+    foreach my $k ( keys %{$attribs} ) {
+        if ( !exists $attribs->{$k}{id} ) {
+            warn "menu '$k' does not have an 'id' attribute\n";
+        }
+    }
+
     #-- Sort by id
     #- Keep only key and id for sorting
     my %temp = map { $_ => $attribs->{$_}{id} } keys %{$attribs};
