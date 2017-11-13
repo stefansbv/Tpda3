@@ -35,7 +35,6 @@ sub new {
 
 sub lookup {
     my ( $self, $view, $para, $filter ) = @_;
-
     my $record;
     if ( $self->{_ws} =~ m{tk}ix ) {
         $record = $self->{dlg}->search_dialog( $view, $para, $filter );
@@ -49,7 +48,6 @@ sub lookup {
             $record = $self->{dlg}->get_selected_item();
         }
     }
-
     return $record;
 }
 
