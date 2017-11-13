@@ -659,7 +659,7 @@ sub update_value {
         columns => [],
     };
 
-    my @headerlist = split /,\ */, $rdd->{headerlist};
+    my @headerlist = split /,\s*/, $rdd->{headerlist};
     my @fields;
     push @fields, $searchfield, @headerlist, $resultfield;
 
@@ -667,9 +667,9 @@ sub update_value {
     foreach my $field (@fields) {
         my $rec = {};
         $rec->{$field} = {
-            width    => $attr->{$field}{displ_width},
-            label    => $attr->{$field}{label},
-            datatype => $attr->{$field}{datatype},
+            label       => $attr->{$field}{label},
+            displ_width => $attr->{$field}{displ_width},
+            datatype    => $attr->{$field}{datatype},
         };
         push @cols, $rec;
     }
@@ -744,7 +744,7 @@ Build parameter list from screen entry values.
 Callback to update the value of the paramater, using the I<Search>
 dialog.
 
-Info for the Search dialog table header is from L<etc/search.conf>, in
-the application's L<etc> config dir.
+Info for the Search dialog table header is from L<res/search.conf>, in
+the application's L<res> config dir.
 
 =cut
