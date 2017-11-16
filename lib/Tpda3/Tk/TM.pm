@@ -295,7 +295,7 @@ sub write_row {
 }
 
 sub data_read {
-    my ($self, $with_sel_name) = @_;
+    my ($self, $with_sel_name, $all_cols) = @_;
 
     my $xtvar = $self->cget('-variable');
 
@@ -332,7 +332,9 @@ sub data_read {
             my $fld_cfg = $fields_cfg->{$col_name};
             my ($readwrite) = @$fld_cfg{'readwrite'};    # hash slice
 
-            next if $readwrite eq 'ro';    # skip ro cols
+            unless ($all_cols) {
+                next if $readwrite eq 'ro';    # skip ro cols
+            }
 
             $rowdata->{$col_name} = $cell_value;
         }
