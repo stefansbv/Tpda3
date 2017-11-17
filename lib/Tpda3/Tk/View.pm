@@ -1443,12 +1443,6 @@ Log messages.
 
 Create the menu
 
-=head2 get_menubar_merged_labels
-
-Merge separate labels from the menu config so we can translate them.
-
-TODO: Maybe get rid of menubar.yml and make a data module...
-
 =head2 _create_app_menu
 
 Application specific menu to be inserted at position 2 in the main
@@ -1514,13 +1508,6 @@ Temporized clear for messages.
 =head2 _create_toolbar
 
 Create toolbar
-
-=head2 get_toolbar_merged_labels
-
-Merge separate labels from the toolbar config so we can translate
-them.
-
-TODO: Maybe get rid of toolbar.yml and make a data module...
 
 =head2 create_notebook
 

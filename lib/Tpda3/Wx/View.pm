@@ -1127,12 +1127,6 @@ module.
 Create the menubar and the menus. Menus are defined in configuration
 files.
 
-=head2 get_menubar_merged_labels
-
-Merge separate labels from the menu config so we can translate them.
-
-TODO: Maybe get rid of menubar.yml and make a data module...
-
 =head2 _create_app_menu
 
 Insert application menu. The menubars are inserted after the first
@@ -1163,13 +1157,6 @@ Return the menu bar handler
 =head2 _create_toolbar
 
 Create toolbar
-
-=head2 get_toolbar_merged_labels
-
-Merge separate labels from the toolbar config so we can translate
-them.
-
-TODO: Maybe get rid of toolbar.yml and make a data module...
 
 =head2 enable_tool
 
