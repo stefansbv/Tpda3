@@ -159,9 +159,7 @@ sub quote4like {
 
 sub special_ops {
     my $self = shift;
-
     return [
-
         {   regex   => qr/^extractyear$/i,
             handler => sub {
                 my ( $self, $field, $op, $arg ) = @_;

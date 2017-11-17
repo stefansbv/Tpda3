@@ -1249,8 +1249,6 @@ sub screen_module_load {
         = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };
     if ($@) {
-
-        # TODO: Decide what is optimal to do here?
         print "EE: Can't load '$module_file'\n";
         return;
     }
@@ -1726,7 +1724,7 @@ sub record_find_execute {
 
     my ($ary_ref, $limit);
     try {
-        ($ary_ref, $limit) = $self->model->query_records_find($params);
+         ($ary_ref, $limit) = $self->model->query_records_find($params);
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -1905,7 +1903,6 @@ sub screen_document_generate {
     );
 
     # Change the date format from ISO to configured (required!: ISO from DB)
-    # TODO: is there a looks_like_a_date function?
     # Avoid UTF-8 problems in TeX
     my $date_format = $self->scrcfg->app_dateformat();
     foreach my $key ( keys %{$rec} ) {
@@ -3659,8 +3656,6 @@ and is processed by the DB SQL server differently by vendor.
 
   WHERE b_date = '2009-12-31'
 
-TODO: convert the date string to ISO before building the WHERE Clause
-
 =head2 record_find_count
 
 Execute count.
@@ -3751,8 +3746,6 @@ field names as keys.  I<undef> value clears the control.
 
 Run the appropriate sub according to control (entry widget) type to
 write to screen controls.
-
-TODO: Use hash for paramaters
 
 =head2 make_empty_record
 
@@ -3943,7 +3936,7 @@ Return the list column names.
 
 =head2 flatten_cfg
 
-TODO
+# TODO: add POD
 
 =head2 record_merge_columns
 
