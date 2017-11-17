@@ -788,29 +788,23 @@ sub setup_select_bindings_entry {
 
 sub add_dispatch_for_lookup {
     my ( $self, $bnd ) = @_;
-
     my $bindcol = 'colsub' . $bnd->{bindcol};
-
     return { $bindcol => \&lookup_call };
 }
 
 sub add_dispatch_for_method {
     my ( $self, $bnd ) = @_;
-
     my $bindcol = 'colsub' . $bnd->{bindcol};
-
     return { $bindcol => \&method_call };
 }
 
 sub method_for {
     my ( $self, $dispatch, $bindings, $r, $c, $tm_ds ) = @_;
-
     my $skip_cols;
     my $proc = "colsub$c";
     if ( exists $dispatch->{$proc} ) {
         $skip_cols = $dispatch->{$proc}->( $self, $bindings, $r, $c, $tm_ds );
     }
-
     return $skip_cols;
 }
 
@@ -848,9 +842,20 @@ sub method_call {
         keys %{ $bnd->{method} };
     my $bindings = $bnd->{method}{ $names[0] };
 
-    my $method = $bindings->{subname};       # TODO: rename to method?
-    if ( $self->scrobj()->can($method) ) {
-        $self->scrobj()->$method($r);
+    my $method;
+    if ( exists $bindings->{subname} ) {
+        $method = $bindings->{subname};
+        print "WW: 'subname' is deprecated, use 'method' instead in the screen 'tablebindings' config!\n";
+    }
+    elsif ( exists $bindings->{method} ) {
+        $method = $bindings->{method};
+    }
+    else {
+        return 1;
+    }
+
+    if ( $self->scrobj->can($method) ) {
+        $self->scrobj->$method($r);
     }
     else {
         print "WW: '$method' not implemented!\n";
@@ -3360,13 +3365,19 @@ the configuration, using a dispatch table.
 
 =head2 lookup_call
 
-Activates the C<Tpda3::XX::Dialog::Search> module, to look-up value
+A C<tablebindings> configuration effect.
+
+On the I<Return> key pressed inside a TableMatrix widget cell
+activates the C<Tpda3::XX::Dialog::Search> module, to look-up value -
 key translations from a database table and fill the configured cells
 with the results.
 
 =head2 method_call
 
-Call a method from the Screen module on I<Return> key.
+A C<tablebindings> configuration effect.
+
+Call a method from the Screen module on the I<Return> key pressed
+inside a TableMatrix widget cell.
 
 =head2 get_lookup_setings
 
