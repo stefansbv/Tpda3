@@ -2205,6 +2205,10 @@ sub controls_state_set {
 
     my $control_states = $self->control_states($set_state);
 
+    # Enable controls for report style screen
+    $control_states = $self->control_states('edit')
+      if $self->scrcfg()->screen('style') eq 'report';
+
     return unless defined $self->scrcfg($page);
 
     foreach my $field ( keys %{ $self->scrcfg($page)->maintable('columns') } ) {
