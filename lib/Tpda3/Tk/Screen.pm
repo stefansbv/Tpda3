@@ -98,7 +98,7 @@ sub get_bgcolor {
 sub make_toolbar_for_table {
     my ( $self, $toolbar, $tb_frame ) = @_;
 
-    $self->{tb}{$toolbar} = $tb_frame->TB();
+    $self->{tb}{$toolbar} = $tb_frame->TB(qw/-movable 0 -side top -cursorcontrol 0/);
 
     my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($toolbar);
     my $attribs    = $self->{scrcfg}->app_toolbar_attribs($toolbar);
