@@ -107,7 +107,7 @@ sub sort_hash_by_id {
 
     foreach my $k ( keys %{$attribs} ) {
         if ( !exists $attribs->{$k}{id} ) {
-            warn "menu '$k' does not have an 'id' attribute\n";
+            warn "sort_hash_by_id: '$k' does not have an 'id' attribute\n";
         }
     }
 
