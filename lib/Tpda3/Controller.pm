@@ -497,7 +497,7 @@ sub screen_detail_name {
     my $sdn;
     if ( my $screen_cfg = $self->scrcfg('rec') ) {
         if ( my $screen = $screen_cfg->screen('details') ) {
-            if ( ref $screen->{detail} ) {
+            if ( ref $screen ) {
                 if ( $sdn = $self->get_sdn_name($screen) ) {
                     $sdn = $screen->{default} if $sdn eq 'default';
                 }
@@ -536,7 +536,13 @@ sub tmx_read_selected {
         my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
         my $row = $self->tmatrix_get_selected;
         if ( defined $row and $row > 0 ) {
-            $det_params = $tmx->cell_read( $row, $screen->{filter} );
+            if ( ref $screen and exists $screen->{filter} ) {
+                $det_params = $tmx->cell_read( $row, $screen->{filter} );
+            }
+            else {
+                # $det_params = $tmx->cell_read( $row, $col );
+                warn "No filter in the details screen config\n";
+            }
         }
     }
     return $det_params;
