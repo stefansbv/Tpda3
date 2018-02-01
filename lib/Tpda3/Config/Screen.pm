@@ -76,7 +76,7 @@ sub bindings_select {
 
 sub tablebindings {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'tablebindings', @args );
+    return Dive( $self->{_scr}, 'tablebindings', @args ) // {};
 }
 
 sub deptable {
