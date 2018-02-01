@@ -111,8 +111,10 @@ sub _item_legend {
 
 sub get_toolbar_btn {
     my ( $self, $name ) = @_;
-
-    return $self->{$name};
+    die "get_toolbar_btn: the button name is missing" unless $name;
+    if ( exists $self->{$name} ) {
+        return $self->{$name};
+    }
 }
 
 sub enable_tool {
@@ -142,8 +144,11 @@ sub enable_tool {
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;
 
+    die "TB button name missing" unless $btn_name;
+
     my $tb_btn = $self->get_toolbar_btn($btn_name);
-    return unless $tb_btn;
+
+    return unless $tb_btn->isa('Tk::Checkbutton');
 
     if ($state) {
         $tb_btn->select;

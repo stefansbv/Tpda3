@@ -149,8 +149,16 @@ SWITCH: {
         };
 
         # Else
-        $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
-        $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+        if ( exists $self->{_tb} and $self->{_tb}->isa('Tpda3::Tk::TB') ) {
+            print "\n";
+            if ( $self->{_tb}->can('toggle_tool_check') ) {
+                $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
+                $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
+            }
+            else {
+                warn "Can't toggle_tool_check!";
+            }
+        }
     }
 
     return;
@@ -399,14 +407,14 @@ sub set_status {
             :                  'S';
         $sb_label->configure( -text => $str ) if defined $str;
     }
-    else {
-
-        # ms
+    elsif ( $sb_id eq 'ms' ) {
         $sb_label->configure( -text       => $text )  if defined $text;
         $sb_label->configure( -foreground => $color ) if defined $color;
         $self->temporized_clear($text) if $text; # in not a 'clear'
     }
-
+    else {
+        print "set_status: unknown sb_id=$sb_id\n";
+    }
     return;
 }
 
