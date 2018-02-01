@@ -93,19 +93,14 @@ sub _item_check {
 
 sub _item_legend {
     my ( $self, $name, $attribs ) = @_;
-
     $self->separator if $attribs->{sep} =~ m{before};
-
     my $label = $attribs->{label} || 'row';
     my $color = $attribs->{color} || 'white';
-
     $self->{$name} = $self->ToolLabel(
         -text => $label,
         -bg   => $color,
     );
-
     $self->separator if $attribs->{sep} =~ m{after};
-
     return;
 }
 
@@ -119,9 +114,7 @@ sub get_toolbar_btn {
 
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
-
     my $tb_btn = $self->get_toolbar_btn($btn_name);
-
     my $other;
     if ($state) {
         if ( $state =~ m{norma|disabled}x ) {
@@ -135,28 +128,21 @@ sub enable_tool {
         $state = $tb_btn->cget('-state');
         $other = $state eq 'normal' ? 'disabled' : 'normal';
     }
-
     $tb_btn->configure( -state => $other );
-
     return;
 }
 
 sub toggle_tool_check {
     my ( $self, $btn_name, $state ) = @_;
-
     die "TB button name missing" unless $btn_name;
-
     my $tb_btn = $self->get_toolbar_btn($btn_name);
-
     return unless $tb_btn->isa('Tk::Checkbutton');
-
     if ($state) {
         $tb_btn->select;
     }
     else {
         $tb_btn->deselect;
     }
-
     return;
 }
 
