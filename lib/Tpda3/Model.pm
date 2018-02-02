@@ -249,11 +249,12 @@ sub query_record {
     my ( $self, $opts ) = @_;
 
     my $table = $opts->{table};
+    my $cols  = $opts->{columns};
     my $where = $opts->{where};
 
     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where );
 
     my $hash_ref;
     try {
