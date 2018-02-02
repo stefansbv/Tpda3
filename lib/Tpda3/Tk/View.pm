@@ -413,7 +413,8 @@ sub set_status {
         $self->temporized_clear($text) if $text; # in not a 'clear'
     }
     else {
-        print "set_status: unknown sb_id=$sb_id\n";
+        $sb_label->configure( -text       => $text )  if defined $text;
+        $sb_label->configure( -foreground => $color ) if defined $color;
     }
     return;
 }
