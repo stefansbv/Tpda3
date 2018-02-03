@@ -430,9 +430,7 @@ sub get_status_msg {
 
 sub temporized_clear {
     my $self = shift;
-
     return if $self->{_tset} == 1;
-
     $self->after(
         50000,    # miliseconds
         sub {
@@ -440,9 +438,7 @@ sub temporized_clear {
             $self->{_tset} = 0;
         }
     );
-
     $self->{_tset} = 1;
-
     return;
 }
 
