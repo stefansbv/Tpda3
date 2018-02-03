@@ -325,6 +325,46 @@ sub query_dictionary {
     return $ary_ref;
 }
 
+sub query_exec_proc {
+    my ( $self, $opts ) = @_;
+
+    my $func  = $opts->{func};
+    my $cols  = $opts->{columns};
+    my $param = $opts->{param};
+
+    my $place = '?';
+    $place = ( '?,' x $#{$param} ) . '?' if ref $param eq 'ARRAY';
+
+    my $cols_list = join ",", @{$cols};
+    my $sql = qq{SELECT $cols_list
+                     FROM ${func}($place);
+                };
+    print "SQL=$sql\n";
+    my $sth;
+    try {
+        $sth = $self->dbh->prepare($sql);
+    }
+    catch {
+        $self->db_exception( $_, "'query_exec_proc' prepare failed" );
+    };
+    my @records;
+    try {
+        if ( ref $param eq 'ARRAY' ) {
+            $sth->execute( @{$param} );
+        }
+        else {
+            $sth->execute($param);
+        }
+        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
+            push( @records, $record );
+        }
+    }
+    catch {
+        $self->db_exception( $_, 'Batch query procedure failed' );
+    };
+    return \@records;
+}
+
 sub build_sql_where {
     my ( $self, $opts ) = @_;
 
