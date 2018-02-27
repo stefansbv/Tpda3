@@ -35,8 +35,8 @@ sub message_text {
 
     my $frame_top = $dlg->Frame()->pack(
         -side   => 'left',
-        -expand => 0,
-        -fill   => 'x',
+        -expand => 1,
+        -fill   => 'both',
         -anchor => 'w',
         -padx   => 15,
         -pady   => 10,
