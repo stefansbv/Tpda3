@@ -170,7 +170,7 @@ sub special_ops {
                     . " $label) = $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
-                }
+            }
         },
         {   regex   => qr/^extractmonth$/i,
             handler => sub {
@@ -182,7 +182,21 @@ sub special_ops {
                     . " $label) = $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
-                }
+            }
+        },
+        # special op for PostgreSQL field SIMILAR TO 'regex1'
+        {   regex   => qr/^similar_to$/i,
+            handler => sub {
+                my ( $self, $field, $op, $arg ) = @_;
+                $arg = [$arg] if not ref $arg;
+                my $label         = $self->_quote($field);
+                my ($placeholder) = $self->_convert('?');
+                my $sql           = "$label "
+                    . $self->_sqlcase('similar to ')
+                    . " $placeholder ";
+                my @bind = $self->_bindtype( $field, @$arg );
+                return ( $sql, @bind );
+            }
         },
     ];
 }
