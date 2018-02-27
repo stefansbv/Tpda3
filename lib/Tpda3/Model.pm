@@ -252,7 +252,7 @@ sub query_record {
     my $cols  = $opts->{columns};
     my $where = $opts->{where};
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where );
 
@@ -279,7 +279,7 @@ sub table_batch_query {
     die "Empty COLUMN list in SELECT command for table '$table'!"
         unless scalar @{$colslist};
 
-    my $sql = SQL::Abstract->new();
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
 
@@ -339,7 +339,6 @@ sub query_exec_proc {
     my $sql = qq{SELECT $cols_list
                      FROM ${func}($place);
                 };
-    print "SQL=$sql\n";
     my $sth;
     try {
         $sth = $self->dbh->prepare($sql);
