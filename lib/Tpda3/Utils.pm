@@ -184,7 +184,7 @@ sub special_ops {
                 return ( $sql, @bind );
             }
         },
-        # special op for PostgreSQL field SIMILAR TO 'regex1'
+        # special op for PostgreSQL syntax: field SIMILAR TO 'regex1'
         {   regex   => qr/^similar_to$/i,
             handler => sub {
                 my ( $self, $field, $op, $arg ) = @_;
@@ -193,6 +193,20 @@ sub special_ops {
                 my ($placeholder) = $self->_convert('?');
                 my $sql           = "$label "
                     . $self->_sqlcase('similar to ')
+                    . " $placeholder ";
+                my @bind = $self->_bindtype( $field, @$arg );
+                return ( $sql, @bind );
+            }
+        },
+        # special op for PostgreSQL syntax: field ~ 'regex1'
+        {   regex   => qr/^match$/i,
+            handler => sub {
+                my ( $self, $field, $op, $arg ) = @_;
+                $arg = [$arg] if not ref $arg;
+                my $label         = $self->_quote($field);
+                my ($placeholder) = $self->_convert('?');
+                my $sql           = "$label "
+                    . $self->_sqlcase('~ ')
                     . " $placeholder ";
                 my @bind = $self->_bindtype( $field, @$arg );
                 return ( $sql, @bind );
