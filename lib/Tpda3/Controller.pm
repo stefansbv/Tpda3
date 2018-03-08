@@ -5,6 +5,7 @@ package Tpda3::Controller;
 use strict;
 use warnings;
 use utf8;
+use POSIX;
 
 use IPC::System::Simple 1.17 qw(capture);
 use Class::Unload;
@@ -41,6 +42,9 @@ sub new {
         _dscrobj => undef,
         _tblkeys => undef,
         _scrdata => undef,
+        _fparams => undef,
+        _f_count => undef,
+        _f_pages => undef,
         _cfg     => Tpda3::Config->instance(),
         _log     => get_logger(),
     };
@@ -389,6 +393,76 @@ sub _set_event_handlers {
         }
     );
 
+    return;
+}
+
+sub _set_event_handlers_nav_toolbar {
+    my $self = shift;
+
+    $self->_log->trace('Setup event handler nav toolbar');
+
+    #-- First page
+    $self->view->event_handler_for_tb_button_nav(
+        'tb5n1',
+        sub {
+            $self->_set_page_to('first');
+        }
+    );
+
+    #-- Previous page
+    $self->view->event_handler_for_tb_button_nav(
+        'tb5n2',
+        sub {
+            $self->_set_page_to('prev');
+        }
+    );
+
+    #-- Next page
+    $self->view->event_handler_for_tb_button_nav(
+        'tb5n4',
+        sub {
+            $self->_set_page_to('next');
+        }
+    );
+
+    #-- Last page
+    $self->view->event_handler_for_tb_button_nav(
+        'tb5n5',
+        sub {
+            $self->_set_page_to('last');
+        }
+    );
+
+    return;
+}
+
+sub _set_page_to {
+    my ( $self, $page ) = @_;
+    my $curr_page = $self->model->get_navpage // 1;
+
+    my $page_num;
+    $page_num = 1                 if $page eq 'first';
+    $page_num = $self->{_f_pages} if $page eq 'last';
+
+    if ($page eq 'prev') {
+        $page_num = $curr_page - 1;
+        $page_num = 1 if $page_num <= 0;
+        # return;
+    }
+    elsif ($page eq 'next') {
+        $page_num = $curr_page + 1;
+        $page_num = $self->{_f_pages} if $page_num > $self->{_f_pages};
+        # return;
+    }
+    else {
+
+    }
+
+    print "page is $page_num\n";
+
+    $self->model->set_navpage($page_num);
+    my ($ary_ref, $limit) = $self->_query_find_execute;
+    $self->_find_display($ary_ref, $limit);
     return;
 }
 
@@ -1250,6 +1324,7 @@ sub screen_module_load {
     $self->view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
+    $self->_set_event_handlers_nav_toolbar;
 
     my ( $class, $module_file )
         = $self->screen_module_class( $module, $from_tools );
@@ -1696,9 +1771,8 @@ sub toggle_screen_interface_controls {
     return;
 }
 
-sub record_find_execute {
+sub _build_find_params {
     my $self = shift;
-
     $self->screen_read();
 
     my $params = {};
@@ -1728,19 +1802,31 @@ sub record_find_execute {
     $params->{table} = $self->table_key('rec','main')->view;
     $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
 
+    $self->{_fparams} = $params;
+
+    return;
+}
+
+sub _query_find_execute {
+    my $self = shift;
+
+    die "_query_find_execute: no params" if !$self->{_fparams};
+
     my ($ary_ref, $limit);
     try {
-         ($ary_ref, $limit) = $self->model->query_records_find($params);
+         ($ary_ref, $limit) = $self->model->query_records_find( $self->{_fparams} );
     }
     catch {
         $self->catch_db_exceptions($_);
     };
-
-    # return unless defined $ary_ref->[0];     # test if AoA ?
     unless (ref $ary_ref eq 'ARRAY') {
-        # die "Find failed!";
-        return;
+        die "Find failed!";
     }
+    return ($ary_ref, $limit);
+}
+
+sub _find_display {
+    my ($self, $ary_ref, $limit) = @_;
 
     my $record_count = scalar @{$ary_ref};
     my $msg1 = __n 'record', 'records', $record_count;
@@ -1768,6 +1854,18 @@ sub record_find_execute {
     # Set mode to sele if found
     $self->set_app_mode('sele') if $record_inlist > 0;
 
+    return;
+}
+
+sub record_find_execute {
+    my $self = shift;
+    my $params  = $self->_build_find_params;
+
+    my ($ary_ref, $limit) = $self->_query_find_execute;
+    $self->record_find_count;
+    $self->{_f_pages} = ceil( $self->{_f_count} / $limit );
+
+    $self->_find_display($ary_ref, $limit);
     return;
 }
 
@@ -1810,6 +1908,8 @@ sub record_find_count {
 
     my $msg = __ 'records';
     $self->view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
+
+    $self->{_f_count} = $record_count;
 
     return;
 }
