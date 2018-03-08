@@ -30,6 +30,7 @@ sub new {
         _stdout      => Tpda3::Observable->new(),
         _appmode     => Tpda3::Observable->new(),
         _scrdata_rec => Tpda3::Observable->new(),
+        _navpage     => Tpda3::Observable->new(),
         _cfg         => Tpda3::Config->instance(),
         _msg_dict    => {},
         _log         => get_logger(),
@@ -108,15 +109,17 @@ sub set_mode {
     return;
 }
 
+sub set_navpage {
+    my ( $self, $num ) = @_;
+    $self->get_navpage_observable->set($num);
+    return;
+}
+
 sub is_mode {
     my ( $self, $ck_mode ) = @_;
-
     my $mode = $self->get_appmode_observable->get;
-
     return unless $mode;
-
     return 1 if $mode eq $ck_mode;
-
     return;
 }
 
@@ -125,9 +128,19 @@ sub get_appmode_observable {
     return $self->{_appmode};
 }
 
+sub get_navpage_observable {
+    my $self = shift;
+    return $self->{_navpage};
+}
+
 sub get_appmode {
     my $self = shift;
     return $self->get_appmode_observable->get;
+}
+
+sub get_navpage {
+    my $self = shift;
+    return $self->get_navpage_observable->get;
 }
 
 sub set_scrdata_rec {
@@ -195,31 +208,35 @@ sub query_records_find {
 
     return if !ref $where;
 
-    # my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my $sql = SQL::Abstract::Limit->new(
         special_ops => Tpda3::Utils->special_ops,
         limit_dialect => $self->dbh,
     );
 
+    my $use_pager = ( $self->cfg->application->{pager} =~ m{on|enable|true}i )
+        ? 1
+        : 0;
     my $search_limit = $self->cfg->application->{limits}{search};
+
     my ($ary_ref, $args);
     my ( $stmt, @bind );
-    if ( looks_like_number $search_limit ) {
-
-        # Limit the search result, old style
-        ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
-        $args = { MaxRows => $search_limit};
-    }
-    else {
+    if ( $use_pager ) {
 
         # Use pager, assuming that limits/search is set to none or inf, etc...
-        my $page_num = 1;
-        my $page_size = $self->cfg->application->{pagesize} // 24;
+        my $page_num  = $self->get_navpage // 1;
+        my $page_size = $search_limit // 24;
         my $offset    = ( $page_num - 1 ) * $page_size;
         ( $stmt, @bind ) = $sql->select(
             $table, $cols, $where, $order, $page_size, $offset
         );
     }
+    else {
+
+        # Limit the search result, old style
+        ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+        $args = { MaxRows => $search_limit};
+    }
+    say "\nSQL=$stmt\n";
     try {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
