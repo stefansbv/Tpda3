@@ -19,12 +19,20 @@ sub Populate {
 sub make_toolbar_button {
     my ( $self, $name, $attribs ) = @_;
     my $type = $attribs->{type};
-    $self->$type( $name, $attribs );
+    if ( $type && $self->can($type) ) {
+        $self->$type( $name, $attribs );
+    }
+    else {
+        # Debug
+        print "make_toolbar_button: $name\nAttribs:\n";
+        require Data::Dump;
+        Data::Dump::dump($attribs);
+    }
     return;
 }
 
 sub set_initial_mode {
-    my ($self, $names) = @_;
+    my ( $self, $names ) = @_;
 
     foreach my $name ( @{$names} ) {
 
@@ -40,6 +48,9 @@ sub set_initial_mode {
         # And from RepMan window
         next if $name eq 'tb4pr';
         next if $name eq 'tb4qt';
+
+        # And for page navigation
+        next if $name =~ /tb5/;
 
         $self->enable_tool( $name, 'disabled' );
     }
@@ -99,6 +110,21 @@ sub _item_legend {
     $self->{$name} = $self->ToolLabel(
         -text => $label,
         -bg   => $color,
+    );
+    $self->separator if $attribs->{sep} =~ m{after};
+    return;
+}
+
+sub _item_labentry {
+    my ( $self, $name, $attribs ) = @_;
+    $self->separator if $attribs->{sep} =~ m{before};
+    my $label = $attribs->{label} || 'row';
+    $self->{$name} = $self->ToolLabEntry(
+        -label     => $label,
+        -labelPack => [
+            -side   => "left",
+            -anchor => "w",
+        ],
     );
     $self->separator if $attribs->{sep} =~ m{after};
     return;
