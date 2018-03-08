@@ -2,6 +2,7 @@ package Tpda3::Model;
 
 # ABSTRACT: The Model
 
+use 5.010001;
 use strict;
 use warnings;
 
@@ -10,7 +11,9 @@ use List::Compare;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
 use SQL::Abstract;
+use SQL::Abstract::Limit;
 use Try::Tiny;
+use Scalar::Util qw(looks_like_number);
 
 require Tpda3::Exceptions;
 require Tpda3::Config;
@@ -188,23 +191,41 @@ sub query_records_find {
     my $cols  = $opts->{columns};
     my $pkcol = $opts->{pkcol};
     my $where = $self->build_sql_where($opts);
+    my $order = $opts->{order};
 
     return if !ref $where;
 
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+    # my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+    my $sql = SQL::Abstract::Limit->new(
+        special_ops => Tpda3::Utils->special_ops,
+        limit_dialect => $self->dbh,
+    );
 
-    my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+    my $search_limit = $self->cfg->application->{limits}{search};
+    my ($ary_ref, $args);
+    my ( $stmt, @bind );
+    if ( looks_like_number $search_limit ) {
 
-    my $search_limit = $self->cfg->application->{limits}{search} || 100;
-    my $args = { MaxRows => $search_limit };    # limit search result
-    my $ary_ref;
+        # Limit the search result, old style
+        ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+        $args = { MaxRows => $search_limit};
+    }
+    else {
+
+        # Use pager, assuming that limits/search is set to none or inf, etc...
+        my $page_num = 1;
+        my $page_size = $self->cfg->application->{pagesize} // 24;
+        my $offset    = ( $page_num - 1 ) * $page_size;
+        ( $stmt, @bind ) = $sql->select(
+            $table, $cols, $where, $order, $page_size, $offset
+        );
+    }
     try {
         $ary_ref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
     }
     catch {
         $self->db_exception($_, 'Find failed');
     };
-
     return ($ary_ref, $search_limit);
 }
 
