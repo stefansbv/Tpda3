@@ -647,6 +647,11 @@ sub get_toolbar_btn {
     return $self->{_tb}->get_toolbar_btn($name);
 }
 
+sub get_toolbar_btn_nav {
+    my ( $self, $name ) = @_;
+    return $self->{_ntb}->get_toolbar_btn($name);
+}
+
 sub enable_tool {
     my ( $self, $btn_name, $state ) = @_;
     $self->{_tb}->enable_tool( $btn_name, $state );
@@ -806,8 +811,8 @@ sub list_populate {
 
     # Activate and select last
     $list->selectionClear( 0, 'end' );
-    $list->activate('end');
-    $list->selectionSet('end');
+#    $list->activate('end');
+#    $list->selectionSet('end');
     $list->see('active');
     $self->{progres} = 0;
 
@@ -972,6 +977,12 @@ sub event_handler_for_menu {
 sub event_handler_for_tb_button {
     my ( $self, $name, $calllback ) = @_;
     $self->get_toolbar_btn($name)->configure( -command => $calllback );
+    return;
+}
+
+sub event_handler_for_tb_button_nav {
+    my ( $self, $name, $calllback ) = @_;
+    $self->get_toolbar_btn_nav($name)->configure( -command => $calllback );
     return;
 }
 
