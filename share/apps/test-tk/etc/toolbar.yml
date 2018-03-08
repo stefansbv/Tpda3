@@ -48,8 +48,8 @@ toolbar2:
     id      : 2003
     type    : _item_normal
     icon    : actreload16
-    tooltip : Remove row
-    help    : Remove row from table
+    tooltip : Reload
+    help    : Reload
     sep     : none
     state:
       rec:
@@ -68,8 +68,8 @@ toolbar2:
     id      : 2004
     type    : _item_normal
     icon    : filesave16
-    tooltip : Remove row
-    help    : Remove row from table
+    tooltip : Save
+    help    : Save
     sep     : none
     state:
       rec:
