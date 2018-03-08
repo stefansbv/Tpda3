@@ -9,3 +9,4 @@ application:
     search: 100
     lookup: 50
   dateformat: usa
+  pagesize: 100
