@@ -2,6 +2,7 @@ package Tpda3::Tk::View;
 
 # ABSTRACT: The View
 
+use 5.010001;
 use strict;
 use warnings;
 use Carp;
@@ -460,6 +461,24 @@ sub _create_toolbar {
     return;
 }
 
+sub _create_nav_toolbar {
+    my ($self, $frame) = @_;
+
+    $self->{_ntb} = $frame->TB(qw/-movable 0 -side top -cursorcontrol 0/);
+
+    my $conf     = $self->cfg->nav_toolbar;
+    my @toolbars = $conf->all_buttons;
+
+    foreach my $name (@toolbars) {
+        my $attribs = $conf->get_tool($name);
+        $self->{_ntb}->make_toolbar_button( $name, $attribs );
+    }
+
+    $self->{_ntb}->set_initial_mode(\@toolbars);
+
+    return;
+}
+
 sub create_notebook {
     my ($self) = @_;    # , $det_page
 
@@ -486,6 +505,8 @@ sub create_notebook {
         -label      => __ 'Search results',
         -labelside  => 'acrosstop'
     )->pack( -expand => 1, -fill => 'both' );
+
+    $self->_create_nav_toolbar($frm_box);
 
     $self->{_rc} = $frm_box->Scrolled(
         'MListbox',
