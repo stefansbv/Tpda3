@@ -18,6 +18,7 @@ use Try::Tiny;
 require Tpda3::Utils;
 require Tpda3::Config::Menu;
 require Tpda3::Config::Toolbar;
+require Tpda3::Config::NavToolbar;
 require Tpda3::Config::Utils;
 
 use base qw(Class::Singleton Class::Accessor);
@@ -27,8 +28,9 @@ sub _new_instance {
 
     my $self = bless {}, $class;
 
-    $self->{_mb} = Tpda3::Config::Menu->new;
-    $self->{_tb} = Tpda3::Config::Toolbar->new;
+    $self->{_mb}  = Tpda3::Config::Menu->new;
+    $self->{_tb}  = Tpda3::Config::Toolbar->new;
+    $self->{_ntb} = Tpda3::Config::NavToolbar->new;
 
     $args->{cfgmain} = 'etc/main.yml';    # hardcoded main config file
     $args->{cfgdefa} = 'etc/default.yml'; # and app default config file
@@ -556,6 +558,11 @@ sub menubar {
 sub toolbar {
     my $self = shift;
     return $self->{_tb};
+}
+
+sub nav_toolbar {
+    my $self = shift;
+    return $self->{_ntb};
 }
 
 =head1 SYNOPSIS
