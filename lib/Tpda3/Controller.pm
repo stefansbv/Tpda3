@@ -701,12 +701,12 @@ sub setup_lookup_bindings_entry {
 }
 
 sub filter_field {
-    my ($self, $filter_field) = @_;
-
-    return unless $filter_field;
-
-    my $filter_value = $self->ctrl_read_from($filter_field);
-
+    my ($self, $field) = @_;
+    return unless $field;
+    
+    my $field_for_read = ref $field ? ( values %{ $field } )[0] : $field;
+    my $filter_field   = ref $field ? ( keys   %{ $field } )[0] : $field;
+    my $filter_value   = $self->ctrl_read_from($field_for_read);
     return { $filter_field => $filter_value };
 }
 
@@ -3319,10 +3319,16 @@ complex field bindings and one with a simple one:
       </tara>
   </bindings>
 
-There is another (new) option for a field name from the screen to be
+There is another (new) option for a field value from the screen to be
 used as a filter.
 
   filter = field_name
+
+Or if the field names are different:
+
+  <filter>
+      field_from_dict     = field_from_screen
+  </filter>
 
 =head2 filter_field
 
