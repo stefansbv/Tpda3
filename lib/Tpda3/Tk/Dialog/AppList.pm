@@ -13,21 +13,17 @@ require Tpda3::Tk::TM;
 
 sub new {
     my $class = shift;
-
     my $self = {
         mnemonics => [],
         selected  => undef,
         _cfg      => Tpda3::Config->instance(),
     };
-
     bless $self, $class;
-
     return $self;
 }
 
 sub cfg {
     my $self = shift;
-
     return $self->{_cfg};
 }
 
@@ -184,8 +180,9 @@ sub show_app_list {
         -entrywidth         => 15,
         -textvariable       => \$selected,
         -choices            => $choices,
-        -state              => 'disabled',
-        -disabledforeground => 'black',
+        # -state              => 'disabled', # do not uncomment;
+        # -disabledforeground => 'black',    # moved bellow to 
+                                             # avoid a weird error
     );
     $cdriver->form(
         -top  => [ '&', $ldriver, 0 ],
@@ -316,35 +313,27 @@ sub load_mnemonics {
 
 sub select_default {
     my $self = shift;
-
     my $selected = 1;           # default
-
     foreach my $rec ( @{ $self->{mnemonics} } ) {
         $selected = $rec->{idx} if $rec->{name} eq $self->cfg->cfname;
     }
-
     $self->select_idx($selected);
-
     return;
 }
 
 sub select_idx {
     my ($self, $sel) = @_;
-
     my $idx = $sel -1 ;
     my $rec = $self->{mnemonics}[$idx];
     $self->{tmx}->set_selected($sel);
     $self->load_mnemonic_details_for($rec);
     $self->{selected} = $rec->{name};
-
     return;
 }
 
 sub load_mnemonic_details_for {
     my ( $self, $rec ) = @_;
-
     my $conn_ref = $self->cfg->get_details_for( $rec->{name} );
-
     return unless ref $conn_ref;
 
     #- Write data to the controls
@@ -354,6 +343,10 @@ sub load_mnemonic_details_for {
             # JComboBox
             $self->{controls}{$field}[1]
                 ->setSelected( $value, -type => 'value' );
+            $self->{controls}{$field}[1]->configure(
+                -state              => 'disabled',
+                -disabledforeground => 'black',
+            );
         }
         else {
             # Entry
@@ -365,28 +358,22 @@ sub load_mnemonic_details_for {
             $self->{controls}{$field}[1]->configure( -state => 'disabled');
         }
     }
-
     $self->_set_status('');    # clear
-
     return;
 }
 
 sub save_as_default {
     my $self = shift;
-
     $self->cfg->set_default_mnemonic( $self->{selected} );
     $self->_set_status( '[' .$self->{selected} . '] '
             . 'active after restart, if not overridden by CLI option.'
     );
-
     return;
 }
 
 sub _set_status {
     my ( $self, $text, $color ) = @_;
-
     my $sb_label = $self->{_sb}{'ms'};
-
     return unless ( $sb_label and $sb_label->isa('Tk::Label') );
 
     # ms
@@ -398,9 +385,7 @@ sub _set_status {
 
 sub dlg_exit {
     my $self = shift;
-
     $self->{tlw}->destroy;
-
     return;
 }
 
