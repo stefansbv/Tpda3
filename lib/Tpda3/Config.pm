@@ -108,7 +108,6 @@ sub init_configurations {
 
 sub get_default_mnemonic {
     my $self = shift;
-
     my $defaultapp_fqn = $self->default();
     if (-f $defaultapp_fqn) {
         my $cfg_hr = $self->config_data_from($defaultapp_fqn);
@@ -126,15 +125,10 @@ sub get_default_mnemonic {
 
 sub pick_default_mnemonic {
     my $self = shift;
-
     my $mnemonics = $self->get_mnemonics();
-
     return $mnemonics->[0] if scalar @{$mnemonics} == 1; # one choice
-
     my @choices = grep { $_ !~ m{test\-(tk|wx)} } @{$mnemonics};
-
     return $choices[0] if scalar @choices == 1; # one other than test-*
-
     return 'test-tk';           # fallback to test-tk
 }
 
@@ -142,7 +136,6 @@ sub set_default_mnemonic {
     my ($self, $mnemonic) = @_;
 
     #- Check
-
     my $mnemonics = $self->get_mnemonics();
     my $mnemonic_exist = first { $_ eq $mnemonic } @{$mnemonics};
     unless ($mnemonic_exist) {
@@ -153,26 +146,22 @@ sub set_default_mnemonic {
     }
 
     #- Save
-
     print "Setting default to: '$mnemonic'...\r";
     my $data = {};
     $data->{default}{mnemonic} = $mnemonic;
     Tpda3::Utils->write_yaml( $self->default, $data );
     print "Setting default to: '$mnemonic'... done\n";
-
     return;
 }
 
 sub make_accessors {
     my ( $self, $cfg_hr ) = @_;
-
     __PACKAGE__->mk_accessors( keys %{$cfg_hr} );
 
     # Add data to object
     foreach my $name ( keys %{$cfg_hr} ) {
         $self->$name( $cfg_hr->{$name} );
     }
-
     return;
 }
 
@@ -182,7 +171,6 @@ sub config_main_load {
     # Main config file name, load
     my $main_fqn = catfile( $self->cfpath, $args->{cfgmain} );
     my $maincfg = $self->config_data_from($main_fqn);
-
     my $main_hr = {
         cfmainyml => $main_fqn,
         cfrun     => $maincfg->{runtime},
@@ -192,15 +180,12 @@ sub config_main_load {
 
     # Setup when GUI runtime
     $main_hr->{cfname} = $args->{cfname} if $args->{cfname};
-
     $self->make_accessors($main_hr);
-
     return $maincfg;
 }
 
 sub config_runtime_load {
     my $self = shift;
-
     my $cf_name = $self->cfname;
 
     # Check if the config dir for the application exists and populate
@@ -208,54 +193,42 @@ sub config_runtime_load {
     if ( !-d $self->configdir ) {
         $self->configdir_populate($cf_name);
     }
-
     my @cfg = (
         'application.yml',
         'connection.yml',
         'menu.yml',
         'toolbar.yml',
     );
-
     foreach my $section ( @cfg ) {
         my $res_file    = $self->resource_path_for($section, 'etc');
         my $res_data_hr = $self->config_data_from($res_file);
         $self->make_accessors($res_data_hr);
     }
-
     return;
 }
 
 sub validate_config {
     my ( $self, $cfname ) = @_;
-
     my $cfg_file
         = catfile( $self->configdir($cfname), 'etc', 'application.yml' );
     my $cfg_href = $self->config_data_from($cfg_file);
-
     my $widgetset   = $cfg_href->{application}{widgetset};
     my $module_name = $cfg_href->{application}{module};
-
     my $module_class = $self->application_class( $widgetset, $module_name );
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
-
     eval { require $module_file };
-
     return $@ ? 0 : 1;
 }
 
 sub config_file_name {
     my ( $self, $cfg_name, $cfg_file ) = @_;
-
     $cfg_file ||= catfile('etc', 'connection.yml');
-
     return catfile( $self->configdir($cfg_name), $cfg_file);
 }
 
 sub list_mnemonics {
     my ( $self, $mnemonic ) = @_;
-
     $mnemonic ||= q{};    # default empty
-
     if ($mnemonic) {
         $self->list_mnemonic_details_for($mnemonic);
         return;
@@ -263,48 +236,37 @@ sub list_mnemonics {
 
     # Print
     $self->list_mnemonics_all();
-
     return;
 }
 
 sub list_mnemonics_all {
     my $self = shift;
-
     my $mnemonics = $self->get_mnemonics();
-
     my $cc_no = scalar @{$mnemonics};
     if ( $cc_no == 0 ) {
         print "Configurations (mnemonics): none\n";
         print ' in ', $self->cfapps, "\n";
         return;
     }
-
     my $default = $self->get_default_mnemonic() || q{};
-
     print "Configurations (mnemonics):\n";
     foreach my $name ( @{$mnemonics} ) {
         my $v = $self->validate_config($name) ? ' ' : '!';
         my $d = $default eq $name             ? '*' : ' ';
         print " ${d}>${v}$name\n";
     }
-
     print ' in ', $self->cfapps, "\n";
-
     return;
 }
 
 sub list_mnemonic_details_for {
     my ($self, $mnemonic) = @_;
-
     my $conn_ref = $self->get_details_for($mnemonic);
-
     unless (scalar %{$conn_ref} ) {
         print "Configuration mnemonic '$mnemonic' not found!\n";
         return;
     }
-
     my $v = $self->validate_config($mnemonic) ? 'v' : '!';
-
     print "Configuration ($v):\n";
     print "  > mnemonic: $mnemonic\n";
     foreach my $key (keys %{ $conn_ref->{connection} }) {
@@ -314,36 +276,29 @@ sub list_mnemonic_details_for {
         print "\n";
     }
     print ' in ', $self->cfapps, "\n";
-
     return;
 }
 
 sub get_details_for {
     my ($self, $mnemonic) = @_;
-
     my $conn_file = $self->config_file_name($mnemonic);
     my $conlst    = $self->get_mnemonics();
-
     my $conn_ref = {};
     if ( grep { $mnemonic eq $_ } @{$conlst} ) {
         my $cfg_file = $self->config_file_name($mnemonic);
         $conn_ref = $self->config_data_from($conn_file);
     }
-
     return $conn_ref;
 }
 
 sub get_mnemonics {
     my $self = shift;
-
     my $list = Tpda3::Config::Utils->find_subdirs($self->cfapps);
-
     my @mnemonics;
     foreach my $cfg_name ( @{$list} ) {
         my $ccfn = $self->config_file_name($cfg_name);
         push @mnemonics, $cfg_name if -f $ccfn;
     }
-
     return \@mnemonics;
 }
 
@@ -391,26 +346,21 @@ sub toolbar_interface_reload {
 
 sub config_init {
     my ( $self, $cfname, $new_cfname ) = @_;
-
     my $cfg_file = $self->config_file_name($new_cfname);
     if ( -f $cfg_file ) {
         print "Connection configuration exists, can't overwrite.\n";
         print " > $new_cfname\n";
         return;
     }
-
     print "Creating new configuration '$new_cfname'...\r";
     $self->configdir_populate( $cfname, $new_cfname );
     print "Creating new configuration '$new_cfname'... done\n\n";
-
     return;
 }
 
 sub configdir {
     my ( $self, $cfname ) = @_;
-
     $cfname ||= $self->cfname;
-
     return catdir( $self->cfapps, $cfname );
 }
 
@@ -453,7 +403,6 @@ sub configdir_populate {
 }
 
 sub get_log_filename {
-
     return catfile(File::HomeDir->my_data, 'tpda3.log');
 }
 
@@ -491,13 +440,11 @@ sub config_data_from {
 
 sub config_scr_file_name {
     my ( $self, $file_name ) = @_;
-
     die "A Screen config name is required!" unless $file_name;
 
     # Check if has extension and add it if not
     my ( $name, $path, $type ) = fileparse( $file_name, qr/\.[^.]*/ );
     $file_name .= '.conf' unless $type; # defaults to .conf
-
     my $scr_file = $self->resource_path_for($file_name, 'scr');
     if (-f $scr_file) {
         return $scr_file;
@@ -511,31 +458,25 @@ sub config_scr_file_name {
 
 sub list_config_files {
     my $self = shift;
-
     my $scrdir = catdir( $self->configdir, 'scr' );
     my $conlst = Tpda3::Config::Utils->find_files($scrdir, 'conf');
-
     print "Screen configurations:\n";
     foreach my $cfg_name ( @{$conlst} ) {
         print " > $cfg_name\n";
     }
     print "\n";
-
     return;
 }
 
 sub application_class {
     my ( $self, $widgetset, $module ) = @_;
-
     $widgetset ||= $self->application->{widgetset};
     $module    ||= $self->application->{module};
-
     return qq{Tpda3::${widgetset}::App::${module}};
 }
 
 sub resource_path_for {
     my ($self, $name, @type) = @_;
-
     if ($name) {
         return catfile( $self->configdir, @type, $name );
     }
