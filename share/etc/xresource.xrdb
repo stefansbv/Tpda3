@@ -1,9 +1,9 @@
 !----------------------------------------------------
 ! Common settings
 !----------------------------------------------------
-*font								: Helvetica -14
+*font								: Tahoma -12
+!*font								: Helvetica -12
 !*font								: {Nimbus Sans L} -12
-!*font								: Arvo 10
 !*font								: {dejavu serif} -13
 !*background 						: forestgreen
 !*foreground 						: black
@@ -11,16 +11,14 @@
 !*selectBackground					: steelblue
 !*highlightThickness 				: 0
 !*padX								: 1m
-!*Button*activeBackground			: gold
-!*Button*background					: darkblue
 !----------------------------------------------------
 !*Button*background            		: LightSteelBlue1
 !*Button*side	           			: left
-!*Button*activeBackground       	: green
+!*Button*activeBackground       	: gold
 !*Button*activeForeground       	: red
 !*Button*padX		        		: 3m
 !*Button*padX                   	: 10m
 !*Button*Anchor		        		: ne
 !*Button*Justify		       		: left
-!*Button*Font		           		: misc-fixed 15 bold
+*Button*Font		           		: arial 8 bold
 !----------------------------------------------------
