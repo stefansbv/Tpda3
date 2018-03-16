@@ -657,11 +657,18 @@ sub setup_lookup_bindings_entry {
             ? $bindings->{$bind_name}{filter}
             : undef;
 
+        # Add order field if defined in screen config
+        my $order_field
+            = exists $bindings->{$bind_name}{order}
+            ? $bindings->{$bind_name}{order}
+            : undef;
+
         # Compose the parameter for the 'Search' dialog
         my $para = {
             table  => $bindings->{$bind_name}{table},
             search => $search,
             filter => $filter_field,
+            order  => $order_field,
         };
 
         # Detect the configuration style and add the 'fields' to the

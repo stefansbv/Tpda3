@@ -294,17 +294,17 @@ sub search_dialog {
 }
 
 sub search_command {
-    my ( $self, $model, $srcstr, $para, $options, $filter ) = @_;
+    my ( $self, $model, $srcstr, $conf, $options, $filter ) = @_;
 
     # $self->refresh_filter_message( $filter, 'green' );
 
     # Construct where, add findtype info
     my $params = {};
-    $params->{table} = $para->{table};
-    $params->{where}{ $para->{search} } = [ $srcstr, 'contains' ];
+    $params->{table} = $conf->{table};
+    $params->{where}{ $conf->{search} } = [ $srcstr, 'contains' ];
     $params->{options} = $options;
-    $params->{columns} = [ map { keys %{$_} } @{ $para->{columns} } ];
-    $params->{order} = $para->{search};    # order by lookup field
+    $params->{columns} = [ map { keys %{$_} } @{ $conf->{columns} } ];
+    $params->{order} = $conf->{order} ? $conf->{order} : $conf->{search};
 
     if ( ref $filter ) {
 
