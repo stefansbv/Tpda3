@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tpda3 0.70\n"
 "Report-Msgid-Bugs-To: stefan@s2i2.ro\n"
-"POT-Creation-Date: 2015-05-27 17:10+0300\n"
-"PO-Revision-Date: 2015-05-27 17:11+0200\n"
+"POT-Creation-Date: 2018-06-10 09:27+0300\n"
+"PO-Revision-Date: 2018-06-10 09:32+0300\n"
 "Last-Translator: Ștefan Suciu <stefan@s2i2.ro>\n"
 "Language-Team: none\n"
 "Language: ro\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Poedit 1.7.6\n"
+"X-Generator: Poedit 1.8.12\n"
 
 #: lib/Tpda3/Config/Menu.pm:27
 msgid "App"
@@ -398,28 +398,3 @@ msgstr "Generare TeX eșuată "
 #: lib/Tpda3/Tk/View.pm:1326
 msgid "Failed to generate PDF"
 msgstr "Generare PDF eșuată "
-
-#~ msgid "&App"
-#~ msgstr "&Aplicație"
-
-#~ msgid "&Quit"
-#~ msgstr "&Ieșire"
-
-#, fuzzy
-#~ msgid "Parameters are required!"
-#~ msgstr "Este necesar un interval valid!"
-
-#~ msgid "Set default app"
-#~ msgstr "Aplicația implicită"
-
-#~ msgid "Edit reports data"
-#~ msgstr "Editare listă rapoarte"
-
-#~ msgid "Edit templates data"
-#~ msgstr "Editare listă modele"
-
-#~ msgid "Tools"
-#~ msgstr "Unelte"
-
-#~ msgid "Guide"
-#~ msgstr "Ghid"
