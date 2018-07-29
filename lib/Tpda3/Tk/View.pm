@@ -59,7 +59,7 @@ sub new {
             $self->optionReadfile( $resource, 'widgetDefault' );
         }
         else {
-            $self->log_msg("EE: Resource not found: '$resource'");
+            $self->log_msg("WW: Resource not found: '$resource'");
         }
     }
 
