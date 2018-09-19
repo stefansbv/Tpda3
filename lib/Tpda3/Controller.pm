@@ -485,6 +485,9 @@ sub on_page_det_activate {
             $self->view->set_status( __ 'Record loaded (d)', 'ms', 'blue' );
         }
     }
+    else {
+        warn "on_page_det_activate: no table key";
+    }
 
     $self->set_app_mode('edit');
     $self->view->nb_set_page_state( 'lst', 'disabled' );
