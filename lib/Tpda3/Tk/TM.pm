@@ -2,6 +2,7 @@ package Tpda3::Tk::TM;
 
 # ABSTRACT: Create a table matrix widget
 
+use 5.010;
 use strict;
 use warnings;
 use Carp;
@@ -9,7 +10,9 @@ use Tpda3::Utils;
 
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
-use Tk::widgets qw< Checkbutton >;
+use Tk::widgets qw< Checkbutton JBrowseEntry >;
+
+use Data::Dump;
 
 Tk::Widget->Construct('TM');
 
@@ -43,9 +46,7 @@ sub ClassInit {
 
 sub Populate {
     my ( $self, $args ) = @_;
-
     $self->SUPER::Populate($args);
-
     return $self;
 }
 
@@ -60,6 +61,7 @@ sub init {
     # Other
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
+    $self->{fields} = Tpda3::Utils->sort_hash_by_id( $self->{columns} );
 
     $self->set_tags();
 
@@ -68,10 +70,8 @@ sub init {
 
 sub get_row_count {
     my $self = shift;
-
     my $rows_no  = $self->cget('-rows');
     my $rows_count = $rows_no - 1;
-
     return $rows_count;
 }
 
@@ -199,23 +199,18 @@ sub set_tags {
 
 sub clear_all {
     my $self = shift;
-
     my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
     my $r;
-
     for my $row ( 1 .. $rows_idx ) {
         $self->deleteRows( $row, 1 );
     }
-
     return;
 }
 
 sub fill {
     my ( $self, $record_ref ) = @_;
-
     my $xtvar = $self->cget('-variable');
-
     my $row = 1;
 
     #- Scan and write to table
@@ -223,17 +218,13 @@ sub fill {
     foreach my $record ( @{$record_ref} ) {
         foreach my $field ( keys %{ $self->{columns} } ) {
             my $fld_cfg = $self->{columns}{$field};
-
             croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-
             my $value = $record->{$field};
             $value = q{} unless defined $value;    # empty
             $value =~ s/[\n\t]//g;                 # delete control chars
-
             my ( $col, $datatype, $width, $numscale )
                 = @$fld_cfg{ 'id', 'datatype', 'displ_width',
                 'numscale' };                        # hash slice
-
             if ( $datatype eq 'numeric' ) {
                 $value = 0 unless $value;
                 if ( defined $numscale ) {
@@ -245,36 +236,27 @@ sub fill {
                     $value = sprintf( "%.0f", $value );
                 }
             }
-
             $xtvar->{"$row,$col"} = $value;
         }
-
         $row++;
     }
 
     # Refreshing the table...
     $self->configure( -rows => $row );
-
     return;
 }
 
 sub write_row {
     my ( $self, $row, $col, $record_ref ) = @_;
-
     return unless ref $record_ref;    # No results
-
     my $xtvar = $self->cget('-variable');
-
     my $nr_col = 0;
     foreach my $field ( keys %{$record_ref} ) {
-
         my $fld_cfg = $self->{columns}{$field};
         my $value   = $record_ref->{$field};
-
         my ( $col, $datatype, $width, $numscale )
             = @$fld_cfg{ 'id', 'datatype', 'displ_width',
             'numscale' };    # hash slice
-
         if ( $datatype =~ /digit/ ) {
             $value = 0 unless $value;
             if ( defined $numscale ) {
@@ -286,26 +268,21 @@ sub write_row {
                 $value = sprintf( "%.0f", $value );
             }
         }
-
         $xtvar->{"$row,$col"} = $value;
         $nr_col++;
     }
-
     return $nr_col;
 }
 
 sub data_read {
     my ($self, $with_sel_name, $all_cols) = @_;
-
     my $xtvar = $self->cget('-variable');
-
     my $rows_no  = $self->cget('-rows');
     my $cols_no  = $self->cget('-cols');
     my $rows_idx = $rows_no - 1;
     my $cols_idx = $cols_no - 1;
-
     my $fields_cfg = $self->{columns};
-    my $cols_ref   = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+    my $cols_ref   = $self->{fields};
 
     # Get selectorcol index, if any
     my $sc = $self->{selectorcol};
@@ -315,67 +292,51 @@ sub data_read {
 
     # The first row is the header
     for my $row ( 1 .. $rows_idx ) {
-
         my $rowdata = {};
         for my $col ( 0 .. $cols_idx ) {
-
             if ( $sc and ( $col == $sc ) ) {    # selectorcol
                 $rowdata->{$with_sel_name}
                     = $self->is_checked( $row, $sc ) ? 1 : 0
                     if $with_sel_name;
                 next;
             }
-
             my $cell_value = $self->get("$row,$col");
             my $col_name   = $cols_ref->[$col];
-
             my $fld_cfg = $fields_cfg->{$col_name};
             my ($readwrite) = @$fld_cfg{'readwrite'};    # hash slice
-
             unless ($all_cols) {
                 next if $readwrite eq 'ro';    # skip ro cols
             }
-
             $rowdata->{$col_name} = $cell_value;
         }
-
         push @tabledata, $rowdata;
     }
-
     return ( \@tabledata, $sc );
 }
 
 sub cell_read {
     my ( $self, $row, $col ) = @_;
-
     my $is_col_name = 0;
     $is_col_name = 1 if $col !~ m{\d+};
-
     my $fields_cfg = $self->{columns};
-
     my $col_name;
     if ($is_col_name) {
         $col_name = $col;
         $col      = $fields_cfg->{$col_name}{id};
     }
     else {
-        my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+        my $cols_ref = $self->{fields};
         $col_name = $cols_ref->[$col];
     }
-
     my $cell_value = $self->get("$row,$col");
-
     return { $col_name => $cell_value };
 }
 
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
-
     my $is_col_name = 0;
     $is_col_name = 1 if $col !~ m{\d+};
-
     my $fields_cfg = $self->{columns};
-
     my $col_name;
     if ($is_col_name) {
         $col_name = $col;
@@ -387,12 +348,10 @@ sub cell_write {
         }
     }
     else {
-        my $cols_ref = Tpda3::Utils->sort_hash_by_id($fields_cfg);
+        my $cols_ref = $self->{fields};
         $col_name = $cols_ref->[$col];
     }
-
     $self->set("$row,$col", $value);
-
     return;
 }
 
@@ -425,9 +384,11 @@ sub add_row {
 
     my $sc = $self->{selectorcol};
     if ($sc) {
-        $self->embeded_buttons( $new_r, $sc );    # add button
+        $self->embeded_sel_buttons( $new_r, $sc );    # add button
         $self->set_selected($new_r);
     }
+
+    $self->embeded_windows($new_r);    # add embeded windows
 
     # Focus to newly inserted row, column 1
     $self->focus;
@@ -439,11 +400,8 @@ sub add_row {
 
 sub remove_row {
     my ( $self, $row ) = @_;
-
     my $updstyle = 'delete+add';
-
     $self->configure( state => 'normal' );
-
     if ( $row >= 1 ) {
         $self->deleteRows( $row, 1 );
     }
@@ -451,65 +409,83 @@ sub remove_row {
         # print "Select a row!\n";
         return;
     }
-
     my $sc = $self->{selectorcol};
     if ($sc) {
         $self->set_selected( $row - 1 );
     }
-
     $self->renum_row($self)
         if $updstyle eq 'delete+add';    # renumber rows
 
     # Refresh table
     $self->activate('origin');
     $self->activate("$row,1");
-
     return;
 }
 
 sub get_active_row {
     my $self = shift;
-
     my $r;
     eval { $r = $self->index( 'active', 'row' ); };
     if ($@) {
         print "Select a row!\n";
         return;
     }
-
     return $r;
 }
 
 sub renum_row {
     my $self = shift;
-
     my $r = $self->index( 'end', 'row' );
-
     if ( $r >= 1 ) {
         foreach my $i ( 1 .. $r ) {
             $self->set( "$i,0", $i );
         }
     }
-
     return;
 }
 
 sub tmatrix_make_selector {
     my ( $self, $c ) = @_;
-
     my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
-
     foreach my $r ( 1 .. $rows_idx ) {
-        $self->embeded_buttons( $r, $c );
+        $self->embeded_sel_buttons( $r, $c );
     }
-
     return;
 }
 
-sub embeded_buttons {
-    my ( $self, $row, $col ) = @_;
+sub tmatrix_make_embeded {
+    my $self = shift;
+    my $rows_no  = $self->cget('-rows');
+    my $rows_idx = $rows_no - 1;
+    foreach my $r ( 1 .. $rows_idx ) {
+#        $self->embeded_windows($r);
+    }
+    return;
+}
 
+sub embeded_windows {
+    my ( $self, $row ) = @_;
+    my $fields_cfg = $self->{columns};
+    my $cols_ref   = $self->{fields};
+    foreach my $field ( @{$cols_ref} ) {
+        my $has_embeded = exists $fields_cfg->{$field}{embed};
+        next unless $has_embeded;
+        my $w_type = $fields_cfg->{$field}{embed};
+        my $col = $fields_cfg->{$field}{id};
+        say "make $w_type at $row:$col";
+        $self->windowConfigure(
+            "$row,$col",
+            -sticky => 'ne',
+            -window => $self->build_jbrowseentry( $row, $col ),
+        );
+        $self->update;
+    }
+    return;
+}
+
+sub embeded_sel_buttons {
+    my ( $self, $row, $col ) = @_;
     my $selestyle = defined $self->{selectorstyle}
         ? $self->{selectorstyle}
         : q{}
@@ -518,7 +494,6 @@ sub embeded_buttons {
         ? $self->{selectorcolor}
         : q{lightblue}
         ;
-
     if ( $selestyle eq 'checkbox' ) {
         $self->windowConfigure(
             "$row,$col",
@@ -533,13 +508,11 @@ sub embeded_buttons {
             -window => $self->build_rbbutton( $row, $col, $selecolor ),
         );
     }
-
     return;
 }
 
 sub build_rbbutton {
     my ( $self, $row, $col, $selecolor ) = @_;
-
     my $button = $self->{frame}->Radiobutton(
         -width       => 3,
         -variable    => \$self->{tm_sel},
@@ -549,10 +522,8 @@ sub build_rbbutton {
         -state       => 'normal',
         -command     => sub { $self->validate("$row,$col") }
     );
-
     # Default selected row == 1
     $self->set_selected($row) if $row == 1;
-
     return $button;
 }
 
@@ -563,14 +534,12 @@ sub get_selected {
 
 sub set_selected {
     my ( $self, $selected_row ) = @_;
-
     if ($selected_row) {
         $self->{tm_sel} = $selected_row;
     }
     else {
         $self->{tm_sel} = undef;
     }
-
     return;
 }
 
@@ -581,7 +550,6 @@ sub get_selector {
 
 sub build_ckbutton {
     my ( $self, $row, $col ) = @_;
-
     my $button = $self->{frame}->Checkbutton(
         -image       => 'actcross16',
         -selectimage => 'actcheck16',
@@ -590,13 +558,25 @@ sub build_ckbutton {
         -state       => 'normal',
         -command     => sub { $self->validate("$row,$col") }
     );
+    return $button;
+}
 
+sub build_jbrowseentry {
+    my ( $self, $row, $col ) = @_;
+    my $var;
+    my $button = $self->{frame}->JBrowseEntry(
+        -label    => 'Tip:',
+        -variable => \$var,
+        -state    => 'normal',
+        -choices  => [qw(PDF Poza)],
+        -width    => 12,
+        # -command  => sub { $self->validate("$row,$col") }
+    );
     return $button;
 }
 
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
-
     my $ckb;
     eval { $ckb = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
@@ -609,15 +589,12 @@ sub toggle_ckbutton {
             }
         }
     }
-
     return;
 }
 
 sub is_checked {
     my ($self, $r, $c) = @_;
-
     croak unless $r and $c;
-
     my $ckb;
     my $is_checked = 0;
     eval { $ckb = $self->windowCget( "$r,$c", -window ); };
@@ -627,21 +604,17 @@ sub is_checked {
             $is_checked = $$ckb_var ? $$ckb_var : 0;
         }
     }
-
     return $is_checked;
 }
 
 sub count_is_checked {
     my ($self, $c) = @_;
-
     my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
-
     my $count = 0;
     for my $r ( 1 .. $rows_idx ) {
         $count++ if $self->is_checked($r, $c);
     }
-
     return $count;
 }
 
@@ -750,7 +723,7 @@ Renumber TableMatrix rows.
 
 Make TableMatrix selector.
 
-=head2 embeded_buttons
+=head2 embeded_sel_buttons
 
 Embeded windows.  Config option L<selectorstyle> can be L<radio> the
 default, or L<checkbox>.
