@@ -325,6 +325,8 @@ sub is_col_name {
 
 sub cell_read {
     my ( $self, $row, $col ) = @_;
+    my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
+    print "cell_read: $row, $col is $w_type\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
@@ -339,7 +341,8 @@ sub cell_read {
 
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
-    my $fields_cfg = $self->{columns};
+    my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
+    print "cell_write: $row, $col is $w_type\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
@@ -349,6 +352,19 @@ sub cell_write {
         $field = $self->{fields}[$col];
     }
     $self->set("$row,$col", $value);
+
+    # update the embeded widget
+    my $w;
+    eval { $w = $self->windowCget( "$row,$col", '-window' ); };
+    unless ($@) {
+        say "$w";
+        if ( $w =~ /Tk::JComboBox/ ) {
+            my $var = $w->cget('-textvariable');
+            say "value from var = $$var";
+            $$var = $value;
+        }
+    }
+
     return;
 }
 
@@ -458,7 +474,7 @@ sub embeded_windows {
     foreach my $field ( @{$cols_ref} ) {
         my $has_embeded = exists $fields_cfg->{$field}{embed};
         next unless $has_embeded;
-        my $w_type = $self->cell_config_for( $field, 'embed' );
+        my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
         my $col    = $self->cell_config_for( $field, 'id' );
         say "make $w_type at $row:$col";
         if ( $w_type eq 'jbrowseentry' ) {
@@ -573,9 +589,15 @@ sub build_jbrowseentry {
 sub build_jcombobox {
     my ( $self, $row, $col ) = @_;
     my $var;
-    my $width  = $self->cell_config_for( $col, 'displ_width' );
+    my $width = $self->cell_config_for( $col, 'displ_width' );
     my $button = $self->{frame}->JComboBox(
-        -textvariable       => \$var,
+        -textvariable => \$var,
+        -choices      => [
+            { -name => 'one', -value => 1 },
+            { -name => 'two', -value => 2 },
+            { -name => 'three', -value => 3 },
+        ],
+        -browsecmd          => sub { $self->jcombo_browse($row, $col, @_) },
         -state              => 'normal',
         -entrywidth         => $width,
         -disabledforeground => 'black'
@@ -583,10 +605,21 @@ sub build_jcombobox {
     return $button;
 }
 
+sub jcombo_browse {
+    my ( $self, $row, $col, $jcbWidget, $selectedIndex, $selectedValue, $selectedName ) = @_;
+    say "$row, $col";
+    $self->cell_write( $row, $col, $selectedName );
+    # say $jcbWidget;
+    # say $selectedIndex;
+    my $var = $jcbWidget->cget('-textvariable');
+    say "$selectedName -> $selectedValue";
+    say "value from var = $$var";
+}
+
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
     my $ckb;
-    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    eval { $ckb = $self->windowCget( "$r,$c", '-window' ); };
     unless ($@) {
         if ( $ckb =~ /Checkbutton/ ) {
             if ( defined $state ) {
@@ -605,7 +638,7 @@ sub is_checked {
     croak unless $r and $c;
     my $ckb;
     my $is_checked = 0;
-    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    eval { $ckb = $self->windowCget( "$r,$c", '-window' ); };
     unless ($@) {
         if ( $ckb =~ /Checkbutton/ ) {
             my $ckb_var = $ckb->cget('-variable');
