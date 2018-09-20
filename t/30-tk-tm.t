@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Most;
 use Tk;
 
 use lib qw( lib ../lib );
@@ -15,13 +15,10 @@ BEGIN {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
-
     eval { use Tk; };
     if ($@) {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
-
-    plan tests => 8;
 }
 
 use_ok('Tpda3::Tk::TM');
@@ -98,7 +95,7 @@ my $header = {
 
 # Data for tests
 
-my $record = [
+my $records = [
     {   priceeach       => '37.97',
         productcode     => 'S50_1341',
         ordervalue      => '1101.13',
@@ -123,14 +120,14 @@ my $record = [
 ];
 
 my $mw = tkinit;
-$mw->geometry('+20+20');
+$mw->geometry('460x80+20+20');
 
 my $tm;
 my $xtvar = {};
 eval {
     $tm = $mw->Scrolled(
         'TM',
-        -rows          => 5,
+        -rows          => 1,
         -cols          => 5,
         -width         => -1,
         -height        => -1,
@@ -144,45 +141,49 @@ eval {
         -scrollbars    => 'osw',
     );
 };
-ok(!$@, 'create TM');
+ok !$@, 'create TM';
 
-is( $tm->init( $mw, $header ), undef, 'make header' );
+ok !$tm->init( $mw, $header ), 'make header';
 
 $tm->pack( -expand => 1, -fill => 'both');
 
-my $delay = 1;
-
-$mw->after( $delay * 100,
-    sub { is( $tm->fill($record), undef, 'fill TM' ); } );
-
-$delay++;
+my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
     sub {
-        my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, $record, 'read data from TM' );
+        ok $tm->fill($records), 'fill TM';
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
+    sub {
+        my ( $data, $scol ) = $tm->data_read();
+        is_deeply $data, $records, 'read data from TM';
+    }
+);
+
+$delay++;
+
+$mw->after(
+    $delay * $milisec,
     sub {
         my $cell_data = $tm->cell_read( 1, 1 );
-        is_deeply(
+        is_deeply
             $cell_data,
             { productcode => 'S50_1341' },
             'read cell from TM'
-        );
+        ;
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
     sub {
         $tm->clear_all;
         my ( $data, $scol ) = $tm->data_read();
@@ -193,19 +194,19 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
     sub {
         $tm->add_row();
-        $tm->write_row( 1, 0, $record->[0] );
+        $tm->write_row( 1, $records->[0] );
         my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, [ $record->[0] ], 'read data from TM after add' );
+        is_deeply( $data->[0], $records->[0], 'read data from TM after add' );
     }
 );
 
 $delay++;
 
-$mw->after( $delay * 100, sub { $mw->destroy } );
+$mw->after( $delay * $milisec, sub { $mw->destroy } );
 
 Tk::MainLoop;
 
-#-- End test
+done_testing;

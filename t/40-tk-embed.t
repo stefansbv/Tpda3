@@ -2,11 +2,13 @@
 # Tpda3 Tk TM embeded windows test script
 #
 
+use 5.010;
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Most;
 use Tk;
+use Data::Dump;
 
 use lib qw( lib ../lib );
 
@@ -15,13 +17,10 @@ BEGIN {
         plan skip_all => 'Needs DISPLAY';
         exit 0;
     }
-
     eval { use Tk; };
     if ($@) {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
-
-    plan tests => 8;
 }
 
 use_ok('Tpda3::Tk::TM');
@@ -29,7 +28,7 @@ use_ok('Tpda3::Tk::TM');
 # Header for TM, slightly modified data, all cols are 'rw'
 
 my $header = {
-    colstretch    => 2,
+    colstretch    => '',
     selectorcol   => 3,
     selectorstyle => '',
     columns       => {
@@ -58,8 +57,8 @@ my $header = {
             id          => 2,
             label       => 'Denum',
             tag         => 'enter_left',
-            displ_width => 60,
-            valid_width => 60,
+            displ_width => 40,
+            valid_width => 20,
             numscale    => 0,
             readwrite   => 'rw',
             datatype    => 'alphanumplus',
@@ -69,7 +68,7 @@ my $header = {
 
 # Data for tests
 
-my $record = [
+my $records = [
     {
         id_doc  => 1,
         tip_doc => '',
@@ -88,7 +87,7 @@ my $record = [
 ];
 
 my $mw = tkinit;
-$mw->geometry('300x100+20+20');
+$mw->geometry('460x80+20+20');
 
 my $tm;
 my $xtvar = {};
@@ -109,39 +108,49 @@ eval {
         -scrollbars    => 'osw',
     );
 };
-ok(!$@, 'create TM');
+ok !$@, 'create TM';
 
-is( $tm->init( $mw, $header ), undef, 'make header' );
+is $tm->is_col_name('tip_doc'), 1, 'is col name';
+is $tm->is_col_name(3), '', 'is col name';
 
-$tm->pack( -expand => 1, -fill => 'both');
+ok !$tm->init( $mw, $header ), 'make header';
 
-my $delay = 1;
+is $tm->cell_config_for( 'tip_doc', 'embed' ), 'jcombobox',
+  'cell_config_for tip_doc';    # call after init!
 
-$mw->after( $delay * 1000,
-            sub {
-                is( $tm->fill($record), undef, 'fill TM' );
-                $tm->tmatrix_make_embeded;
-            } );
+is $tm->cell_config_for( 1, 'embed' ), 'jcombobox',
+  'cell_config_for 1';    # call after init!
 
-$delay++;
+$tm->pack( -expand => 1, -fill => 'both' );
+
+my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
-        my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, $record, 'read data from TM' );
+        ok $tm->fill($records), 'fill TM';
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
-        my $cell_data = $tm->cell_read( 1, 1 );
-        is_deeply(
+        my ( $data, $scol ) = $tm->data_read();
+        cmp_deeply $data, $records, 'read data from TM';
+    }
+);
+
+$delay++;
+
+$mw->after(
+    $delay * $milisec,
+    sub {
+        my $cell_data = $tm->cell_read( 1, 2 );
+        cmp_deeply(
             $cell_data,
-            { productcode => 'S50_1341' },
+            { den_doc => '1930 Buick Marquette Phaeton' },
             'read cell from TM'
         );
     }
@@ -150,54 +159,60 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
         $tm->clear_all;
         my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, [], 'read data from TM after clear' );
+        cmp_deeply( $data, [], 'read data from TM after clear' );
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
-        $tm->add_row();
-        $tm->write_row( 1, 0, $record->[0] );
+        $tm->add_row;
+        my ( $r, $i ) = ( 1, 0 );
+        $tm->write_row( $r, $records->[$i] );
         my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, [ $record->[0] ], 'read data from TM after add' );
+        cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
+        cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
-        $tm->add_row();
-        $tm->write_row( 2, 0, $record->[1] );
+        $tm->add_row;
+        my ( $r, $i ) = ( 2, 1 );
+        $tm->write_row( $r, $records->[$i] );
         my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, [ $record->[1] ], 'read data from TM after add' );
+        cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
+        cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
     }
 );
 
 $delay++;
 
 $mw->after(
-    $delay * 1000,
+    $delay * $milisec,
     sub {
-        $tm->add_row();
-        $tm->write_row( 3, 0, $record->[2] );
+        $tm->add_row;
+        my ( $r, $i ) = ( 3, 2 );
+        $tm->write_row( $r, $records->[$i] );
         my ( $data, $scol ) = $tm->data_read();
-        is_deeply( $data, [ $record->[2] ], 'read data from TM after add' );
+        cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
+        cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
     }
 );
 
 $delay++;
 
-$mw->after( $delay * 1000, sub { $mw->destroy } );
+$mw->after( $delay * $milisec, sub { $mw->destroy } );
 
 Tk::MainLoop;
 
-#-- End test
+done_testing();

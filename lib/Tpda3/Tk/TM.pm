@@ -6,11 +6,12 @@ use 5.010;
 use strict;
 use warnings;
 use Carp;
+use Scalar::Util qw(looks_like_number);
 use Tpda3::Utils;
 
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
-use Tk::widgets qw< Checkbutton JBrowseEntry >;
+use Tk::widgets qw< Checkbutton JBrowseEntry JComboBox >;
 
 use Data::Dump;
 
@@ -163,16 +164,19 @@ sub set_tags {
 
     # TableMatrix header, Set Name, Align, Width
     foreach my $field ( keys %{ $self->{columns} } ) {
-        my $col = $self->{columns}{$field}{id};
-        $self->tagCol( $self->{columns}{$field}{tag}, $col );
-        $self->set( "0,$col", $self->{columns}{$field}{label} );
+        my $col      = $self->cell_config_for($field, 'id');
+        my $datatype = $self->cell_config_for($field, 'datatype');
+        my $numscale = $self->cell_config_for($field, 'numscale');
+
+        $self->tagCol( $self->cell_config_for($field, 'tag'), $col );
+        $self->set( "0,$col", $self->cell_config_for($field, 'label') );
 
         # If colstretch = 'n' in screen config file, don't set width,
         # because of the -colstretchmode => 'unset' setting, col 'n'
         # will be of variable width
         next if $self->{colstretch} and $col == $self->{colstretch};
 
-        my $width = $self->{columns}{$field}{displ_width};
+        my $width = $self->cell_config_for($field, 'displ_width');
         if ( $width and ( $width > 0 ) ) {
             $self->colWidth( $col, $width );
         }
@@ -209,66 +213,48 @@ sub clear_all {
 }
 
 sub fill {
-    my ( $self, $record_ref ) = @_;
-    my $xtvar = $self->cget('-variable');
+    my ( $self, $records ) = @_;
     my $row = 1;
-
-    #- Scan and write to table
-
-    foreach my $record ( @{$record_ref} ) {
-        foreach my $field ( keys %{ $self->{columns} } ) {
-            my $fld_cfg = $self->{columns}{$field};
-            croak "$field field's config is EMPTY\n" unless %{$fld_cfg};
-            my $value = $record->{$field};
-            $value = q{} unless defined $value;    # empty
-            $value =~ s/[\n\t]//g;                 # delete control chars
-            my ( $col, $datatype, $width, $numscale )
-                = @$fld_cfg{ 'id', 'datatype', 'displ_width',
-                'numscale' };                        # hash slice
-            if ( $datatype eq 'numeric' ) {
-                $value = 0 unless $value;
-                if ( defined $numscale ) {
-
-                    # Daca SCALE >= 0, Formatez numarul
-                    $value = sprintf( "%.${numscale}f", $value );
-                }
-                else {
-                    $value = sprintf( "%.0f", $value );
-                }
-            }
-            $xtvar->{"$row,$col"} = $value;
-        }
+    foreach my $record ( @{$records} ) {
+        $self->add_row;
+        $self->write_row($row, $record);
         $row++;
     }
+    $self->update;
+    return $row;
+}
 
-    # Refreshing the table...
-    $self->configure( -rows => $row );
-    return;
+sub read_row {
+    my ( $self, $row ) = @_;
+    my $row_data = {};
+    foreach my $field ( @{ $self->{fields} } ) {
+        my $cell_data = $self->cell_read( $row, $field );
+        foreach my $key ( keys %{$cell_data} ) {
+            $row_data->{$key} = $cell_data->{$key};
+        }
+    }
+    return $row_data;
 }
 
 sub write_row {
-    my ( $self, $row, $col, $record_ref ) = @_;
-    return unless ref $record_ref;    # No results
-    my $xtvar = $self->cget('-variable');
+    my ( $self, $row, $record ) = @_;
+    return unless ref $record;    # no results
     my $nr_col = 0;
-    foreach my $field ( keys %{$record_ref} ) {
-        my $fld_cfg = $self->{columns}{$field};
-        my $value   = $record_ref->{$field};
-        my ( $col, $datatype, $width, $numscale )
-            = @$fld_cfg{ 'id', 'datatype', 'displ_width',
-            'numscale' };    # hash slice
+    foreach my $field ( keys %{$record} ) {
+        my $value    = $record->{$field};
+        my $col      = $self->cell_config_for($field, 'id');
+        my $datatype = $self->cell_config_for($field, 'datatype');
+        my $numscale = $self->cell_config_for($field, 'numscale');
         if ( $datatype =~ /digit/ ) {
             $value = 0 unless $value;
             if ( defined $numscale ) {
-
-                # Daca SCALE >= 0, Formatez numarul
                 $value = sprintf( "%.${numscale}f", $value );
             }
             else {
                 $value = sprintf( "%.0f", $value );
             }
         }
-        $xtvar->{"$row,$col"} = $value;
+        $self->cell_write( $row, $col, $value );
         $nr_col++;
     }
     return $nr_col;
@@ -314,42 +300,53 @@ sub data_read {
     return ( \@tabledata, $sc );
 }
 
-sub cell_read {
-    my ( $self, $row, $col ) = @_;
-    my $is_col_name = 0;
-    $is_col_name = 1 if $col !~ m{\d+};
-    my $fields_cfg = $self->{columns};
-    my $col_name;
-    if ($is_col_name) {
-        $col_name = $col;
-        $col      = $fields_cfg->{$col_name}{id};
+sub get_field_for {
+    my ( $self, $col ) = @_;
+    croak "get_field_for: the $col parameter must be numeric"
+        unless looks_like_number($col);
+    return $self->{fields}[$col];
+}
+
+sub cell_config_for {
+    my ( $self, $col, $attrib ) = @_;
+    if ( $self->is_col_name($col) ) {
+        return $self->{columns}{$col}{$attrib};
     }
     else {
-        my $cols_ref = $self->{fields};
-        $col_name = $cols_ref->[$col];
+        my $field = $self->get_field_for($col);
+        return $self->{columns}{$field}{$attrib};
+    }
+}
+
+sub is_col_name {
+    my ($self, $col) = @_;
+    return not looks_like_number($col);
+}
+
+sub cell_read {
+    my ( $self, $row, $col ) = @_;
+    my $field;
+    if ( $self->is_col_name($col) ) {
+        $field = $col;
+        $col   = $self->cell_config_for($field, 'id');
+    }
+    else {
+        $field = $self->get_field_for($col);
     }
     my $cell_value = $self->get("$row,$col");
-    return { $col_name => $cell_value };
+    return { $field => $cell_value };
 }
 
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
-    my $is_col_name = 0;
-    $is_col_name = 1 if $col !~ m{\d+};
     my $fields_cfg = $self->{columns};
-    my $col_name;
-    if ($is_col_name) {
-        $col_name = $col;
-        if (exists $fields_cfg->{$col_name}{id}) {
-            $col = $fields_cfg->{$col_name}{id};
-        }
-        else {
-            croak "Can't establish column index for '$col'";
-        }
+    my $field;
+    if ( $self->is_col_name($col) ) {
+        $field = $col;
+        $col   = $self->cell_config_for($field, 'id');
     }
     else {
-        my $cols_ref = $self->{fields};
-        $col_name = $cols_ref->[$col];
+        $field = $self->{fields}[$col];
     }
     $self->set("$row,$col", $value);
     return;
@@ -454,16 +451,6 @@ sub tmatrix_make_selector {
     return;
 }
 
-sub tmatrix_make_embeded {
-    my $self = shift;
-    my $rows_no  = $self->cget('-rows');
-    my $rows_idx = $rows_no - 1;
-    foreach my $r ( 1 .. $rows_idx ) {
-#        $self->embeded_windows($r);
-    }
-    return;
-}
-
 sub embeded_windows {
     my ( $self, $row ) = @_;
     my $fields_cfg = $self->{columns};
@@ -471,14 +458,23 @@ sub embeded_windows {
     foreach my $field ( @{$cols_ref} ) {
         my $has_embeded = exists $fields_cfg->{$field}{embed};
         next unless $has_embeded;
-        my $w_type = $fields_cfg->{$field}{embed};
-        my $col = $fields_cfg->{$field}{id};
+        my $w_type = $self->cell_config_for( $field, 'embed' );
+        my $col    = $self->cell_config_for( $field, 'id' );
         say "make $w_type at $row:$col";
-        $self->windowConfigure(
-            "$row,$col",
-            -sticky => 'ne',
-            -window => $self->build_jbrowseentry( $row, $col ),
-        );
+        if ( $w_type eq 'jbrowseentry' ) {
+            $self->windowConfigure(
+                "$row,$col",
+                -sticky => 'ne',
+                -window => $self->build_jbrowseentry( $row, $col ),
+            );
+        }
+        elsif ( $w_type eq 'jcombobox' ) {
+            $self->windowConfigure(
+                "$row,$col",
+                -sticky => 'ne',
+                -window => $self->build_jcombobox( $row, $col ),
+            );
+        }
         $self->update;
     }
     return;
@@ -564,13 +560,25 @@ sub build_ckbutton {
 sub build_jbrowseentry {
     my ( $self, $row, $col ) = @_;
     my $var;
+    my $width  = $self->cell_config_for( $col, 'displ_width' );
     my $button = $self->{frame}->JBrowseEntry(
-        -label    => 'Tip:',
         -variable => \$var,
         -state    => 'normal',
-        -choices  => [qw(PDF Poza)],
-        -width    => 12,
-        # -command  => sub { $self->validate("$row,$col") }
+        -choices  => [],
+        -width    => $width,
+    );
+    return $button;
+}
+
+sub build_jcombobox {
+    my ( $self, $row, $col ) = @_;
+    my $var;
+    my $width  = $self->cell_config_for( $col, 'displ_width' );
+    my $button = $self->{frame}->JComboBox(
+        -textvariable       => \$var,
+        -state              => 'normal',
+        -entrywidth         => $width,
+        -disabledforeground => 'black'
     );
     return $button;
 }
