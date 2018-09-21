@@ -13,8 +13,6 @@ use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
 use Tk::widgets qw< Checkbutton JBrowseEntry JComboBox >;
 
-use Data::Dump;
-
 Tk::Widget->Construct('TM');
 
 sub ClassInit {
@@ -63,6 +61,9 @@ sub init {
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
     $self->{fields} = Tpda3::Utils->sort_hash_by_id( $self->{columns} );
+
+    $self->{embeded_cols} = [];
+    $self->find_embeded_columns;
 
     $self->set_tags();
 
@@ -342,7 +343,7 @@ sub cell_read {
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
     my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
-    print "cell_write: $row, $col is $w_type\n";
+    print "cell_write: $row, $col is $w_type :value=$value\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
@@ -353,9 +354,9 @@ sub cell_write {
     }
     $self->set("$row,$col", $value);
 
-    # update the embeded widget
+    # Update the embeded widget
     my $w;
-    eval { $w = $self->windowCget( "$row,$col", '-window' ); };
+    eval { $w = $self->windowCget( "$row,$col", '-window' ) };
     unless ($@) {
         say "$w";
         if ( $w =~ /Tk::JComboBox/ ) {
@@ -365,6 +366,35 @@ sub cell_write {
         }
     }
 
+    return;
+}
+
+sub embeded_set_list_values {
+    my ( $self, $field, $items, $records ) = @_;
+    my $rows_no  = $self->cget('-rows');
+    my $rows_idx = $rows_no - 1;
+    foreach my $row ( 1 .. $rows_idx ) {
+        my $choice = $records->[$row-1]{$field};
+        $self->embeded_set_list_for( $row, $field, $items, $choice );
+    }
+    return;
+}
+
+sub embeded_set_list_for {
+    my ( $self, $row, $field, $items, $choice ) = @_;
+    my $col = $self->cell_config_for($field, 'id');
+    my $w;
+    eval { $w = $self->windowCget( "$row,$col", '-window' ) };
+    unless ($@) {
+        say "$w";
+        if ( $w =~ /Tk::JComboBox/ ) {
+            $w->removeAllItems();
+            $w->configure( -choices => $items );
+            say "set selected to $choice";
+            $w->setSelected($choice, -type => 'value')
+        }
+    }
+    $w->update;
     return;
 }
 
@@ -467,11 +497,23 @@ sub tmatrix_make_selector {
     return;
 }
 
+sub find_embeded_columns {
+    my $self = shift;
+    foreach my $field ( @{ $self->{fields} } ) {
+        my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
+        push @{ $self->{embeded_cols} }, $field if $w_type;
+    }
+}
+
+sub get_embeded_columns {
+    my $self = shift;
+    return $self->{embeded_cols};
+}
+
 sub embeded_windows {
     my ( $self, $row ) = @_;
     my $fields_cfg = $self->{columns};
-    my $cols_ref   = $self->{fields};
-    foreach my $field ( @{$cols_ref} ) {
+    foreach my $field ( @{ $self->{fields} } ) {
         my $has_embeded = exists $fields_cfg->{$field}{embed};
         next unless $has_embeded;
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
@@ -593,9 +635,7 @@ sub build_jcombobox {
     my $button = $self->{frame}->JComboBox(
         -textvariable => \$var,
         -choices      => [
-            { -name => 'one', -value => 1 },
-            { -name => 'two', -value => 2 },
-            { -name => 'three', -value => 3 },
+            { -name => 'Not initialized', -value => 0 },
         ],
         -browsecmd          => sub { $self->jcombo_browse($row, $col, @_) },
         -state              => 'normal',
@@ -606,14 +646,12 @@ sub build_jcombobox {
 }
 
 sub jcombo_browse {
-    my ( $self, $row, $col, $jcbWidget, $selectedIndex, $selectedValue, $selectedName ) = @_;
-    say "$row, $col";
-    $self->cell_write( $row, $col, $selectedName );
-    # say $jcbWidget;
-    # say $selectedIndex;
-    my $var = $jcbWidget->cget('-textvariable');
-    say "$selectedName -> $selectedValue";
-    say "value from var = $$var";
+    my ( $self, $row, $col, $jcb, $sel_index, $sel_value, $sel_name ) = @_;
+    $self->cell_write( $row, $col, $sel_name );
+    # my $var = $jcb->cget('-textvariable');
+    # say "$selectedName -> $selectedValue";
+    # say "value from var = $$var";
+    return;
 }
 
 sub toggle_ckbutton {

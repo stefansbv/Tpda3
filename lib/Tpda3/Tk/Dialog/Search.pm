@@ -268,24 +268,17 @@ sub search_dialog {
             unless ($ind_cod) { $ind_cod = 0; }
         }
         my @values = $self->{box}->getRow($ind_cod);
-
-        #- Prepare data and return as hash reference
-
         my $row_data = {};
-        for ( my $i = 0; $i < @columns; $i++ ) {
+        for ( my $i = 0; $i <= $#columns; $i++ ) {
             $row_data->{ $columns[$i] } = $values[$i];
         }
-
         return $row_data;
     }
     elsif ( $result =~ /$option_clear/i ) {
-
-        # Prepare empty values
         my $row_data = {};
         for ( my $i = 0; $i < @columns; $i++ ) {
             $row_data->{ $columns[$i] } = undef;
         }
-
         return $row_data;
     }
     else {

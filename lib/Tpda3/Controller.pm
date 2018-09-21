@@ -2,6 +2,7 @@ package Tpda3::Controller;
 
 # ABSTRACT: The Controller
 
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -713,7 +714,7 @@ sub setup_lookup_bindings_entry {
 sub filter_field {
     my ($self, $field) = @_;
     return unless $field;
-    
+
     my $field_for_read = ref $field ? ( values %{ $field } )[0] : $field;
     my $filter_field   = ref $field ? ( keys   %{ $field } )[0] : $field;
     my $filter_value   = $self->ctrl_read_from($field_for_read);
@@ -778,7 +779,7 @@ sub setup_select_bindings_entry {
                     my $records = $dict->selected( $self->view, $para );
 
                     # Insert into TM
-                    my $xtable  = $self->scrobj()->get_tm_controls($tm_ds);
+                    my $xtable = $self->scrobj()->get_tm_controls($tm_ds);
                     $xtable->clear_all();
                     $xtable->fill($records);     # insert records in table
 
@@ -840,10 +841,9 @@ sub lookup_call {
         $filter = $tmx->cell_read( $r, $col );
     }
 
-    my $dict        = Tpda3::Lookup->new;
-    my $record      = $dict->lookup( $self->view, $lk_para, $filter );
-
-    $tmx->write_row( $r, $c, $record, $tm_ds );
+    my $dict = Tpda3::Lookup->new;
+    my $record = $dict->lookup( $self->view, $lk_para, $filter );
+    $tmx->write_row( $r, $record );
 
     my $skip_cols = scalar @{ $lk_para->{columns} };  # skip ahead cols number
 
@@ -1627,6 +1627,21 @@ sub screen_load_lists {
     return;
 }
 
+sub screen_lists_tm_set {
+    my ($self, $tmx, $records) = @_;
+    foreach my $field ( @{ $tmx->get_embeded_columns } ) {
+        my $w_type = $tmx->cell_config_for( $field, 'embed' ) // '';
+        my $ctrltype = $w_type eq 'jcombobox' ? 'm' : '';
+        my $para = $self->scrcfg()->lists_ds_tm($field);
+        next unless ref $para eq 'HASH';       # undefined, skip
+
+        # Query table and return data to fill the lists
+        my $choices = $self->model->get_codes( $field, $para, $ctrltype );
+        $tmx->embeded_set_list_values($field, $choices, $records);
+    }
+    return;
+}
+
 sub toggle_interface_controls {
     my $self = shift;
 
@@ -2353,6 +2368,8 @@ sub record_load {
 
         my $sc = $self->scrcfg($page)->dep_table_has_selectorcol($tm_ds);
         $tmx->tmatrix_make_selector($sc) if $sc;
+
+        $self->screen_lists_tm_set($tmx, $records);
     }
 
     # Save record as witness reference for comparison

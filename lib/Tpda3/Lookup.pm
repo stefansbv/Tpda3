@@ -48,6 +48,7 @@ sub lookup {
             $record = $self->{dlg}->get_selected_item();
         }
     }
+    use Data::Dump; dd $record;
     return $record;
 }
 

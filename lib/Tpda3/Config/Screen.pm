@@ -12,16 +12,12 @@ require Tpda3::Config;
 
 sub new {
     my ( $class, $args ) = @_;
-
     my $self = {
         _cfg => Tpda3::Config->instance(),
     };
-
     bless $self, $class;
-
     $self->{_scr} = $self->load_conf( $args->{scrcfg} );
     $self->alter_toolbar_state;
-
     return $self;
 }
 
@@ -32,10 +28,8 @@ sub cfg {
 
 sub load_conf {
     my ($self, $name) = @_;
-
     my $conf_file = $self->cfg->config_scr_file_name($name);
     my $conf_href = $self->cfg->config_data_from($conf_file);
-
     return $conf_href;
 }
 
@@ -57,6 +51,11 @@ sub defaultdocument {
 sub lists_ds {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'lists_ds', @args );
+}
+
+sub lists_ds_tm {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'lists_ds_tm', @args );
 }
 
 sub list_header {
@@ -313,6 +312,12 @@ Return the L<lists_ds> section data structure.
             code            = id_isced
         </cod_stud>
     </lists_ds>
+
+=head2 lists_ds_tm
+
+Return the L<lists_ds_tm> section data structure.  Has thee same
+configuration as for L<list_ds but> is for the embeded ComboBox from
+the TM widget.
 
 =head2 list_header
 
