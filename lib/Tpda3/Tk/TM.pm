@@ -62,9 +62,17 @@ sub init {
     $self->{tm_sel} = undef;    # selected row
     $self->{fields} = Tpda3::Utils->sort_hash_by_id( $self->{columns} );
 
-    $self->{embeded_cols} = [];
-    $self->find_embeded_columns;
-
+    # Embeded widgets init
+    $self->{embeded_meta} = { fields => $self->find_embeded_widgets };
+    foreach my $emb ( @{ $self->{embeded_meta}{fields} } ) {
+        if ( exists $args->{$emb} ) {
+            $self->{embeded_meta}{$emb} = { choices => $args->{$emb} };
+        }
+        else {
+            warn "No init args for '$emb'\n";
+        }
+    }
+    
     $self->set_tags();
 
     return;
@@ -194,9 +202,7 @@ sub set_tags {
 
     $self->tagRow( 'title', 0 );
     if ( $self->tagExists('expnd') ) {
-
-        # Change the tag priority
-        $self->tagRaise( 'expnd', 'title' );
+        $self->tagRaise( 'expnd', 'title' );        # change the tag priority
     }
 
     return;
@@ -216,6 +222,7 @@ sub clear_all {
 sub fill {
     my ( $self, $records ) = @_;
     my $row = 1;
+    $self->clear_all;
     foreach my $record ( @{$records} ) {
         $self->add_row;
         $self->write_row($row, $record);
@@ -327,7 +334,7 @@ sub is_col_name {
 sub cell_read {
     my ( $self, $row, $col ) = @_;
     my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
-    print "cell_read: $row, $col is $w_type\n";
+    # print "cell_read: $row, $col is $w_type\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
@@ -343,7 +350,7 @@ sub cell_read {
 sub cell_write {
     my ( $self, $row, $col, $value ) = @_;
     my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
-    print "cell_write: $row, $col is $w_type :value=$value\n";
+    # print "cell_write: $row, $col is $w_type :value=$value\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
@@ -358,10 +365,10 @@ sub cell_write {
     my $w;
     eval { $w = $self->windowCget( "$row,$col", '-window' ) };
     unless ($@) {
-        say "$w";
+        # say "$w";
         if ( $w =~ /Tk::JComboBox/ ) {
             my $var = $w->cget('-textvariable');
-            say "value from var = $$var";
+            # say "value from var = $$var";
             $$var = $value;
         }
     }
@@ -369,39 +376,9 @@ sub cell_write {
     return;
 }
 
-sub embeded_set_list_values {
-    my ( $self, $field, $items, $records ) = @_;
-    my $rows_no  = $self->cget('-rows');
-    my $rows_idx = $rows_no - 1;
-    foreach my $row ( 1 .. $rows_idx ) {
-        my $choice = $records->[$row-1]{$field};
-        $self->embeded_set_list_for( $row, $field, $items, $choice );
-    }
-    return;
-}
-
-sub embeded_set_list_for {
-    my ( $self, $row, $field, $items, $choice ) = @_;
-    my $col = $self->cell_config_for($field, 'id');
-    my $w;
-    eval { $w = $self->windowCget( "$row,$col", '-window' ) };
-    unless ($@) {
-        say "$w";
-        if ( $w =~ /Tk::JComboBox/ ) {
-            $w->removeAllItems();
-            $w->configure( -choices => $items );
-            say "set selected to $choice";
-            $w->setSelected($choice, -type => 'value')
-        }
-    }
-    $w->update;
-    return;
-}
-
 sub add_row {
     my $self = shift;
-
-    my $updstyle = 'delete+add';
+    my $updstyle = 'delete+add'; # the only update style? XXX
 
     $self->configure( state => 'normal' );    # normal state
     my $old_r = $self->index( 'end', 'row' ); # get old row index
@@ -431,7 +408,7 @@ sub add_row {
         $self->set_selected($new_r);
     }
 
-    $self->embeded_windows($new_r);    # add embeded windows
+    $self->add_embeded_widgets($new_r);    # add embeded windows
 
     # Focus to newly inserted row, column 1
     $self->focus;
@@ -469,10 +446,7 @@ sub get_active_row {
     my $self = shift;
     my $r;
     eval { $r = $self->index( 'active', 'row' ); };
-    if ($@) {
-        print "Select a row!\n";
-        return;
-    }
+    return if $@;
     return $r;
 }
 
@@ -497,20 +471,22 @@ sub tmatrix_make_selector {
     return;
 }
 
-sub find_embeded_columns {
+sub find_embeded_widgets {
     my $self = shift;
+    my @cols;
     foreach my $field ( @{ $self->{fields} } ) {
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
-        push @{ $self->{embeded_cols} }, $field if $w_type;
+        push @cols, $field if $w_type;
     }
+    return \@cols;
 }
 
-sub get_embeded_columns {
-    my $self = shift;
-    return $self->{embeded_cols};
+sub has_embeded_widget {
+    my ($self, $field) = @_;
+    return exists $self->{embeded_meta}{$field};
 }
 
-sub embeded_windows {
+sub add_embeded_widgets {
     my ( $self, $row ) = @_;
     my $fields_cfg = $self->{columns};
     foreach my $field ( @{ $self->{fields} } ) {
@@ -518,7 +494,7 @@ sub embeded_windows {
         next unless $has_embeded;
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
         my $col    = $self->cell_config_for( $field, 'id' );
-        say "make $w_type at $row:$col";
+        # say "make $w_type at $row:$col";
         if ( $w_type eq 'jbrowseentry' ) {
             $self->windowConfigure(
                 "$row,$col",
@@ -527,10 +503,11 @@ sub embeded_windows {
             );
         }
         elsif ( $w_type eq 'jcombobox' ) {
+            my $choices =  $self->{embeded_meta}{$field}{choices};
             $self->windowConfigure(
                 "$row,$col",
-                -sticky => 'ne',
-                -window => $self->build_jcombobox( $row, $col ),
+                -sticky  => 'ne',
+                -window  => $self->build_jcombobox( $row, $col, $choices ),
             );
         }
         $self->update;
@@ -629,15 +606,13 @@ sub build_jbrowseentry {
 }
 
 sub build_jcombobox {
-    my ( $self, $row, $col ) = @_;
+    my ( $self, $row, $col, $choices ) = @_;
     my $var;
     my $width = $self->cell_config_for( $col, 'displ_width' );
     my $button = $self->{frame}->JComboBox(
-        -textvariable => \$var,
-        -choices      => [
-            { -name => 'Not initialized', -value => 0 },
-        ],
-        -browsecmd          => sub { $self->jcombo_browse($row, $col, @_) },
+        -textvariable       => \$var,
+        -choices            => $choices,
+        -browsecmd          => sub { $self->jcombo_browse( $row, $col, @_ ) },
         -state              => 'normal',
         -entrywidth         => $width,
         -disabledforeground => 'black'
@@ -648,16 +623,13 @@ sub build_jcombobox {
 sub jcombo_browse {
     my ( $self, $row, $col, $jcb, $sel_index, $sel_value, $sel_name ) = @_;
     $self->cell_write( $row, $col, $sel_name );
-    # my $var = $jcb->cget('-textvariable');
-    # say "$selectedName -> $selectedValue";
-    # say "value from var = $$var";
     return;
 }
 
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
     my $ckb;
-    eval { $ckb = $self->windowCget( "$r,$c", '-window' ); };
+    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
         if ( $ckb =~ /Checkbutton/ ) {
             if ( defined $state ) {
@@ -672,11 +644,12 @@ sub toggle_ckbutton {
 }
 
 sub is_checked {
-    my ($self, $r, $c) = @_;
-    croak unless $r and $c;
+    my ( $self, $r, $c ) = @_;
+    croak "is_checked: missing parameters \$r or/and \$c"
+        unless defined $r and defined $c;
     my $ckb;
     my $is_checked = 0;
-    eval { $ckb = $self->windowCget( "$r,$c", '-window' ); };
+    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
         if ( $ckb =~ /Checkbutton/ ) {
             my $ckb_var = $ckb->cget('-variable');
@@ -687,12 +660,13 @@ sub is_checked {
 }
 
 sub count_is_checked {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
+    croak "count_is_checked: missing parameter \$c" unless defined $c;
     my $rows_no  = $self->cget('-rows');
     my $rows_idx = $rows_no - 1;
-    my $count = 0;
+    my $count    = 0;
     for my $r ( 1 .. $rows_idx ) {
-        $count++ if $self->is_checked($r, $c);
+        $count++ if $self->is_checked( $r, $c );
     }
     return $count;
 }

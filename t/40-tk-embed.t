@@ -8,7 +8,6 @@ use warnings;
 
 use Test::Most;
 use Tk;
-use Data::Dump;
 
 use lib qw( lib ../lib );
 
@@ -23,7 +22,7 @@ BEGIN {
     }
 }
 
-use_ok('Tpda3::Tk::TM');
+use Tpda3::Tk::TM;
 
 # Header for TM, slightly modified data, all cols are 'rw'
 
@@ -66,35 +65,42 @@ my $header = {
     },
 };
 
+my $choices = [
+    { -name => 'one',   -value => 1 },
+    { -name => 'two',   -value => 2 },
+    { -name => 'three', -value => 3 },
+];
+
 # Data for tests
 
 my $records = [
     {
         id_doc  => 1,
-        tip_doc => '',
+        tip_doc => 3,
         den_doc => '1930 Buick Marquette Phaeton',
     },
     {
         id_doc  => 2,
-        tip_doc => '',
+        tip_doc => 2,
         den_doc => 'American Airlines: B767-300',
     },
     {
         id_doc  => 3,
-        tip_doc => '',
+        tip_doc => 1,
         den_doc => 'F/A 18 Hornet 1/72',
     },
 ];
 
 my $mw = tkinit;
-$mw->geometry('460x80+20+20');
+#$mw->geometry('460x80+20+20');
+$mw->geometry('+20+20');
 
 my $tm;
 my $xtvar = {};
 eval {
     $tm = $mw->Scrolled(
         'TM',
-        -rows          => 1,
+        -rows          => 5,
         -cols          => 3,
         -width         => -1,
         -height        => -1,
@@ -113,6 +119,8 @@ ok !$@, 'create TM';
 is $tm->is_col_name('tip_doc'), 1, 'is col name';
 is $tm->is_col_name(3), '', 'is col name';
 
+$header->{tip_doc} = $choices;           # add the choices to the args
+    
 ok !$tm->init( $mw, $header ), 'make header';
 
 is $tm->cell_config_for( 'tip_doc', 'embed' ), 'jcombobox',
@@ -137,7 +145,7 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        my ( $data, $scol ) = $tm->data_read();
+        my ( $data, $scol ) = $tm->data_read('selected');
         cmp_deeply $data, $records, 'read data from TM';
     }
 );
@@ -203,9 +211,19 @@ $mw->after(
         $tm->add_row;
         my ( $r, $i ) = ( 3, 2 );
         $tm->write_row( $r, $records->[$i] );
-        my ( $data, $scol ) = $tm->data_read();
-        cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
+        my ( $data, $scol ) = $tm->data_read('selected');
+        say "scol = $scol";
+        cmp_deeply( $data->[$i], $records->[$i],
+            'read data from TM after add' );
         cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
+
+        my $r_data = $tm->read_row($r);
+        
+        is $tm->has_embeded_widget('tip_doc'), 1,
+            'tip_doc has emebeded widget';
+        is $tm->has_embeded_widget('den_doc'), '',
+            'den_doc has no emebeded widget';
+        is $tm->count_is_checked(3), 1, 'count is_checked';
     }
 );
 
