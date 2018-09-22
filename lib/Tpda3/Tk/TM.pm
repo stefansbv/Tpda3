@@ -74,7 +74,7 @@ sub init {
             warn "No init args for '$emb'\n";
         }
     }
-    
+
     $self->set_tags();
 
     return;
@@ -234,10 +234,32 @@ sub fill {
     return $row;
 }
 
+sub data_read {
+    my ( $self, $with_sel_name, $all_cols ) = @_;
+    my $rows_no  = $self->cget('-rows');
+    my $rows_idx = $rows_no - 1;
+    my $sc       = $self->{selectorcol};
+    my @tabledata;
+    for my $row ( 1 .. $rows_idx ) {
+        my $rowdata = $self->read_row($row, $all_cols);
+        if ($sc) {    # selectorcol
+            $rowdata->{$with_sel_name}
+                = $self->is_checked( $row, $sc ) ? 1 : 0
+                if $with_sel_name;
+        }
+        push @tabledata, $rowdata;
+    }
+    return ( \@tabledata, $sc );
+}
+
 sub read_row {
-    my ( $self, $row ) = @_;
+    my ( $self, $row, $all_cols ) = @_;
     my $row_data = {};
     foreach my $field ( @{ $self->{fields} } ) {
+        my $rw = $self->cell_config_for( $field, 'readwrite' );
+        if ( !$all_cols ) {
+            next if $rw eq 'ro';    # skip ro cols
+        }
         my $cell_data = $self->cell_read( $row, $field );
         foreach my $key ( keys %{$cell_data} ) {
             $row_data->{$key} = $cell_data->{$key};
@@ -270,46 +292,6 @@ sub write_row {
     return $nr_col;
 }
 
-sub data_read {
-    my ($self, $with_sel_name, $all_cols) = @_;
-    my $xtvar = $self->cget('-variable');
-    my $rows_no  = $self->cget('-rows');
-    my $cols_no  = $self->cget('-cols');
-    my $rows_idx = $rows_no - 1;
-    my $cols_idx = $cols_no - 1;
-    my $fields_cfg = $self->{columns};
-    my $cols_ref   = $self->{fields};
-
-    # Get selectorcol index, if any
-    my $sc = $self->{selectorcol};
-
-    # Read table data and create an AoH
-    my @tabledata;
-
-    # The first row is the header
-    for my $row ( 1 .. $rows_idx ) {
-        my $rowdata = {};
-        for my $col ( 0 .. $cols_idx ) {
-            if ( $sc and ( $col == $sc ) ) {    # selectorcol
-                $rowdata->{$with_sel_name}
-                    = $self->is_checked( $row, $sc ) ? 1 : 0
-                    if $with_sel_name;
-                next;
-            }
-            my $cell_value = $self->get("$row,$col");
-            my $col_name   = $cols_ref->[$col];
-            my $fld_cfg = $fields_cfg->{$col_name};
-            my ($readwrite) = @$fld_cfg{'readwrite'};    # hash slice
-            unless ($all_cols) {
-                next if $readwrite eq 'ro';    # skip ro cols
-            }
-            $rowdata->{$col_name} = $cell_value;
-        }
-        push @tabledata, $rowdata;
-    }
-    return ( \@tabledata, $sc );
-}
-
 sub get_field_for {
     my ( $self, $col ) = @_;
     croak "get_field_for: the $col parameter must be numeric"
@@ -336,17 +318,14 @@ sub is_col_name {
 sub cell_read {
     my ( $self, $row, $col ) = @_;
     my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
-    # print "cell_read: $row, $col is $w_type\n";
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
-        $col   = $self->cell_config_for($field, 'id');
+        $col = $self->cell_config_for( $field, 'id' );
     }
     else {
         $field = $self->get_field_for($col);
     }
-    # say "$field has emebded widget = ",
-    # $self->has_embeded_widget($field);
     my $cell_value = $self->get("$row,$col");
     return { $field => $cell_value };
 }
@@ -594,12 +573,12 @@ sub get_selector {
 
 sub build_dateentry {
     my ( $self, $row, $col ) = @_;
-    my $date_format = 'dmy';
+    my $date_format;# = 'dmy';
     my $width = $self->cell_config_for( $col, 'displ_width' );
     my $var;
     my $button = $self->{frame}->DateEntry(
         -textvariable => \$var,
-        #-daynames     => [ qw(D L Ma Mi J V S) ],
+        -daynames     => 'locale',
         #-arrowimage => 'calmonth16',
         -weekstart       => 1,
         -todaybackground => 'lightgreen',
@@ -607,7 +586,8 @@ sub build_dateentry {
             Tpda3::Utils->dateentry_parse_date( 'iso', @_ );
         },
         -formatcmd => sub {
-            Tpda3::Utils->dateentry_format_date( $date_format, @_ );
+            my $date_str = Tpda3::Utils->dateentry_format_date( $date_format, @_ );
+            $self->dentry_browse( $row, $col, $date_str );
         },
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
@@ -633,9 +613,15 @@ sub build_jcombobox {
 }
 
 sub jcombo_browse {
-    my ( $self, $row, $col, $jcb, $sel_index, $sel_value, $sel_name ) = @_;
-    $self->cell_write( $row, $col, $sel_name );
+    my ( $self, $r, $c, $jcb, $sel_index, $sel_name, $sel_value ) = @_;
+    $self->set("$r,$c", $sel_value);
     return;
+}
+
+sub dentry_browse {
+    my ( $self, $r, $c, $date_str ) = @_;
+    $self->set("$r,$c", $date_str);
+    return $date_str;
 }
 
 sub toggle_ckbutton {

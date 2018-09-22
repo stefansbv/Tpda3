@@ -82,7 +82,7 @@ sub dateentry_format_date {
 
   SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_format_date'\n";
-        /german/i && do {
+        /german|dmy/i && do {
             $date = sprintf( "%02d.%02d.%4d", $d, $m, $y );
             last SWITCH;
         };
