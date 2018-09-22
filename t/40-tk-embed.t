@@ -145,7 +145,7 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        my ( $data, $scol ) = $tm->data_read('selected');
+        my ( $data, $scol ) = $tm->data_read();
         cmp_deeply $data, $records, 'read data from TM';
     }
 );
@@ -183,6 +183,7 @@ $mw->after(
         $tm->add_row;
         my ( $r, $i ) = ( 1, 0 );
         $tm->write_row( $r, $records->[$i] );
+        is $tm->get_selected, $r, "selected button '$r'";
         my ( $data, $scol ) = $tm->data_read();
         cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
         cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
@@ -197,6 +198,7 @@ $mw->after(
         $tm->add_row;
         my ( $r, $i ) = ( 2, 1 );
         $tm->write_row( $r, $records->[$i] );
+        is $tm->get_selected, $r, "selected button '$r'";
         my ( $data, $scol ) = $tm->data_read();
         cmp_deeply( $data->[$i], $records->[$i], 'read data from TM after add' );
         cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
@@ -211,19 +213,16 @@ $mw->after(
         $tm->add_row;
         my ( $r, $i ) = ( 3, 2 );
         $tm->write_row( $r, $records->[$i] );
-        my ( $data, $scol ) = $tm->data_read('selected');
-        say "scol = $scol";
+        is $tm->get_selected, $r, "selected button '$r'";
+        my ( $data, $scol ) = $tm->data_read();
         cmp_deeply( $data->[$i], $records->[$i],
             'read data from TM after add' );
         cmp_deeply $tm->read_row($r), $records->[$i], "data for row $r";
-
         my $r_data = $tm->read_row($r);
-        
         is $tm->has_embeded_widget('tip_doc'), 1,
             'tip_doc has emebeded widget';
         is $tm->has_embeded_widget('den_doc'), '',
             'den_doc has no emebeded widget';
-        is $tm->count_is_checked(3), 1, 'count is_checked';
     }
 );
 

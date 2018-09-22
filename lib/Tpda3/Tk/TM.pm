@@ -11,7 +11,7 @@ use Tpda3::Utils;
 
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
-use Tk::widgets qw< Checkbutton JBrowseEntry JComboBox >;
+use Tk::widgets qw< Checkbutton Radiobutton JBrowseEntry JComboBox >;
 
 Tk::Widget->Construct('TM');
 
@@ -343,36 +343,32 @@ sub cell_read {
     else {
         $field = $self->get_field_for($col);
     }
+    # say "$field has emebded widget = ",
+    # $self->has_embeded_widget($field);
     my $cell_value = $self->get("$row,$col");
     return { $field => $cell_value };
 }
 
 sub cell_write {
-    my ( $self, $row, $col, $value ) = @_;
-    my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
-    # print "cell_write: $row, $col is $w_type :value=$value\n";
+    my ( $self, $r, $c, $value ) = @_;
+    my $w_type = $self->cell_config_for( $c, 'embed' ) // '';
     my $field;
-    if ( $self->is_col_name($col) ) {
-        $field = $col;
-        $col   = $self->cell_config_for($field, 'id');
+    if ( $self->is_col_name($c) ) {
+        $field = $c;
+        $c     = $self->cell_config_for($field, 'id');
     }
     else {
-        $field = $self->{fields}[$col];
+        $field = $self->{fields}[$c];
     }
-    $self->set("$row,$col", $value);
-
-    # Update the embeded widget
-    my $w;
-    eval { $w = $self->windowCget( "$row,$col", '-window' ) };
+    $self->set("$r,$c", $value);
+    my $w;                      # update the embeded widget
+    eval { $w = $self->windowCget( "$r,$c", '-window' ) };
     unless ($@) {
-        # say "$w";
         if ( $w =~ /Tk::JComboBox/ ) {
             my $var = $w->cget('-textvariable');
-            # say "value from var = $$var";
-            $$var = $value;
+            $$var   = $value;
         }
     }
-
     return;
 }
 
@@ -519,12 +515,10 @@ sub embeded_sel_buttons {
     my ( $self, $row, $col ) = @_;
     my $selestyle = defined $self->{selectorstyle}
         ? $self->{selectorstyle}
-        : q{}
-        ;
+        : q{};
     my $selecolor = defined $self->{selectorcolor}
         ? $self->{selectorcolor}
-        : q{lightblue}
-        ;
+        : q{lightblue};
     if ( $selestyle eq 'checkbox' ) {
         $self->windowConfigure(
             "$row,$col",
@@ -540,6 +534,19 @@ sub embeded_sel_buttons {
         );
     }
     return;
+}
+
+sub build_ckbutton {
+    my ( $self, $row, $col ) = @_;
+    my $button = $self->{frame}->Checkbutton(
+        -image       => 'actcross16',
+        -selectimage => 'actcheck16',
+        -indicatoron => 0,
+        -selectcolor => 'lightblue',
+        -state       => 'normal',
+        -command     => sub { $self->validate("$row,$col") }
+    );
+    return $button;
 }
 
 sub build_rbbutton {
@@ -577,19 +584,6 @@ sub set_selected {
 sub get_selector {
     my $self = shift;
     return $self->{selectorcol};
-}
-
-sub build_ckbutton {
-    my ( $self, $row, $col ) = @_;
-    my $button = $self->{frame}->Checkbutton(
-        -image       => 'actcross16',
-        -selectimage => 'actcheck16',
-        -indicatoron => 0,
-        -selectcolor => 'lightblue',
-        -state       => 'normal',
-        -command     => sub { $self->validate("$row,$col") }
-    );
-    return $button;
 }
 
 sub build_jbrowseentry {
@@ -647,14 +641,15 @@ sub is_checked {
     my ( $self, $r, $c ) = @_;
     croak "is_checked: missing parameters \$r or/and \$c"
         unless defined $r and defined $c;
-    my $ckb;
     my $is_checked = 0;
-    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    my $bw;
+    eval { $bw = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
-        if ( $ckb =~ /Checkbutton/ ) {
-            my $ckb_var = $ckb->cget('-variable');
+        if ( $bw =~ /Checkbutton/ ) {
+            my $ckb_var = $bw->cget('-variable');
             $is_checked = $$ckb_var ? $$ckb_var : 0;
         }
+        # Radiobutton uses the global var $self->{tm_sel}
     }
     return $is_checked;
 }
@@ -681,7 +676,7 @@ sub count_is_checked {
     my $xtable = $frame->Scrolled(
         'TM',
         -rows           => 6,
-        -cols           => 1,
+        -cols           => 4,
         -width          => -1,
         -height         => -1,
         -ipadx          => 3,
@@ -809,7 +804,10 @@ Toggle Checkbutton or set state to L<state> if defined state.
 
 =head2 is_checked
 
-Return true if embedded checkbutton is checked.
+Parameters: row, col.
+
+Return true if a embedded CheckButton is checked.  Does not apply for
+RadioButtons!
 
 =head2 count_is_checked
 
