@@ -7,11 +7,12 @@ use strict;
 use warnings;
 use Carp;
 use Scalar::Util qw(looks_like_number);
-use Tpda3::Utils;
-
+use Date::Calc;
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
-use Tk::widgets qw< Checkbutton Radiobutton JBrowseEntry JComboBox >;
+use Tk::widgets qw< Checkbutton Radiobutton DateEntry JComboBox >;
+
+use Tpda3::Utils;
 
 Tk::Widget->Construct('TM');
 
@@ -61,6 +62,7 @@ sub init {
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
     $self->{fields} = Tpda3::Utils->sort_hash_by_id( $self->{columns} );
+    $self->{bg}     = $frame->cget('-background');
 
     # Embeded widgets init
     $self->{embeded_meta} = { fields => $self->find_embeded_widgets };
@@ -368,6 +370,10 @@ sub cell_write {
             my $var = $w->cget('-textvariable');
             $$var   = $value;
         }
+        elsif ( $w =~ /Tk::DateEntry/ ) {
+            my $var = $w->cget('-textvariable');
+            $$var   = $value;
+        }
     }
     return;
 }
@@ -491,11 +497,11 @@ sub add_embeded_widgets {
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
         my $col    = $self->cell_config_for( $field, 'id' );
         # say "make $w_type at $row:$col";
-        if ( $w_type eq 'jbrowseentry' ) {
+        if ( $w_type eq 'dateentry' ) {
             $self->windowConfigure(
                 "$row,$col",
                 -sticky => 'ne',
-                -window => $self->build_jbrowseentry( $row, $col ),
+                -window => $self->build_dateentry( $row, $col ),
             );
         }
         elsif ( $w_type eq 'jcombobox' ) {
@@ -586,15 +592,27 @@ sub get_selector {
     return $self->{selectorcol};
 }
 
-sub build_jbrowseentry {
+sub build_dateentry {
     my ( $self, $row, $col ) = @_;
+    my $date_format = 'dmy';
+    my $width = $self->cell_config_for( $col, 'displ_width' );
     my $var;
-    my $width  = $self->cell_config_for( $col, 'displ_width' );
-    my $button = $self->{frame}->JBrowseEntry(
-        -variable => \$var,
-        -state    => 'normal',
-        -choices  => [],
-        -width    => $width,
+    my $button = $self->{frame}->DateEntry(
+        -textvariable => \$var,
+        #-daynames     => [ qw(D L Ma Mi J V S) ],
+        #-arrowimage => 'calmonth16',
+        -weekstart       => 1,
+        -todaybackground => 'lightgreen',
+        -parsecmd        => sub {
+            Tpda3::Utils->dateentry_parse_date( 'iso', @_ );
+        },
+        -formatcmd => sub {
+            Tpda3::Utils->dateentry_format_date( $date_format, @_ );
+        },
+        -disabledbackground => $self->{bg},
+        -disabledforeground => 'black',
+        -width              => $width,
+        -relief             => 'raised',
     );
     return $button;
 }

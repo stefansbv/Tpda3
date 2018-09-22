@@ -28,7 +28,7 @@ use Tpda3::Tk::TM;
 
 my $header = {
     colstretch    => '',
-    selectorcol   => 3,
+    selectorcol   => 4,
     selectorstyle => '',
     columns       => {
         id_doc => {
@@ -52,8 +52,19 @@ my $header = {
             datatype    => 'alphanumplus',
             embed       => 'jcombobox',
         },
-        den_doc => {
+        doc_date => {
             id          => 2,
+            label       => 'Date',
+            tag         => 'enter_left',
+            displ_width => 13,
+            valid_width => 10,
+            numscale    => 0,
+            readwrite   => 'rw',
+            datatype    => 'date',
+            embed       => 'dateentry',
+        },
+        den_doc => {
+            id          => 3,
             label       => 'Denum',
             tag         => 'enter_left',
             displ_width => 40,
@@ -74,20 +85,20 @@ my $choices = [
 # Data for tests
 
 my $records = [
-    {
-        id_doc  => 1,
-        tip_doc => 3,
-        den_doc => '1930 Buick Marquette Phaeton',
+    {   id_doc   => 1,
+        tip_doc  => 3,
+        doc_date => '2018-01-01',
+        den_doc  => '1930 Buick Marquette Phaeton',
     },
-    {
-        id_doc  => 2,
-        tip_doc => 2,
-        den_doc => 'American Airlines: B767-300',
+    {   id_doc   => 2,
+        tip_doc  => 2,
+        doc_date => '2018-01-01',
+        den_doc  => 'American Airlines: B767-300',
     },
-    {
-        id_doc  => 3,
-        tip_doc => 1,
-        den_doc => 'F/A 18 Hornet 1/72',
+    {   id_doc   => 3,
+        tip_doc  => 1,
+        doc_date => '2018-01-01',
+        den_doc  => 'F/A 18 Hornet 1/72',
     },
 ];
 
@@ -155,7 +166,7 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        my $cell_data = $tm->cell_read( 1, 2 );
+        my $cell_data = $tm->cell_read( 1, 3 );
         cmp_deeply(
             $cell_data,
             { den_doc => '1930 Buick Marquette Phaeton' },
