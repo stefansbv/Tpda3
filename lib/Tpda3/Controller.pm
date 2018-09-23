@@ -1627,21 +1627,6 @@ sub screen_load_lists {
     return;
 }
 
-sub screen_lists_tm_set {
-    my ($self, $tmx, $records) = @_;
-    foreach my $field ( @{ $tmx->get_embeded_columns } ) {
-        my $w_type = $tmx->cell_config_for( $field, 'embed' ) // '';
-        my $ctrltype = $w_type eq 'jcombobox' ? 'm' : '';
-        my $para = $self->scrcfg()->lists_ds_tm($field);
-        next unless ref $para eq 'HASH';       # undefined, skip
-
-        # Query table and return data to fill the lists
-        my $choices = $self->model->get_codes( $field, $para, $ctrltype );
-        $tmx->embeded_set_list_values($field, $choices, $records);
-    }
-    return;
-}
-
 sub toggle_interface_controls {
     my $self = shift;
 
@@ -2368,8 +2353,6 @@ sub record_load {
 
         my $sc = $self->scrcfg($page)->dep_table_has_selectorcol($tm_ds);
         $tmx->tmatrix_make_selector($sc) if $sc;
-
-        $self->screen_lists_tm_set($tmx, $records);
     }
 
     # Save record as witness reference for comparison
