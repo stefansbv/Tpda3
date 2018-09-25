@@ -272,7 +272,11 @@ sub write_row {
     my ( $self, $row, $record ) = @_;
     return unless ref $record;    # no results
     my $nr_col = 0;
-    foreach my $field ( keys %{$record} ) {
+    foreach my $field ( @{ $self->{fields} } ) {
+        if ( !exists $record->{$field} ) {
+            warn "write_row: the field $field is not in the record\n";
+            next;
+        }
         my $value    = $record->{$field};
         my $col      = $self->cell_config_for($field, 'id');
         my $datatype = $self->cell_config_for($field, 'datatype');
@@ -294,13 +298,17 @@ sub write_row {
 
 sub get_field_for {
     my ( $self, $col ) = @_;
-    croak "get_field_for: the $col parameter must be numeric"
+    croak "get_field_for: the \$col parameter must be numeric"
         unless looks_like_number($col);
     return $self->{fields}[$col];
 }
 
 sub cell_config_for {
     my ( $self, $col, $attrib ) = @_;
+    croak "cell_config_for: the \$col parameter is required"
+        unless defined $col;
+    croak "cell_config_for: the \$attrib parameter is required"
+        unless defined $attrib;
     if ( $self->is_col_name($col) ) {
         return $self->{columns}{$col}{$attrib};
     }
