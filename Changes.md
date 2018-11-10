@@ -1,3 +1,56 @@
+## 0.99.9  (2018-11-10)
+
+- Feature
+  - Allow a hash for the filter option for entry bindings
+  - Add order option to the screen entry binding section
+  - Implement embeded widgets in TM (jcombobox and dateentry);
+- Bugfix
+  - Croak on missing parameters, iterate on the TM fields not the record fields;
+
+## 0.99.8  (2018-02-28)
+
+- Features
+  - Add SQL::Abstract special_op for Pg match: ~
+
+## 0.99.8  (2018-02-27)
+
+- Features
+  - Add SQL::Abstract special_op for similar_to
+  - Add method for "select from f()" (tested with Pg) - query_exec_proc;
+  - Allow empty table bindings;
+  - Add the column param to the query (query_filter_find);
+- Bugfix
+  - Fix set_status, revert change of config call for the else branch
+
+## 0.99.7  (2018-01-09)
+
+- Features
+  - Deprecate 'subname' in tablebindings, replace with 'method';
+  - Enable controls (entry) for report style screen;
+
+## 0.99.6  (2017-11-16)
+
+- Features
+  - Call an 'on_record_loaded' method in screens if is defined.
+    The purpose is to enable/disable controls depending on some other field values;
+  - Add new dialog for Text;
+  - Add/use new runtime vars: docsbasepath, docsoutpath;
+- Bugfix
+  - Add a warning for missing 'id' in attribs;
+
+## 0.99.3   (2017-04-05)
+
+- Bugfix
+
+## 0.99.2   (2017-04-02)
+
+- Bugfix
+
+## 0.99.1   (2017-02-19)
+
+- Bugfix
+  - Ignore missing toolbar buttons.
+
 ## 0.99   (2016-12-06)
 
 - Changes
