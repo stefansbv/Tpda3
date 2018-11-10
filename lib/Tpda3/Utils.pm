@@ -34,7 +34,6 @@ sub trim {
 }
 
 sub dateentry_parse_date {
-
     my ( $self, $format, $date ) = @_;
 
     return unless $date;
@@ -70,7 +69,6 @@ sub dateentry_parse_date {
 }
 
 sub dateentry_format_date {
-
     my ( $self, $format, $y, $m, $d ) = @_;
 
     return unless $y and $m and $d;
@@ -290,35 +288,29 @@ sub ins_underline_mark {
 
 sub deaccent {
     my ( $self, $text ) = @_;
-
     $text =~ tr/ăĂãÃâÂîÎșȘşŞțȚţŢ/aAaAaAiIsSsStTtT/;
-
     return $text;
 }
 
 sub check_path {
     my ($self, $path) = @_;
-
     unless ($path and -d $path) {
         Exception::IO::PathNotFound->throw(
             pathname => $path,
             message  => 'Path not found',
         );
     }
-
     return;
 }
 
 sub check_file {
     my ($self, $file) = @_;
-
     unless ($file and -f $file) {
         Exception::IO::FileNotFound->throw(
             filename => $file,
             message  => 'File not found',
         );
     }
-
     return;
 }
 
@@ -330,7 +322,6 @@ sub decode_unless_utf {
 
 sub parse_message {
     my ($self, $text) = @_;
-
     (my $type, $text) = split /#/, $text, 2;
 
     # Allow empty type
@@ -338,7 +329,6 @@ sub parse_message {
         $text = $type;
         $type = q{};
     }
-
     my $color;
   SWITCH: {
         $type eq 'error' && do { $color = 'darkred';   last SWITCH; };
@@ -346,7 +336,6 @@ sub parse_message {
         $type eq 'warn'  && do { $color = 'orange';    last SWITCH; };
         $color = 'black';                    # default
     }
-
     return ($text, $color);
 }
 
