@@ -35,7 +35,8 @@ Requirements
 
 Tpda3 should work on any OS where Perl and the required dependencies
 can be installed, but currently it's only tested on GNU/Linux and
-Windows (XP and 7).  Feedback and patches for other OSs are welcome.
+Windows (XP, 7 and 10).  Feedback and patches for other OSs are
+welcome.
 
 
 Installation
@@ -177,7 +178,7 @@ Links
 
 Home page:
 
-http://tpda.s2i2.ro/
+http://stefansuciu.ro/tpda3/
 
 Development takes place, currently, on GitHub:
 
@@ -191,7 +192,7 @@ https://sourceforge.net/projects/tpda/
 License And Copyright
 ---------------------
 
-Copyright (C) 2010-2017 Ștefan Suciu
+Copyright (C) 2010-2018 Ștefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
