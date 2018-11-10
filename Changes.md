@@ -1,4 +1,4 @@
-## 0.99.9  (2018-11-10)
+## 0.99.10  (2018-11-10)
 
 - Feature
   - Allow a hash for the filter option for entry bindings
@@ -7,7 +7,7 @@
 - Bugfix
   - Croak on missing parameters, iterate on the TM fields not the record fields;
 
-## 0.99.8  (2018-02-28)
+## 0.99.9  (2018-02-28)
 
 - Features
   - Add SQL::Abstract special_op for Pg match: ~
