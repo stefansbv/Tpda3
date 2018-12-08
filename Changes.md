@@ -1,3 +1,8 @@
+## 0.99.11  (2018-12-08)
+
+- Bugfix
+  - Allow absolute path for SQLite dbname in the config
+
 ## 0.99.10  (2018-11-10)
 
 - Feature
