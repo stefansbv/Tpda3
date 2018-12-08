@@ -2,6 +2,7 @@ package Tpda3::Utils;
 
 # ABSTRACT: Various utility functions
 
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -9,6 +10,8 @@ use utf8;
 use Encode qw(is_utf8 decode);
 use Try::Tiny;
 use YAML::Tiny;
+use Path::Tiny;
+use File::HomeDir;
 
 require Tpda3::Exceptions;
 
@@ -24,12 +27,10 @@ my $transformations = {
 
 sub trim {
     my ( $self, @text ) = @_;
-
     for (@text) {
         s/^\s+//;
         s/\s+$//;
     }
-
     return wantarray ? @text : "@text";
 }
 
@@ -256,11 +257,9 @@ sub format_query {
 
 sub year_month {
     my ( $year, $month ) = @_;
-
     my $where = {};
     $where->{-extractyear}  = [$year]  if ($year);
     $where->{-extractmonth} = [$month] if ($month);
-
     return $where;
 }
 
@@ -277,12 +276,9 @@ sub do_error {
 
 sub ins_underline_mark {
     my ( $self, $label, $position ) = @_;
-
     die "Wrong parameters for 'ins_underline_mark'"
         unless $label and defined $position;
-
     substr( $label, $position, 0 ) = '&';
-
     return $label;
 }
 
@@ -368,6 +364,17 @@ sub write_yaml {
         );
     };
     return;
+}
+
+sub get_sqlitedb_filename {
+    my ($self, $dbname) = @_;
+    die "get_testdb_filename: A 'dbname' parameter is required\n" unless $dbname;
+    my $dbpath = path $dbname;
+    if ( $dbpath->is_absolute ) {
+        return $dbpath->stringify;
+    }
+    $dbname .= '.db' unless $dbname =~ m{\.db$}i;
+    return path( File::HomeDir->my_data, $dbname )->stringify;
 }
 
 1;
@@ -480,5 +487,14 @@ Parse a message text in the following format:
    warn#Message text
 
 and return the coresponding mesage text and color.
+
+=head2 get_sqlitedb_filename
+
+Returns the absolute path and file name of the SQLite database.
+file.
+
+If the configured path is an absolute path and a file name, retur it,
+else make a path from the user data path (as returned by
+File::HomeDir), and the configured path and file name.
 
 =cut

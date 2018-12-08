@@ -8,8 +8,8 @@ use warnings;
 
 use Test::More tests => 9;
 
-use lib qw( lib ../lib );
-use t::lib::TkTest qw/make_database/;
+use lib qw( lib ../lib t/lib );
+use TkTest qw/make_database/;
 
 use Tpda3::Config;
 

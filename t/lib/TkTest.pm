@@ -2,8 +2,7 @@
 # Create a test database and load the SQL schema.  The connect_ok code
 # is borrowed from Test module of the DBD::SQLite distribution.
 #
-
-package t::lib::TkTest;
+package TkTest;
 
 use strict;
 use warnings;
@@ -39,7 +38,6 @@ sub connect_ok {
 # Make database and load the schema from an SQL file.
 
 sub make_database {
-
     my $dbfile = get_testdb_filename();
 
     if (-f $dbfile) {

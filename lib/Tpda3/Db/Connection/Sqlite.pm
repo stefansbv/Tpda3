@@ -6,23 +6,18 @@ use strict;
 use warnings;
 
 use DBI;
-use File::HomeDir;
-use File::Spec::Functions;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
 use Try::Tiny;
 
 require Tpda3::Exceptions;
+require Tpda3::Utils;
 
 sub new {
     my ($class, $model) = @_;
-
     my $self = {};
-
     $self->{model} = $model;
-
     bless $self, $class;
-
     return $self;
 }
 
@@ -33,9 +28,7 @@ sub db_connect {
 
     my ($dbname, $driver) = @{$conf}{qw(dbname driver)};
 
-    # Fixed path for SQLite databases
-    # TODO: use other paths
-    my $dbfile = $conf->{dbfile} = get_testdb_filename($dbname);
+    my $dbfile = Tpda3::Utils->get_sqlitedb_filename($dbname);
 
     $log->trace("Database driver is: $driver");
     $log->trace("Parameters:");
@@ -217,12 +210,6 @@ sub table_list {
     return $table_list;
 }
 
-sub get_testdb_filename {
-    my $dbname = shift;
-    $dbname   .= '.db' unless $dbname =~ m{\.db$};
-    return catfile(File::HomeDir->my_data, $dbname);
-}
-
 sub has_feature_returning { 0 }
 
 1;
@@ -266,10 +253,6 @@ Get the primary key field names of the table.
 =head2 table_list
 
 Return list of tables from the database.
-
-=head2 get_testdb_filename
-
-Returns the full path to the test database file.
 
 =head2 has_feature_returning
 
