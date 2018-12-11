@@ -17,6 +17,9 @@ require Tpda3::Exceptions;
 require Tpda3::Config;
 require Tpda3::Utils;
 
+use Tpda3::Tk::Text;
+use Tpda3::Tk::Entry;
+
 sub new {
     my $class = shift;
 

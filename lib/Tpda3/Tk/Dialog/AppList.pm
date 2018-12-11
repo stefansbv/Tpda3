@@ -8,8 +8,8 @@ use warnings;
 use Tk;
 use Tk::widgets qw(StatusBar LabFrame JComboBox);
 
-require Tpda3::Config;
-require Tpda3::Tk::TM;
+use Tpda3::Config;
+use Tpda3::Tk::TM;
 
 sub new {
     my $class = shift;
@@ -184,7 +184,7 @@ sub show_app_list {
         -entrywidth         => 15,
         -textvariable       => \$selected,
         -choices            => $choices,
-        -state              => 'disabled',
+        #-state              => 'disabled', # Can't set state to disabled...
         -disabledforeground => 'black',
     );
     $cdriver->form(
@@ -255,15 +255,15 @@ sub show_app_list {
     );
 
     my $test_b = $frm_bottom->Button(
-        -text    => 'Save',
-        -width   => 10,
+        -text    => 'Set default',
+        -width   => 15,
         -command => sub { $self->save_as_default() },
     );
     $test_b->pack( -side => 'left', -padx => 20, -pady => 5 );
 
     my $close_b = $frm_bottom->Button(
         -text    => 'Close',
-        -width   => 10,
+        -width   => 15,
         -command => sub { $self->dlg_exit },
     );
     $close_b->pack( -side => 'right', -padx => 20, -pady => 5 );
@@ -301,7 +301,7 @@ sub load_mnemonics {
             descr  => '',
         };
         $self->{tmx}->add_row();
-        $self->{tmx}->write_row( $cnt, 0, $record );
+        $self->{tmx}->write_row( $cnt, $record );
 
         # Store mnemonics list
         push @mnemos, { idx => $cnt, name => $mnemonic };

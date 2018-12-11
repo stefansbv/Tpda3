@@ -14,6 +14,8 @@ use POSIX qw (strftime);
 use File::Spec::Functions;
 use File::ShareDir qw(dist_dir);
 
+use Tpda3::Tk::TM;
+use Tpda3::Tk::Text;
 require Tpda3::Config;
 require Tpda3::Utils;
 
