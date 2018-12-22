@@ -279,6 +279,12 @@ sub table_batch_query {
     die "Empty COLUMN list in SELECT command for table '$table'!"
         unless scalar @{$colslist};
 
+    # XXX Workaround for PostgreSQL procedure call -> "function_name()"
+    unless ( $self->dbc->table_exists($table, 'or view') ) {
+        $table .= '()';
+        $self->_log->debug("Call $table as a function");
+    }
+        
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
