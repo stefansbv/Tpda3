@@ -173,14 +173,20 @@ sub table_info_short {
 }
 
 sub table_exists {
-    my ( $self, $table ) = @_;
+    my ( $self, $table, $or_view ) = @_;
 
     my $log = get_logger();
     $log->info("Checking if $table table exists");
 
+    my @types = (q{'BASE TABLE'});
+
+    # Allow to also check for views
+    push @types, q{'VIEW'} if $or_view;
+    my $type_list = join ',', @types;
+    
     my $sql = qq( SELECT COUNT(table_name)
                 FROM information_schema.tables
-                WHERE table_type = 'BASE TABLE'
+                WHERE table_type IN ($type_list)
                     AND table_schema NOT IN
                     ('pg_catalog', 'information_schema')
                     AND table_name = '$table';
@@ -381,7 +387,9 @@ doesn't seem to be reliable.
 
 =head2 table_exists
 
-Check if table exists in the database.
+Check if table exists in the database.  There is an extra paramater
+named C<$or_view> (starting with Tpda3 v0.99.13).  Set this parameter
+to a true value when the C<$table> to search for, can also be a VIEW.
 
 =head2 table_keys
 
