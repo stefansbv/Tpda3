@@ -19,22 +19,14 @@ use base qw{Tpda3::Controller};
 
 sub new {
     my $class = shift;
-
     my $self = $class->SUPER::new();
-
     $self->_init;
-
     $self->_log->trace('Controller new');
-
     $self->_control_states_init();
-
     $self->_set_event_handlers();
     $self->_set_event_handlers_keys();
-
     $self->_set_menus_state('disabled');    # disable find mode menus
-
     $self->_check_app_menus();               # disable if no screen
-
     return $self;
 }
 
@@ -54,10 +46,8 @@ sub start_delay {
 
 sub dialog_login {
     my $self = shift;
-
     require Tpda3::Wx::Dialog::Login;
     my $pd = Tpda3::Wx::Dialog::Login->new();
-
     my $return_string = '';
     my $dialog = $pd->login( $self->view );
     if ( $dialog->ShowModal != &Wx::wxID_CANCEL ) {
@@ -66,13 +56,11 @@ sub dialog_login {
     else {
         $return_string = 'shutdown';
     }
-
     return $return_string;
 }
 
 sub screen_module_class {
     my ( $self, $module, $from_tools ) = @_;
-
     my $module_class;
     if ($from_tools) {
         $module_class = "Tpda3::Wx::Tools::${module}";
@@ -80,19 +68,14 @@ sub screen_module_class {
     else {
         $module_class = $self->cfg->application_class() . "::${module}";
     }
-
     ( my $module_file = "$module_class.pm" ) =~ s{::}{/}g;
-
     return ( $module_class, $module_file );
 }
 
 sub _set_event_handlers_keys {
     my $self = shift;
-
     #-- Make some key bindings
-
     #   Not implemented
-
     return;
 }
 
@@ -167,7 +150,7 @@ sub about {
     $about->SetName($PROGRAM_NAME);
     $about->SetVersion($PROGRAM_VER);
     $about->SetDescription("$PROGRAM_DESC\nDatabase application framework and run-time");
-    $about->SetCopyright('(c) 2010-2018 Ştefan Suciu <stefan@s2i2.ro>');
+    $about->SetCopyright('(c) 2010-2019 Ştefan Suciu <stefan@s2i2.ro>');
     $about->SetLicense($LICENSE);
     $about->SetWebSite( 'http://tpda.s2i2.ro/', 'The Tpda3 home site');
     $about->AddDeveloper( 'Ştefan Suciu <stefan@s2i2.ro>' );

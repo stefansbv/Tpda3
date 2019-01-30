@@ -21,56 +21,41 @@ use base qw{Tpda3::Controller};
 
 sub new {
     my $class = shift;
-
     my $self = $class->SUPER::new();
-
     $self->_init;
-
     #$self->_log->level($TRACE);                     # set log level
-
     $self->_log->trace('Controller new');
-
     $self->_control_states_init();
-
     $self->_set_event_handlers();
     $self->_set_event_handlers_keys();
-
     $self->_set_menus_state('disabled');    # disable find mode menus
-
     $self->_check_app_menus();               # disable if no screen
-
     return $self;
 }
 
 sub start_delay {
     my $self = shift;
-
     $self->{_view}->after(
         500,
         sub {
             $self->connect_dialog();
         }
     );
-
     return;
 }
 
 sub _init {
     my $self = shift;
-
     my $view = Tpda3::Tk::View->new($self->model);
     $self->{_app}  = $view;                  # an alias as for Wx ...
     $self->{_view} = $view;
-
     return;
 }
 
 sub dialog_login {
     my ($self, $error) = @_;
-
     require Tpda3::Tk::Dialog::Login;
     my $pd = Tpda3::Tk::Dialog::Login->new;
-
     return $pd->login( $self->view, $error );
 }
 
@@ -352,7 +337,7 @@ sub about {
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
     $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2010-2018\n", 'normal' );
+    $text->insert( 'end', "Copyright 2010-2019\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', 'stefan@s2i2.ro',
         'italic' );
