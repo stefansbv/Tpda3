@@ -7,41 +7,24 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger);
-use Locale::TextDomain 1.20 qw(Tpda3);
-use Locale::Messages qw(bind_textdomain_filter);
-
+use Locale::TextDomain::UTF8 'Tpda3';
 require Tpda3::Config;
-
-BEGIN {
-    # Stolen from Sqitch...
-    # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
-    $ENV{OUTPUT_CHARSET} = 'UTF-8';
-    bind_textdomain_filter 'Tpda3' => \&Encode::decode_utf8;
-}
 
 sub new {
     my ( $class, $args ) = @_;
-
     my $self = {};
-
     bless $self, $class;
-
     $self->_init($args);
-
     return $self;
 }
 
 sub _init {
     my ( $self, $args ) = @_;
-
     my $cfg = Tpda3::Config->instance($args);
-
     my $widgetset = $cfg->application->{widgetset};
-
     unless ($widgetset) {
         die "The required configuration not found: 'widgetset'";
     }
-
     if ( uc $widgetset eq q{WX} ) {
         require Tpda3::Wx::Controller;
         $self->{gui} = Tpda3::Wx::Controller->new();
@@ -53,17 +36,13 @@ sub _init {
     else {
         die "Unknown widget set!: '$widgetset'";
     }
-
     $self->{gui}->start();    # stuff to run at start
-
     return;
 }
 
 sub run {
     my $self = shift;
-
     $self->{gui}{_app}->MainLoop();
-
     return;
 }
 
