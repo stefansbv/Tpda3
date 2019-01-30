@@ -105,7 +105,6 @@ sub maintable {
 
 sub has_screen_details {
     my $self = shift;
-
     my $screen = $self->screen('details');
     if ( ref $screen ) {
         return scalar keys %{$screen};
@@ -117,29 +116,30 @@ sub has_screen_details {
 
 sub screen_toolbars {
     my ( $self, $name ) = @_;
-
     die "Screen toolbar name is required" unless $name;
-
-    my $scrtb = $self->scrtoolbar($name);
-    my @toolbars;
-    if (ref($scrtb) eq 'ARRAY') {
-        @toolbars = @{$scrtb};
+    my $scrtb    = $self->scrtoolbar($name);
+    return unless $scrtb;
+    my $toolbars = [];
+    if ( ref $scrtb eq 'ARRAY' ) {
+        $toolbars = $scrtb;
     }
     else {
-        @toolbars = ($scrtb);
+        $toolbars = [$scrtb];
     }
-
-    return \@toolbars;
+    return $toolbars;
 }
 
 sub scr_toolbar_names {
-    my ($self, $name) = @_;
-
+    my ( $self, $name ) = @_;
+    print "scr_toolbar_names: name=$name\n";
     my $attribs = $self->screen_toolbars($name);
-    my @tbnames = map { $_->{name} } @{$attribs};
-    my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
-
-    return (\@tbnames, \%tbattrs);
+    if ( ref $attribs eq 'ARRAY' ) {
+        my @tbnames = map { $_->{name} } @{$attribs};
+        my %tbattrs = map { $_->{name} => $_->{method} } @{$attribs};
+        return ( \@tbnames, \%tbattrs );
+    }
+    die "Config error for screen toolbar name '$name'\n";
+    return;
 }
 
 sub scr_toolbar_groups {
