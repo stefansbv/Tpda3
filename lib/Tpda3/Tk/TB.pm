@@ -18,8 +18,14 @@ sub Populate {
 
 sub make_toolbar_button {
     my ( $self, $name, $attribs ) = @_;
-    my $type = $attribs->{type};
-    $self->$type( $name, $attribs );
+    die "TB button name missing" unless $name;
+    if ( $attribs and exists $attribs->{type} ) {
+        my $type = $attribs->{type};
+        $self->$type( $name, $attribs );
+    }
+    else {
+        warn "Can nott find attributes for TB $name\n";
+    }
     return;
 }
 
