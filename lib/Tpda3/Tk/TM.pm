@@ -260,9 +260,11 @@ sub read_row {
         if ( !$all_cols ) {
             next if $rw eq 'ro';    # skip ro cols
         }
+        # print "reading TM cell on row '$row' for field '$field'\n";
         my $cell_data = $self->cell_read( $row, $field );
         foreach my $key ( keys %{$cell_data} ) {
             $row_data->{$key} = $cell_data->{$key};
+            # print " $key => ", $cell_data->{$key}, "\n";
         }
     }
     return $row_data;
@@ -325,11 +327,17 @@ sub is_col_name {
 
 sub cell_read {
     my ( $self, $row, $col ) = @_;
+    die " cell_read: the \$row parameter is required\n"
+        unless defined $row;
+    die " cell_read: the \$col parameter is required\n"
+        unless defined $col;
     my $w_type = $self->cell_config_for( $col, 'embed' ) // '';
     my $field;
     if ( $self->is_col_name($col) ) {
         $field = $col;
         $col = $self->cell_config_for( $field, 'id' );
+        die " cell_read: can't get \$col parameter from field '$field'\n"
+            unless defined $col;
     }
     else {
         $field = $self->get_field_for($col);
@@ -340,6 +348,10 @@ sub cell_read {
 
 sub cell_write {
     my ( $self, $r, $c, $value ) = @_;
+    die "cell_write: the \$r parameter is required"
+        unless defined $r;
+    die "cell_write: the \$c parameter is required"
+        unless defined $c;
     my $w_type = $self->cell_config_for( $c, 'embed' ) // '';
     my $field;
     if ( $self->is_col_name($c) ) {

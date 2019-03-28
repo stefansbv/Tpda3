@@ -511,6 +511,7 @@ sub screen_detail_name {
             }
         }
     }
+    print " screen_detail_name: $sdn\n" if $self->cfg->verbose;
     return $sdn;
 }
 
@@ -1443,7 +1444,6 @@ sub set_event_handler_screen {
 
 sub screen_module_detail_load {
     my ( $self, $module ) = @_;
-
     my $dscrstr = lc $module;
 
     $self->view->notebook_page_clean('det');
@@ -2155,6 +2155,8 @@ sub tmatrix_get_selected {
     if ( blessed $tmx ) {
         $sc = $tmx->get_selected();
     }
+    print "selected TM row: ", defined $sc ? "'$sc\n" : "undef\n"
+      if $self->cfg->verbose;
     return $sc;
 }
 
