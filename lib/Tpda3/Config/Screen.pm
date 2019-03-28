@@ -131,7 +131,8 @@ sub screen_toolbars {
 
 sub scr_toolbar_names {
     my ( $self, $name ) = @_;
-    print "scr_toolbar_names: name=$name\n";
+    die " scr_toolbar_names: the \$name parameter is required\n"
+        unless defined $name;
     my $attribs = $self->screen_toolbars($name);
     if ( ref $attribs eq 'ARRAY' ) {
         my @tbnames = map { $_->{name} } @{$attribs};
