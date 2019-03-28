@@ -137,11 +137,22 @@ sub parse_error {
     return $message;
 }
 
+sub get_schema_name {
+    my ( $self, $table ) = @_;
+    my ( $schema_name, $table_name ) = ( undef, $table );
+    if ( $table =~ m{\.} ) {
+        ( $schema_name, $table_name ) = split /[.]/, $table;
+    }
+    return ( $schema_name, $table_name );
+}
+
 sub table_info_short {
     my ( $self, $table ) = @_;
 
     my $log = get_logger();
     $log->info("Geting table info for $table");
+
+    my ($schema_name, $table_name) = $self->get_schema_name($table);
 
     my $sql = qq( SELECT ordinal_position  AS pos
                     , column_name       AS name
@@ -152,9 +163,10 @@ sub table_info_short {
                     , numeric_precision AS prec
                     , numeric_scale     AS scale
                FROM information_schema.columns
-               WHERE table_name = '$table'
-               ORDER BY ordinal_position;
+               WHERE table_name = '$table_name'
     );
+    $sql .= qq{AND table_schema = '$schema_name'} if $schema_name;
+    $sql .=  q{ORDER BY ordinal_position;};
 
     $self->{_dbh}{ChopBlanks} = 1;    # trim CHAR fields
 
@@ -178,19 +190,24 @@ sub table_exists {
     my $log = get_logger();
     $log->info("Checking if $table table exists");
 
+    my ($schema_name, $table_name) = $self->get_schema_name($table);
+
     my @types = (q{'BASE TABLE'});
 
     # Allow to also check for views
     push @types, q{'VIEW'} if $or_view;
     my $type_list = join ',', @types;
     
-    my $sql = qq( SELECT COUNT(table_name)
-                FROM information_schema.tables
-                WHERE table_type IN ($type_list)
-                    AND table_schema NOT IN
-                    ('pg_catalog', 'information_schema')
-                    AND table_name = '$table';
+    my $sql = qq(
+         SELECT COUNT(table_name)
+             FROM information_schema.tables
+             WHERE table_type IN ($type_list)
+               AND table_schema NOT IN
+               ('pg_catalog', 'information_schema')
+               AND table_name = '$table_name'
     );
+    $sql .= qq{AND table_schema = '$schema_name'} if $schema_name;
+    $sql .= ';';
 
     $log->trace("SQL= $sql");
 
@@ -211,19 +228,23 @@ sub table_keys {
 
     my $log = get_logger();
 
+    my ($schema_name, $table_name) = $self->get_schema_name($table);
+
     my $type = $foreign ? 'FOREIGN KEY' : 'PRIMARY KEY';
 
     $log->info("Geting '$table' table primary key(s) names");
 
     my $sql = qq( SELECT kcu.column_name
-                   FROM information_schema.table_constraints tc
-                     LEFT JOIN information_schema.key_column_usage kcu
-                          ON tc.constraint_catalog = kcu.constraint_catalog
-                            AND tc.constraint_schema = kcu.constraint_schema
-                            AND tc.constraint_name = kcu.constraint_name
-                   WHERE tc.table_name = '$table'
-                     AND tc.constraint_type = '$type';
+                    FROM information_schema.table_constraints tc
+                      LEFT JOIN information_schema.key_column_usage kcu
+                        ON tc.constraint_catalog = kcu.constraint_catalog
+                          AND tc.constraint_schema = kcu.constraint_schema
+                          AND tc.constraint_name = kcu.constraint_name
+                    WHERE tc.table_name = '$table_name'
+                      AND tc.constraint_type = '$type'
     );
+    $sql .= qq{AND table_schema = '$schema_name'} if $schema_name;
+    $sql .=  q{ORDER BY ordinal_position;};
 
     $log->trace("SQL= $sql");
 
@@ -379,6 +400,11 @@ Log errors.
 Parse a database error message, and translate it for the user.
 
 Better way to do this?
+
+=head3 get_schema_name
+
+Parse and return the schema name and the table name from the table
+parameter.
 
 =head2 table_info_short
 
