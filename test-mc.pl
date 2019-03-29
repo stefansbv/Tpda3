@@ -22,6 +22,7 @@ my $b_ok = $frm2->Button(
     -command => sub {
         my ( $year, $month, $day ) = $minical->date;
         print "Selected date: $year-$month-$day\n";
+        $minical->dump_entry();
         exit;
     },
 )->pack;

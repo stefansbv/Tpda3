@@ -321,8 +321,8 @@ sub Populate {    # {{{
         $i++;
     }
     my $day = ' ';
-    for ( $i = 0 ; $i < 6 ; $i++ ) {
-        for ( my $j = 0 ; $j < 7 ; $j++ ) {
+    foreach my $i ( 0 .. 5 ) {
+        foreach my $j ( 0 .. 6 ) {
             my $mf = $frm2->Frame(
                 -borderwidth => 2,
                 -relief      => 'ridge',
@@ -349,7 +349,7 @@ sub Populate {    # {{{
                 -padx => 5,
                 -pady => 3,
             );
-            $w->{FRM_ARR}->[$i][$j]{efb}->Entry(
+            $w->{ENT_ARR}->[$i][$j] = $w->{FRM_ARR}->[$i][$j]{efb}->Entry(
                 -width  => 2,
                 -relief => 'flat',
             )->pack(
@@ -510,6 +510,18 @@ Day and month numbers are always two digits (with leading zeroes).
   return ($yyyy, $mm, $dd);
 } # date }}}
 
+sub dump_entry {
+    my $w = shift;
+    foreach my $i ( 0 .. 5 ) {
+        foreach my $j ( 0 .. 6 ) {
+            my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
+            my $pos = $i * 7 + $j + 2 - $dow;
+            print "i:$i, j:$j  --> pos: $pos = ",
+              $w->{ENT_ARR}->[$i][$j]->get, "\n";
+        }
+    }
+}
+
 sub select_date {    #{{{ ----------------------------------------------
 
 =head2 $minical->select_date($year, $month, $day)
@@ -649,7 +661,7 @@ sub _sel { #{{{
   $w->{SEL_MONTH} = $w->{MONTH};
   my $dow = Day_of_Week($w->{YEAR}, $w->{MONTH}, 1);
   my $pos = $i*7 + $j + 2 - $dow;
-#print "i: $i, j: $j  --> pos: $pos\n";
+  # print "i: $i, j: $j  --> pos: $pos\n";
   return if $pos < 1;
   return if $pos > Days_in_Month($w->{YEAR}, $w->{MONTH});
   croak "error in selected date: ", $w->{SEL_YEAR}, ", ", $w->{SEL_MONTH}, ", ", $pos
