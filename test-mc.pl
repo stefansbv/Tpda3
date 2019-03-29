@@ -14,12 +14,18 @@ my $frm1 = $top->Frame->pack;  # Frame to place MaxiCalendar in
 
 my $minical = $frm1->MaxiCalendar->pack;
 
+# $minical->set_month(2019, 9);
+$minical->select_date(2019, 9, 1);
+    
+# $minical->display_month( $w, $w->{YEAR}, $w->{MONTH} );
+
+
 my $frm2 = $top->Frame->pack;    # Frame for Ok Button
 my $b_ok = $frm2->Button(
     -text    => "Ok",
     -command => sub {
         my ( $year, $month, $day ) = $minical->date;
-        print "Selected date: $year/$month/$day\n";
+        print "Selected date: $year-$month-$day\n";
         exit;
     },
 )->pack;
