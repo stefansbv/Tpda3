@@ -7,7 +7,6 @@ our $VERSION = '0.14';
 our $TKV = '804.027';
 
 use Tk;
-use Tk::XPMs qw(:arrows);
 use Carp;
 use Date::Calc qw(
   check_date
@@ -334,16 +333,34 @@ sub Populate {    # {{{
     my $day = " ";
     for ( $i = 0 ; $i < 6 ; $i++ ) {
         for ( my $j = 0 ; $j < 7 ; $j++ ) {
-            $w->{MON_ARR}->[$i][$j] = $frm2->Label(
-                -text       => $day,
-                -width      => 4,
-                -background => "#FFFFFF",
+            # $w->{MON_ARR}->[$i][$j] = $frm2->Label(
+            #     -text       => $day,
+            #     -width      => 4,
+            #     -background => "#FFFFFF",
+            # )->grid(
+            #     -column => $j,
+            #     -row    => $i + 1,
+            #     -sticky => "w",
+            #     -padx   => 0,
+            #     -pady   => 0
+            # );
+            my $f = $frm2->Frame(
+                -borderwidth => 2,
+                -relief      => 'ridge',
             )->grid(
                 -column => $j,
                 -row    => $i + 1,
                 -sticky => "w",
-                -padx   => 0,
-                -pady   => 0
+                -padx   => 3,
+                -pady   => 3,
+            );
+            $w->{MON_ARR}->[$i][$j] = $f->Label( -text => $day )->pack;
+            my $ez = $f->Entry(
+                -width  => 3,
+                -relief => 'flat',
+            )->pack(
+                -padx => 5,
+                -pady => 3,
             );
 
             my ( $ii, $jj ) =
@@ -390,6 +407,9 @@ sub Populate {    # {{{
     }
     display_month( $w, $w->{YEAR}, $w->{MONTH} );
 
+    # 
+    # calendar_day_stub($w);
+    
     # print "-----\n";
     # print Dumper $w;
     return;
@@ -731,6 +751,55 @@ sub _check_i_j {
   }
 } # _check_i_j }}}
 # }}}
+
+#--
+
+sub calendar_day {
+    my ( $w, $day ) = @_;
+    my $f = $w->Frame(
+        -borderwidth => 2,
+        -relief      => 'ridge',
+    )->pack(
+        -side => 'left',
+        -padx => 10,
+        -pady => 5,
+    );
+    my $lz = $f->Label( -text => $day );
+    $lz->pack;
+    my $ez = $f->Entry(
+        -width              => 3,
+        -relief             => 'flat',
+    )->pack(
+        -padx => 5,
+        -pady => 3,
+    );
+    # my $ctrl = sprintf "z%02d", $day;
+    # print "add $ctrl\n";
+    return;
+}
+
+sub calendar_day_stub {
+    my ( $w, $label ) = @_;
+    my $f = $w->Frame(
+        -borderwidth => 2,
+        -relief      => 'ridge',
+    )->pack(
+        -side => 'left',
+        -padx => 10,
+        -pady => 5,
+    );
+    $f->Label(
+        -text => $label,
+    )->pack;
+    $f->Label(
+        -text  => ' ',
+        -width => 3,
+    )->pack(
+        -padx => 5,
+        -pady => 3,
+    );
+    return;
+}
 
 1;
 
