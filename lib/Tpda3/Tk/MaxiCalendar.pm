@@ -26,14 +26,14 @@ Construct Tk::Widget 'MaxiCalendar';
 
 =head1 NAME
 
-Tk::MiniCalendar - simple calendar widget for date selection
+Tk::MaxiCalendar - simple calendar widget for date selection
 
 =head1 SYNOPSIS
 
  use Tk;
- use Tk::MiniCalendar;
+ use Tk::MaxiCalendar;
 
- my $minical = <PARENT>->MiniCalendar(-day   => $dd, 
+ my $minical = <PARENT>->MaxiCalendar(-day   => $dd, 
                                       -month => $mm, 
                                       -year  => $yyyy,
                                       -day_names   => \@DAYNAMES,
@@ -47,7 +47,7 @@ Tk::MiniCalendar - simple calendar widget for date selection
 
 =head1 DESCRIPTION
 
-C<Tk::MiniCalendar> provides a tiny calendar widget
+C<Tk::MaxiCalendar> provides a tiny calendar widget
 which can be used to select valid dates.
 
 =head2 Graphical Representation
@@ -55,9 +55,9 @@ which can be used to select valid dates.
 The widget looks like:
 
   +------------------------------+
-  |<<  <   September 2004   >  >>|
+  |        September 2004        |
   |                              |
-  |  Mo  Di  Mi  Do  Fr  Sa  So  |
+  |  L   Ma  Mi  J   V   S   D   |
   |           1   2   3   4   5  |
   |   6   7   8   9  10  11  12  |
   |  13  14  15 [16] 17  18  19  |
@@ -65,61 +65,49 @@ The widget looks like:
   |  27  28  29  30              |
   +------------------------------+
 
-The year can be entered directly into the corresponding entry field. The "<<" and ">>"
-buttons allow the user to scroll one year back or forth and the "<" and ">"
-buttons can be used for scrolling through the months of a year. The month
-can also be selected directly from a pulldown menu which can be invoked
-by clicking the month name.
-
-Clicking with mouse button one on a day selects that day. The selected day
-can be retrieved with the $minical->date() method.
+Clicking with mouse button one on a day selects that day. The selected
+day can be retrieved with the $minical->date() method.
 
 =head2 Handlers
 
-It is possible to register user provided handlers for the MiniCalendar widget.
-You may for example register a "double-button-1" handler which is invoked by
-doubleclicking one of the days.
+It is possible to register user provided handlers for the MaxiCalendar
+widget.  You may for example register a "double-button-1" handler
+which is invoked by doubleclicking one of the days.
 
 Example:
 
  $minical->register('<Double-1>', \&double_1_handler);
- $minical->register('<Button-3>', \&button_3_handler);
-
-Only the following event specifications are recognized:
-
- <Button-1>  <Double-1>
- <Button-2>  <Double-2>
- <Button-3>  <Double-3>
 
  <Display-Month>
 
-If one of those events occurs on one of the displayed days, the registered callback
-is invoked with the following parameters:
+If one of those events occurs on one of the displayed days, the
+registered callback is invoked with the following parameters:
 
  $yyyy, $mm, $dd   (year, month and day)
 
-NOTE: If there are two handlers for <Button-n> and <Double-n> then both handlers are
-invoked in case of a double-button-n event because a double-button-n event is also a
-button-n event.
+NOTE: If there are two handlers for <Button-n> and <Double-n> then
+both handlers are invoked in case of a double-button-n event because a
+double-button-n event is also a button-n event.
 
-A callback routine for the special "event" E<lt>Display-MonthE<gt> will be called each time
-the minicalendar is updated i.e. when a month has been displayed. This can be used to
-hilight certain days with different colors. See also C<hilight> method below. Note that in
-this case the $dd parameter is always set to 1.
+A callback routine for the special "event" E<lt>Display-MonthE<gt>
+will be called each time the minicalendar is updated i.e. when a month
+has been displayed. This can be used to hilight certain days with
+different colors. See also C<hilight> method below. Note that in this
+case the $dd parameter is always set to 1.
 
 =head1 EXAMPLE
 
-Here is a fullblown example for the usage of Tk::MiniCalendar
+Here is a fullblown example for the usage of Tk::MaxiCalendar
 
  use Tk;
- use Tk::MiniCalendar;
+ use Tk::MaxiCalendar;
 
  use strict;
  my $top = MainWindow->new;
 
- my $frm1 = $top->Frame->pack;  # Frame to place MiniCalendar in
+ my $frm1 = $top->Frame->pack;  # Frame to place MaxiCalendar in
 
- my $minical = $frm1->MiniCalendar->pack;
+ my $minical = $frm1->MaxiCalendar->pack;
 
  my $frm2 = $top->Frame->pack;  # Frame for Ok Button
  my $b_ok = $frm2->Button(-text => "Ok",
@@ -133,7 +121,7 @@ Here is a fullblown example for the usage of Tk::MiniCalendar
 
 =head1 OPTIONS
 
-The following options can be specified for Tk::MiniCalendar:
+The following options can be specified for Tk::MaxiCalendar:
 
 =over 4
 
@@ -191,14 +179,14 @@ Foreground color for the selected day.
 
 =head1 METHODS
 
-The following methods are provided by Tk::MiniCalendar:
+The following methods are provided by Tk::MaxiCalendar:
 
 =cut
 
 #}}}
 
 
-# valid options for MiniCalendar:
+# valid options for MaxiCalendar:
 my @validArgs = qw( -day -month -year -day_names -month_names -bg_color -fg_color
  -bg_label_color -fg_label_color
  -bg_sel_color -fg_sel_color
@@ -307,7 +295,7 @@ sub Populate {    # {{{
     my $frm2 = $w->Frame()->pack();
 
     $w->{l_mm} = $frm1->Label(
-        -text       => $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR},
+        -text       => label_yyyymm($w),
         -width      => 20,
         -background => "#FFFFFF",
     )->pack( -side => "left" );
@@ -333,17 +321,6 @@ sub Populate {    # {{{
     my $day = " ";
     for ( $i = 0 ; $i < 6 ; $i++ ) {
         for ( my $j = 0 ; $j < 7 ; $j++ ) {
-            # $w->{MON_ARR}->[$i][$j] = $frm2->Label(
-            #     -text       => $day,
-            #     -width      => 4,
-            #     -background => "#FFFFFF",
-            # )->grid(
-            #     -column => $j,
-            #     -row    => $i + 1,
-            #     -sticky => "w",
-            #     -padx   => 0,
-            #     -pady   => 0
-            # );
             my $f = $frm2->Frame(
                 -borderwidth => 2,
                 -relief      => 'ridge',
@@ -354,9 +331,13 @@ sub Populate {    # {{{
                 -padx   => 3,
                 -pady   => 3,
             );
-            $w->{MON_ARR}->[$i][$j] = $f->Label( -text => $day )->pack;
+            $w->{MON_ARR}->[$i][$j] = $f->Label(
+                -text       => $day,
+                -width      => 4,
+                -background => "#FFFFFF",
+            )->pack;
             my $ez = $f->Entry(
-                -width  => 3,
+                -width  => 2,
                 -relief => 'flat',
             )->pack(
                 -padx => 5,
@@ -372,37 +353,6 @@ sub Populate {    # {{{
                     _sel( $w, $ii, $jj );
                 }
             );
-            $w->{MON_ARR}->[$i][$j]->bind(
-                '<Button-2>',
-                sub {
-                    _b2( $w, $ii, $jj );
-                }
-            );
-            $w->{MON_ARR}->[$i][$j]->bind(
-                '<Button-3>',
-                sub {
-                    _b3( $w, $ii, $jj );
-                }
-            );
-
-            $w->{MON_ARR}->[$i][$j]->bind(
-                '<Double-1>',
-                sub {
-                    _d1( $w, $ii, $jj );
-                }
-            );
-            $w->{MON_ARR}->[$i][$j]->bind(
-                '<Double-2>',
-                sub {
-                    _d2( $w, $ii, $jj );
-                }
-            );
-            $w->{MON_ARR}->[$i][$j]->bind(
-                '<Double-3>',
-                sub {
-                    _d3( $w, $ii, $jj );
-                }
-            );
         }
     }
     display_month( $w, $w->{YEAR}, $w->{MONTH} );
@@ -416,6 +366,13 @@ sub Populate {    # {{{
 }    # Populate }}}
 
 # Methods
+
+sub label_yyyymm {
+    my $w = shift;
+    return 'none' if !$w->{SEL_MONTH} and !$w->{SEL_YEAR};
+    return $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR};
+}
+
 sub index_of { # {{{
   my $w = shift;
   my $m_name = shift;
@@ -528,7 +485,7 @@ sub date{ #{{{ -----------------------------------------------------
 
 =head2 my ($year, $month, $day) = $minical->date()
 
-Returns the selected date from Tk::MiniCalendar.
+Returns the selected date from Tk::MaxiCalendar.
 Day and month numbers are always two digits (with leading zeroes).
 
 =cut
@@ -540,28 +497,29 @@ Day and month numbers are always two digits (with leading zeroes).
   return ($yyyy, $mm, $dd);
 } # date }}}
 
-sub select_date{ #{{{ ----------------------------------------------
+sub select_date {    #{{{ ----------------------------------------------
 
 =head2 $minical->select_date($year, $month, $day)
 
-Selects a date and positions the MiniCalendar to the corresponding year
-and month. The selected date is hilighted.
+Selects a date and positions the MaxiCalendar to the corresponding
+year and month. The selected date is hilighted.
 
 =cut
 
-  my ($w, $yyyy, $mm, $dd) = @_;
-  if (check_date($yyyy, $mm, $dd) ){
-    $w->{SEL_YEAR} = $yyyy;
-    $w->{SEL_MONTH} = $mm;
-    $w->{SEL_DAY} = $dd;
-    $w->configure(-day => $dd, -month => $mm, -year => $yyyy);
-    display_month($w, $yyyy, $mm);
-    $w->{l_mm}->configure(-text => $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR} );
-  } else {
-    croak "Error in date: $yyyy, $mm, $dd";
-  }
-  return;
-} # select_date }}}
+    my ( $w, $yyyy, $mm, $dd ) = @_;
+    if ( check_date( $yyyy, $mm, $dd ) ) {
+        $w->{SEL_YEAR}  = $yyyy;
+        $w->{SEL_MONTH} = $mm;
+        $w->{SEL_DAY}   = $dd;
+        $w->configure( -day => $dd, -month => $mm, -year => $yyyy );
+        display_month( $w, $yyyy, $mm );
+        $w->{l_mm}->configure( -text => label_yyyymm($w) );
+    }
+    else {
+        croak "Error in date: $yyyy, $mm, $dd";
+    }
+    return;
+}    # select_date }}}
 
 sub display_month{ #{{{ --------------------------------------------
 
@@ -697,47 +655,6 @@ sub register {# {{{
 
   return;
 } # register }}}
-
-sub _b2 {
-  my ($w, $i, $j) = @_;
-  my ($yyyy, $mm, $dd) = _check_i_j($w, $i, $j);
-  return unless defined $yyyy;
-  $w->{CALLBACK}->{'<Button-2>'}($yyyy, $mm, $dd) if defined $w->{CALLBACK}->{'<Button-2>'};
-  return;
-}
-
-sub _b3 {
-  my ($w, $i, $j) = @_;
-  my ($yyyy, $mm, $dd) = _check_i_j($w, $i, $j);
-  return unless defined $yyyy;
-  $w->{CALLBACK}->{'<Button-3>'}($yyyy, $mm, $dd) if defined $w->{CALLBACK}->{'<Button-3>'};
-  return;
-}
-
-sub _d1 {
-  my ($w, $i, $j) = @_;
-  my ($yyyy, $mm, $dd) = _check_i_j($w, $i, $j);
-  return unless defined $yyyy;
-  $w->{CALLBACK}->{'<Double-1>'}($yyyy, $mm, $dd) if defined $w->{CALLBACK}->{'<Double-1>'};
-  return;
-}
-
-sub _d2 {
-  my ($w, $i, $j) = @_;
-  my ($yyyy, $mm, $dd) = _check_i_j($w, $i, $j);
-  return unless defined $yyyy;
-  $w->{CALLBACK}->{'<Double-2>'}($yyyy, $mm, $dd) if defined $w->{CALLBACK}->{'<Double-2>'};
-  return;
-}
-
-sub _d3 {
-  my ($w, $i, $j) = @_;
-  my ($yyyy, $mm, $dd) = _check_i_j($w, $i, $j);
-  return unless defined $yyyy;
-  $w->{CALLBACK}->{'<Double-3>'}($yyyy, $mm, $dd) if defined $w->{CALLBACK}->{'<Double-3>'};
-  return;
-}
-
 
 # check, if $i, $j position is a valid date {{{
 sub _check_i_j {
