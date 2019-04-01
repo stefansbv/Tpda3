@@ -350,8 +350,9 @@ sub Populate {    # {{{
                 -pady => 3,
             );
             $w->{ENT_ARR}->[$i][$j] = $w->{FRM_ARR}->[$i][$j]{efb}->Entry(
-                -width  => 2,
-                -relief => 'flat',
+                -width   => 3,
+                -relief  => 'raised',
+                -justify => 'center',
             )->pack(
                 -padx => 5,
                 -pady => 3,
@@ -370,9 +371,6 @@ sub Populate {    # {{{
     }
     display_month( $w, $w->{YEAR}, $w->{MONTH} );
 
-    #
-    # calendar_day_stub($w);
-
     # print "-----\n";
     # print Dumper $w;
     return;
@@ -386,115 +384,124 @@ sub label_yyyymm {
     return $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR};
 }
 
-sub index_of { # {{{
-  my $w = shift;
-  my $m_name = shift;
-  my $i = 0;
-  foreach my $mnm ( @{ $w->{MONNAME} }){
-    $i++;
-    return $i if $mnm eq $m_name;
-  }
-  return $i;
-} # index_of }}}
+sub index_of {    # {{{
+    my $w      = shift;
+    my $m_name = shift;
+    my $i      = 0;
+    foreach my $mnm ( @{ $w->{MONNAME} } ) {
+        $i++;
+        return $i if $mnm eq $m_name;
+    }
+    return $i;
+}    # index_of }}}
 
-sub day { # {{{
-  my ($w, $d) = @_;
-  if ($#_ > 0 ){
-    $w->{SEL_DAY} = $d;
-    display_month($w, $w->{SEL_YEAR}, $w->{SEL_MONTH});
+sub day {    # {{{
+    my ( $w, $d ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{SEL_DAY} = $d;
+        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+        return;
+    }
+    else {
+        return $w->{SEL_DAY};
+    }
+}    # }}}
+
+sub month {    # {{{
+    my ( $w, $m ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{SEL_MONTH} = $m;
+        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+    }
+    else {
+        return $w->{SEL_MONTH};
+    }
     return;
-  } else {
-    return $w->{SEL_DAY};
-  }
-} # }}}
+}    # }}}
 
-sub month { # {{{
-  my ($w, $m) = @_;
-  if ($#_ > 0 ){
-    $w->{SEL_MONTH} = $m;
-    display_month($w, $w->{SEL_YEAR}, $w->{SEL_MONTH});
-  } else {
-    return $w->{SEL_MONTH};
-  }
-  return;
-} # }}}
+sub year {    # {{{
+    my ( $w, $y ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{SEL_YEAR} = $y;
+        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+    }
+    else {
+        return $w->{SEL_YEAR};
+    }
+    return;
+}    # }}}
 
-sub year { # {{{
-  my ($w, $y) = @_;
-  if ($#_ > 0 ){
-    $w->{SEL_YEAR} = $y;
-    display_month($w, $w->{SEL_YEAR}, $w->{SEL_MONTH});
-  } else {
-    return $w->{SEL_YEAR};
-  }
-  return;
-} # }}}
+sub fg_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{FG_COLOR} = $c;
+        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+    }
+    else {
+        return $w->{FG_COLOR};
+    }
+    return;
+}    # }}}
 
-sub fg_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{FG_COLOR} = $c;
-    display_month($w, $w->{SEL_YEAR}, $w->{SEL_MONTH});
-  } else {
-    return $w->{FG_COLOR};
-  }
-  return;
-} # }}}
+sub bg_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{BG_COLOR} = $c;
+        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+    }
+    else {
+        return $w->{BG_COLOR};
+    }
+    return;
+}    # }}}
 
-sub bg_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{BG_COLOR} = $c;
-    display_month($w, $w->{SEL_YEAR}, $w->{SEL_MONTH});
-  } else {
-    return $w->{BG_COLOR};
-  }
-  return;
-} # }}}
+sub fg_label_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{FG_LABEL_COLOR} = $c;
+        _configure_labels($w);
+    }
+    else {
+        return $w->{FG_LABEL_COLOR};
+    }
+    return;
+}    # }}}
 
-sub fg_label_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{FG_LABEL_COLOR} = $c;
-    _configure_labels($w);
-  } else {
-    return $w->{FG_LABEL_COLOR};
-  }
-  return;
-} # }}}
+sub bg_label_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{BG_LABEL_COLOR} = $c;
+        _configure_labels($w);
+    }
+    else {
+        return $w->{BG_LABEL_COLOR};
+    }
+    return;
+}    # }}}
 
-sub bg_label_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{BG_LABEL_COLOR} = $c;
-    _configure_labels($w);
-  } else {
-    return $w->{BG_LABEL_COLOR};
-  }
-  return;
-} # }}}
+sub fg_sel_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{FG_SEL_COLOR} = $c;
+    }
+    else {
+        return $w->{FG_SEL_COLOR};
+    }
+    return;
+}    # }}}
 
-sub fg_sel_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{FG_SEL_COLOR} = $c;
-  } else {
-    return $w->{FG_SEL_COLOR};
-  }
-  return;
-} # }}}
+sub bg_sel_color {    # {{{
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{BG_SEL_COLOR} = $c;
+    }
+    else {
+        return $w->{BG_SEL_COLOR};
+    }
+    return;
+}    # }}}
 
-sub bg_sel_color { # {{{
-  my ($w, $c) = @_;
-  if ($#_ > 0 ){
-    $w->{BG_SEL_COLOR} = $c;
-  } else {
-    return $w->{BG_SEL_COLOR};
-  }
-  return;
-} # }}}
-
-sub date{ #{{{ -----------------------------------------------------
+sub date {    #{{{ -----------------------------------------------------
 
 =head2 my ($year, $month, $day) = $minical->date()
 
@@ -503,12 +510,12 @@ Day and month numbers are always two digits (with leading zeroes).
 
 =cut
 
-  my ($w) = @_;
-  my $yyyy = sprintf("%4d",  $w->{SEL_YEAR});
-  my $mm   = sprintf("%02d", $w->{SEL_MONTH});
-  my $dd   = sprintf("%02d", $w->{SEL_DAY});
-  return ($yyyy, $mm, $dd);
-} # date }}}
+    my ($w) = @_;
+    my $yyyy = sprintf( "%4d",  $w->{SEL_YEAR} );
+    my $mm   = sprintf( "%02d", $w->{SEL_MONTH} );
+    my $dd   = sprintf( "%02d", $w->{SEL_DAY} );
+    return ( $yyyy, $mm, $dd );
+}    # date }}}
 
 sub dump_entry {
     my $w = shift;
@@ -609,7 +616,7 @@ with ($year, $month, 1) as parameters.
 
 # Internal methods
 
-sub hilight { # {{{
+sub hilight {    # {{{
 
 =head2 $minical->hilight($year, $month, $day, $background, $foreground)
 
@@ -618,94 +625,99 @@ May be used in a callback for the E<lt>Display-MonthE<gt> event.
 
 =cut
 
-  my ($w, $yyyy, $mm, $dd, $bg, $fg) = @_;
-  _select_day($w, $yyyy, $mm, $dd, $bg, $fg);
-  return;
-} # hilight }}}
+    my ( $w, $yyyy, $mm, $dd, $bg, $fg ) = @_;
+    _select_day( $w, $yyyy, $mm, $dd, $bg, $fg );
+    return;
+}    # hilight }}}
 
 sub _select_day { # {{{
-  my ($w, $yyyy, $mm, $dd, $bg, $fg) = @_;
- #print $w, "\n";
-  return if $yyyy != $w->{YEAR};
-  return if $mm   != $w->{MONTH};
+    my ($w, $yyyy, $mm, $dd, $bg, $fg) = @_;
+    #print $w, "\n";
+    return if $yyyy != $w->{YEAR};
+    return if $mm   != $w->{MONTH};
 
-  # current year and month contains day which must be hilighted
-  my $dow = Day_of_Week($yyyy, $mm, 1); # first day in month ...
-  my $pos = $dow -2 + $dd;  # position (index) of $dd in linear mode
-  #        +--- $dow -1   ($dow == 3)
-  #        |
-  #        v
-  #  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 .... (indices in linear mode)
-  #  Mo Di Mi Do Fr Sa So Mo Di Mi Do Fr Sa So Mo Di Mi Do Fr Sa So ...
-  #        1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 ...
-  #                                ^
-  #                                |
-  #                         $dd ---+
-  #
-  # Example: Do, 9 has linear index 10, i. e. $dow -2 + 9
-  # $pos determines $i and $j:
-  #
-  my $i = int($pos / 7);
-  my $j = $pos % 7;
-# print " yyyy: $yyyy  mm: $mm  dd: $dd   dow: $dow\npos: $pos, i: $i, j: $j\n";
-  $w->{MON_ARR}->[$i][$j]->configure(
-    -background => $bg,
-    -foreground => $fg,
-  );
-  return;
+    # current year and month contains day which must be hilighted
+    my $dow = Day_of_Week($yyyy, $mm, 1); # first day in month ...
+    my $pos = $dow -2 + $dd;  # position (index) of $dd in linear mode
+    #        +--- $dow -1   ($dow == 3)
+    #        |
+    #        v
+    #  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 ...(indices in linear mode)
+    #  Mo Di Mi Do Fr Sa So Mo Di Mi Do Fr Sa So Mo Di Mi Do Fr Sa So ...
+    #        1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 ...
+    #                                ^
+    #                                |
+    #                         $dd ---+
+    #
+    # Example: Do, 9 has linear index 10, i. e. $dow -2 + 9
+    # $pos determines $i and $j:
+    #
+    my $i = int($pos / 7);
+    my $j = $pos % 7;
+    # print " yyyy: $yyyy  mm: $mm  dd: $dd   dow: $dow\npos: $pos, i: $i, j: $j\n";
+    $w->{MON_ARR}->[$i][$j]->configure(
+        -background => $bg,
+        -foreground => $fg,
+    );
+    return;
 } # _select_day }}}
 
-sub _sel { #{{{
-  my ($w, $i, $j) = @_;
-  $w->{SEL_YEAR} = $w->{YEAR};
-  $w->{SEL_MONTH} = $w->{MONTH};
-  my $dow = Day_of_Week($w->{YEAR}, $w->{MONTH}, 1);
-  my $pos = $i*7 + $j + 2 - $dow;
-  # print "i: $i, j: $j  --> pos: $pos\n";
-  return if $pos < 1;
-  return if $pos > Days_in_Month($w->{YEAR}, $w->{MONTH});
-  croak "error in selected date: ", $w->{SEL_YEAR}, ", ", $w->{SEL_MONTH}, ", ", $pos
-    unless check_date($w->{SEL_YEAR}, $w->{SEL_MONTH}, $pos);
-  $w->{SEL_DAY} = $pos; # ok to use it ...
+sub _sel {    #{{{
+    my ( $w, $i, $j ) = @_;
+    $w->{SEL_YEAR}  = $w->{YEAR};
+    $w->{SEL_MONTH} = $w->{MONTH};
+    my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
+    my $pos = $i * 7 + $j + 2 - $dow;
 
-  display_month($w,  $w->{YEAR}, $w->{MONTH});
-  $w->{CALLBACK}->{'<Button-1>'}($w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY}) if defined $w->{CALLBACK}->{'<Button-1>'};
-  return;
-} # _sel }}}
+    # print "i: $i, j: $j  --> pos: $pos\n";
+    return if $pos < 1;
+    return if $pos > Days_in_Month( $w->{YEAR}, $w->{MONTH} );
+    croak "error in selected date: ", $w->{SEL_YEAR}, ", ", $w->{SEL_MONTH},
+      ", ", $pos
+      unless check_date( $w->{SEL_YEAR}, $w->{SEL_MONTH}, $pos );
+    $w->{SEL_DAY} = $pos;    # ok to use it ...
 
-sub _configure_labels { # {{{
+    display_month( $w, $w->{YEAR}, $w->{MONTH} );
+    $w->{CALLBACK}->{'<Button-1>'}
+      ( $w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY} )
+      if defined $w->{CALLBACK}->{'<Button-1>'};
+    return;
+}    # _sel }}}
 
-  my ($w) = @_;
-  for (my $i=0; $i< 7; $i++) {
+sub _configure_labels {    # {{{
+    my ($w) = @_;
+    for ( my $i = 0 ; $i < 7 ; $i++ ) {
 
-    $w->{LABELS}->[$i]->configure(
-        -background => $w->{BG_LABEL_COLOR},
-        -foreground => $w->{FG_LABEL_COLOR},
-      );
-  }
-  return;
-} # _configure_labels }}}
+        $w->{LABELS}->[$i]->configure(
+            -background => $w->{BG_LABEL_COLOR},
+            -foreground => $w->{FG_LABEL_COLOR},
+        );
+    }
+    return;
+}    # _configure_labels }}}
 
 # Event Handling: {{{
 #
-sub register {# {{{
-  my ($w, $event, $coderef) = @_;
-  $w->{CALLBACK}->{$event} = $coderef;
+sub register {    # {{{
+    my ( $w, $event, $coderef ) = @_;
+    $w->{CALLBACK}->{$event} = $coderef;
 
-  return;
-} # register }}}
+    return;
+}    # register }}}
 
 # check, if $i, $j position is a valid date {{{
 sub _check_i_j {
-  my ($w, $i, $j) = @_;
-  my $dow = Day_of_Week($w->{YEAR}, $w->{MONTH}, 1);
-  my $pos = $i*7 + $j + 2 - $dow;
-  if ($pos > 0 and $pos <= Days_in_Month($w->{YEAR}, $w->{MONTH})) {
-    return ($w->{YEAR}, $w->{MONTH}, $pos);
-  } else {
-    return (undef, undef, undef);
-  }
-} # _check_i_j }}}
+    my ( $w, $i, $j ) = @_;
+    my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
+    my $pos = $i * 7 + $j + 2 - $dow;
+    if ( $pos > 0 and $pos <= Days_in_Month( $w->{YEAR}, $w->{MONTH} ) ) {
+        return ( $w->{YEAR}, $w->{MONTH}, $pos );
+    }
+    else {
+        return ( undef, undef, undef );
+    }
+}    # _check_i_j }}}
+
 # }}}
 
 
