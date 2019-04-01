@@ -233,23 +233,23 @@ sub Populate {    # {{{
         $w->{FG_LABEL_COLOR} = 'black';
 
         # handle options:
-        $w->{DAY}   = $received{"-day"}   if defined $received{"-day"};
-        $w->{MONTH} = $received{"-month"} if defined $received{"-month"};
-        $w->{YEAR}  = $received{"-year"}  if defined $received{"-year"};
-        $w->{DAYNAME} = $received{"-day_names"}
-          if defined $received{"-day_names"};
-        $w->{MONNAME} = $received{"-month_names"}
-          if defined $received{"-month_names"};
+        $w->{DAY}   = $received{'-day'}   if defined $received{'-day'};
+        $w->{MONTH} = $received{'-month'} if defined $received{'-month'};
+        $w->{YEAR}  = $received{'-year'}  if defined $received{'-year'};
+        $w->{DAYNAME} = $received{'-day_names'}
+          if defined $received{'-day_names'};
+        $w->{MONNAME} = $received{'-month_names'}
+          if defined $received{'-month_names'};
 
         # check: 7 names for DAYNAME, 12 names for MONNAME
-        if ( defined $received{"-day_names"}
-            and @{ $received{"-day_names"} } != 7 )
+        if ( defined $received{'-day_names'}
+            and @{ $received{'-day_names'} } != 7 )
         {
             croak
 "error in names array for -day_names option: must provide 7 names";
         }
-        if ( defined $received{"-month_names"}
-            and @{ $received{"-month_names"} } != 12 )
+        if ( defined $received{'-month_names'}
+            and @{ $received{'-month_names'} } != 12 )
         {
             croak
 "error in names array for -month_names option: must provide 12 names";
@@ -270,21 +270,21 @@ sub Populate {    # {{{
       ;    # handle other widget options like -relief, -background, ...
 
     $w->ConfigSpecs(
-        -day   => [ METHOD => "day",   "Day",   $d ],
-        -month => [ METHOD => "month", "Month", $m ],
-        -year  => [ METHOD => "year",  "Year",  $y ],
+        -day   => [ METHOD => 'day',   'Day',   $d ],
+        -month => [ METHOD => 'month', 'Month', $m ],
+        -year  => [ METHOD => 'year',  'Year',  $y ],
         -day_names =>
-          [ PASSIVE => "day_names", "Day_names", \@{ $w->{DAYNAME} } ],
+          [ PASSIVE => 'day_names', 'Day_names', \@{ $w->{DAYNAME} } ],
         -month_names =>
-          [ PASSIVE => "month_names", "Month_names", \@{ $w->{MONNAME} } ],
-        -bg_color     => [ METHOD => "bg_color",     "Bg_color",     'white' ],
-        -fg_color     => [ METHOD => "fg_color",     "Fg_color",     'black' ],
-        -bg_sel_color => [ METHOD => "bg_sel_color", "Bg_sel_color", 'blue' ],
-        -fg_sel_color => [ METHOD => "fg_sel_color", "Fg_sel_color", 'white' ],
+          [ PASSIVE => 'month_names', 'Month_names', \@{ $w->{MONNAME} } ],
+        -bg_color     => [ METHOD => 'bg_color',     'Bg_color',     'white' ],
+        -fg_color     => [ METHOD => 'fg_color',     'Fg_color',     'black' ],
+        -bg_sel_color => [ METHOD => 'bg_sel_color', 'Bg_sel_color', 'blue' ],
+        -fg_sel_color => [ METHOD => 'fg_sel_color', 'Fg_sel_color', 'white' ],
         -bg_label_color =>
-          [ METHOD => "bg_label_color", "Bg_label_color", '#bFbFbF' ],
+          [ METHOD => 'bg_label_color', 'Bg_label_color', '#bFbFbF' ],
         -fg_label_color =>
-          [ METHOD => "fg_label_color", "Fg_label_color", 'black' ],
+          [ METHOD => 'fg_label_color', 'Fg_label_color', 'black' ],
     );
 
     #
@@ -297,8 +297,8 @@ sub Populate {    # {{{
     $w->{l_mm} = $frm1->Label(
         -text       => label_yyyymm($w),
         -width      => 20,
-        -background => "#FFFFFF",
-    )->pack( -side => "left" );
+        -background => '#FFFFFF',
+    )->pack( -side => 'left' );
 
     $w->{bg} = $w->cget('-background');
 
@@ -314,7 +314,7 @@ sub Populate {    # {{{
         $w->{LABELS}->[$i]->grid(
             -column => $i,
             -row    => 0,
-            -sticky => "w",
+            -sticky => 'w',
             -padx   => 1,
             -pady   => 2
         );
@@ -329,7 +329,7 @@ sub Populate {    # {{{
             )->grid(
                 -column => $j,
                 -row    => $i + 1,
-                -sticky => "w",
+                -sticky => 'w',
                 -padx   => 3,
                 -pady   => 3,
             );
@@ -337,13 +337,13 @@ sub Populate {    # {{{
             $w->{MON_ARR}->[$i][$j] = $ft->Label(
                 -text       => $day,
                 -width      => 4,
-                -background => "#FFFFFF",
+                -background => '#FFFFFF',
             )->pack;
             $w->{FRM_ARR}->[$i][$j]{lfb} = $mf->Frame()->pack;
             $w->{FRM_ARR}->[$i][$j]{efb} = $mf->Frame();
             $w->{FRM_ARR}->[$i][$j]{lfb}->Label(
                 -text   => ' ',
-                -width  => 2,
+                -width  => 3,
                 -background => $w->{bg},
             )->pack(
                 -padx => 5,
