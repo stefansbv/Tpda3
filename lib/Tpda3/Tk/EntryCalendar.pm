@@ -1,11 +1,11 @@
-package Tpda3::Tk::MaxiCalendar;
+package Tpda3::Tk::EntryCalendar;
 
 # ABSTRACT: Calendar Entry widget
 
 use strict;
 use warnings;
 
-use Tk;
+use Tk; # Tk::options Tk::widget
 use Carp;
 use Date::Calc qw(
   check_date
@@ -15,24 +15,24 @@ use Date::Calc qw(
   Today
 );
 
-require Tk::Frame;
+use Tk::Frame;
 use base qw(Tk::Frame);
 #use Data::Dumper;
 
-Construct Tk::Widget 'MaxiCalendar';
+Construct Tk::Widget 'EntryCalendar';
 
 # POD Section {{{
 
 =head1 NAME
 
-Tk::MaxiCalendar - simple calendar widget for date selection
+Tk::EntryCalendar - simple calendar widget for date selection
 
 =head1 SYNOPSIS
 
  use Tk;
- use Tk::MaxiCalendar;
+ use Tk::EntryCalendar;
 
- my $minical = <PARENT>->MaxiCalendar(-day   => $dd,
+ my $minical = <PARENT>->EntryCalendar(-day   => $dd,
                                       -month => $mm,
                                       -year  => $yyyy,
                                       -day_names   => \@DAYNAMES,
@@ -46,7 +46,7 @@ Tk::MaxiCalendar - simple calendar widget for date selection
 
 =head1 DESCRIPTION
 
-C<Tk::MaxiCalendar> provides a tiny calendar widget
+C<Tk::EntryCalendar> provides a tiny calendar widget
 which can be used to select valid dates.
 
 =head2 Graphical Representation
@@ -69,7 +69,7 @@ day can be retrieved with the $minical->date() method.
 
 =head2 Handlers
 
-It is possible to register user provided handlers for the MaxiCalendar
+It is possible to register user provided handlers for the EntryCalendar
 widget.  You may for example register a "double-button-1" handler
 which is invoked by doubleclicking one of the days.
 
@@ -96,17 +96,17 @@ case the $dd parameter is always set to 1.
 
 =head1 EXAMPLE
 
-Here is a fullblown example for the usage of Tk::MaxiCalendar
+Here is a fullblown example for the usage of Tk::EntryCalendar
 
  use Tk;
- use Tk::MaxiCalendar;
+ use Tk::EntryCalendar;
 
  use strict;
  my $top = MainWindow->new;
 
- my $frm1 = $top->Frame->pack;  # Frame to place MaxiCalendar in
+ my $frm1 = $top->Frame->pack;  # Frame to place EntryCalendar in
 
- my $minical = $frm1->MaxiCalendar->pack;
+ my $minical = $frm1->EntryCalendar->pack;
 
  my $frm2 = $top->Frame->pack;  # Frame for Ok Button
  my $b_ok = $frm2->Button(-text => "Ok",
@@ -120,7 +120,7 @@ Here is a fullblown example for the usage of Tk::MaxiCalendar
 
 =head1 OPTIONS
 
-The following options can be specified for Tk::MaxiCalendar:
+The following options can be specified for Tk::EntryCalendar:
 
 =over 4
 
@@ -178,14 +178,14 @@ Foreground color for the selected day.
 
 =head1 METHODS
 
-The following methods are provided by Tk::MaxiCalendar:
+The following methods are provided by Tk::EntryCalendar:
 
 =cut
 
 #}}}
 
 
-# valid options for MaxiCalendar:
+# valid options for EntryCalendar:
 my @validArgs = qw( -day -month -year -day_names -month_names -bg_color -fg_color
  -bg_label_color -fg_label_color
  -bg_sel_color -fg_sel_color
@@ -218,6 +218,7 @@ sub Populate {    # {{{
         $w->{YEAR}     = $y;
         $w->{CALLBACK} = {};
         $w->{MON_ARR}  = [];
+        $w->{DAY_ARR}  = [];    # hold entries <---> days in month
 
         # Global array of 6 x 7 day labels
         # $MON_ARR[$i][$j] is on position $j in line $i
@@ -261,8 +262,6 @@ sub Populate {    # {{{
     croak "error in initial date: ", $w->{YEAR}, ", ", $w->{MONTH}, ", ",
         $w->{DAY}
         unless check_date( $w->{YEAR}, $w->{MONTH}, $w->{DAY} );
-
-    $w->{YEAR_BAK} = $w->{YEAR};
 
     # selected day: (need not be visible in current month)
     $w->{SEL_DAY}   = $w->{DAY};
@@ -352,7 +351,7 @@ sub Populate {    # {{{
             $w->{MON_ARR}->[$i][$j] = $ft->Label(
                 -text       => $day,
                 -width      => 4,
-                # -background => '#FFFFFF',
+                -background =>  $w->{bg},
             )->pack;
             $w->{FRM_ARR}->[$i][$j]{lfb} = $mf->Frame()->pack;
             $w->{FRM_ARR}->[$i][$j]{efb} = $mf->Frame();
@@ -384,8 +383,9 @@ sub Populate {    # {{{
             );
         }
     }
-    display_month( $w, $w->{YEAR}, $w->{MONTH} );
-
+    # display_month( $w, $w->{YEAR}, $w->{MONTH} );
+    update_entry_array($w);
+    
     # print "-----\n";
     # print Dumper $w;
     return;
@@ -399,22 +399,22 @@ sub label_yyyymm {
     return $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR};
 }
 
-sub index_of {    # {{{
-    my $w      = shift;
-    my $m_name = shift;
-    my $i      = 0;
-    foreach my $mnm ( @{ $w->{MONNAME} } ) {
-        $i++;
-        return $i if $mnm eq $m_name;
-    }
-    return $i;
-}    # index_of }}}
+# sub index_of {    # {{{
+#     my $w      = shift;
+#     my $m_name = shift;
+#     my $i      = 0;
+#     foreach my $mnm ( @{ $w->{MONNAME} } ) {
+#         $i++;
+#         return $i if $mnm eq $m_name;
+#     }
+#     return $i;
+# }    # index_of }}}
 
 sub day {    # {{{
     my ( $w, $d ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_DAY} = $d;
-        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
         return;
     }
     else {
@@ -426,7 +426,7 @@ sub month {    # {{{
     my ( $w, $m ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_MONTH} = $m;
-        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{SEL_MONTH};
@@ -438,7 +438,7 @@ sub year {    # {{{
     my ( $w, $y ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_YEAR} = $y;
-        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{SEL_YEAR};
@@ -450,7 +450,7 @@ sub fg_color {    # {{{
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{FG_COLOR} = $c;
-        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{FG_COLOR};
@@ -462,7 +462,7 @@ sub bg_color {    # {{{
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{BG_COLOR} = $c;
-        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{BG_COLOR};
@@ -474,7 +474,7 @@ sub fg_label_color {    # {{{
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{FG_LABEL_COLOR} = $c;
-        _configure_labels($w);
+#        _configure_labels($w);
     }
     else {
         return $w->{FG_LABEL_COLOR};
@@ -486,7 +486,7 @@ sub bg_label_color {    # {{{
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{BG_LABEL_COLOR} = $c;
-        _configure_labels($w);
+#        _configure_labels($w);
     }
     else {
         return $w->{BG_LABEL_COLOR};
@@ -520,7 +520,7 @@ sub bg_wkday_color {
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{BG_WKDAY_COLOR} = $c;
-        _configure_labels_wkday($w);
+#        _configure_labels_wkday($w);
     }
     else {
         return $w->{BG_WKDAY_COLOR};
@@ -532,7 +532,7 @@ sub fg_wkday_color {
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{FG_WKDAY_COLOR} = $c;
-        _configure_labels_wkday($w);
+#        _configure_labels_wkday($w);
     }
     else {
         return $w->{FG_WKDAY_COLOR};
@@ -544,7 +544,7 @@ sub bg_wkend_color {
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{BG_WKEND_COLOR} = $c;
-        _configure_labels_wkend($w);
+#        _configure_labels_wkend($w);
     }
     else {
         return $w->{BG_WKEND_COLOR};
@@ -556,7 +556,7 @@ sub fg_wkend_color {
     my ( $w, $c ) = @_;
     if ( $#_ > 0 ) {
         $w->{FG_WKEND_COLOR} = $c;
-        _configure_labels_wkend($w);
+#        _configure_labels_wkend($w);
     }
     else {
         return $w->{FG_WKEND_COLOR};
@@ -568,7 +568,7 @@ sub date {    #{{{ -----------------------------------------------------
 
 =head2 my ($year, $month, $day) = $minical->date()
 
-Returns the selected date from Tk::MaxiCalendar.
+Returns the selected date from Tk::EntryCalendar.
 Day and month numbers are always two digits (with leading zeroes).
 
 =cut
@@ -580,28 +580,52 @@ Day and month numbers are always two digits (with leading zeroes).
     return ( $yyyy, $mm, $dd );
 }    # date }}}
 
-sub dump_entry {
+sub update_entry_array {
     my $w      = shift;
-    my $entary = [];
+    $w->{DAY_ARR} = [];
+    clear_entry_all($w);
+    my ($yyyy, $mm) = ( $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+    print "year = ", $yyyy, ", month = ", $mm, "\n";
+    my $dim = Days_in_Month( $yyyy, $mm );
     foreach my $i ( 0 .. 5 ) {
         foreach my $j ( 0 .. 6 ) {
-            my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
+            my $dow = Day_of_Week( $yyyy, $mm, 1 );
             my $pos = $i * 7 + $j + 2 - $dow;
-            print "i:$i, j:$j  --> pos: $pos = ",
-                $w->{ENT_ARR}->[$i][$j]->get, "\n";
+            print "i:$i, j:$j  --> pos:$pos value=",
+                $w->{ENT_ARR}->[$i][$j]->get, "  ";
             my $ind = $pos - 1;
-            $entary->[$ind] = $w->{ENT_ARR}->[$i][$j]
-                if $ind >= 0 and $ind <= 30;
+            if ( $ind >= 0 and $ind <= 30 ) {
+                $w->{DAY_ARR}->[$ind] = $w->{ENT_ARR}->[$i][$j];
+                print "added";
+            }
+            else {
+                print "skipped";
+            }
+            print "\n";
         }
     }
-    return $entary;
+    return $w->{DAY_ARR};
+}
+
+sub clear_entry_all {
+    my $w = shift;
+    foreach my $i ( 0 .. 5 ) {
+        foreach my $j ( 0 .. 6 ) {
+            $w->{ENT_ARR}->[$i][$j]->delete( 0, 'end' );
+        }
+    }
+}
+
+sub get_entry_array {
+    my $w      = shift;
+    return $w->{DAY_ARR};    
 }
 
 sub select_date {    #{{{ ----------------------------------------------
 
 =head2 $minical->select_date($year, $month, $day)
 
-Selects a date and positions the MaxiCalendar to the corresponding
+Selects a date and positions the EntryCalendar to the corresponding
 year and month. The selected date is hilighted.
 
 =cut
@@ -614,29 +638,28 @@ year and month. The selected date is hilighted.
         $w->configure( -day => $dd, -month => $mm, -year => $yyyy );
         display_month( $w, $yyyy, $mm );
         $w->{l_mm}->configure( -text => label_yyyymm($w) );
+        update_entry_array($w);
     }
     else {
         croak "Error in date: $yyyy, $mm, $dd";
     }
-    return;
+    return 1;
 }    # select_date }}}
-
-sub display_month {    #{{{ --------------------------------------------
 
 =head2 $minical->display_month($year, $month)
 
-Displays the specified month. When a callback for the
+Displays the specified month.  When a callback for the
 E<lt>Display-MonthE<gt> event has been registered it will be called
 with ($year, $month, 1) as parameters.
 
 =cut
 
+sub display_month { #{{{
     my ( $w, $yyyy, $mm ) = @_;
 
     croak "error in date:  $mm, $yyyy" unless check_date( $yyyy, $mm, 1 );
 
     $w->{YEAR}     = $yyyy;
-    $w->{YEAR_BAK} = $yyyy;
     $w->{MONTH}    = $mm;
 
     $w->{mtxt} = $w->{MONNAME}[ $mm - 1 ];
@@ -644,8 +667,8 @@ with ($year, $month, 1) as parameters.
     my $day = " ";
     my $dim = Days_in_Month( $yyyy, $mm );
     my $dow = Day_of_Week( $yyyy, $mm, 1 );
-    for ( my $i = 0 ; $i < 6 ; $i++ ) {
-        for ( my $j = 0 ; $j < 7 ; $j++ ) {
+    foreach my $i ( 0 .. 5 ) {
+        foreach my $j ( 0 .. 6 ) {
 
             # Set $day to 1 if the first day reaches the correct day
             # of the week for the first day of the month
@@ -676,11 +699,11 @@ with ($year, $month, 1) as parameters.
       if defined $w->{CALLBACK}->{'<Display-Month>'};
 
     # if current month contains selected day: hilight it
-    _select_day( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY},
-        $w->{BG_SEL_COLOR}, $w->{FG_SEL_COLOR} );
+    # _select_day( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY},
+    #     $w->{BG_SEL_COLOR}, $w->{FG_SEL_COLOR} );
 
     return;
-}    # display_month }}}
+} # display_month }}}
 
 # Internal methods
 
@@ -745,7 +768,7 @@ sub _sel {    #{{{
       unless check_date( $w->{SEL_YEAR}, $w->{SEL_MONTH}, $pos );
     $w->{SEL_DAY} = $pos;    # ok to use it ...
 
-    display_month( $w, $w->{YEAR}, $w->{MONTH} );
+#    display_month( $w, $w->{YEAR}, $w->{MONTH} );
     $w->{CALLBACK}->{'<Button-1>'}
       ( $w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY} )
       if defined $w->{CALLBACK}->{'<Button-1>'};
@@ -767,7 +790,7 @@ sub _configure_labels_wkday {
     my ($w) = @_;
     for ( my $i = 0 ; $i < 5 ; $i++ ) {
         for ( my $j = 0 ; $j < 5 ; $j++ ) {
-            print "wkday: $i,$j\n";
+            # print "wkday: $i,$j\n";
             $w->{MON_ARR}->[$i][$j]->configure(
                 -background => $w->{BG_WKDAY_COLOR},
                 -foreground => $w->{FG_WKDAY_COLOR},
@@ -781,7 +804,7 @@ sub _configure_labels_wkend {
     my ($w) = @_;
     for ( my $i = 0 ; $i < 5 ; $i++ ) {
         for ( my $j = 5 ; $j < 7 ; $j++ ) {
-            print "wkend: $i,$j\n";
+            # print "wkend: $i,$j\n";
             $w->{MON_ARR}->[$i][$j]->configure(
                 -background => $w->{BG_WKEND_COLOR},
                 -foreground => $w->{FG_WKEND_COLOR},
@@ -837,5 +860,3 @@ at your option, any later version of Perl 5 you may have available.
 =cut
 
 # end POD Section }}}
-
- vim:foldmethod=marker:foldcolumn=4
