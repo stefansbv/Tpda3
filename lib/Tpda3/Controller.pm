@@ -1358,6 +1358,10 @@ sub screen_module_load {
     # Load lists into ComboBox type widgets
     $self->screen_load_lists();
 
+    # Trigger on_load_screen method from screen if defined
+    $self->scrobj('rec')->on_load_screen()
+        if $self->scrobj('rec')->can('on_load_screen');
+
     return 1;                       # to make ok from Test::More happy
 }
 
@@ -1506,6 +1510,10 @@ sub screen_module_detail_load {
     # Set Key column names
     $self->{_tblkeys}{det} = undef; # reset
     $self->screen_init_keys( 'det', $self->scrcfg('det') );
+
+    # Trigger on_load_screen method from screen if defined
+    $self->scrobj('det')->on_load_screen()
+        if $self->scrobj('det')->can('on_load_screen');
 
     return;
 }
