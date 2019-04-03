@@ -7,13 +7,13 @@ use Data::Dump;
 
 use Tk;
 
-use Tpda3::Tk::MaxiCalendar;
+use Tpda3::Tk::EntryCalendar;
 
 my $top = MainWindow->new;
 
-my $frm1 = $top->Frame->pack;  # Frame to place MaxiCalendar in
+my $frm1 = $top->Frame->pack;  # Frame to place EntryCalendar in
 
-my $minical = $frm1->MaxiCalendar(
+my $minical = $frm1->EntryCalendar(
     # -bg_label_color => 'thistle4',
     # -fg_label_color => 'thistle1',
     -bg_sel_color   => 'grey95',
