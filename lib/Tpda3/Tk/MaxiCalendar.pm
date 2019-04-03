@@ -1,10 +1,9 @@
 package Tpda3::Tk::MaxiCalendar;
 
+# ABSTRACT: Calendar Entry widget
+
 use strict;
 use warnings;
-
-our $VERSION = '0.14';
-our $TKV = '804.027';
 
 use Tk;
 use Carp;
@@ -231,7 +230,11 @@ sub Populate {    # {{{
         $w->{FG_SEL_COLOR}   = 'white';
         $w->{BG_LABEL_COLOR} = '#bFbFbF';
         $w->{FG_LABEL_COLOR} = 'black';
-
+        $w->{BG_WKDAY_COLOR} = 'yellow';
+        $w->{FG_WKDAY_COLOR} = 'blue';
+        $w->{BG_WKEND_COLOR} = 'red';
+        $w->{FG_WKEND_COLOR} = 'green';
+        
         # handle options:
         $w->{DAY}   = $received{'-day'}   if defined $received{'-day'};
         $w->{MONTH} = $received{'-month'} if defined $received{'-month'};
@@ -285,6 +288,18 @@ sub Populate {    # {{{
           [ METHOD => 'bg_label_color', 'Bg_label_color', '#bFbFbF' ],
         -fg_label_color =>
           [ METHOD => 'fg_label_color', 'Fg_label_color', 'black' ],
+        -bg_wkday_color =>
+          [ METHOD => 'bg_wkday_color', 'Bg_wkday_color', 'white' ],
+        -fg_wkday_color =>
+          [ METHOD => 'fg_wkday_color', 'Fg_wkday_color', 'black' ],
+        -bg_wkend_color =>
+          [ METHOD => 'bg_wkend_color', 'Bg_wkend_color', 'white' ],
+        -fg_wkend_color =>
+          [ METHOD => 'fg_wkend_color', 'Fg_wkend_color', 'black' ],
+        # -bg_hlday_color =>
+        #   [ METHOD => 'bg_hlday_color', 'Bg_hlday_color', 'white' ],
+        # -fg_hlday_color =>
+        #   [ METHOD => 'fg_hlday_color', 'Fg_hlday_color', 'black' ],
     );
 
     #
@@ -337,7 +352,7 @@ sub Populate {    # {{{
             $w->{MON_ARR}->[$i][$j] = $ft->Label(
                 -text       => $day,
                 -width      => 4,
-                -background => '#FFFFFF',
+                # -background => '#FFFFFF',
             )->pack;
             $w->{FRM_ARR}->[$i][$j]{lfb} = $mf->Frame()->pack;
             $w->{FRM_ARR}->[$i][$j]{efb} = $mf->Frame();
@@ -351,7 +366,7 @@ sub Populate {    # {{{
             );
             $w->{ENT_ARR}->[$i][$j] = $w->{FRM_ARR}->[$i][$j]{efb}->Entry(
                 -width   => 3,
-                -relief  => 'raised',
+                -relief  => 'flat',
                 -justify => 'center',
             )->pack(
                 -padx => 5,
@@ -501,6 +516,54 @@ sub bg_sel_color {    # {{{
     return;
 }    # }}}
 
+sub bg_wkday_color {
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{BG_WKDAY_COLOR} = $c;
+        _configure_labels_wkday($w);
+    }
+    else {
+        return $w->{BG_WKDAY_COLOR};
+    }
+    return;
+}
+
+sub fg_wkday_color {
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{FG_WKDAY_COLOR} = $c;
+        _configure_labels_wkday($w);
+    }
+    else {
+        return $w->{FG_WKDAY_COLOR};
+    }
+    return;
+}
+
+sub bg_wkend_color {
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{BG_WKEND_COLOR} = $c;
+        _configure_labels_wkend($w);
+    }
+    else {
+        return $w->{BG_WKEND_COLOR};
+    }
+    return;
+}
+
+sub fg_wkend_color {
+    my ( $w, $c ) = @_;
+    if ( $#_ > 0 ) {
+        $w->{FG_WKEND_COLOR} = $c;
+        _configure_labels_wkend($w);
+    }
+    else {
+        return $w->{FG_WKEND_COLOR};
+    }
+    return;
+}
+
 sub date {    #{{{ -----------------------------------------------------
 
 =head2 my ($year, $month, $day) = $minical->date()
@@ -518,15 +581,20 @@ Day and month numbers are always two digits (with leading zeroes).
 }    # date }}}
 
 sub dump_entry {
-    my $w = shift;
+    my $w      = shift;
+    my $entary = [];
     foreach my $i ( 0 .. 5 ) {
         foreach my $j ( 0 .. 6 ) {
             my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
             my $pos = $i * 7 + $j + 2 - $dow;
             print "i:$i, j:$j  --> pos: $pos = ",
-              $w->{ENT_ARR}->[$i][$j]->get, "\n";
+                $w->{ENT_ARR}->[$i][$j]->get, "\n";
+            my $ind = $pos - 1;
+            $entary->[$ind] = $w->{ENT_ARR}->[$i][$j]
+                if $ind >= 0 and $ind <= 30;
         }
     }
+    return $entary;
 }
 
 sub select_date {    #{{{ ----------------------------------------------
@@ -584,7 +652,7 @@ with ($year, $month, 1) as parameters.
             $day = 1 if $day eq " " and $i == 0 and $j + 1 == $dow;
             $w->{MON_ARR}->[$i][$j]->configure(
                 -text       => $day,
-                -background => $w->{BG_COLOR},
+                -background => $w->{bg},
                 -foreground => $w->{FG_COLOR},
             );
             if ( $day =~ /\d/ ) {
@@ -687,7 +755,6 @@ sub _sel {    #{{{
 sub _configure_labels {    # {{{
     my ($w) = @_;
     for ( my $i = 0 ; $i < 7 ; $i++ ) {
-
         $w->{LABELS}->[$i]->configure(
             -background => $w->{BG_LABEL_COLOR},
             -foreground => $w->{FG_LABEL_COLOR},
@@ -695,6 +762,34 @@ sub _configure_labels {    # {{{
     }
     return;
 }    # _configure_labels }}}
+
+sub _configure_labels_wkday {
+    my ($w) = @_;
+    for ( my $i = 0 ; $i < 5 ; $i++ ) {
+        for ( my $j = 0 ; $j < 5 ; $j++ ) {
+            print "wkday: $i,$j\n";
+            $w->{MON_ARR}->[$i][$j]->configure(
+                -background => $w->{BG_WKDAY_COLOR},
+                -foreground => $w->{FG_WKDAY_COLOR},
+            );
+        }
+    }
+    return;
+}
+
+sub _configure_labels_wkend {
+    my ($w) = @_;
+    for ( my $i = 0 ; $i < 5 ; $i++ ) {
+        for ( my $j = 5 ; $j < 7 ; $j++ ) {
+            print "wkend: $i,$j\n";
+            $w->{MON_ARR}->[$i][$j]->configure(
+                -background => $w->{BG_WKEND_COLOR},
+                -foreground => $w->{FG_WKEND_COLOR},
+            );
+        }
+    }
+    return;
+}
 
 # Event Handling: {{{
 #
