@@ -23,12 +23,14 @@ subtest 'Calendar month - 2019, 1' => sub {
     is $cal->first_day_week_day, 2,'first day week day';
     is $cal->last_day_week_day, 4, 'last day week day';
 
-    my @we_days = ( 5, 6, 12, 13, 19, 20, 26, 27 );    # 2019-01
-    is_deeply [ $cal->all_weekend_days ], \@we_days, 'elements';
+    my @we_days_exp = ( 5, 6, 12, 13, 19, 20, 26, 27 );    # 2019-01
+    my @we_days = sort { $a <=> $b } $cal->all_weekend_days;
+    cmp_deeply \@we_days, \@we_days_exp, 'elements';
     is $cal->count_weekend_days, 8, 'count';
 
-    my @hd_days = (1, 2, 24);
-    is_deeply [ $cal->all_hollyday_days ], \@hd_days, 'elements';
+    my @hd_days_exp = (1, 2, 24);
+    my @hd_days = sort { $a <=> $b } $cal->all_hollyday_days;
+    cmp_deeply \@hd_days, \@hd_days_exp, 'elements';
     is $cal->count_hollyday_days, 3, 'holyday days count';
 
     my $found_h = $cal->find_hollyday( sub { $_ == 24 } );
@@ -59,12 +61,13 @@ subtest 'Calendar month - 2016, 2' => sub {
     is $cal->last_day,        29,   'last day in month';
     is $cal->work_days_count, 21,   'zile lucratoare';
 
-    my @we_days = ( 6, 7, 13, 14, 20, 21, 27, 28 );    # 2016-02
-    is_deeply [ $cal->all_weekend_days ], \@we_days, 'elements';
+    my @we_days_exp = ( 6, 7, 13, 14, 20, 21, 27, 28 );    # 2016-02
+    my @we_days = sort { $a <=> $b } $cal->all_weekend_days;
+    cmp_deeply \@we_days, \@we_days, 'elements';
     is $cal->count_weekend_days, 8, 'count';
 
     my @hd_days = ();
-    is_deeply [ $cal->all_hollyday_days ], \@hd_days, 'elements';
+    cmp_deeply [ $cal->all_hollyday_days ], \@hd_days, 'elements';
     is $cal->count_hollyday_days, 0, 'holyday days count';
 
     my $found_w = $cal->find_weekend( sub { $_ == 14 } );
