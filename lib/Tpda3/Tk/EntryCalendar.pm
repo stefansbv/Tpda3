@@ -25,23 +25,25 @@ Construct Tk::Widget 'EntryCalendar';
 
 # valid options for EntryCalendar:
 my @validArgs =
-  qw( -day -month -year -day_names -month_names -bg_color -fg_color
-  -bg_label_color -fg_label_color
-  -bg_sel_color -fg_sel_color
-);
+  qw( -day -month -year -day_names -month_names -bg_color -fg_color );
 
 sub Populate {    # {{{
     my ( $w, $args ) = @_;
 
+    # eval, in case fonts already exist
+    eval {
+        $w->fontCreate(qw/f_small  -family courier   -size 10/);
+        $w->fontCreate(qw/f_vbig   -family helvetica -size 14 -weight bold/);
+        $w->fontCreate(qw/f_bold   -family courier   -size 10 -weight bold/);
+    };
+
     $w->{UX} = 1 / 7;
     $w->{UY} = 1 / 6;
+    $w->{DX} = 0;
 
-    $w->{ENT_ARR}    = []; # [0..30] holds the [labels, entries]
-    $w->{FRM_ARR}    = []; # [0..30] holds the frames with [labels, entries]
-    $w->{COORDS_ARR} = []; # [0..41] holds the coords
-
-    # print ">", join("|", @_), "\n";
-    # print Dumper(@_);
+    $w->{LE_ARR}     = [];    # [0..30] holds the [labels, entries]
+    $w->{CELLS_ARR}  = [];    # [0..41] holds the frames with [labels, entries]
+    $w->{COORDS_ARR} = [];    # [0..41] holds the coords
 
     # get parameters which are only for me ...
     my ( $y, $m, $d ) = Today;
@@ -54,96 +56,63 @@ sub Populate {    # {{{
         #   print Dumper $args;
 
         # defaults:
-        $w->{DAYNAME} = [qw(luni marți miercuri joi vineri sâmbătă duminică)];
+        $w->{DAYNAME} =
+          [qw(luni marți miercuri joi vineri sâmbătă duminică)];
         $w->{MONNAME} = [
             qw(ianuarie februarie martie aprilie mai iunie iulie august septembrie octombrie noiembrie decembrie)
         ];
-        $w->{DAY}      = $d;    # default is Today
-        $w->{MONTH}    = $m;
-        $w->{YEAR}     = $y;
-
-        # $w->{MON_ARR}  = [];
-        # $w->{DAY_ARR}  = [];    # hold entries <---> days in month
-
-        # Global array of 6 x 7 day labels
-        # $MON_ARR[$i][$j] is on position $j in line $i
-        #                  0 <= $i <= 5,  0 <= $j <= 6
+        $w->{DAY}   = $d;    # default is Today
+        $w->{MONTH} = $m;
+        $w->{YEAR}  = $y;
 
         # color options
-        # $w->{BG_COLOR}       = 'white';
-        # $w->{FG_COLOR}       = 'black';
-        # $w->{BG_SEL_COLOR}   = 'blue';
-        # $w->{FG_SEL_COLOR}   = 'white';
-        # $w->{BG_LABEL_COLOR} = '#bFbFbF';
-        # $w->{FG_LABEL_COLOR} = 'black';
-        # $w->{BG_WKDAY_COLOR} = 'yellow';
-        # $w->{FG_WKDAY_COLOR} = 'blue';
-        # $w->{BG_WKEND_COLOR} = 'red';
-        # $w->{FG_WKEND_COLOR} = 'green';
+        $w->{BG_COLOR} = 'white';
+        $w->{FG_COLOR} = 'black';
 
         # handle options:
         $w->{DAY}   = $received{'-day'}   if defined $received{'-day'};
         $w->{MONTH} = $received{'-month'} if defined $received{'-month'};
         $w->{YEAR}  = $received{'-year'}  if defined $received{'-year'};
-        # $w->{DAYNAME} = $received{'-day_names'}
-        #   if defined $received{'-day_names'};
-        # $w->{MONNAME} = $received{'-month_names'}
-        #   if defined $received{'-month_names'};
 
-#         # check: 7 names for DAYNAME, 12 names for MONNAME
-#         if ( defined $received{'-day_names'}
-#             and @{ $received{'-day_names'} } != 7 )
-#         {
-#             croak
-# "error in names array for -day_names option: must provide 7 names";
-#         }
-#         if ( defined $received{'-month_names'}
-#             and @{ $received{'-month_names'} } != 12 )
-#         {
-#             croak
-# "error in names array for -month_names option: must provide 12 names";
-#         }
+        $w->{DAYNAME} = $received{'-day_names'}
+          if defined $received{'-day_names'};
+        $w->{MONNAME} = $received{'-month_names'}
+          if defined $received{'-month_names'};
+
+        # check: 7 names for DAYNAME, 12 names for MONNAME
+        if ( defined $received{'-day_names'}
+            and @{ $received{'-day_names'} } != 7 )
+        {
+            croak "error in names array for -day_names option: must provide 7 names";
+        }
+        if ( defined $received{'-month_names'}
+            and @{ $received{'-month_names'} } != 12 )
+        {
+            croak "error in names array for -month_names option: must provide 12 names";
+        }
     }    # %received goes out of scope and will be deleted ...
     croak "error in initial date: ", $w->{YEAR}, ", ", $w->{MONTH}, ", ",
-        $w->{DAY}
-        unless check_date( $w->{YEAR}, $w->{MONTH}, $w->{DAY} );
+      $w->{DAY}
+      unless check_date( $w->{YEAR}, $w->{MONTH}, $w->{DAY} );
 
     # selected day: (need not be visible in current month)
-    # $w->{SEL_DAY}   = $w->{DAY};
-    # $w->{SEL_MONTH} = $w->{MONTH};
-    # $w->{SEL_YEAR}  = $w->{YEAR};
+    $w->{SEL_DAY}   = $w->{DAY};
+    $w->{SEL_MONTH} = $w->{MONTH};
+    $w->{SEL_YEAR}  = $w->{YEAR};
 
-    # $w->SUPER::Populate($args)
-    #   ;    # handle other widget options like -relief, -background, ...
+    $w->SUPER::Populate($args)
+      ;    # handle other widget options like -relief, -background, ...
 
     $w->ConfigSpecs(
         -day   => [ METHOD => 'day',   'Day',   $d ],
         -month => [ METHOD => 'month', 'Month', $m ],
         -year  => [ METHOD => 'year',  'Year',  $y ],
-        # -day_names =>
-        #   [ PASSIVE => 'day_names', 'Day_names', \@{ $w->{DAYNAME} } ],
-        # -month_names =>
-        #   [ PASSIVE => 'month_names', 'Month_names', \@{ $w->{MONNAME} } ],
-        # -bg_color     => [ METHOD => 'bg_color',     'Bg_color',     'white' ],
-        # -fg_color     => [ METHOD => 'fg_color',     'Fg_color',     'black' ],
-        # -bg_sel_color => [ METHOD => 'bg_sel_color', 'Bg_sel_color', 'blue' ],
-        # -fg_sel_color => [ METHOD => 'fg_sel_color', 'Fg_sel_color', 'white' ],
-        # -bg_label_color =>
-        #   [ METHOD => 'bg_label_color', 'Bg_label_color', '#bFbFbF' ],
-        # -fg_label_color =>
-        #   [ METHOD => 'fg_label_color', 'Fg_label_color', 'black' ],
-        # -bg_wkday_color =>
-        #   [ METHOD => 'bg_wkday_color', 'Bg_wkday_color', 'white' ],
-        # -fg_wkday_color =>
-        #   [ METHOD => 'fg_wkday_color', 'Fg_wkday_color', 'black' ],
-        # -bg_wkend_color =>
-        #   [ METHOD => 'bg_wkend_color', 'Bg_wkend_color', 'white' ],
-        # -fg_wkend_color =>
-        #   [ METHOD => 'fg_wkend_color', 'Fg_wkend_color', 'black' ],
-        # -bg_hlday_color =>
-        #   [ METHOD => 'bg_hlday_color', 'Bg_hlday_color', 'white' ],
-        # -fg_hlday_color =>
-        #   [ METHOD => 'fg_hlday_color', 'Fg_hlday_color', 'black' ],
+        -day_names =>
+          [ PASSIVE => 'day_names', 'Day_names', \@{ $w->{DAYNAME} } ],
+        -month_names =>
+          [ PASSIVE => 'month_names', 'Month_names', \@{ $w->{MONNAME} } ],
+        -bg_color => [ METHOD => 'bg_color', 'Bg_color', 'white' ],
+        -fg_color => [ METHOD => 'fg_color', 'Fg_color', 'black' ],
     );
 
     #
@@ -179,25 +148,25 @@ sub Populate {    # {{{
 
     my $day_arr = [qw(luni marți miercuri joi vineri sâmbătă duminică)];
 
-    my $week_lbl = $monthname_frm->Label(
-        -text               => 'ianuarie 2019',
+    $w->{l_mm} = $monthname_frm->Label(
+        -text               => '',
         -relief             => 'ridge',
         -highlightthickness => 0,
         -width              => 30,
     )->place(
-        -relx      => 0.50,
-        -rely      => 0.50,
-        -anchor    => 'center',
+        -relx   => 0.50,
+        -rely   => 0.50,
+        -anchor => 'center',
     );
 
     foreach my $x ( 0 .. 6 ) {
         make_label( $w, $weekdays_frm, $x, 0, $day_arr->[$x] );
     }
 
-    my ($ctrl, $rx, $ry);
+    my ( $ctrl, $rx, $ry );
     my $le_ctrl = [];
-    my $days  = 1;
-    my $count = 1;
+    my $days    = 1;
+    my $count   = 1;
     foreach my $y ( 0 .. 5 ) {
         foreach my $x ( 0 .. 6 ) {
             if ( $days > 31 ) {
@@ -205,34 +174,18 @@ sub Populate {    # {{{
             }
             else {
                 ( $ctrl, $rx, $ry, $le_ctrl ) =
-                    make_label_entry_frame( $w, $top_frm, $x, $y, $days );
-                push @{ $w->{ENT_ARR} }, $le_ctrl;
+                  make_label_entry_frame( $w, $top_frm, $x, $y, $days );
+                push @{ $w->{LE_ARR} }, $le_ctrl;
                 $days++;
             }
-            push @{ $w->{FRM_ARR} }, $ctrl;
+            push @{ $w->{CELLS_ARR} }, $ctrl;
             push @{ $w->{COORDS_ARR} }, [ $rx, $ry ];
         }
     }
 
-    adjusts_calendar($w);
 }    # Populate }}}
 
 # Methods
-
-sub adjusts_calendar {
-    my $w = shift;
-    my $yyyy = $w->{YEAR};
-    my $mm   = $w->{MONTH};
-    my $dow  = Day_of_Week( $yyyy, $mm, 1 );
-    my $dim  = Days_in_Month( $yyyy, $mm );
-    print "Day of week   = $dow\n";
-    print "Days in month = $dim\n";
-    my @to_hide = $dim + 1 .. 31;
-    dd @to_hide;
-    move_first_day( $dow - 1 ) if $dow > 1;
-    hide_day($w, $_) for @to_hide;
-    return;
-}
 
 sub make_label_entry_frame {
     my ( $w, $wf, $x, $y, $d ) = @_;
@@ -257,12 +210,13 @@ sub make_label_entry {
     my $lbl = $ft->Label(
         -text       => $day,
         -width      => 4,
+        -font       => 'f_bold',
         # -background => $w->{bg},
     )->pack;
     my $efb = $wf->Frame()->pack;
     my $ent = $efb->Entry(
         -width   => 3,
-        -relief  => 'flat',
+        # -relief  => 'flat',
         -justify => 'center',
     )->pack(
         -padx => 5,
@@ -297,42 +251,47 @@ sub register_space {
 
 sub label_yyyymm {
     my $w = shift;
-    return 'none' if !$w->{SEL_MONTH} and !$w->{SEL_YEAR};
+    return 'initial' if !$w->{SEL_MONTH} and !$w->{SEL_YEAR};
     return $w->{MONNAME}[ $w->{SEL_MONTH} - 1 ] . '  ' . $w->{SEL_YEAR};
 }
 
 sub move_first_day {
-    my ( $w, $step ) = @_;
-    if ( $step < 0 ) {
-        foreach my $i ( 1 .. abs($step) ) {
-            my $first_elt = shift @{ $w->{FRM_ARR} };
-            push @{ $w->{FRM_ARR} }, $first_elt;
+    my ( $w, $dx ) = @_;
+    my $i = $w->index_of_day(1);
+    # print "dx=$dx  index of day #1 = $i\n";
+    if ( $dx < 0 and $i > 0 ) {
+        foreach my $i ( 1 .. abs($dx) ) {
+            my $first_elt = shift @{ $w->{CELLS_ARR} };
+            push @{ $w->{CELLS_ARR} }, $first_elt;
         }
+        redraw($w);
+        return 1;
     }
-    elsif ( $step > 0 ) {
-        foreach my $i ( 1 .. abs($step) ) {
-            my $last_elt = pop @{ $w->{FRM_ARR} };
-            unshift @{ $w->{FRM_ARR} }, $last_elt;
+    elsif ( $dx > 0 and $i + $dx < 7 ) {
+        foreach my $i ( 1 .. abs($dx) ) {
+            my $last_elt = pop @{ $w->{CELLS_ARR} };
+            unshift @{ $w->{CELLS_ARR} }, $last_elt;
         }
+        redraw($w);
+        return 1;
     }
-    redraw($w);
-    return 1;
+    return;
 }
 
 sub hide_day {
-    my ($w, $i) = @_;
-    say "hide_day: $i";
-    $i--;                       # day to index
-    my $ctrl = $w->{FRM_ARR}[$i];
+    my ($w, $d) = @_;
+    say "hide_day: $d";
+    my $i = index_of_day($w, $d);
+    my $ctrl = $w->{CELLS_ARR}[$i];
     $ctrl->placeForget if $ctrl ne 'space';
     return 1;
 }
 
 sub show_day {
-    my ( $w, $i ) = @_;
-    say "show_day: $i";
-    $i--;                       # day to index
-    my $ctrl = $w->{FRM_ARR}[$i];
+    my ( $w, $d ) = @_;
+    say "show_day: $d";
+    my $i = index_of_day($w, $d);
+    my $ctrl = $w->{CELLS_ARR}[$i];
     if ( $ctrl ne 'space' ) {
         my $c = $w->{COORDS_ARR}[$i];
         $ctrl->place(
@@ -348,7 +307,7 @@ sub show_day {
 sub redraw {
     my $w = shift;
     for ( my $i = 0; $i < 42; $i++ ) {
-        my $ctrl = $w->{FRM_ARR}[$i];
+        my $ctrl = $w->{CELLS_ARR}[$i];
         next if $ctrl eq 'space';
         my $c = $w->{COORDS_ARR}[$i];
         $ctrl->place(
@@ -361,22 +320,34 @@ sub redraw {
     return 1;
 }
 
-# sub index_of {    # {{{
-#     my $w      = shift;
-#     my $m_name = shift;
-#     my $i      = 0;
-#     foreach my $mnm ( @{ $w->{MONNAME} } ) {
-#         $i++;
-#         return $i if $mnm eq $m_name;
-#     }
-#     return $i;
-# }    # index_of }}}
+sub index_of_day {
+    my ( $w, $d ) = @_;
+    my $dx;
+    for ( my $n = 0 ; $n < 42 ; $n++ ) {
+        my $ctrl = $w->{CELLS_ARR}[$n];
+        next if $ctrl eq 'space';
+        $dx = $n;
+        last;
+    }
+    my $i    = $d - 1 + $dx;
+    my $ctrl = $w->{CELLS_ARR}[$i];
+    die "Wrong index $i!\n" if $ctrl eq 'space';
+    return $i;
+}
+
+sub reset_places {
+    my $w = shift;
+    my $i = $w->index_of_day(1);
+    move_first_day( $w, 0 - $i );
+    redraw($w);
+    return 1;
+}
 
 sub day {    # {{{
     my ( $w, $d ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_DAY} = $d;
-#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+        # display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
         return;
     }
     else {
@@ -388,7 +359,8 @@ sub month {    # {{{
     my ( $w, $m ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_MONTH} = $m;
-#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+        # print $w->{SEL_YEAR}, $w->{SEL_MONTH}, "\n";
+        # display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{SEL_MONTH};
@@ -400,7 +372,8 @@ sub year {    # {{{
     my ( $w, $y ) = @_;
     if ( $#_ > 0 ) {
         $w->{SEL_YEAR} = $y;
-#        display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
+        # print $w->{SEL_YEAR}, $w->{SEL_MONTH}, "\n";
+        # display_month( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH} );
     }
     else {
         return $w->{SEL_YEAR};
@@ -432,154 +405,42 @@ sub bg_color {
     return;
 }
 
-# sub fg_label_color {    # {{{
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{FG_LABEL_COLOR} = $c;
-# #        _configure_labels($w);
-#     }
-#     else {
-#         return $w->{FG_LABEL_COLOR};
-#     }
-#     return;
-# }    # }}}
-
-# sub bg_label_color {    # {{{
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{BG_LABEL_COLOR} = $c;
-# #        _configure_labels($w);
-#     }
-#     else {
-#         return $w->{BG_LABEL_COLOR};
-#     }
-#     return;
-# }    # }}}
-
-# sub fg_sel_color {    # {{{
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{FG_SEL_COLOR} = $c;
-#     }
-#     else {
-#         return $w->{FG_SEL_COLOR};
-#     }
-#     return;
-# }    # }}}
-
-# sub bg_sel_color {    # {{{
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{BG_SEL_COLOR} = $c;
-#     }
-#     else {
-#         return $w->{BG_SEL_COLOR};
-#     }
-#     return;
-# }    # }}}
-
-# sub bg_wkday_color {
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{BG_WKDAY_COLOR} = $c;
-# #        _configure_labels_wkday($w);
-#     }
-#     else {
-#         return $w->{BG_WKDAY_COLOR};
-#     }
-#     return;
-# }
-
-# sub fg_wkday_color {
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{FG_WKDAY_COLOR} = $c;
-# #        _configure_labels_wkday($w);
-#     }
-#     else {
-#         return $w->{FG_WKDAY_COLOR};
-#     }
-#     return;
-# }
-
-# sub bg_wkend_color {
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{BG_WKEND_COLOR} = $c;
-# #        _configure_labels_wkend($w);
-#     }
-#     else {
-#         return $w->{BG_WKEND_COLOR};
-#     }
-#     return;
-# }
-
-# sub fg_wkend_color {
-#     my ( $w, $c ) = @_;
-#     if ( $#_ > 0 ) {
-#         $w->{FG_WKEND_COLOR} = $c;
-# #        _configure_labels_wkend($w);
-#     }
-#     else {
-#         return $w->{FG_WKEND_COLOR};
-#     }
-#     return;
-# }
-
-sub date {    #{{{ -----------------------------------------------------
-
-=head2 my ($year, $month, $day) = $minical->date()
-
-Returns the selected date from Tk::EntryCalendar.
-Day and month numbers are always two digits (with leading zeroes).
-
-=cut
-
-    my ($w) = @_;
-    my $yyyy = sprintf( "%4d",  $w->{SEL_YEAR} );
-    my $mm   = sprintf( "%02d", $w->{SEL_MONTH} );
-    my $dd   = sprintf( "%02d", $w->{SEL_DAY} );
-    return ( $yyyy, $mm, $dd );
-}    # date }}}
-
-# sub clear_entry_all {
-#     my $w = shift;
-#     foreach my $i ( 0 .. 5 ) {
-#         foreach my $j ( 0 .. 6 ) {
-#             $w->{ENT_ARR}->[$i][$j]->delete( 0, 'end' );
-#         }
-#     }
-# }
+sub clear_entry_all {
+    my $w = shift;
+    my $eary = $w->get_label_entry_array;
+    foreach my $ez ( @{$eary} ) {
+        $ez->[1]->delete( 0, 'end' );
+    }
+    return;
+}
 
 sub get_label_entry_array {
     my $w = shift;
-    return $w->{ENT_ARR};
+    return $w->{LE_ARR};
 }
 
-sub select_date {    #{{{ ----------------------------------------------
+=head2 $minical->select_month($year, $month)
 
-=head2 $minical->select_date($year, $month, $day)
-
-Selects a date and positions the EntryCalendar to the corresponding
-year and month. The selected date is hilighted.
+Positions the EntryCalendar to the corresponding year and month and
+reconfigures the positions of the days.
 
 =cut
 
-    my ( $w, $yyyy, $mm, $dd ) = @_;
-    if ( check_date( $yyyy, $mm, $dd ) ) {
+sub select_month {
+    my ( $w, $yyyy, $mm ) = @_;
+    if ( check_date( $yyyy, $mm, 1 ) ) {
         $w->{SEL_YEAR}  = $yyyy;
         $w->{SEL_MONTH} = $mm;
-        $w->{SEL_DAY}   = $dd;
-        $w->configure( -day => $dd, -month => $mm, -year => $yyyy );
+        $w->{SEL_DAY}   = 1;
+        $w->configure( -day => 1, -month => $mm, -year => $yyyy );
         display_month( $w, $yyyy, $mm );
         $w->{l_mm}->configure( -text => label_yyyymm($w) );
-        update_entry_array($w);
     }
     else {
-        croak "Error in date: $yyyy, $mm, $dd";
+        croak "Error in date: $yyyy, $mm, 1";
     }
     return 1;
-}    # select_date }}}
+}
 
 =head2 $minical->display_month($year, $month)
 
@@ -589,56 +450,30 @@ with ($year, $month, 1) as parameters.
 
 =cut
 
-# sub display_month { #{{{
-#     my ( $w, $yyyy, $mm ) = @_;
+sub display_month {
+    my ( $w, $yyyy, $mm ) = @_;
 
-#     croak "error in date:  $mm, $yyyy" unless check_date( $yyyy, $mm, 1 );
+    croak "error in date:  $mm, $yyyy" unless check_date( $yyyy, $mm, 1 );
 
-#     $w->{YEAR}     = $yyyy;
-#     $w->{MONTH}    = $mm;
+    reset_places($w);
 
-#     $w->{mtxt} = $w->{MONNAME}[ $mm - 1 ];
+    $w->{YEAR}  = $yyyy;
+    $w->{MONTH} = $mm;
 
-#     my $day = " ";
-#     my $dim = Days_in_Month( $yyyy, $mm );
-#     my $dow = Day_of_Week( $yyyy, $mm, 1 );
-#     foreach my $i ( 0 .. 5 ) {
-#         foreach my $j ( 0 .. 6 ) {
+    my $dim = Days_in_Month( $yyyy, $mm );
+    my $dow = Day_of_Week( $yyyy, $mm, 1 );
 
-#             # Set $day to 1 if the first day reaches the correct day
-#             # of the week for the first day of the month
-#             $day = 1 if $day eq " " and $i == 0 and $j + 1 == $dow;
-#             $w->{MON_ARR}->[$i][$j]->configure(
-#                 -text       => $day,
-#                 -background => $w->{bg},
-#                 -foreground => $w->{FG_COLOR},
-#             );
-#             if ( $day =~ /\d/ ) {
-#                 $w->{FRM_ARR}->[$i][$j]{lfb}->packForget();
-#                 $w->{FRM_ARR}->[$i][$j]{efb}->pack();
-#             }
-#             else {
-#                 $w->{FRM_ARR}->[$i][$j]{lfb}->pack();
-#                 $w->{FRM_ARR}->[$i][$j]{efb}->packForget();
-#                 $w->{MON_ARR}->[$i][$j]->configure(
-#                     -background => $w->{bg} );
-#             }
+    # print "Day of week   = $dow\n";
+    # print "Days in month = $dim\n";
+    if ( $dow > 1 ) {
+        my $dx = $dow - 1;
+        move_first_day( $w, $dx );
+    }
+    my @to_hide = $dim + 1 .. 31;
+    hide_day( $w, $_ ) for @to_hide;
 
-#             $day++ if $day ne " ";
-#             $day = " " if $day =~ /\d/ and $day > $dim;
-#         }
-#     }
-
-#     # callback if defined:
-#     $w->{CALLBACK}->{'<Display-Month>'}( $yyyy, $mm, 1 )
-#       if defined $w->{CALLBACK}->{'<Display-Month>'};
-
-#     # if current month contains selected day: hilight it
-#     # _select_day( $w, $w->{SEL_YEAR}, $w->{SEL_MONTH}, $w->{SEL_DAY},
-#     #     $w->{BG_SEL_COLOR}, $w->{FG_SEL_COLOR} );
-
-#     return;
-# } # display_month }}}
+    return;
+}
 
 # Internal methods
 
@@ -653,50 +488,6 @@ with ($year, $month, 1) as parameters.
 #     return;
 # }    # _configure_labels }}}
 
-# sub _configure_labels_wkday {
-#     my ($w) = @_;
-#     for ( my $i = 0 ; $i < 5 ; $i++ ) {
-#         for ( my $j = 0 ; $j < 5 ; $j++ ) {
-#             # print "wkday: $i,$j\n";
-#             $w->{MON_ARR}->[$i][$j]->configure(
-#                 -background => $w->{BG_WKDAY_COLOR},
-#                 -foreground => $w->{FG_WKDAY_COLOR},
-#             );
-#         }
-#     }
-#     return;
-# }
-
-# sub _configure_labels_wkend {
-#     my ($w) = @_;
-#     for ( my $i = 0 ; $i < 5 ; $i++ ) {
-#         for ( my $j = 5 ; $j < 7 ; $j++ ) {
-#             # print "wkend: $i,$j\n";
-#             $w->{MON_ARR}->[$i][$j]->configure(
-#                 -background => $w->{BG_WKEND_COLOR},
-#                 -foreground => $w->{FG_WKEND_COLOR},
-#             );
-#         }
-#     }
-#     return;
-# }
-
-# check, if $i, $j position is a valid date {{{
-# sub _check_i_j {
-#     my ( $w, $i, $j ) = @_;
-#     my $dow = Day_of_Week( $w->{YEAR}, $w->{MONTH}, 1 );
-#     my $pos = $i * 7 + $j + 2 - $dow;
-#     if ( $pos > 0 and $pos <= Days_in_Month( $w->{YEAR}, $w->{MONTH} ) ) {
-#         return ( $w->{YEAR}, $w->{MONTH}, $pos );
-#     }
-#     else {
-#         return ( undef, undef, undef );
-#     }
-# }    # _check_i_j }}}
-
-# }}}
-
-
 1;
 
 __END__
@@ -705,9 +496,13 @@ __END__
 
 =head1 AUTHOR
 
+Stefan Suciu, E<lt>stefan.suciu@s2i2.roE<gt>
+
 Lorenz Domke, E<lt>lorenz.domke@gmx.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2019 by Stefan Suciu
 
 Copyright (C) 2008 by Lorenz Domke
 

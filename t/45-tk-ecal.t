@@ -32,28 +32,13 @@ my $ecal;
 my $xtvar = {};
 eval {
     $ecal = $mw->EntryCalendar(
-        # -year  => 2019,
-        # -month => 2,
+        -year  => 2019,
+        -month => 4,
     )->pack;
 };
-ok !$@, 'create ECal';
+ok !$@, 'create EntryCalendar';
 
 my ( $delay, $milisec ) = ( 1, 1000 );
-
-$delay++;
-
-$mw->after(
-    $delay * $milisec,
-    sub {
-        ok my $ec = $ecal->get_label_entry_array, 'dump';
-        my $cnt = 0;
-        foreach my $ctrl ( @{$ec} ) {
-            ok $ctrl->[1]->isa('Tk::Entry'), "entry $cnt";
-            ok write_e($ctrl->[1], $cnt+1), "write $cnt";
-            $cnt++;
-        }
-    }
-);
 
 $delay++;
 
@@ -78,7 +63,7 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        ok $ecal->move_first_day(-2);
+        ok $ecal->reset_places, 'reset to initial pozition';
     }
 );
 
@@ -87,7 +72,7 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        ok $ecal->hide_day(30); # index
+        ok $ecal->hide_day(31);
     }
 );
 
@@ -96,54 +81,70 @@ $delay++;
 $mw->after(
     $delay * $milisec,
     sub {
-        ok $ecal->show_day(30); # index
+        ok $ecal->show_day(31);
     }
 );
 
-# $delay++;
+$delay++;
 
-# $mw->after(
-#     $delay * $milisec,
-#     sub {
-#         ok my $ec = $ecal->get_label_entry_array, 'dump';
-#         my $cnt = 0;
-#         foreach my $ctrl ( @{$ec} ) {
-#             ok $ctrl->isa('Tk::Entry'), "entry $cnt";
-#             is read_e($ctrl), $cnt+1, "read $cnt";
-#             $cnt++;
-#         }
-#     }
-# );
+$mw->after(
+    $delay * $milisec,
+    sub {
+        $ecal->clear_entry_all;
+        ok my $ec = $ecal->get_label_entry_array, 'dump';
+        my $cnt = 0;
+        foreach my $ctrl ( @{$ec} ) {
+            ok $ctrl->[1]->isa('Tk::Entry'), "entry $cnt";
+            is read_e($ctrl->[1]), '', "read $cnt";
+            $cnt++;
+        }
+    }
+);
 
-# #-- Change month
+#-- Change month
 
-# $delay++;
+$delay++;
 
-# $mw->after(
-#     $delay * $milisec,
-#     sub {
-#         ok $ecal->select_date( 2019, 9, 1 );
-#     }
-# );
+$mw->after(
+    $delay * $milisec,
+    sub {
+        ok $ecal->select_month( 2019, 9 );
+    }
+);
 
-# $delay++;
+$delay++;
 
-# $mw->after(
-#     $delay * $milisec,
-#     sub {
-#         ok my $ec = $ecal->get_entry_array, 'dump';
-#         my $cnt = 0;
-#         foreach my $ctrl ( @{$ec} ) {
-#             ok $ctrl->isa('Tk::Entry'), "entry $cnt";
-#             ok write_e($ctrl, $cnt+1), "write $cnt";
-#             $cnt++;
-#         }
-#     }
-# );
+$mw->after(
+    $delay * $milisec,
+    sub {
+        ok my $ec = $ecal->get_label_entry_array, 'dump';
+        my $cnt = 0;
+        foreach my $ctrl ( @{$ec} ) {
+            ok $ctrl->[1]->isa('Tk::Entry'), "entry $cnt";
+            ok write_e($ctrl->[1], $cnt+1), "write $cnt";
+            $cnt++;
+        }
+    }
+);
+
+$mw->after(
+    $delay * $milisec,
+    sub {
+        ok my $ec = $ecal->get_label_entry_array, 'dump';
+        my $cnt = 0;
+        foreach my $ctrl ( @{$ec} ) {
+            ok $ctrl->[1]->isa('Tk::Entry'), "entry $cnt";
+            is read_e($ctrl->[1]), $cnt+1, "read $cnt";
+            $cnt++;
+        }
+    }
+);
 
 $delay++;
 
 $mw->after( $delay * $milisec, sub { $mw->destroy } );
+
+#-- helper subs
 
 sub write_e {
     my ( $control, $value ) = @_;
@@ -154,10 +155,11 @@ sub write_e {
 }
 
 sub read_e {
-    my ( $control ) = @_;
-    return $control->get;
+    my ($ctrl) = @_;
+    die "Can't read $ctrl, expecting an Entry" if !$ctrl->isa('Tk::Entry');
+    return $ctrl->get;
 }
 
-Tk::MainLoop;
+Tk::MainLoop();
 
 done_testing();
