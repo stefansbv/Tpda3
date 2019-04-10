@@ -797,8 +797,22 @@ Make TableMatrix selector.
 
 =head2 embeded_sel_buttons
 
-Embeded windows.  Config option L<selectorstyle> can be L<radio> the
-default, or L<checkbox>.
+Embeded windows.
+
+Config options:
+
+=over
+
+=item L<selectorstyle>
+
+The selector button style can be L<radio> the default, or L<checkbox>;
+
+=item L<selectorcolor>
+
+The selector button color can be any Tk color and the default is
+C<lightblue>;
+
+=back
 
 =head2 build_rbbutton
 

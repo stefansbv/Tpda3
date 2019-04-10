@@ -29,6 +29,7 @@ use Tpda3::Tk::TM;
 my $header = {
     colstretch    => '',
     selectorcol   => 4,
+    selectorcolor => 'green3',
     selectorstyle => '',
     columns       => {
         id_doc => {
