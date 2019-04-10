@@ -158,6 +158,7 @@ sub dep_table_header_info {
 
     $href->{columns}       = $self->deptable( $tm_ds, 'columns' );
     $href->{selectorcol}   = $self->deptable( $tm_ds, 'selectorcol' );
+    $href->{selectorcolor} = $self->deptable( $tm_ds, 'selectorcolor' );
     $href->{colstretch}    = $self->deptable( $tm_ds, 'colstretch' );
     $href->{selectorstyle} = $self->deptable( $tm_ds, 'selectorstyle' );
 
