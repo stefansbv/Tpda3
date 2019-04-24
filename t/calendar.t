@@ -40,6 +40,12 @@ subtest 'Calendar month - 2019, 1' => sub {
     is $found_w, 27, '27 is weekend';
 
     ok $cal->is_weekend(5),   'is weekend 5';
+
+    ok $cal->is_weekend_sat(5), 'is weekend 5 Sat';
+    ok !$cal->is_weekend_sun(5), 'is weekend 5 Sun';
+    ok !$cal->is_weekend_sat(6), 'is weekend 6 Sat';
+    ok $cal->is_weekend_sun(6), 'is weekend 6 Sun';
+
     ok $cal->is_holliday(24), 'is holliday 24';
     ok !$cal->is_weekend(1),  'is not weekend 1';
     ok !$cal->is_holliday(13), 'is not holliday 13';

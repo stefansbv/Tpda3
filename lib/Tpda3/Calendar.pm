@@ -197,6 +197,26 @@ sub is_weekend {
     return $found_w;
 }
 
+sub is_weekend_sat {
+    my ($self, $day) = @_;
+    my $tm   = Time::Moment->new(
+        year  => $self->year,
+        month => $self->month,
+        day   => $day,
+    );
+    return $tm->day_of_week == 6;
+}
+
+sub is_weekend_sun {
+    my ($self, $day) = @_;
+    my $tm   = Time::Moment->new(
+        year  => $self->year,
+        month => $self->month,
+        day   => $day,
+    );
+    return $tm->day_of_week == 7;
+}
+
 sub is_holliday {
     my ($self, $day) = @_;
     my $found_h = $self->find_hollyday( sub { $day == $_ } );
