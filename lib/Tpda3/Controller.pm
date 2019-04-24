@@ -2369,8 +2369,12 @@ sub record_load {
     $self->save_screendata( $self->storable_file_name('orig') );
 
     # Trigger on_load_record method from screen if defined
-    $self->scrobj($page)->on_load_record()
-        if $self->scrobj($page)->can('on_load_record');
+    if ($self->scrobj($page)->can('on_load_record')) { 
+        $self->scrobj($page)->on_load_record();
+        print "---\n";
+        warn "The 'on_load_record' method is deprecated, use 'on_record_loaded' instead.\n";
+        print "---\n";
+    }
 
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                          # undef = unloaded
@@ -2555,6 +2559,12 @@ sub record_save {
                                          # undef = unloaded
 
     $self->toggle_detail_tab;
+
+    # Trigger 'on_save_record' method in screen if defined
+    my $page = $self->view->get_nb_current_page();
+    $self->scrobj($page)->on_save_record()
+        if ( $page eq 'rec' or $page eq 'det' )
+        and $self->scrobj($page)->can('on_save_record');
 
     return;
 }
