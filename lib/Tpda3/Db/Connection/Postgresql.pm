@@ -20,6 +20,10 @@ sub new {
     return $self;
 }
 
+sub driver {
+    return 'PostgreSQL';
+}
+
 sub db_connect {
     my ( $self, $conf ) = @_;
 
