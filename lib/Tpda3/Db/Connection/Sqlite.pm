@@ -21,6 +21,10 @@ sub new {
     return $self;
 }
 
+sub driver {
+    return 'SQLite';
+}
+
 sub db_connect {
     my ( $self, $conf ) = @_;
 

@@ -2,6 +2,7 @@ package Tpda3::Model;
 
 # ABSTRACT: The Model
 
+use 5.010;
 use strict;
 use warnings;
 
@@ -280,11 +281,13 @@ sub table_batch_query {
         unless scalar @{$colslist};
 
     # XXX Workaround for PostgreSQL procedure call -> "function_name()"
-    unless ( $self->dbc->table_exists($table, 'or view') ) {
-        $table .= '()';
-        $self->_log->debug("Call $table as a function");
+    if ( $self->dbc->driver eq 'PostgreSQL' ) {
+        unless ( $self->dbc->table_exists( $table, 'or view' ) ) {
+            $table .= '()';
+            $self->_log->debug("Call $table as a function");
+        }
     }
-        
+
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
@@ -623,14 +626,15 @@ sub table_record_select {
 
 sub table_batch_insert {
     my ( $self, $table, $records ) = @_;
-
     my $sql = SQL::Abstract->new();
+
+    use Data::Dump;
+    say "table_batch_insert: table = $table";
+    dd $records;
 
     # AoH refs
     foreach my $record ( @{$records} ) {
-
         my ( $stmt, @bind ) = $sql->insert( $table, $record );
-
         try {
             my $sth = $self->dbh->prepare($stmt);
             $sth->execute(@bind);
@@ -639,7 +643,6 @@ sub table_batch_insert {
             $self->db_exception($_, 'Batch insert failed');
         };
     }
-
     return;
 }
 

@@ -24,6 +24,10 @@ sub new {
     return $self;
 }
 
+sub driver {
+    return 'CUBRID';
+}
+
 sub db_connect {
     my ( $self, $conf ) = @_;
 
