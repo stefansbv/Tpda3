@@ -7,13 +7,13 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
-#use Tpda3::Tk::Text;
+#use Tpda3::Tk::Text; # TODO: check and enable
 
 use Tpda3::Utils;
 use Tpda3::Tk::TB;
 use Tpda3::Config::Screen;
 
-require Tpda3::Tk::Validation;
+use Tpda3::Tk::Validation;
 
 sub new {
     my ( $class, $args ) = @_;

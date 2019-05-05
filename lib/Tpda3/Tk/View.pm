@@ -98,7 +98,7 @@ sub _set_model_callbacks {
     my $self = shift;
 
     my $co = $self->model->get_connection_observable;
-    $co->add_callback( sub { $self->toggle_status_cn( $_[0] ); } );
+    $co->add_callback( sub { $self->toggle_status_cn( $_[0] ) } );
 
     # Show message in status bar
     my $so = $self->model->get_stdout_observable;
@@ -106,7 +106,7 @@ sub _set_model_callbacks {
 
     # When the status changes, update gui components
     my $apm = $self->model->get_appmode_observable;
-    $apm->add_callback( sub { $self->update_gui_components(); } );
+    $apm->add_callback( sub { $self->update_gui_components() } );
 
     # When the modified status changes, update statusbar
     my $svs = $self->model->get_scrdata_rec_observable;
@@ -150,7 +150,6 @@ SWITCH: {
 
         # Else
         if ( exists $self->{_tb} and $self->{_tb}->isa('Tpda3::Tk::TB') ) {
-            print "\n";
             if ( $self->{_tb}->can('toggle_tool_check') ) {
                 $self->{_tb}->toggle_tool_check( 'tb_ad', 0 );
                 $self->{_tb}->toggle_tool_check( 'tb_fm', 0 );
