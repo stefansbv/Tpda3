@@ -10,7 +10,7 @@ use Test::More tests => 5;
 
 use lib qw( lib ../lib );
 
-require Tpda3::Config;
+use Tpda3::Config;
 
 my $args = {
     cfname => 'test-tk',
