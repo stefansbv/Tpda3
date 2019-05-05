@@ -182,15 +182,15 @@ is( $tm->make_header($header), undef, 'make header' );
 
 $tm->pack( -expand => 1, -fill => 'both');
 
-my $delay = 1;
+my ( $delay, $milisec ) = ( 1, 100 );
 
-$mw->after( $delay * 100,
+$mw->after( $delay * $milisec,
     sub { is( $tm->fill_main($record, 'nr_crt'), undef, 'fill TMSHR' ); } );
 
 $delay++;
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
     sub {
         is( $tm->fill_details($expdata), undef, 'fill TMSHR det 1' );
     }
@@ -199,7 +199,7 @@ $mw->after(
 $delay++;
 
 $mw->after(
-    $delay * 100,
+    $delay * $milisec,
     sub {
         is_deeply($tm->get_main_data(), $record, 'compare main data');
         is_deeply($tm->get_expdata(), $expdata, 'compare expand data');
@@ -208,7 +208,7 @@ $mw->after(
 
 $delay++;
 
-$mw->after( $delay * 100, sub { $mw->destroy } );
+$mw->after( $delay * $milisec, sub { $mw->destroy } );
 
 Tk::MainLoop;
 

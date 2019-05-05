@@ -147,7 +147,7 @@ ok !$tm->init( $mw, $header ), 'make header';
 
 $tm->pack( -expand => 1, -fill => 'both');
 
-my ( $delay, $milisec ) = ( 1, 1000 );
+my ( $delay, $milisec ) = ( 1, 100 );
 
 $mw->after(
     $delay * $milisec,

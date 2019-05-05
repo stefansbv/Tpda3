@@ -71,7 +71,7 @@ sub init {
             $self->{embeded_meta}{$emb} = { choices => $args->{$emb} };
         }
         else {
-            warn "No init args for '$emb'\n";
+            warn "No init args for '$emb'\n"; # TODO: show only for ckbuttons
         }
     }
 
@@ -194,7 +194,7 @@ sub set_tags {
     }
 
     # Add selector column
-    if ( $self->{selectorcol} ) {
+    if ( $self->{selectorcol} and $self->{selectorcol} =~ /^\d+$/) {
         my $selecol = $self->{selectorcol};
         $self->insertCols( $selecol, 1 );
         $self->tagCol( 'ro_center', $selecol );
@@ -260,11 +260,11 @@ sub read_row {
         if ( !$all_cols ) {
             next if $rw eq 'ro';    # skip ro cols
         }
-        # print "reading TM cell on row '$row' for field '$field'\n";
+        #say "reading TM cell on row '$row' for field '$field'";
         my $cell_data = $self->cell_read( $row, $field );
         foreach my $key ( keys %{$cell_data} ) {
             $row_data->{$key} = $cell_data->{$key};
-            # print " $key => ", $cell_data->{$key}, "\n";
+            #say " $key => ", $cell_data->{$key};
         }
     }
     return $row_data;
@@ -343,6 +343,7 @@ sub cell_read {
         $field = $self->get_field_for($col);
     }
     my $cell_value = $self->get("$row,$col");
+    $cell_value = $cell_value ? 1 : 0 if $w_type eq 'ckbutton';
     return { $field => $cell_value };
 }
 
@@ -362,16 +363,36 @@ sub cell_write {
         $field = $self->{fields}[$c];
     }
     $self->set("$r,$c", $value);
-    my $w;                      # update the embeded widget
+    my $w;
     eval { $w = $self->windowCget( "$r,$c", '-window' ) };
     unless ($@) {
-        if ( $w =~ /Tk::JComboBox/ ) {
+        if ( $w =~ /JComboBox/i ) {
             my $var = $w->cget('-textvariable');
-            $$var   = $value;
+            if (ref $var eq 'SCALAR') {
+                $$var = $value;
+            }
+            else {
+                die "jcombobox update failed\n";
+            }
         }
-        elsif ( $w =~ /Tk::DateEntry/ ) {
+        elsif ( $w =~ /DateEntry/i ) {
             my $var = $w->cget('-textvariable');
-            $$var   = $value;
+            if (ref $var eq 'SCALAR') {
+                $$var = $value;
+            }
+            else {
+                die "dateentry update failed\n";
+            }
+
+        }
+        elsif ( $w =~ /Checkbutton/i ) {
+            my $var = $w->cget('-variable');
+            if (ref $var eq 'SCALAR') {
+                $$var = $value;
+            }
+            else {
+                die "checkbutton update failed\n";
+            }
         }
     }
     return;
@@ -439,7 +460,7 @@ sub remove_row {
 
     # Refresh table
     $self->activate('origin');
-    $self->activate("$row,1");
+    $self->activate("$row,1");               #
     return;
 }
 
@@ -499,7 +520,7 @@ sub add_embeded_widgets {
         if ( $w_type eq 'dateentry' ) {
             $self->windowConfigure(
                 "$row,$col",
-                -sticky => 'ne',
+                -sticky => 'nw',
                 -window => $self->build_dateentry( $row, $col ),
             );
         }
@@ -507,8 +528,16 @@ sub add_embeded_widgets {
             my $choices =  $self->{embeded_meta}{$field}{choices};
             $self->windowConfigure(
                 "$row,$col",
-                -sticky  => 'ne',
+                -sticky  => 'nw',
                 -window  => $self->build_jcombobox( $row, $col, $choices ),
+            );
+        }
+        elsif ( $w_type eq 'ckbutton' or $w_type eq 'checkbutton') {
+            my $p = $fields_cfg->{$field};
+            $self->windowConfigure(
+                "$row,$col",
+                -sticky  => 'n',
+                -window  => $self->build_ckbutton( $row, $col, $p ),
             );
         }
         $self->update;
@@ -518,43 +547,71 @@ sub add_embeded_widgets {
 
 sub embeded_sel_buttons {
     my ( $self, $row, $col ) = @_;
-    my $selestyle = defined $self->{selectorstyle}
+    # TODO: WTF!
+    my $selestyle = $self->{selectorstyle}
         ? $self->{selectorstyle}
         : q{};
-    my $selecolor = defined $self->{selectorcolor}
+    my $selecolor = $self->{selectorcolor}
         ? $self->{selectorcolor}
         : q{lightblue};
     if ( $selestyle eq 'checkbox' ) {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
-            -window => $self->build_ckbutton( $row, $col ),
+            -window => $self->build_sel_ckbutton( $row, $col, $selecolor ),
         );
     }
     else {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
-            -window => $self->build_rbbutton( $row, $col, $selecolor ),
+            -window => $self->build_sel_rbbutton( $row, $col, $selecolor ),
         );
     }
     return;
+
 }
 
 sub build_ckbutton {
-    my ( $self, $row, $col ) = @_;
+    my ( $self, $row, $col, $p ) = @_;
+    my $text  = exists $p->{text}        ? $p->{text}        : '';
+    my $image = exists $p->{image}       ? $p->{image}       : '';
+    my $color = exists $p->{selectcolor} ? $p->{selectcolor} : 'lightblue';
+    my $width = exists $p->{displ_width} ? $p->{displ_width} : 'width';
     my $button = $self->{frame}->Checkbutton(
-        -image       => 'actcross16',
-        -selectimage => 'actcheck16',
+
+        # -image       => 'actcross16',
+        # -selectimage => 'actcheck16',
+        -width       => $width,
+        -text        => $text,
         -indicatoron => 0,
-        -selectcolor => 'lightblue',
+        -selectcolor => $color,
+        -offvalue    => 0,
+        -onvalue     => 1,
+        -state       => 'normal',
+        -command     => sub { $self->ckbutton_browse($row, $col) }
+    );
+    return $button;
+}
+
+sub build_sel_ckbutton {
+    my ( $self, $row, $col, $selecolor ) = @_;
+    my $width = 5; # $self->cell_config_for($field, 'displ_width');
+    my $button = $self->{frame}->Checkbutton(
+        # -image       => 'actcross16',
+        # -selectimage => 'actcheck16',
+        -width       => $width,
+        -indicatoron => 0,
+        -selectcolor => $selecolor,
+        -offvalue    => 0,
+        -onvalue     => 1,
         -state       => 'normal',
         -command     => sub { $self->validate("$row,$col") }
     );
     return $button;
 }
 
-sub build_rbbutton {
+sub build_sel_rbbutton {
     my ( $self, $row, $col, $selecolor ) = @_;
     my $button = $self->{frame}->Radiobutton(
         -width       => 3,
@@ -644,18 +701,42 @@ sub dentry_browse {
     return $date_str;
 }
 
+sub ckbutton_browse {
+    my ( $self, $r, $c ) = @_;
+    my $value = $self->is_checked($r, $c) ? 1 : 0;
+    $self->set("$r,$c", $value);
+    return;
+}
+
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
-    my $ckb;
-    eval { $ckb = $self->windowCget( "$r,$c", -window ); };
+    my ($w, $value);
+    eval { $w = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
-        if ( $ckb =~ /Checkbutton/ ) {
+        if ( $w =~ /Checkbutton/i ) {
             if ( defined $state ) {
-                $state ? $ckb->select : $ckb->deselect;
+                $state ? $w->select : $w->deselect;
             }
             else {
-                $self->is_checked( $r, $c ) ? $ckb->deselect : $ckb->select;
+                $state = $self->is_checked( $r, $c );
+                $state ? $w->deselect : $w->select;
+                $state = not $state;
             }
+            $value = $self->is_checked($r, $c);
+            $self->set("$r,$c", $value);
+        }
+    }
+    return $value;
+}
+
+sub mouse_click_ckbutton {
+    my ( $self, $r, $c ) = @_;
+    my $w;
+    eval { $w = $self->windowCget( "$r,$c", -window ); };
+    unless ($@) {
+        if ( $w =~ /Checkbutton/i ) {
+            $w->eventGenerate('<ButtonPress-1>');
+            $w->eventGenerate('<ButtonRelease-1>');
         }
     }
     return;
@@ -669,9 +750,9 @@ sub is_checked {
     my $bw;
     eval { $bw = $self->windowCget( "$r,$c", -window ); };
     unless ($@) {
-        if ( $bw =~ /Checkbutton/ ) {
-            my $ckb_var = $bw->cget('-variable');
-            $is_checked = $$ckb_var ? $$ckb_var : 0;
+        if ( $bw =~ /Checkbutton/i ) {
+            my $w_var = $bw->cget('-variable');
+            $is_checked = $$w_var ? $$w_var : 0;
         }
         # Radiobutton uses the global var $self->{tm_sel}
     }
@@ -814,7 +895,7 @@ C<lightblue>;
 
 =back
 
-=head2 build_rbbutton
+=head2 build_sel_rbbutton
 
 Build Radiobutton.
 
@@ -832,7 +913,7 @@ undef. As a consequence it won't set as selected row 0.
 
 Return selector column.
 
-=head2 build_ckbutton
+=head2 build_sel_ckbutton
 
 Build Checkbutton.
 
