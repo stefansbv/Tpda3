@@ -1179,22 +1179,15 @@ sub _control_states_init {
 
 sub scrcfg {
     my ( $self, $page ) = @_;
-
     $page ||= $self->view->get_nb_current_page();
 
     return unless $page;
 
-    if ( $page eq 'lst' ) {
-        die "Wrong page (scrcfg): $page!";
-    }
+    die "Wrong page (scrcfg): $page!" if $page eq 'lst';
 
     my $scrobj = $self->scrobj($page);
-
-    if ( blessed $scrobj and ( exists $scrobj->{scrcfg} ) ) {
-        return $scrobj->{scrcfg};
-    }
-
-    return;
+    return $scrobj->{scrcfg}
+        if blessed $scrobj and ( exists $scrobj->{scrcfg} );
 }
 
 sub scrobj {
@@ -1274,7 +1267,6 @@ sub screen_module_load {
         my $msg = "EE: Screen '$class' can not 'run_screen'";
         print "$msg\n";
         $self->_log->error($msg);
-
         return;
     }
 
@@ -1612,7 +1604,8 @@ sub screen_load_lists {
 
         my $para = $self->scrcfg()->lists_ds($field);
 
-        next unless ref $para eq 'HASH';       # undefined, skip
+        next unless defined $para;      # should not happen
+        next unless scalar %{$para};    # skip empty config for lists_ds
 
         # Query table and return data to fill the lists
 
@@ -2369,7 +2362,7 @@ sub record_load {
     $self->save_screendata( $self->storable_file_name('orig') );
 
     # Trigger on_load_record method from screen if defined
-    if ($self->scrobj($page)->can('on_load_record')) { 
+    if ($self->scrobj($page)->can('on_load_record')) {
         $self->scrobj($page)->on_load_record();
         print "---\n";
         warn "The 'on_load_record' method is deprecated, use 'on_record_loaded' instead.\n";
@@ -2539,11 +2532,11 @@ sub record_save {
 
         my $record = $self->get_screen_data_record('upd');
 
-        try   { $self->check_required_data($record); }
-        catch { $self->catch_data_exceptions($_);    };
+        try   { $self->check_required_data($record) }
+        catch { $self->catch_data_exceptions($_)    };
 
-        try   { $self->model->prepare_record_update($record); }
-        catch { $self->catch_db_exceptions($_);               };
+        try   { $self->model->prepare_record_update($record) }
+        catch { $self->catch_db_exceptions($_)               };
 
         $self->view->set_status(__ 'Saved', 'ms', 'darkgreen');
     }
