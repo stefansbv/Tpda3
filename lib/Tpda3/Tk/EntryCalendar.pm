@@ -41,9 +41,9 @@ sub Populate {    # {{{
     $w->{UY} = 1 / 6;
     $w->{DX} = 0;
 
-    $w->{LE_ARR}     = [];    # [0..30] holds the [labels, entries]
-    $w->{CELLS_ARR}  = [];    # [0..41] holds the frames with [labels, entries]
-    $w->{COORDS_ARR} = [];    # [0..41] holds the coords
+    $w->{LE_ARR}     = [];   # [0..30] holds the [labels, entries]
+    $w->{CELLS_ARR}  = [];   # [0..41] holds the frames with [labels, entries]
+    $w->{COORDS_ARR} = [];   # [0..41] holds the coords
 
     # get parameters which are only for me ...
     my ( $y, $m, $d ) = Today;
@@ -56,11 +56,12 @@ sub Populate {    # {{{
         #   print Dumper $args;
 
         # defaults:
-        $w->{DAYNAME} =
-          [qw(luni marți miercuri joi vineri sâmbătă duminică)];
-        $w->{MONNAME} = [
+        $w->{DAYNAME}
+            = [qw(luni marți miercuri joi vineri sâmbătă duminică)];
+        $w->{MONNAME}
+            = [
             qw(ianuarie februarie martie aprilie mai iunie iulie august septembrie octombrie noiembrie decembrie)
-        ];
+            ];
         $w->{DAY}   = $d;    # default is Today
         $w->{MONTH} = $m;
         $w->{YEAR}  = $y;
@@ -75,25 +76,27 @@ sub Populate {    # {{{
         $w->{YEAR}  = $received{'-year'}  if defined $received{'-year'};
 
         $w->{DAYNAME} = $received{'-day_names'}
-          if defined $received{'-day_names'};
+            if defined $received{'-day_names'};
         $w->{MONNAME} = $received{'-month_names'}
-          if defined $received{'-month_names'};
+            if defined $received{'-month_names'};
 
         # check: 7 names for DAYNAME, 12 names for MONNAME
         if ( defined $received{'-day_names'}
             and @{ $received{'-day_names'} } != 7 )
         {
-            croak "error in names array for -day_names option: must provide 7 names";
+            croak
+                "error in names array for -day_names option: must provide 7 names";
         }
         if ( defined $received{'-month_names'}
             and @{ $received{'-month_names'} } != 12 )
         {
-            croak "error in names array for -month_names option: must provide 12 names";
+            croak
+                "error in names array for -month_names option: must provide 12 names";
         }
     }    # %received goes out of scope and will be deleted ...
     croak "error in initial date: ", $w->{YEAR}, ", ", $w->{MONTH}, ", ",
-      $w->{DAY}
-      unless check_date( $w->{YEAR}, $w->{MONTH}, $w->{DAY} );
+        $w->{DAY}
+        unless check_date( $w->{YEAR}, $w->{MONTH}, $w->{DAY} );
 
     # selected day: (need not be visible in current month)
     $w->{SEL_DAY}   = $w->{DAY};
@@ -101,16 +104,16 @@ sub Populate {    # {{{
     $w->{SEL_YEAR}  = $w->{YEAR};
 
     $w->SUPER::Populate($args)
-      ;    # handle other widget options like -relief, -background, ...
+        ;    # handle other widget options like -relief, -background, ...
 
     $w->ConfigSpecs(
         -day   => [ METHOD => 'day',   'Day',   $d ],
         -month => [ METHOD => 'month', 'Month', $m ],
         -year  => [ METHOD => 'year',  'Year',  $y ],
         -day_names =>
-          [ PASSIVE => 'day_names', 'Day_names', \@{ $w->{DAYNAME} } ],
+            [ PASSIVE => 'day_names', 'Day_names', \@{ $w->{DAYNAME} } ],
         -month_names =>
-          [ PASSIVE => 'month_names', 'Month_names', \@{ $w->{MONNAME} } ],
+            [ PASSIVE => 'month_names', 'Month_names', \@{ $w->{MONNAME} } ],
         -bg_color => [ METHOD => 'bg_color', 'Bg_color', 'white' ],
         -fg_color => [ METHOD => 'fg_color', 'Fg_color', 'black' ],
     );
@@ -123,6 +126,7 @@ sub Populate {    # {{{
         -width       => 200,
         -height      => 30,
         -borderwidth => '2',
+
         # -relief      => 'raised',
     );
     $monthname_frm->pack(qw/-side top -padx 1c -pady 5/);
@@ -131,6 +135,7 @@ sub Populate {    # {{{
         -width       => 482,
         -height      => 30,
         -borderwidth => '2',
+
         # -relief      => 'raised',
     );
     $weekdays_frm->pack(qw/-side top -padx 1c -pady 2/);
@@ -138,9 +143,10 @@ sub Populate {    # {{{
     my $top_frm = $w->Frame(
         -width       => 480,
         -height      => 320,
-        -borderwidth => 2,
-        -relief      => 'sunken',
-        -background  => 'grey60',
+
+        #-borderwidth => 2,
+        #-relief      => 'sunken',
+        #-background => 'blue',          # does not work (!?)
     );
     $top_frm->pack(qw/-side top -padx 1c -pady 5/);
 
@@ -173,8 +179,8 @@ sub Populate {    # {{{
                 ( $ctrl, $rx, $ry ) = register_space( $w, $x, $y );
             }
             else {
-                ( $ctrl, $rx, $ry, $le_ctrl ) =
-                  make_label_entry_frame( $w, $top_frm, $x, $y, $days );
+                ( $ctrl, $rx, $ry, $le_ctrl )
+                    = make_label_entry_frame( $w, $top_frm, $x, $y, $days );
                 push @{ $w->{LE_ARR} }, $le_ctrl;
                 $days++;
             }

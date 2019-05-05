@@ -38,7 +38,7 @@ eval {
 };
 ok !$@, 'create EntryCalendar';
 
-my ( $delay, $milisec ) = ( 1, 1000 );
+my ( $delay, $milisec ) = ( 1, 100 );
 
 $delay++;
 
