@@ -2,10 +2,7 @@
 # Testing Tpda3::Config::Toolbar
 #
 
-use strict;
-use warnings;
-
-use Test::More tests => 122;
+use Test2::V0;
 
 use lib qw( lib ../lib );
 
@@ -13,7 +10,7 @@ use List::Util qw(first);
 
 require Tpda3::Config::Toolbar;
 
-ok( my $conf = Tpda3::Config::Toolbar->new, 'new config tool object' );
+ok my $conf = Tpda3::Config::Toolbar->new, 'new config tool object';
 
 ok my @tools = $conf->ids_in_tool, 'get the tool names';
 
@@ -31,3 +28,5 @@ foreach my $name (@names) {
 }
 
 is $conf->get_tool("some_tool"), undef, 'fail to get the "some_tool" tool';
+
+done_testing;
