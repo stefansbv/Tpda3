@@ -5,10 +5,10 @@ package Tpda3::Config::Screen;
 use strict;
 use warnings;
 
-use Data::Diver qw( Dive );
+use Data::Diver qw( Dive ); #  DiveError
 use Hash::Merge;
 
-require Tpda3::Config;
+use Tpda3::Config;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -33,6 +33,8 @@ sub load_conf {
     return $conf_href;
 }
 
+#-- Screen sections
+
 sub screen {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'screen', @args );
@@ -40,22 +42,30 @@ sub screen {
 
 sub defaultreport {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'defaultreport', @args );
+    my $c = Dive( $self->{_scr}, 'defaultreport', @args );
+    return $c // {};
 }
 
 sub defaultdocument {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'defaultdocument', @args );
+    my $c = Dive( $self->{_scr}, 'defaultdocument', @args );
+    # if ( $self->cfg->{verbose} ) {
+    #     my ( $errDesc, $ref, $svKey ) = DiveError();
+    #     warn "$errDesc: $$svKey\n";
+    # }
+    return $c // {};
 }
 
 sub lists_ds {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'lists_ds', @args );
+    my $c =  Dive( $self->{_scr}, 'lists_ds', @args );
+    return $c // {};
 }
 
 sub lists_ds_tm {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'lists_ds_tm', @args );
+    my $c = Dive( $self->{_scr}, 'lists_ds_tm', @args );
+    return $c // {};
 }
 
 sub list_header {
@@ -65,7 +75,8 @@ sub list_header {
 
 sub bindings {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'bindings', @args );
+    my $c = Dive( $self->{_scr}, 'bindings', @args );
+    return $c // {};
 }
 
 sub bindings_select {
@@ -75,12 +86,19 @@ sub bindings_select {
 
 sub tablebindings {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'tablebindings', @args ) // {};
+    my $c = Dive( $self->{_scr}, 'tablebindings', @args );
+    return $c // {};
+}
+
+sub maintable {
+    my ($self, @args) = @_;
+    return Dive( $self->{_scr}, 'maintable', @args );
 }
 
 sub deptable {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'deptable', @args );
+    my $c = Dive( $self->{_scr}, 'deptable', @args );
+    return $c // {};
 }
 
 sub repotable {
@@ -90,28 +108,25 @@ sub repotable {
 
 sub scrtoolbar {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'scrtoolbar', @args );
+    my $c = Dive( $self->{_scr}, 'scrtoolbar', @args );
+    return $c // {};
 }
 
 sub toolbar {
     my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'toolbar', @args );
+    my $c =  Dive( $self->{_scr}, 'toolbar', @args );
+    return $c // {};
 }
 
-sub maintable {
-    my ($self, @args) = @_;
-    return Dive( $self->{_scr}, 'maintable', @args );
-}
+#-- Screen sections END
 
 sub has_screen_details {
     my $self = shift;
     my $screen = $self->screen('details');
-    if ( ref $screen ) {
+    if ( ref $screen eq 'HASH' ) {
         return scalar keys %{$screen};
     }
-    else {
-        return $screen;
-    }
+    return;
 }
 
 sub screen_toolbars {
@@ -145,7 +160,7 @@ sub scr_toolbar_names {
 
 sub scr_toolbar_groups {
     my $self = shift;
-    my @group_labels = keys %{ $self->scrtoolbar };
+    my @group_labels = keys %{ $self->scrtoolbar // {} }; # TODO ...
     return \@group_labels;
 }
 
@@ -190,10 +205,8 @@ sub app_toolbar_attribs {
 
 sub dep_table_has_selectorcol {
     my ( $self, $tm_ds ) = @_;
-
     die "TM parameter missing!" unless $tm_ds;
     my $sc = $self->deptable($tm_ds, 'selectorcol');
-
     return $sc;
 }
 
@@ -220,7 +233,7 @@ sub repo_table_columns_by_level {
 sub alter_toolbar_state {
     my $self = shift;
     my $tb_orig_ref = $self->cfg->toolbar->tool;
-    my $tb_scrn_ref = $self->toolbar;
+    my $tb_scrn_ref = $self->toolbar // {};
     my $merged = Hash::Merge->new('RIGHT_PRECEDENT')
         ->merge( $tb_orig_ref, $tb_scrn_ref );
     $self->cfg->toolbar->tool($merged);
@@ -282,6 +295,8 @@ C<filter> parametere is the foreign key of the database table.
         </details>
     </screen>
 
+The L<screen> section is required.
+
 =head2 defaultreport
 
 Return the L<defaultreport> section data structure.
@@ -290,6 +305,8 @@ Return the L<defaultreport> section data structure.
         name                = The title of the report
         file                = report-file.rep
     </defaultreport>
+
+The L<defaultreport> section is optional.
 
 =head2 defaultdocument
 
@@ -300,6 +317,8 @@ Return the L<defaultdocument> section data structure.
         file                = template-file.tt
         datasource          = db_view_name
     </defaultdocument>
+
+The L<defaultdocument> section is optional.
 
 =head2 lists_ds
 
@@ -315,11 +334,15 @@ Return the L<lists_ds> section data structure.
         </cod_stud>
     </lists_ds>
 
+The L<lists_ds> section is optional.
+
 =head2 lists_ds_tm
 
-Return the L<lists_ds_tm> section data structure.  Has thee same
+Return the L<lists_ds_tm> section data structure.  Has the same
 configuration as for L<list_ds but> is for the embeded ComboBox from
 the TM widget.
+
+The L<lists_ds_tm> section is optional.
 
 =head2 list_header
 
