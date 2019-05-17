@@ -158,7 +158,7 @@ is $tm->cell_config_for( 1, 'embed' ), 'jcombobox',
 
 $tm->pack( -expand => 1, -fill => 'both' );
 
-my ( $delay, $milisec ) = ( 1, 100 );
+my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
     $delay * $milisec,
