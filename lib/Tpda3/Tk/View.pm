@@ -1369,6 +1369,52 @@ sub io_exception {
     return;
 }
 
+sub file_dialog_fall_back {
+    my ($self, $types, $initdir) = @_;
+    my $file_dlg = $self->JFileDialog(
+        -Title       => __ 'Choose a file',
+        -Create      => 0,
+        -Path        => $initdir,
+        -FPat        => '*.rep',
+        -ShowAll     => 0,
+        -DisableFPat => 1,
+        -Chdir       => 0,
+    );
+    return $file_dlg->Show(-Horiz => 1);
+}
+
+sub dialog_path_fall_back {
+    my ($self, $field) = @_;
+    my $initialdir = $self->get_init_dir($field);
+    my $dialog = $self->{view}->JFileDialog(
+        -Title   => __ 'Choose a directory',
+        -Create  => 0,
+        -Path    => '~',
+        -SelDir  => 1,
+        -ShowAll => 'NO',
+    );
+    return $dialog->Show( -Horiz => 1 );
+}
+
+sub dialog_file {
+    my ($self, $initdir, $types) = @_;
+    my $path = $self->getOpenFile(
+        -title      => __ 'Choose a file',
+        -filetypes  => $types,
+        -initialdir => $initdir,
+    );
+    return $path;
+}
+
+sub dialog_path {
+    my ($self, $initdir) = @_;
+    my $path = $self->chooseDirectory(
+        -title      => __ 'Choose a directory',
+        -initialdir => $initdir,
+    );
+    return $path;
+}
+
 sub Tk::Error {
     my ( $self, $error, @locations ) = @_;
 
