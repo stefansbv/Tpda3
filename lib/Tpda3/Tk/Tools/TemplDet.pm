@@ -6,20 +6,16 @@ use strict;
 use warnings;
 use utf8;
 
-use Tk::widgets qw(DateEntry JComboBox Checkbutton RadiobuttonGroup);
+use Tk::widgets qw(DateEntry);
 use POSIX qw (strftime);
 use File::Spec::Functions;
 use List::Compare;
 use List::MoreUtils qw(any);
 #use Locale::TextDomain 1.20 qw(Tpda3); # has problems on page change
 
-use Tpda3::Utils;
-#use Tpda3::Config;
-use Tpda3::Tk::TM;
-
-require Tpda3::Generator;
-
 use base q{Tpda3::Tk::Screen};
+
+use Tpda3::Generator;
 
 sub _init {
     my ($self) = @_;
@@ -296,7 +292,7 @@ sub list_of_variables {
     return $fields_aref;
 }
 
-sub on_load_record {
+sub on_record_loaded {
     my $self = shift;
     $self->update_column_required;
     $self->update_statistics;
@@ -459,7 +455,7 @@ Update column required.
 
 Return the list of variables from the TT template document.
 
-=head2 on_load_record
+=head2 on_record_loaded
 
 Update on load event.
 

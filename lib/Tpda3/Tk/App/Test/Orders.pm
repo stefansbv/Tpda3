@@ -435,7 +435,7 @@ sub calculate_order {
     return;
 }
 
-sub on_load_record {
+sub on_record_loaded {
     my $self = shift;
     $self->{view}->set_status( '', 'ms'); # clear status message
     return;
@@ -480,7 +480,7 @@ Calculate order line.
 
 Calculate order values.
 
-=head2 on_load_record
+=head2 on_record_loaded
 
 On load record event.
 
