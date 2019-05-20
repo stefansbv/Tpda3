@@ -271,6 +271,13 @@ sub _set_event_handlers {
         }
     );
 
+    $self->view->event_handler_for_menu(
+        'mn_cfg',
+        sub {
+            $self->screen_module_load('Configs','tools');
+        }
+    );
+
     #- Custom application menu from menu.yml
 
     my $appmenus = $self->view->get_app_menus_list();
@@ -2500,6 +2507,21 @@ sub ask_to {
 
 sub record_save {
     my $self = shift;
+    my $type = $self->scrcfg()->screen('style');
+  SWITCH: {
+        $type eq 'report'
+            && do { print "$type"; $self->record_save_todb; last SWITCH };
+        $type eq 'default'
+            && do { print "$type"; $self->record_save_todb; last SWITCH };
+        $type eq 'config'
+            && do { print "$type"; $self->record_save_conf; last SWITCH };
+        die "Unknown screen style: $type\n";
+    }
+    return;
+}
+
+sub record_save_todb {
+    my $self = shift;
 
     if ( $self->model->is_mode('add') ) {
 
@@ -2559,6 +2581,12 @@ sub record_save {
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_save_record');
 
+    return;
+}
+
+sub record_save_conf {
+    my $self = shift;
+    print "record_save_conf\n";
     return;
 }
 
