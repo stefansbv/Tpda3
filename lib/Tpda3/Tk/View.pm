@@ -17,7 +17,7 @@ use Try::Tiny;
 use Tk;
 use Tk::Font;
 use Tk::widgets qw(NoteBook StatusBar Dialog DialogBox Checkbutton
-    LabFrame MListbox JComboBox MsgBox);
+    LabFrame MListbox JComboBox MsgBox JFileDialog);
 
 use base 'Tk::MainWindow';
 
@@ -1369,27 +1369,25 @@ sub io_exception {
     return;
 }
 
-sub file_dialog_fall_back {
-    my ($self, $types, $initdir) = @_;
+sub dialog_file_fall_back {
+    my ($self, $initdir, $types) = @_;
     my $file_dlg = $self->JFileDialog(
         -Title       => __ 'Choose a file',
         -Create      => 0,
         -Path        => $initdir,
-        -FPat        => '*.rep',
+        -FPat        => $types->[0][1],
         -ShowAll     => 0,
         -DisableFPat => 1,
-        -Chdir       => 0,
     );
     return $file_dlg->Show(-Horiz => 1);
 }
 
 sub dialog_path_fall_back {
-    my ($self, $field) = @_;
-    my $initialdir = $self->get_init_dir($field);
+    my ($self, $initdir) = @_;
     my $dialog = $self->{view}->JFileDialog(
         -Title   => __ 'Choose a directory',
         -Create  => 0,
-        -Path    => '~',
+        -Path    => $initdir,
         -SelDir  => 1,
         -ShowAll => 'NO',
     );

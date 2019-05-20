@@ -6,18 +6,11 @@ use strict;
 use warnings;
 use utf8;
 
-use Tk::widgets qw(JFileDialog);
-
 use base q{Tpda3::Tk::Screen};
 
 use POSIX qw (strftime);
 use File::Spec::Functions;
 use File::ShareDir qw(dist_dir);
-
-use Tpda3::Tk::TM;
-use Tpda3::Tk::Text;
-require Tpda3::Config;
-require Tpda3::Utils;
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -210,37 +203,21 @@ sub run_screen {
     return;
 }
 
+sub write_e {
+    my ( $self, $field, $value ) = @_;
+    $self->{view}->control_write_e( $field, $self->{controls}{$field}, $value );
+    return;
+}
+
 sub report_file {
     my $self = shift;
-
     my $cfg = Tpda3::Config->instance();
     my $initdir = catdir( $cfg->configdir, 'rep' );
-
-    my $file_dlg = $self->{view}->JFileDialog(
-        -Title       => 'Alegeti fisierul',
-        -Create      => 0,
-        -Path        => $initdir,
-        -FPat        => '*.rep',
-        -ShowAll     => 0,
-        -DisableFPat => 1,
-        -Chdir       => 0,
-    );
-
-    my $path = $file_dlg->Show(-Horiz => 1);
-
+    my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
+    my $path  = $self->{view}->dialog_file($initdir, $types);
     return unless $path;
-
     my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
-
-    eval {
-        my $state = $self->{controls}{repofile}[1]->cget('-state');
-        $self->{controls}{repofile}[1]->configure( -state => 'normal' );
-        $self->{controls}{repofile}[1]->delete( 0, 'end' );
-        $self->{controls}{repofile}[1]->insert( 0, $file );
-        $self->{controls}{repofile}[1]->xview('end');
-        $self->{controls}{repofile}[1]->configure( -state => $state );
-    };
-
+    $self->write_e('repofile', $file);
     return;
 }
 

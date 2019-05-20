@@ -275,37 +275,21 @@ sub run_screen {
     return;
 }
 
+sub write_e {
+    my ( $self, $field, $value ) = @_;
+    $self->{view}->control_write_e( $field, $self->{controls}{$field}, $value );
+    return;
+}
+
 sub template_file {
     my $self = shift;
-
     my $cfg = Tpda3::Config->instance();
     my $initdir = catdir( $cfg->configdir, 'tex', 'model' );
-
-    my $file_dlg = $self->{view}->JFileDialog(
-        -Title       => 'Alegeti fisierul',
-        -Create      => 0,
-        -Path        => $initdir,
-        -FPat        => '*.tt',
-        -ShowAll     => 0,
-        -DisableFPat => 1,
-        -Chdir       => 0,
-    );
-
-    my $path = $file_dlg->Show(-Horiz => 1);
-
+    my $types = [ [ 'Fisier raport', '.tt' ], [ 'All Files', '*', ], ];
+    my $path  = $self->{view}->dialog_file($initdir, $types);
     return unless $path;
-
     my ( $vol, $dir, $file ) = File::Spec->splitpath($path);
-
-    eval {
-        my $state = $self->{controls}{tt_file}[1]->cget('-state');
-        $self->{controls}{tt_file}[1]->configure( -state => 'normal' );
-        $self->{controls}{tt_file}[1]->delete( 0, 'end' );
-        $self->{controls}{tt_file}[1]->insert( 0, $file );
-        $self->{controls}{tt_file}[1]->xview('end');
-        $self->{controls}{tt_file}[1]->configure( -state => $state );
-    };
-
+    $self->write_e('tt_file', $file);
     return;
 }
 
