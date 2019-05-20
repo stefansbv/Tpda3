@@ -16,8 +16,7 @@ use File::ShareDir qw(dist_dir);
 
 use Tpda3::Tk::TM;
 use Tpda3::Tk::Text;
-require Tpda3::Config;
-require Tpda3::Utils;
+use Tpda3::Config;
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -285,6 +284,12 @@ sub template_file {
     my $self = shift;
     my $cfg = Tpda3::Config->instance();
     my $initdir = catdir( $cfg->configdir, 'tex', 'model' );
+    unless ( -d $initdir ) {
+        my $msg = 'Configuration error';
+        my $det = "The initial directory '$initdir' does not exist";
+        $self->{view}->dialog_info($msg, $det, 'ok');
+        return;
+    }
     my $types = [ [ 'Fisier raport', '.tt' ], [ 'All Files', '*', ], ];
     my $path  = $self->{view}->dialog_file($initdir, $types);
     return unless $path;

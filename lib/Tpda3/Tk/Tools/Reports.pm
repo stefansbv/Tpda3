@@ -11,6 +11,7 @@ use base q{Tpda3::Tk::Screen};
 use POSIX qw (strftime);
 use File::Spec::Functions;
 use File::ShareDir qw(dist_dir);
+use Tpda3::Config;
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -213,6 +214,12 @@ sub report_file {
     my $self = shift;
     my $cfg = Tpda3::Config->instance();
     my $initdir = catdir( $cfg->configdir, 'rep' );
+    unless ( -d $initdir ) {
+        my $msg = 'Configuration error';
+        my $det = "The initial directory '$initdir' does not exist";
+        $self->{view}->dialog_info($msg, $det, 'ok');
+        return;
+    }
     my $types = [ [ 'Fisier raport', '.rep' ], [ 'All Files', '*', ], ];
     my $path  = $self->{view}->dialog_file($initdir, $types);
     return unless $path;
