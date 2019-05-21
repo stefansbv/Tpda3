@@ -290,6 +290,7 @@ sub deaccent {
 
 sub check_path {
     my ($self, $path) = @_;
+    die "check_path: A 'path' parameter is required\n" unless $path;
     unless ($path and -d $path) {
         Exception::IO::PathNotFound->throw(
             pathname => $path,
@@ -301,6 +302,7 @@ sub check_path {
 
 sub check_file {
     my ($self, $file) = @_;
+    die "check_file: A 'file' parameter is required\n" unless $file;
     unless ($file and -f $file) {
         Exception::IO::FileNotFound->throw(
             filename => $file,
