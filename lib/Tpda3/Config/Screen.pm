@@ -129,6 +129,24 @@ sub has_screen_details {
     return;
 }
 
+sub has_defaultreport {
+    my $self = shift;
+    my $conf = $self->defaultreport;
+    if ( ref $conf eq 'HASH' ) {
+        return scalar keys %{$conf};
+    }
+    return;
+}
+
+sub has_defaultdocument {
+    my $self = shift;
+    my $conf = $self->defaultdocument;
+    if ( ref $conf eq 'HASH' ) {
+        return scalar keys %{$conf};
+    }
+    return;
+}
+
 sub screen_toolbars {
     my ( $self, $name ) = @_;
     die "Screen toolbar name is required" unless $name;

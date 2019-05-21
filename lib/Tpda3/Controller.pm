@@ -1663,7 +1663,7 @@ sub toggle_interface_controls {
             # Activate only if default report configured for screen
             if ( ( $name eq 'tb_pr' ) and ( $status eq 'normal' ) ) {
                 $status = 'disabled' if
-                    !$self->scrcfg('rec')->defaultreport('file');
+                    !$self->scrcfg('rec')->has_defaultreport;
             }
 
             #-- Generate document
@@ -1672,7 +1672,8 @@ sub toggle_interface_controls {
             # for screen
             if ( ( $name eq 'tb_gr' ) and ( $status eq 'normal' ) ) {
                 $status = 'disabled' if
-                    !$self->scrcfg('rec')->defaultdocument('file');
+                    !$self->scrcfg('rec')->has_defaultdocument;
+                print "tb_gr status=$status\n";
             }
         }
         else {
