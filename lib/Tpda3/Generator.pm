@@ -102,7 +102,7 @@ sub tex_from_template {
 }
 
 sub pdf_from_latex {
-    my ($self, $tex_file, $docspath, $suffix) = @_;
+    my ($self, $tex_file, $docs_path, $suffix) = @_;
 
     my $pdflatex_exe;
     unless ( $pdflatex_exe = $self->find_pdflatex() ) {
@@ -110,7 +110,7 @@ sub pdf_from_latex {
         return;
     }
 
-    my $output_path = $docspath || $self->cfg->cfrun->{docspath};
+    my $output_path = $docs_path || $self->cfg->cfrun->{docsoutpath};
 
     Tpda3::Utils->check_file($tex_file);
     Tpda3::Utils->check_path($output_path);
