@@ -516,7 +516,7 @@ sub tbl_dict_query {
 }
 
 sub tbl_lookup_query {
-    my ( $self, $para ) = @_;
+    my ( $self, $para, $debug ) = @_;
 
     my $table  = $para->{table};
     my $fields = [ $para->{field} ];
@@ -525,6 +525,13 @@ sub tbl_lookup_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
+
+    if ($debug) {
+        print "---\n";
+        print "STMT = $stmt\n";
+        print "PARA = ", join ', ', @bind, "\n";
+        print "---\n";
+    }
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -725,6 +732,11 @@ sub prepare_record_update {
 
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
+
+    use Data::Dump;
+    say $table;
+    dd $maindata;
+    dd $where;
 
     $self->table_record_update( $table, $maindata, $where );
 
