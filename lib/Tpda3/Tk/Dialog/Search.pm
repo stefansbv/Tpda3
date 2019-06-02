@@ -14,8 +14,9 @@ use Tk::StatusBar;
 use Tk::JComboBox;
 
 sub new {
-    my ($class, $opts) = @_;
+    my ( $class, $opts ) = @_;
     my $self = {};
+    $self->{_opts} = $opts;
     bless( $self, $class );
     return $self;
 }
