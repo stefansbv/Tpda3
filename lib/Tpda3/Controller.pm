@@ -21,13 +21,13 @@ use Try::Tiny;
 use Data::Compare;
 use Locale::TextDomain 1.20 qw(Tpda3);
 
-require Tpda3::Exceptions;
-require Tpda3::Utils;
-require Tpda3::Config;
-require Tpda3::Model;
-require Tpda3::Lookup;
-require Tpda3::Selected;
-require Tpda3::Model::Table;
+use Tpda3::Exceptions;
+use Tpda3::Utils;
+use Tpda3::Config;
+use Tpda3::Model;
+use Tpda3::Lookup;
+use Tpda3::Selected;
+use Tpda3::Model::Table;
 
 sub new {
     my $class = shift;
@@ -543,8 +543,8 @@ sub tmx_read_selected {
     my $screen = $self->scrcfg('rec')->screen('details');
 
     my $det_params;
-    my $sc = $self->scrcfg('rec')->dep_table_has_selectorcol('tm1');
-    if ( defined $sc ) {
+    my $sc = $self->scrcfg('rec')->deptable_selectorcol('tm1');
+    if ($sc) {
         my $tmx = $self->scrobj('rec')->get_tm_controls('tm1');
         my $row = $self->tmatrix_get_selected;
         if ( defined $row and $row > 0 ) {
@@ -629,9 +629,7 @@ sub _check_app_menus {
 sub setup_lookup_bindings_entry {
     my ( $self, $page ) = @_;
 
-    my $dict     = Tpda3::Lookup->new;
     my $ctrl_ref = $self->scrobj($page)->get_controls();
-
     my $bindings = $self->scrcfg($page)->bindings;
 
     foreach my $bind_name ( keys %{$bindings} ) {
@@ -702,6 +700,7 @@ sub setup_lookup_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
+        my $dict = Tpda3::Lookup->new;
         $self->view->make_binding_entry(
             $ctrl_ref->{$column}[1],
             '<Return>',
@@ -715,7 +714,6 @@ sub setup_lookup_bindings_entry {
             }
         );
     }
-
     return;
 }
 
@@ -844,8 +842,7 @@ sub lookup_call {
     my $filter;
     if ( $lk_para->{filter} ) {
         my $fld = $lk_para->{filter};
-        my $col
-            = $self->scrcfg()->deptable( $tm_ds, 'columns', $fld, 'id' );
+        my $col = $self->scrcfg()->deptable_columns( $tm_ds, $fld, 'id' );
         $filter = $tmx->cell_read( $r, $col );
     }
 
@@ -926,7 +923,7 @@ sub get_lookup_setings {
     };
 
     # Add the search field to the columns list
-    my $field_cfg = $self->scrcfg()->deptable($tm_ds, 'columns', $column);
+    my $field_cfg = $self->scrcfg()->deptable_columns($tm_ds, $column);
 
     my @cols;
     my $rec = {};
@@ -971,7 +968,7 @@ sub fields_cfg_array {
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg()
-                ->deptable( $tm_ds, 'columns', $lookup_field );
+                ->deptable_columns( $tm_ds, $lookup_field );
         }
         else {
             $field_cfg
@@ -1000,7 +997,7 @@ sub fields_cfg_hash {
         my $field_cfg;
         if ($tm_ds) {
             $field_cfg = $self->scrcfg()
-                ->deptable( $tm_ds, 'columns', $scr_field );
+                ->deptable_columns( $tm_ds, $scr_field );
         }
         else {
             $field_cfg
@@ -1393,11 +1390,11 @@ sub screen_init_keys {
         if any { $_ eq 'columns' } @tms;
 
     foreach my $tm (@tms) {
-        my $keys_d = $self->scrcfg->deptable( $tm, 'keys', 'name' );
+        my $keys_d = $self->scrcfg->deptable_keys( $tm, 'name' );
         my $table = Tpda3::Model::Table->new(
             keys   => $keys_d,
-            table  => $self->scrcfg->deptable( $tm, 'name' ),
-            view   => $self->scrcfg->deptable( $tm, 'view' ),
+            table  => $self->scrcfg->deptable_name($tm),
+            view   => $self->scrcfg->deptable_view($tm),
         );
 
         if (ref $table) {
@@ -2362,7 +2359,7 @@ sub record_load {
         $tmx->clear_all();
         $tmx->fill($records);
 
-        my $sc = $self->scrcfg($page)->dep_table_has_selectorcol($tm_ds);
+        my $sc = $self->scrcfg($page)->deptable_selectorcol($tm_ds);
         $tmx->tmatrix_make_selector($sc) if $sc;
     }
 
@@ -2867,13 +2864,13 @@ sub dep_table_metadata {
         die "Bad parameter: $for_sql";
     }
 
-    my $columns = $self->scrcfg->deptable($tm, 'columns');
+    my $columns = $self->scrcfg->deptable_columns($tm);
 
     $metadata->{pkcol}    = $pk_key;
     $metadata->{fkcol}    = $self->table_key($page, $tm)->get_key(1)->name;
-    $metadata->{order}    = $self->scrcfg->deptable($tm, 'orderby');
+    $metadata->{order}    = $self->scrcfg->deptable_orderby($tm);
     $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $metadata->{updstyle} = $self->scrcfg->deptable($tm, 'updatestyle');
+    $metadata->{updstyle} = $self->scrcfg->deptable_updatestyle($tm);
 
     return $metadata;
 }
