@@ -2,6 +2,7 @@ package Tpda3::Config::Screen;
 
 # ABSTRACT: Configuration data structure for screens
 
+use 5.010;
 use strict;
 use warnings;
 
@@ -9,6 +10,8 @@ use Data::Diver qw( Dive ); #  DiveError
 use Hash::Merge;
 
 use Tpda3::Config;
+
+use Data::Dump;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -101,6 +104,108 @@ sub deptable {
     return $c // {};
 }
 
+sub is_href_is_empty {
+    my ($self, $href) = @_;
+    return undef if not ref $href;
+    return undef if ref $href ne 'HASH';
+    return !keys %{$href};
+}
+
+sub is_aref_is_empty {
+    my ($self, $aref) = @_;
+    return undef if not ref $aref;
+    return undef if ref $aref ne 'ARRAY';
+    return !@{$aref};
+}
+
+sub deptable_name {
+    my ($self, $tm_ds) = @_;
+    die "deptable_name: the \$tm_ds parameter is required" unless $tm_ds;
+    my $name = $self->deptable( $tm_ds, 'name' );
+    return undef if $self->is_href_is_empty($name);
+    return $name;
+}
+
+sub deptable_view  {
+    my ($self, $tm_ds) = @_;
+    die "deptable_view: the \$tm_ds parameter is required" unless $tm_ds;
+    my $view = $self->deptable( $tm_ds, 'view' );
+    return undef if $self->is_href_is_empty($view);
+    return $view;
+}
+
+sub deptable_updatestyle  {
+    my ($self, $tm_ds) = @_;
+    die "deptable_updatestyle: the \$tm_ds parameter is required" unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'updatestyle' );
+    return undef if $self->is_href_is_empty($conf);
+    return $conf;
+}
+
+sub deptable_columns  {
+    my ($self, $tm_ds, @args) = @_;
+    die "deptable_columns: the \$tm_ds parameter is required" unless $tm_ds;
+    my $columns = $self->deptable( $tm_ds, 'columns', @args );
+    return undef if $self->is_href_is_empty($columns);
+    return $columns;
+}
+
+sub deptable_keys {
+    my ($self, $tm_ds, @args) = @_;
+    die "deptable_keys: the \$tm_ds parameter is required" unless $tm_ds;
+    my $keys = $self->deptable( $tm_ds, 'keys', @args );
+    return undef if $self->is_href_is_empty($keys);
+    return undef if $self->is_aref_is_empty($keys);
+    return $keys;
+}
+
+sub deptable_selectorcol {
+    my ( $self, $tm_ds ) = @_;
+    die "deptable_selectorcol: the \$tm_ds parameter is required" unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'selectorcol' );
+    return undef if $self->is_href_is_empty($conf);
+    return undef if !$conf;
+    return $conf;
+}
+
+sub deptable_selectorcolor {
+    my ( $self, $tm_ds ) = @_;
+    die "deptable_selectorcolor: the \$tm_ds parameter is required"
+      unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'selectorcolor' );
+    return undef if $self->is_href_is_empty($conf);
+    return undef if !$conf;
+    return $conf;
+}
+
+sub deptable_selectorstyle  {
+    my ($self, $tm_ds) = @_;
+    die "deptable_selectorstyle: the \$tm_ds parameter is required"
+      unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'selectorstyle' );
+    return undef if $self->is_href_is_empty($conf);
+    return undef if !$conf;
+    return $conf;
+}
+
+sub deptable_colstretch  {
+    my ($self, $tm_ds) = @_;
+    die "deptable_colstretch: the \$tm_ds parameter is required" unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'colstretch' );
+    return undef if $self->is_href_is_empty($conf);
+    return undef if !$conf;
+    return $conf;
+}
+
+sub deptable_orderby {
+    my ($self, $tm_ds) = @_;
+    die "deptable_orderby: the \$tm_ds parameter is required" unless $tm_ds;
+    my $conf = $self->deptable( $tm_ds, 'orderby' );
+    return undef if $self->is_href_is_empty($conf);
+    return undef if !$conf;
+    return $conf;
+}
+
 sub repotable {
     my ($self, @args) = @_;
     return Dive( $self->{_scr}, 'repotable', @args );
@@ -184,17 +289,15 @@ sub scr_toolbar_groups {
 
 sub dep_table_header_info {
     my ( $self, $tm_ds ) = @_;
-
     die "TM parameter missing!" unless $tm_ds;
-
     my $href = {};
-
-    $href->{columns}       = $self->deptable( $tm_ds, 'columns' );
-    $href->{selectorcol}   = $self->deptable( $tm_ds, 'selectorcol' );
-    $href->{selectorcolor} = $self->deptable( $tm_ds, 'selectorcolor' );
-    $href->{colstretch}    = $self->deptable( $tm_ds, 'colstretch' );
-    $href->{selectorstyle} = $self->deptable( $tm_ds, 'selectorstyle' );
-
+    $href->{updatestyle}   = $self->deptable_updatestyle($tm_ds);
+    $href->{columns}       = $self->deptable_columns($tm_ds);
+    $href->{selectorcol}   = $self->deptable_selectorcol($tm_ds);
+    $href->{selectorcolor} = $self->deptable_selectorcolor($tm_ds);
+    $href->{selectorstyle} = $self->deptable_selectorstyle($tm_ds);
+    $href->{colstretch}    = $self->deptable_colstretch($tm_ds);
+    $href->{orderby}       = $self->deptable_orderby($tm_ds);
     return $href;
 }
 
@@ -221,12 +324,15 @@ sub app_toolbar_attribs {
     return $self->cfg->toolbar2;
 }
 
-sub dep_table_has_selectorcol {
-    my ( $self, $tm_ds ) = @_;
-    die "TM parameter missing!" unless $tm_ds;
-    my $sc = $self->deptable($tm_ds, 'selectorcol');
-    return $sc;
-}
+# sub dep_table_has_selectorcol {
+#     my ( $self, $tm_ds ) = @_;
+#     die "TM parameter missing!" unless $tm_ds;
+#     my $sc = $self->deptable($tm_ds, 'selectorcol');
+#     if ( ref $sc eq 'HASH' ) {
+#         return scalar keys %{$sc};
+#     }
+#     ???
+# }
 
 sub repo_table_columns_by_level {
     my ( $self, $level ) = @_;
@@ -423,6 +529,8 @@ Return the L<deptable> section data structure.
         view                = v_orderdetails
         updatestyle         = delete+add
         selectorcol         =
+        selectorcolor       =
+        selectorstyle       =
         colstretch          = 2
         orderby             = orderlinenumber
         <keys>
