@@ -751,4 +751,12 @@ parameters are: resource name and type. Where type is a list of dirs.
 Return a configuration datastructure loaded from a .yaml or a .conf
 file from a path in configdir.
 
+=head2 menubar
+
+Return the Tpda3::Config::Menu instance object.
+
+=head2 toolbar
+
+Return the Tpda3::Config::Toolbar instance object.
+
 =cut

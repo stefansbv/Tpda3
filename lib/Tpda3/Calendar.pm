@@ -238,13 +238,12 @@ has 'tm' => (
 );
 
 sub hist_month {
-    my ($self, $count) = @_;
-    my $tm = $self->tm->minus_months($count);
+    my ( $self, $count ) = @_;
+    my $tm    = $self->tm->minus_months($count);
     my $year  = $tm->year;
-    my $month = sprintf( "%02d", $tm->month);
+    my $month = sprintf( "%02d", $tm->month );
     return "${year}_${month}";
 }
-
 
 __PACKAGE__->meta->make_immutable;
 
@@ -269,9 +268,17 @@ Tpda3::Calendar - Calendar utils
 
 =head3 month
 
+=head3 config
+
+=head3 hollyday_file
+
 =head3 hollyday
 
+=head3 first_day_week_day
+
 =head3 last_day
+
+=head3 last_day_week_day
 
 =head3 _week_end_days
 
@@ -279,9 +286,15 @@ Tpda3::Calendar - Calendar utils
 
 =head3 work_days_count
 
-=head2 INSTANCE METHODS
+=head3 tm
+
+=head2 METHODS
+
+=head3 _build_first_day_week_day
 
 =head3 _build_last_day
+
+=head3 _build_last_day_week_day
 
 =head3 _build_week_end_days
 
@@ -290,6 +303,10 @@ Tpda3::Calendar - Calendar utils
 =head3 _build_work_days_count
 
 =head3 is_weekend
+
+=head3 is_weekend_sat
+
+=head3 is_weekend_sun
 
 =head3 is_holliday
 
