@@ -58,6 +58,10 @@ sub init {
         $self->{$key} = $args->{$key};
     }
 
+    # Defaults
+    $self->{updatestyle}   = 'delete+add' unless $self->{updatestyle};
+    $self->{selectorcolor} = 'lightblue'  unless $self->{selectorcolor};
+
     # Other
     $self->{frame}  = $frame;
     $self->{tm_sel} = undef;    # selected row
@@ -400,7 +404,7 @@ sub cell_write {
 
 sub add_row {
     my $self = shift;
-    my $updstyle = 'delete+add'; # the only update style? XXX
+    my $updstyle = $self->{updatestyle};
 
     $self->configure( state => 'normal' );    # normal state
     my $old_r = $self->index( 'end', 'row' ); # get old row index
@@ -442,7 +446,7 @@ sub add_row {
 
 sub remove_row {
     my ( $self, $row ) = @_;
-    my $updstyle = 'delete+add';
+    my $updstyle = $self->{updatestyle};
     $self->configure( state => 'normal' );
     if ( $row >= 1 ) {
         $self->deleteRows( $row, 1 );
@@ -516,7 +520,7 @@ sub add_embeded_widgets {
         next unless $has_embeded;
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
         my $col    = $self->cell_config_for( $field, 'id' );
-        # say "make $w_type at $row:$col";
+        say "make $w_type at $row:$col";
         if ( $w_type eq 'dateentry' ) {
             $self->windowConfigure(
                 "$row,$col",
@@ -547,41 +551,31 @@ sub add_embeded_widgets {
 
 sub embeded_sel_buttons {
     my ( $self, $row, $col ) = @_;
-    # TODO: WTF!
-    my $selestyle = $self->{selectorstyle}
-        ? $self->{selectorstyle}
-        : q{};
-    my $selecolor = $self->{selectorcolor}
-        ? $self->{selectorcolor}
-        : q{lightblue};
-    if ( $selestyle eq 'checkbox' ) {
+    if ( $self->{selectorstyle} eq 'checkbox' ) {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
-            -window => $self->build_sel_ckbutton( $row, $col, $selecolor ),
+            -window =>
+              $self->build_sel_ckbutton( $row, $col ),
         );
     }
     else {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
-            -window => $self->build_sel_rbbutton( $row, $col, $selecolor ),
+            -window =>
+              $self->build_sel_rbbutton( $row, $col ),
         );
     }
     return;
-
 }
 
 sub build_ckbutton {
     my ( $self, $row, $col, $p ) = @_;
-    my $text  = exists $p->{text}        ? $p->{text}        : '';
-    my $image = exists $p->{image}       ? $p->{image}       : '';
-    my $color = exists $p->{selectcolor} ? $p->{selectcolor} : 'lightblue';
-    my $width = exists $p->{displ_width} ? $p->{displ_width} : 'width';
+    my $text  = exists $p->{text}  ? $p->{text}  : '';
+    my $color = exists $p->{color} ? $p->{color} : 'lightblue';
+    my $width = exists $p->{displ_width} ? $p->{displ_width} : 5;
     my $button = $self->{frame}->Checkbutton(
-
-        # -image       => 'actcross16',
-        # -selectimage => 'actcheck16',
         -width       => $width,
         -text        => $text,
         -indicatoron => 0,
@@ -595,14 +589,11 @@ sub build_ckbutton {
 }
 
 sub build_sel_ckbutton {
-    my ( $self, $row, $col, $selecolor ) = @_;
-    my $width = 5; # $self->cell_config_for($field, 'displ_width');
+    my ( $self, $row, $col ) = @_;
     my $button = $self->{frame}->Checkbutton(
-        # -image       => 'actcross16',
-        # -selectimage => 'actcheck16',
-        -width       => $width,
+        -width       => 3,
         -indicatoron => 0,
-        -selectcolor => $selecolor,
+        -selectcolor => $self->{selectorcolor},
         -offvalue    => 0,
         -onvalue     => 1,
         -state       => 'normal',
@@ -612,13 +603,13 @@ sub build_sel_ckbutton {
 }
 
 sub build_sel_rbbutton {
-    my ( $self, $row, $col, $selecolor ) = @_;
+    my ( $self, $row, $col ) = @_;
     my $button = $self->{frame}->Radiobutton(
         -width       => 3,
         -variable    => \$self->{tm_sel},
         -value       => $row,
         -indicatoron => 0,
-        -selectcolor => $selecolor,
+        -selectcolor => $self->{selectorcolor},
         -state       => 'normal',
         -command     => sub { $self->validate("$row,$col") }
     );
