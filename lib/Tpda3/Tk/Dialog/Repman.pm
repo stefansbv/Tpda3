@@ -2,13 +2,15 @@ package Tpda3::Tk::Dialog::Repman;
 
 # ABSTRACT: Dialog for preview and print of Report Manager reports
 
+use 5.010;
 use strict;
 use warnings;
 use utf8;
 
 use IO::File;
+use Try::Tiny;
 use File::Spec::Functions;
-use Capture::Tiny qw(capture);
+use IPC::System::Simple 1.17 qw(capture);
 use Locale::TextDomain 1.20 qw(Tpda3);
 
 require Tpda3::Config;
@@ -44,6 +46,7 @@ sub run_screen {
     $self->{tlw}->title('Preview and print reports');
     $self->{tlw}->geometry('480x520');
 
+    $self->{view}  = $view;
     $self->{model} = $view->{_model};
 
     my $f1d = 110;              # distance from left
@@ -195,6 +198,7 @@ sub run_screen {
         -width => 12,
         -disabledbackground => $bg,
         -disabledforeground => 'black',
+        -state              => 'disabled',
     );
     $eid_rep->form(
         -top  => [ %0, 0  ],
@@ -232,121 +236,222 @@ sub run_screen {
         -width              => 40,
         -disabledbackground => $bg,
         -disabledforeground => 'black',
+        -state              => 'disabled',
     );
     $erepofile->form(
         -top  => [ '&', $lrepofile, 0 ],
         -left => [ %0,  $f1d ],
     );
 
+    my $frm_para = $mf->LabFrame(
+        -foreground => 'blue',
+        -label      => 'Parameters',
+        -labelside  => 'acrosstop'
+    );
+    $frm_para->pack(
+        -expand => 0,
+        -fill   => 'x',
+        -ipadx  => 3,
+        -ipady  => 5,
+    );
+
+    #-- Header
+
+    $frm_para->Label(
+        -text => 'Name' 
+    )->grid(
+        -row    => 0,
+        -column => 1,
+        -sticky => 'n',
+        -padx   => 3,
+    );
+    $frm_para->Label(
+        -text => 'Search' 
+    )->grid(
+        -row    => 0,
+        -column => 2,
+        -sticky => 'n',
+        -padx   => 3,
+    );
+    $frm_para->Label(
+        -text => 'Value' 
+    )->grid(
+        -row    => 0,
+        -column => 3,
+        -sticky => 'n',
+        -padx   => 3,
+    );
+
+    
     #-- Parameter 1
 
     #-- label
-    my $lparameter1 = $frm_middle->Label( -text => 'Parameter 1' );
-    $lparameter1->form(
-        -top     => [ $lrepofile, 8 ],
-        -left    => [ %0, 0 ],
-        -padleft => 10,
+    my $lparameter1 = $frm_para->Label(
+        -text => '# 1' 
+    )->grid(
+        -row    => 1,
+        -column => 0,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- hint
-    my $eparahnt1 = $frm_middle->Entry(
-        -width => 28,
+    my $eparahnt1 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 1,
+        -column => 1,
+        -sticky => 'e',
+        -padx   => 3,
     );
-    $eparahnt1->form(
-        -top  => [ '&', $lparameter1, 0 ],
-        -left => [ %0, $f1d ],
+
+    #-- den
+    my $eparaden1 = $frm_para->Entry(
+        -width              => 15,
+        -disabledbackground => $bg,
+        -disabledforeground => 'black',
+        -state              => 'disabled',
+    )->grid(
+        -row    => 1,
+        -column => 2,
+        -sticky => 'e',
+        -padx   => 3,
     );
 
     #-- value
-    my $eparaval1 = $frm_middle->Entry( -width => 10, );
-    $eparaval1->form(
-        -top   => [ '&', $lparameter1, 0 ],
-        -right => [ '&', $erepofile,   0 ],
+    my $eparaval1 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 1,
+        -column => 3,
+        -sticky => 'e',
+        -padx   => 3,
     );
 
     #-- button
-    my $add1val = $frm_middle->Button(
+    $self->{b_dlg1} = $frm_para->Button(
         -image   => 'edit16',
         -command => [\&update_value, $self, $view, 1],
-    );
-    $add1val->form(
-        -top  => [ '&', $lparameter1, 0 ],
-        -left => [ $eparaval1, 3 ],
+    )->grid(
+        -row    => 1,
+        -column => 4,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- Parameter 2
 
     #-- label
-    my $lparameter2 = $frm_middle->Label( -text => 'Parameter 2' );
-    $lparameter2->form(
-        -top     => [ $lparameter1, 8 ],
-        -left    => [ %0, 0 ],
-        -padleft => 10,
+    my $lparameter2 = $frm_para->Label(
+        -text => '# 2',
+    )->grid(
+        -row    => 2,
+        -column => 0,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- hint
-    my $eparahnt2 = $frm_middle->Entry(
-        -width => 28,
+    my $eparahnt2 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 2,
+        -column => 1,
+        -sticky => 'n',
+        -padx   => 3,
     );
-    $eparahnt2->form(
-        -top  => [ '&', $lparameter2, 0 ],
-        -left => [ %0, $f1d ],
+
+    #-- den
+    my $eparaden2 = $frm_para->Entry(
+        -width              => 15,
+        -disabledbackground => $bg,
+        -disabledforeground => 'black',
+        -state              => 'disabled',
+    )->grid(
+        -row    => 2,
+        -column => 2,
+        -sticky => 'e',
+        -padx   => 3,
     );
 
     #-- value
-    my $eparaval2 = $frm_middle->Entry( -width => 10, );
-    $eparaval2->form(
-        -top   => [ '&', $lparameter2, 0 ],
-        -right => [ '&', $erepofile,   0 ],
+    my $eparaval2 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 2,
+        -column => 3,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- button
-    my $add2val = $frm_middle->Button(
+    $self->{b_dlg2} = $frm_para->Button(
         -image   => 'edit16',
         -command => [\&update_value, $self, $view, 2],
-    );
-    $add2val->form(
-        -top  => [ '&', $lparameter2, 0 ],
-        -left => [ $eparaval2, 3 ],
+    )->grid(
+        -row    => 2,
+        -column => 4,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- Parameter 3
 
     #-- label
-    my $lparameter3 = $frm_middle->Label( -text => 'Parameter 3' );
-    $lparameter3->form(
-        -top     => [ $lparameter2, 8 ],
-        -left    => [ %0, 0 ],
-        -padleft => 10,
+    my $lparameter3 = $frm_para->Label(
+        -text => '# 3',
+    )->grid(
+        -row    => 3,
+        -column => 0,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
     #-- hint
-    my $eparahnt3 = $frm_middle->Entry(
-        -width => 28,
+    my $eparahnt3 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 3,
+        -column => 1,
+        -sticky => 'n',
+        -padx   => 3,
     );
-    $eparahnt3->form(
-        -top  => [ '&', $lparameter3, 0 ],
-        -left => [ %0, $f1d ],
+
+    #-- den
+    my $eparaden3 = $frm_para->Entry(
+        -width              => 15,
+        -disabledbackground => $bg,
+        -disabledforeground => 'black',
+        -state              => 'disabled',
+    )->grid(
+        -row    => 3,
+        -column => 2,
+        -sticky => 'e',
+        -padx   => 3,
     );
 
     #-- value
-    my $eparaval3 = $frm_middle->Entry( -width => 10, );
-    $eparaval3->form(
-        -top   => [ '&', $lparameter3, 0 ],
-        -right => [ '&', $erepofile,   0 ],
+    my $eparaval3 = $frm_para->Entry(
+        -width => 15,
+    )->grid(
+        -row    => 3,
+        -column => 3,
+        -sticky => 'n',
+        -padx   => 3,
     );
-
+    
     #-- button
-    my $add3val = $frm_middle->Button(
+    $self->{b_dlg3} = $frm_para->Button(
         -image   => 'edit16',
         -command => [\&update_value, $self, $view, 3],
-    );
-    $add3val->form(
-        -top  => [ '&', $lparameter3, 0 ],
-        -left => [ $eparaval3, 3 ],
+    )->grid(
+        -row    => 3,
+        -column => 4,
+        -sticky => 'n',
+        -padx   => 3,
     );
 
-    #-  Frame Bottom - Description
+    #---  Frame Bottom - Description
 
     my $frm_bottom = $mf->LabFrame(
         -foreground => 'blue',
@@ -369,7 +474,8 @@ sub run_screen {
         -wrap       => 'word',
         -scrollbars => 'e',
         -background => 'white',
-        -font       => $my_font
+        -font       => $my_font,
+        -state      => 'disabled',
     );
     $tdescr->pack(
         -expand => 1,
@@ -384,10 +490,13 @@ sub run_screen {
         id_rep   => [ undef, $eid_rep   ],
         descr    => [ undef, $tdescr    ],
         parahnt1 => [ undef, $eparahnt1 ],
+        paraden1 => [ undef, $eparaden1 ],
         paraval1 => [ undef, $eparaval1 ],
         parahnt2 => [ undef, $eparahnt2 ],
+        paraden2 => [ undef, $eparaden2 ],
         paraval2 => [ undef, $eparaval2 ],
         parahnt3 => [ undef, $eparahnt3 ],
+        paraden3 => [ undef, $eparaden3 ],
         paraval3 => [ undef, $eparaval3 ],
     };
 
@@ -511,12 +620,32 @@ sub load_report_details {
 
     $args = {};
     $args->{table} = $self->{scrcfg}->deptable->{tm1}{name};    # reports_det
-    $args->{colslist}
-        = [qw{id_rep id_art hint tablename resultfield searchfield headerlist }];
+    $args->{colslist} = [
+        qw(
+          id_rep
+          id_art
+          hint
+          tablename
+          resultfield
+          paramname
+          searchfield
+          headerlist
+        )
+    ];
     $args->{where} = { id_rep => $id_rep };
     $args->{order} = 'id_art';
 
     $self->{_rdd} = $self->{model}->table_batch_query($args);
+
+    # Make paramname same as resultfield if paramname is not defined
+    my $cnt = scalar @{ $self->{_rdd} };
+    if ( $cnt > 0 ) {
+        my $maxi = $cnt - 1;
+        foreach my $i ( 0 .. $maxi ) {
+            $self->{_rdd}[$i]{paramname} = $self->{_rdd}[$i]{resultfield}
+              unless $self->{_rdd}[$i]{paramname};
+        }
+    }
 
     my $eobj = $self->get_controls();
 
@@ -525,12 +654,12 @@ sub load_report_details {
     #-- main fields
 
     foreach my $field ( keys %{$eobj} ) {
-        my $start_idx = $field eq 'descr' ? "1.0" : 0; # 'descr' is Text
         my $value = $self->{_rd}->[0]{$field};
-        $eobj->{$field}[1]->delete( $start_idx, 'end' );
-        if ($value) {
-            $value = Tpda3::Utils->decode_unless_utf($value);
-            $eobj->{$field}[1]->insert( $start_idx, $value );
+        if ( $field eq 'descr' ) {
+            $self->write_t( $field, $value );
+        }
+        else {
+            $self->write_e( $field, $value );
         }
     }
 
@@ -549,8 +678,26 @@ sub load_report_details {
             $eobj->{$field}[1]->configure( '-bg' => 'lightblue' );
             $eobj->{$v_fld}[1]->configure( '-bg' => 'white' );
         }
+
+        # Disable the buttons if there is no table config
+        my $state = $self->{_rdd}[$idx]{tablename} ? 'normal' : 'disabled';
+        $self->{"b_dlg${i}"}->configure( -state => $state );
     }
 
+    return;
+}
+
+sub write_e {
+    my ($self, $field, $value) = @_;
+    $self->{view}->control_write_e(
+        $field, $self->{controls}{$field}, $value );
+    return;
+}
+
+sub write_t {
+    my ($self, $field, $value) = @_;
+    $self->{view}->control_write_t(
+        $field, $self->{controls}{$field}, $value );
     return;
 }
 
@@ -589,16 +736,17 @@ sub preview_report {
     push @args, $params if $params;
     push @args, $report_path;
 
-    my ($stdout, $stderr, $exit) = capture {
-        system( $cmd, @args );
-    };
-    if ($stderr) {
-        my $msg = __ "Report Manager";
-        my $det = __x( "Message: {error}", error => $stderr );
-        my $dlg = Tpda3::Tk::Dialog::Message->new( $self->{tlw} );
-        $dlg->message_dialog( $msg, $det, 'info', 'ok' );
+    my $output = q{};
+    try {
+        # Not capture($cmd, @args)!, always use the shell:
+        $output = capture("$cmd @args");
     }
-    print "Report Manager exited with value $exit\n";
+    catch {
+        print "EE: '$cmd @args': $_\n";
+    }
+    finally {
+        print "II: >$output<\n";
+    };
 
     return;
 }
@@ -622,12 +770,12 @@ sub get_parameters {
 
             my $ii  = $i - 1;
             my $rdd = $self->{_rdd}[$ii];
-            my $fld = uc $rdd->{resultfield};
+            my $fld = uc $rdd->{paramname};
 
             $params .= "-param$fld=$val ";
         }
     }
-
+    say "params=$params";
     return $params;
 }
 
@@ -656,6 +804,7 @@ sub update_value {
     my $para = {
         table   => $table,
         search  => $rdd->{searchfield},
+        # order   => $rdd->{resultfield},
         columns => [],
     };
 
@@ -682,14 +831,10 @@ sub update_value {
     #- Update control value
 
     my $eobj = $self->get_controls();
-    my $field_name_hnt = "parahnt$p_no";
-    my $field_name_val = "paraval$p_no";
     my $value_label = $record->{$searchfield};
     my $value_param = $record->{$resultfield};
-    $eobj->{$field_name_hnt}[1]->delete( 0, 'end' );
-    $eobj->{$field_name_hnt}[1]->insert( 0, $value_label ) if $value_label;
-    $eobj->{$field_name_val}[1]->delete( 0, 'end' );
-    $eobj->{$field_name_val}[1]->insert( 0, $value_param ) if $value_param;
+    $self->write_e( "paraden$p_no", $value_label );
+    $self->write_e( "paraval$p_no", $value_param );
 
     return;
 }
