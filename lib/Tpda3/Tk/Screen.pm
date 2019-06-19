@@ -7,7 +7,7 @@ use warnings;
 use Carp;
 
 use Tpda3::Tk::Entry;
-#use Tpda3::Tk::Text; # TODO: check and enable
+use Tpda3::Tk::Text; # TODO: check
 
 use Tpda3::Utils;
 use Tpda3::Tk::TB;
