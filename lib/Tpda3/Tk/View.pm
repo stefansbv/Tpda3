@@ -1694,7 +1694,7 @@ Configure callback for toolbar button.
 
 =head2 list_control_choices
 
-Configure choices.
+Configure choices for list controls (JComboBox).
 
 =head2 control_write_e
 
