@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::Most;
 
 use lib qw( lib ../lib );
 
@@ -45,12 +45,18 @@ is($table->get_key(2)->value, undef, 'check field3 value undef ');
 is($table->update_key_field( 'field1', undef ), undef, 'clear field1 value');
 is($table->get_key(0)->value, undef, 'check field1 value undef ');
 
-ok(my @keys = $table->all_keys, 'get all keys');
+ok(my @a_keys = $table->all_keys, 'get all keys');
 my $expected = [
     { name => 'field1', value => undef },
     { name => 'field2', value => 1002  },
     { name => 'field3', value => undef }
 ];
-is_deeply( \@keys, $expected, 'check all keys' );
+is_deeply( \@a_keys, $expected, 'check all keys' );
 
-#-- done testing
+ok(my @b_keys = $table->all_keys, 'get all keys');
+foreach my $key (@b_keys) {
+    like $key->name, qr/field\d/, 'get the key name';
+    ok $key->can('value'), 'key has some value';
+}
+
+done_testing;

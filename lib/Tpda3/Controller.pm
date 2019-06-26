@@ -29,6 +29,8 @@ use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
 
+use Data::Dump;
+
 sub new {
     my $class = shift;
 
@@ -127,15 +129,22 @@ sub cfg {
     return $self->{_cfg};
 }
 
+sub verbose {
+    my $self = shift;
+    return $self->cfg->verbose;
+}
+
+sub debug {
+    my $self = shift;
+    return $self->cfg->debug;
+}
+
 sub table_key {
     my ($self, $page, $name) = @_;
-
     die "Unknown 'page' parameter for 'table_key'"
         unless defined $page
         and ( $page eq 'rec' or $page eq 'det' );
-
     die "Unknown 'name' parameter for 'table_key'" unless $name;
-
     return $self->{_tblkeys}{$page}{$name};
 }
 
@@ -451,7 +460,7 @@ sub on_page_rec_activate {
         my @selected = values %{$selected_href};
         my $dc       = Data::Compare->new( \@selected, \@current );
         my $diff     = $dc->Cmp ? 0 : 1;
-        print "R: different? ", $diff ? 'YES ' : 'NO ', "\n" if $self->cfg->verbose;
+        print "R: different? ", $diff ? 'YES ' : 'NO ', "\n" if $self->verbose;
         $self->record_load_new($selected_href) if $diff;
     }
 
@@ -462,11 +471,6 @@ sub on_page_rec_activate {
 
 sub on_page_lst_activate {
     my $self = shift;
-    #     say "on_page_lst_activate: modified=", $self->model->is_modified ? 'yes' : 'no';
-
-    # if ( $self->model->is_modified ) {
-    #     my $answer = $self->ask_to_save;
-    # }
     $self->set_app_mode('sele');
     return;
 }
@@ -493,7 +497,7 @@ sub on_page_det_activate {
         my $dc = Data::Compare->new( \@selected, \@current );
         my $diff = $dc->Cmp ? 0 : 1;
         print "D: different? ", $diff ? 'YES ' : 'NO ', "\n"
-            if $self->cfg->verbose;
+            if $self->verbose;
         if ($diff) {
             $self->get_selected_and_store_key;
             $self->record_load();    # load detail record
@@ -525,21 +529,18 @@ sub screen_detail_name {
             }
         }
     }
-    print " screen_detail_name: $sdn\n" if $self->cfg->verbose;
+    print " screen_detail_name: $sdn\n" if $self->verbose;
     return $sdn;
 }
 
 sub get_selected_and_store_key {
     my $self = shift;
-
-    my $rec_params = $self->table_key( 'rec', 'main' )->get_key(0)->get_href;
+    my $rec_params = $self->table_key('rec', 'main')->get_key(0)->get_href;
     $self->screen_store_key_values($rec_params);
-
     my $det_params = $self->tmx_read_selected;
     if ( defined $det_params and scalar %{$det_params} ) {
         $self->screen_store_key_values($det_params);
     }
-
     return;
 }
 
@@ -627,7 +628,7 @@ sub _check_app_menus {
         catch {
             $self->view->set_menu_state($menu_item, 'disabled');
             print "$menu_item screen disabled ($module_file).\n";
-            print "Reason: $_" if $self->cfg->verbose;
+            print "Reason: $_" if $self->verbose;
         }
     }
     return;
@@ -1048,7 +1049,7 @@ sub set_app_mode {
 
 sub is_record {
     my $self  = shift;
-    my $table = $self->table_key( 'rec', 'main' );
+    my $table = $self->table_key('rec', 'main');
     return if !$table or !$table->isa('Tpda3::Model::Table');
     return $table->get_key(0)->value;
 }
@@ -1235,7 +1236,7 @@ sub screen_module_class {
 
 sub screen_module_load {
     my ( $self, $module, $from_tools ) = @_;
-    print "Loading >$module<\n" if $self->cfg->verbose;
+    print "Loading >$module<\n" if $self->verbose;
     my $rscrstr = lc $module;
 
     # Destroy existing NoteBook widget
@@ -1592,9 +1593,7 @@ sub set_geometry {
 
 sub set_app_configs {
     my $self = shift;
-
     print 'set_app_configs not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
@@ -1714,7 +1713,6 @@ sub toggle_screen_interface_controls {
             $self->scrobj($page)->enable_tool( $label, $button_name, $status );
         }
     }
-
     return;
 }
 
@@ -1722,7 +1720,6 @@ sub record_find_execute {
     my $self = shift;
 
     $self->screen_read();
-
     my $params = {};
 
     # Columns data (from list header)
@@ -2130,9 +2127,7 @@ sub screen_write {
 
 sub ctrl_write_to {
     my ($self, $field, $value, $state, $date_format) = @_;
-
     my $ctrltype = $self->scrcfg()->maintable('columns', $field, 'ctrltype');
-
     my $sub_name = qq{control_write_$ctrltype};
     if ( $self->view->can($sub_name) ) {
         my $control_ref = $self->scrobj()->get_controls($field);
@@ -2142,21 +2137,17 @@ sub ctrl_write_to {
     else {
         warn "WW: No '$ctrltype' ctrl type for writing '$field'!";
     }
-
     return;
 }
 
 sub make_empty_record {
     my $self = shift;
-
     my $page    = $self->view->get_nb_current_page();
     my $cfg_ref = $self->scrcfg($page);
-
     my $record = {};
     foreach my $field ( keys %{ $cfg_ref->maintable('columns') } ) {
         $record->{$field} = undef;
     }
-
     return $record;
 }
 
@@ -2168,7 +2159,7 @@ sub tmatrix_get_selected {
         $sc = $tmx->get_selected();
     }
     print "selected TM row: ", defined $sc ? "'$sc\n" : "undef\n"
-      if $self->cfg->verbose;
+      if $self->verbose;
     return $sc;
 }
 
@@ -2184,7 +2175,8 @@ sub tmatrix_set_selected {
 sub toggle_mode_find {
     my $self = shift;
 
-    say "toggle find modified=", $self->model->is_modified ? 'yes' : 'no';
+    say "toggle find modified=", $self->model->is_modified ? 'yes' : 'no'
+      if $self->debug;
 
     if ( $self->model->is_modified ) {
         my $answer = $self->ask_to_save;
@@ -2208,7 +2200,8 @@ sub toggle_mode_find {
 sub toggle_mode_add {
     my $self = shift;
 
-    say "toggle add modified=", $self->model->is_modified ? 'yes' : 'no';
+    say "toggle add modified=", $self->model->is_modified ? 'yes' : 'no'
+      if $self->debug;
 
     if ( $self->model->is_modified ) {
         if ( $self->model->is_mode('edit') ) {
@@ -2312,32 +2305,22 @@ sub control_states {
 
 sub record_load_new {
     my ( $self, $selected_href ) = @_;
-
     $self->screen_store_key_values($selected_href);
-
     $self->tmatrix_set_selected();    # initialize selector
-
     $self->record_load();
-
     if ( $self->model->is_loaded ) {
         $self->view->set_status(__ 'Record loaded (r)', 'ms', 'blue');
     }
-
     return;
 }
 
 sub record_reload {
     my $self = shift;
-
     $self->record_load();
-
     $self->toggle_detail_tab;
-
     $self->view->set_status(__ 'Reloaded', 'ms', 'blue');
-
     $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
                                          # undef = unloaded
-
     return;
 }
 
@@ -2457,13 +2440,9 @@ sub record_delete {
 
 sub record_clear {
     my $self = shift;
-
     my $record = $self->make_empty_record();
-
     $self->screen_write($record);
-
     $self->screen_clear_key_values;
-
     $self->model->unset_scrdata_rec();    # false = loaded,  true = modified,
                                           # undef = unloaded
     return;
@@ -2680,7 +2659,6 @@ sub check_required_data {
 
 sub record_save_insert {
     my ( $self, $record ) = @_;
-
     my $pk_val;
     try {
         $pk_val = $self->model->prepare_record_insert($record);
@@ -2688,100 +2666,81 @@ sub record_save_insert {
     catch {
         $self->catch_db_exceptions($_);
     };
-
     if ($pk_val) {
         my $pk_col = $record->[0]{metadata}{pkcol};
         $self->screen_write( { $pk_col => $pk_val } );
         $self->screen_store_key_values( { $pk_col => $pk_val } );
         $self->set_app_mode('edit');
     }
-
     return $pk_val;
 }
 
 sub list_update_add {
     my $self = shift;
-
     my $columns = $self->list_column_names();
     my $current = $self->get_screen_data_record('upd');
-
     my @list;
     foreach my $field ( @{$columns} ) {
         push @list, $current->[0]->{data}{$field};
     }
-
     $self->view->list_populate( [ \@list ] );    # AoA
-
     return;
 }
 
 sub list_remove {
     my $self = shift;
-
     my @keys = $self->table_key('rec','main')->all_keys;
     my $key_values = {};
     foreach my $key (@keys) {
         $key_values->{$key->name} = $key->value;
     }
     $self->view->list_remove_selected($key_values);
-
     return;
 }
 
 sub record_changed {
     my $self = shift;
-
     my $witness_file = $self->storable_file_name('orig');
-
     unless ( -f $witness_file ) {
         $self->view->set_status(__ 'Changed record check failed!', 'ms', 'orange');
         die "Can't find saved data for comparison!";
     }
-
     my $witness = retrieve($witness_file);
-
     my $record = $self->get_screen_data_record('upd');
-
     return $self->model->record_compare( $witness, $record );
 }
 
 sub take_note {
     my $self = shift;
-
     my $msg
         = $self->save_screendata( $self->storable_file_name )
         ? __ 'Record copied'
         : __ 'Record copy failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
-
     return;
 }
 
 sub restore_note {
     my $self = shift;
-
     my $msg
         = $self->restore_screendata( $self->storable_file_name )
         ? __ 'Record restored'
         : __ 'Record restore failed';
 
     $self->view->set_status( $msg, 'ms', 'blue' );
-
     return;
 }
 
 sub storable_file_name {
     my ( $self, $orig ) = @_;
-
     my $suffix = $orig ? q{-orig} : q{};
 
     # Store record data to file
-    my $data_file
-        = catfile( $self->cfg->configdir,
+    my $data_file =
+      catfile( $self->cfg->configdir,
         $self->scrcfg->screen('name') . $suffix . q{.dat},
-        );
-
+      );
     return $data_file;
 }
 
@@ -2803,7 +2762,6 @@ sub get_screen_data_record {
     foreach my $field ( keys %{ $self->{_scrdata} } ) {
         $record->{data}{$field} = $self->{_scrdata}{$field};
     }
-
     push @record, $record;    # rec data at index 0
 
     #-  Dependent table(s), if any
@@ -2821,9 +2779,7 @@ sub get_screen_data_record {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
     }
-
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
-
     return \@record;
 }
 
@@ -2831,7 +2787,6 @@ sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
 
     my $metadata = {};
-
     my $page = $self->view->get_nb_current_page();
 
     if ( $for_sql eq 'qry' ) {
@@ -2856,7 +2811,6 @@ sub main_table_metadata {
         warn "Wrong parameter: $for_sql\n";
         return;
     }
-
     return $metadata;
 }
 
@@ -2870,13 +2824,38 @@ sub dep_table_metadata {
     my $pk_key = $self->table_key($page, 'main')->get_key(0)->name;
     my $pk_val = $self->table_key($page, 'main')->get_key(0)->value;
 
+    my @main_keys = ();
+    if ($page eq 'det') {
+        @main_keys = $self->table_key($page, 'main')->all_keys;
+    }
+
     if ( $for_sql eq 'qry' ) {
         $metadata->{table} = $self->table_key($page, $tm)->view;
         $metadata->{where}{$pk_key} = $pk_val;
+        foreach my $key (@main_keys) {
+            my $key_name = $key->name;
+            next if exists $metadata->{where}{$key_name}; # skip pk_key
+            my $key_val = $key->value;
+            $metadata->{where}{$key_name} = $key_val;
+        }
     }
     elsif ( $for_sql eq 'upd' or $for_sql eq 'del' ) {
-        $metadata->{table} = $self->table_key($page, $tm)->table;
+        $metadata->{table} = $self->table_key( $page, $tm )->table;
         $metadata->{where}{$pk_key} = $pk_val;
+        foreach my $key (@main_keys) {
+            my $key_name = $key->name;
+            next if exists $metadata->{where}{$key_name}; # skip pk_key
+            my $key_val = $key->value;
+            $metadata->{where}{$key_name} = $key_val;
+        }
+        if ( $page eq 'det' ) {
+            my @tm_keys = $self->table_key( $page, $tm )->all_keys;
+            foreach my $key (@tm_keys) {
+                my $key_name = $key->name;
+                next if exists $metadata->{where}{$key_name};    # skip key
+                $metadata->{tmpkcol} = $key_name;                # add key
+            }
+        }
     }
     elsif ( $for_sql eq 'ins' ) {
         $metadata->{table} = $self->table_key($page, $tm)->table;
@@ -2985,27 +2964,22 @@ sub restore_screendata {
 
 sub screen_store_key_values {
     my ( $self, $record_href ) = @_;
-
     my $page = $self->view->get_nb_current_page();
-
     foreach my $field ( keys %{$record_href} ) {
         my $value = $record_href->{$field};
         $self->table_key( $page, 'main' )->update_key_field( $field, $value );
     }
-
     return;
 }
 
 sub screen_clear_key_values {
     my $self = shift;
-
     my $page = $self->view->get_nb_current_page();
     my $table_keys = $self->table_key($page, 'main');
     return unless blessed $table_keys;
     foreach my $key ( $table_keys->all_keys ) {
         $key->value(undef);
     }
-
     return;
 }
 
@@ -3673,7 +3647,7 @@ have a type cast C<::> operator:
         orderby         = cod::numeric
         name            = denumire
         table           = public.luni
-        default         = 
+        default         =
         code            = cod
     </luna>
  </lists_ds>

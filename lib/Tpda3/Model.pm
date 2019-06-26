@@ -50,6 +50,11 @@ sub verbose {
     return $self->cfg->verbose;
 }
 
+sub debug {
+    my $self = shift;
+    return $self->cfg->debug;
+}
+
 sub _log {
     my $self = shift;
     return $self->{_log};
@@ -170,7 +175,7 @@ sub query_records_count {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('query_records_count', $stmt, \@bind);
 
     my $record_count;
     try {
@@ -200,7 +205,7 @@ sub query_records_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('query_records_find', $stmt, \@bind);
 
     my $search_limit = $self->cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
@@ -233,7 +238,7 @@ sub query_filter_find {
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('query_filter_find', $stmt, \@bind);
 
     my @records;
     try {
@@ -263,7 +268,7 @@ sub query_record {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('query_record', $stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -299,7 +304,7 @@ sub table_batch_query {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('table_batch_query', $stmt, \@bind);
 
     my @records;
     try {
@@ -329,7 +334,7 @@ sub query_dictionary {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('query_dictionary', $stmt, \@bind);
 
     my $lookup_limit = $self->cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit };    # limit search result
@@ -501,7 +506,7 @@ sub tbl_dict_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('tbl_dict_query', $stmt, \@bind);
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -536,7 +541,7 @@ sub tbl_lookup_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('tbl_lookup_query', $stmt, \@bind);
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -574,7 +579,7 @@ sub table_record_insert {
     my $attrib = $has_feature ? { returning => $pkcol } : {};
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('table_record_insert', $stmt, \@bind);
 
     my $pk_id;
     if ( exists $record->{$pkcol} ) {
@@ -606,7 +611,7 @@ sub table_record_update {
 
     my $sql = SQL::Abstract->new();
     my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('table_record_update', $stmt, \@bind);
 
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -625,7 +630,7 @@ sub table_record_select {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
-    $self->debug_print_sql($stmt, \@bind);
+    $self->debug_print_sql('table_record_select', $stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -645,7 +650,7 @@ sub table_batch_insert {
     # AoH refs
     foreach my $record ( @{$records} ) {
         my ( $stmt, @bind ) = $sql->insert( $table, $record );
-        $self->debug_print_sql($stmt, \@bind);
+        $self->debug_print_sql('table_batch_insert', $stmt, \@bind);
         try {
             my $sth = $self->dbh->prepare($stmt);
             $sth->execute(@bind);
@@ -729,10 +734,6 @@ sub prepare_record_insert {
 sub prepare_record_update {
     my ( $self, $record ) = @_;
 
-    say 'prepare_record_update:';
-    say ' record:';
-    dd $record;
-
     #- Main record
 
     my $mainmeta = $record->[0]{metadata};
@@ -740,12 +741,6 @@ sub prepare_record_update {
 
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
-
-    say "$table:";
-    say ' maindata:';
-    dd $maindata;
-    say ' where:';
-    dd $where;
 
     if ( %{$maindata} ) {
         $self->table_record_update( $table, $maindata, $where );
@@ -765,22 +760,20 @@ sub prepare_record_update {
         my $table    = $depmeta->{table};
         my $where    = $depmeta->{where};
 
-        say 'depmeta:';
-        dd $depmeta;
-        say 'depdata:';
-        dd $depdata;
-
         if ( $updstyle eq 'delete+add' ) {
 
             # Delete all articles and reinsert from TM ;)
             $self->table_record_delete( $table, $where );
             $self->table_batch_insert( $table, $depdata );
         }
-        else {
+        elsif ( $updstyle eq 'update' ) {
 
             # Update based on comparison between the database table
             # data and TableMatrix data
             $self->table_batch_update( $depmeta, $depdata );
+        }
+        else {
+            die "TM table update style '$updstyle' not implemented!\n";
         }
     }
 
@@ -819,24 +812,22 @@ sub prepare_record_delete {
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
 
-    my $compare_col = $depmeta->{fkcol};
+    my $compare_col = $depmeta->{tmpkcol};
 
     my $tb_data = $self->table_selectcol_as_array($depmeta);
     my $tm_data = $self->aoh_column_extract( $depdata, $compare_col );
 
     my $lc = List::Compare->new( $tm_data, $tb_data );
-
     my @to_update = $lc->get_intersection;
     my @to_insert = $lc->get_unique;
     my @to_delete = $lc->get_complement;
-
     my $to_update
         = $self->table_update_compare( \@to_update, $depmeta, $depdata );
 
-    if ( $self->verbose ) {
-        print "To update: @{$to_update}\n" if ref $to_update;
-        print "To insert: @to_insert\n";
-        print "To delete: @to_delete\n";
+    if ( $self->debug ) {
+        say "To update: @{$to_update}" if ref $to_update;
+        say "To insert: @to_insert";
+        say "To delete: @to_delete";
     }
 
     $self->table_update_prepare( $to_update, $depmeta, $depdata );
@@ -851,47 +842,63 @@ sub table_update_compare {
 
     return unless scalar( @{$to_update} ) > 0;
 
-    my $table = $depmeta->{table};
-    my $fkcol = $depmeta->{fkcol};
-    my $where = $depmeta->{where};
+    my $table   = $depmeta->{table};
+    my $fkcol   = $depmeta->{fkcol};
+    my $tmpkcol = $depmeta->{tmpkcol};
+    my $where   = $depmeta->{where};
 
     my @toupdate;
-    foreach my $fk_id ( @{$to_update} ) {
-        $where->{$fkcol} = $fk_id;
+    foreach my $id ( @{$to_update} ) {
+        $where->{$tmpkcol} = $id;
 
         # Filter data; record is Aoh
-        my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
-
+        my $record = ( grep { $_->{$tmpkcol} == $id } @{$depdata} )[0];
         my $oldrec = $self->table_record_select( $table, $where );
-
         my $dc = Data::Compare->new( $oldrec, $record );
-
-        push @toupdate, $fk_id if !$dc->Cmp;
+        if (!$dc->Cmp) {
+            push @toupdate, $id;
+            say" add $id to Update" if $self->verbose;
+        }
     }
-
     return \@toupdate;
 }
 
 sub table_update_prepare {
     my ( $self, $to_update, $depmeta, $depdata ) = @_;
 
-    return unless $to_update;
+    return unless ref $to_update;
     return unless scalar( @{$to_update} ) > 0;
 
-    my $table = $depmeta->{table};
-    my $fkcol = $depmeta->{fkcol};
-    my $where = $depmeta->{where};
+    my $table   = $depmeta->{table};
+    my $fkcol   = $depmeta->{fkcol};
+    my $tmpkcol = $depmeta->{tmpkcol};
+    my $where   = $depmeta->{where};
 
-    foreach my $fk_id ( @{$to_update} ) {
-        $where->{$fkcol} = $fk_id;
+    if ($self->debug) {
+        say '*** table_update_prepare:';
+        say " table = $table";
+        say " fkcol = $fkcol";
+        say " where (orig):";
+        dd $where;
+    }
+
+    foreach my $id ( @{$to_update} ) {
+        $where->{$tmpkcol} = $id;
 
         # Filter data; record is Aoh
-        my $record = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
+        my $record = ( grep { $_->{$tmpkcol} == $id } @{$depdata} )[0];
 
         ### delete $record->{$fkcol}; # remove FK col from update data;
         # does NOT work, it's like remove
         # from the original datastructure?!
 
+        if ($self->debug) {
+            say "update in $table:";
+            say "*** record ***\n";
+            dd $record;
+            say " where:\n";
+            dd $where;
+        }
         $self->table_record_update( $table, $record, $where );
     }
 
@@ -914,11 +921,12 @@ sub table_insert_prepare {
 
         push @records, $rec;
     }
-
-    # print "insert: $table\n";
+    if ($self->debug) {
+        say "insert in $table:";
+        dd @records;
+    }
 
     $self->table_batch_insert( $table, \@records );
-
     return;
 }
 
@@ -937,13 +945,11 @@ sub table_delete_prepare {
 
 sub aoh_column_extract {
     my ( $self, $depdata, $column ) = @_;
-
     my @dep_data;
     foreach my $rec ( @{$depdata} ) {
         my $data = $rec->{$column};
         push @dep_data, $data;
     }
-
     return \@dep_data;
 }
 
@@ -951,8 +957,7 @@ sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
 
     my $table  = $opts->{table};
-    my $pkcol  = $opts->{pkcol};
-    my $fields = $opts->{fkcol};
+    my $fields = $opts->{tmpkcol};
     my $where  = $opts->{where};
     my $order  = $fields;
 
@@ -973,12 +978,11 @@ sub table_selectcol_as_array {
 
 sub record_compare {
     my ( $self, $witness, $record ) = @_;
-
     my $dc = Data::Compare->new( $witness, $record );
-
-    # print 'Structures of $witness and $record are ',
-    #     $dc->Cmp ? "" : "not ", "identical.\n";
-
+    if ( $self->debug ) {
+        say 'Structures of $witness and $record are ',
+            $dc->Cmp ? "" : "not ", "identical.";
+    }
     return !$dc->Cmp;
 }
 
@@ -997,30 +1001,30 @@ sub user_message {
 sub db_exception {
     my ( $self, $exc, $context ) = @_;
 
-    print "Exception: '$exc'\n";
-    print "Context  : '$context'\n";
+    say "Exception: '$exc'";
+    say "Context  : '$context'";
 
     if ( my $e = Exception::Base->catch($exc) ) {
-        print "Catched!\n";
+        say "Catched!";
 
         if ( $e->isa('Exception::Db::Connect') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-            print "Exc Conn: $usermsg :: $logmsg\n";
+            say "ExceptionConnect: $usermsg :: $logmsg";
             $e->throw;    # rethrow the exception
         }
         elsif ( $e->isa('Exception::Db::SQL') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-            print "Exc SQL: $usermsg :: $logmsg\n";
+            say "ExceptionSQL: $usermsg :: $logmsg";
             $e->throw;    # rethrow the exception
         }
         else {
 
             # Throw other exception
-            print "Exc Other new\n";
+            say "ExceptioOther new";
             my $message = $self->user_message($exc);
-            print "Message:   '$message'\n";
+            say "Message:   '$message'";
             Exception::Db::SQL->throw(
                 logmsg  => $message,
                 usermsg => $context,
@@ -1028,7 +1032,7 @@ sub db_exception {
         }
     }
     else {
-        print "New thrown (model)\n";
+        say "New thrown (model)";
         Exception::Db::SQL->throw(
             logmsg  => "error#$exc",
             usermsg => $context,
@@ -1188,12 +1192,21 @@ sub update_or_insert {
 }
 
 sub debug_print_sql {
-    my ( $self, $stmt, $bind ) = @_;
-    if ( $self->verbose ) {
-        print "---\n";
-        print "STMT = $stmt\n";
-        print "PARA = ", join ', ', @{$bind}, "\n";
-        print "---\n";
+    my ( $self, $meth, $stmt, $bind ) = @_;
+    die "debug_print_sql: wrong params!"
+        unless $meth and $stmt and ref $bind;
+    my $bind_params_no = scalar @{$bind};
+    my $params = 'none';
+    if ( $bind_params_no > 0 ) {
+        my @para = map { defined $_ ? $_ : 'undef' } @{$bind};
+        $params  = scalar @para > 0 ? join( ', ', @para ) : 'none';
+    }
+    if ( $self->debug ) {
+        say "---";
+        say "$meth:";
+        say "  SQL=$stmt";
+        say "  Params=($params)";
+        say "---";
     }
     return;
 }

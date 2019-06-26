@@ -5,7 +5,7 @@ package Tpda3::Model::Table;
 use Mouse;
 use Mouse::Util::TypeConstraints;
 
-require Tpda3::Model::Table::Record;
+use Tpda3::Model::Table::Record;
 
 subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
 
@@ -16,13 +16,13 @@ coerce 'TableRecordObject', from 'ArrayRef', via {
 };
 
 has 'table' => (
-    is      => 'ro',
-    isa     => 'Str',
+    is  => 'ro',
+    isa => 'Str',
 );
 
 has 'view' => (
-    is      => 'ro',
-    isa     => 'Str',
+    is  => 'ro',
+    isa => 'Str',
 );
 
 has '_keys' => (
