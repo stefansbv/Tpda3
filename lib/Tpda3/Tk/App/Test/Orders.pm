@@ -10,7 +10,6 @@ use Tk::widgets qw(DateEntry JComboBox);    #  MatchingBE
 use base 'Tpda3::Tk::Screen';
 
 use Tpda3::Tk::TM;
-use Tpda3::Tk::Text;
 
 sub run_screen {
     my ( $self, $nb ) = @_;
@@ -141,6 +140,11 @@ sub run_screen {
             Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
+        -validate        => 'key',
+        -validatecommand => sub {
+            $self->{view}->set_modified_record();
+            1;
+        },
     );
 
     $dorderdate->form(
@@ -177,6 +181,11 @@ sub run_screen {
             Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
+        -validate        => 'key',
+        -validatecommand => sub {
+            $self->{view}->set_modified_record();
+            1;
+        },
     );
 
     $drequireddate->form(
@@ -206,6 +215,11 @@ sub run_screen {
             Tpda3::Utils->dateentry_format_date( $date_format, @_ );
         },
         -todaybackground => 'lightgreen',
+        -validate        => 'key',
+        -validatecommand => sub {
+            $self->{view}->set_modified_record();
+            1;
+        },
     );
 
     $dshippeddate->form(
@@ -229,6 +243,7 @@ sub run_screen {
         -disabledbackground => $self->{bg},
         -disabledforeground => 'black',
         -textvariable       => \$vstatuscode,
+        -selectcommand      => sub { $self->{view}->set_modified_record() },
     );
 
     $bstatuscode->form(
@@ -356,6 +371,11 @@ sub run_screen {
     }
 
     return;
+}
+
+sub print_it {
+    print " print_it\n";
+    1;
 }
 
 sub calculate_order_line {

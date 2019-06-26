@@ -444,6 +444,8 @@ sub on_page_rec_activate {
 
     #- Compare Key values, load record only if different
 
+    $self->ask_to_save if $self->model->is_modified;
+
     if ( my $table_key = $self->table_key( 'rec', 'main' ) ) {
         my @current  = $table_key->map_keys( sub { $_->value } );
         my @selected = values %{$selected_href};
@@ -460,6 +462,11 @@ sub on_page_rec_activate {
 
 sub on_page_lst_activate {
     my $self = shift;
+    #     say "on_page_lst_activate: modified=", $self->model->is_modified ? 'yes' : 'no';
+
+    # if ( $self->model->is_modified ) {
+    #     my $answer = $self->ask_to_save;
+    # }
     $self->set_app_mode('sele');
     return;
 }
@@ -1670,7 +1677,6 @@ sub toggle_interface_controls {
             if ( ( $name eq 'tb_gr' ) and ( $status eq 'normal' ) ) {
                 $status = 'disabled' if
                     !$self->scrcfg('rec')->has_defaultdocument;
-                print "tb_gr status=$status\n";
             }
         }
         else {
@@ -2178,17 +2184,23 @@ sub tmatrix_set_selected {
 sub toggle_mode_find {
     my $self = shift;
 
-    my $answer = $self->ask_to_save;    # if $self->model->is_modified;
-    if ( !defined $answer ) {
-        $self->view->get_toolbar_btn('tb_fm')->deselect;
-        return;
-    }
+    say "toggle find modified=", $self->model->is_modified ? 'yes' : 'no';
 
+    if ( $self->model->is_modified ) {
+        my $answer = $self->ask_to_save;
+        if ( !defined $answer ) {
+            $self->view->get_toolbar_btn('tb_fm')->deselect;
+            return;
+        }
+    }
     $self->model->is_mode('find')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('find');
 
-    $self->view->set_status( '', 'ms' );    # clear messages
+    $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                         # undef = unloaded
+
+    $self->view->set_status( '', 'ms' );     # clear messages
 
     return;
 }
@@ -2196,17 +2208,23 @@ sub toggle_mode_find {
 sub toggle_mode_add {
     my $self = shift;
 
-    if ( $self->model->is_mode('edit') ) {
-        my $answer = $self->ask_to_save;    # if $self->model->is_modified;
-        if ( !defined $answer ) {
-            $self->view->get_toolbar_btn('tb_ad')->deselect;
-            return;
+    say "toggle add modified=", $self->model->is_modified ? 'yes' : 'no';
+
+    if ( $self->model->is_modified ) {
+        if ( $self->model->is_mode('edit') ) {
+            my $answer = $self->ask_to_save;
+            if ( !defined $answer ) {
+                $self->view->get_toolbar_btn('tb_ad')->deselect;
+                return;
+            }
         }
     }
-
     $self->model->is_mode('add')
         ? $self->set_app_mode('idle')
         : $self->set_app_mode('add');
+
+    $self->model->set_scrdata_rec(0);    # false = loaded,  true = modified,
+                                         # undef = unloaded
 
     $self->view->set_status( '', 'ms' );    # clear messages
 
@@ -2511,6 +2529,8 @@ sub record_save {
             && do { print "$type"; $self->record_save_todb; last SWITCH };
         $type eq 'default'
             && do { print "$type"; $self->record_save_todb; last SWITCH };
+        $type eq 'dependent'
+            && do { print "$type"; $self->record_save_todb; last SWITCH };
         $type eq 'config'
             && do { print "$type"; $self->record_save_conf; last SWITCH };
         die "Unknown screen style: $type\n";
@@ -2801,6 +2821,7 @@ sub get_screen_data_record {
             @{$rec}{ keys %{$pk_ref} } = values %{$pk_ref};
         }
     }
+
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
     return \@record;
@@ -3640,6 +3661,26 @@ Data source for list widgets (JCombobox)
          default = none
      </statuscode>
  </lists_ds>
+
+Tip:
+
+With the PostgreSQL engine, when the C<cod> field is used for the
+orderby column from the C<codificari> table, the orderby config can
+have a type cast C<::> operator:
+
+ <lists_ds>
+    <luna>
+        orderby         = cod::numeric
+        name            = denumire
+        table           = public.luni
+        default         = 
+        code            = cod
+    </luna>
+ </lists_ds>
+
+This is needed, in this case, because the cod field of the
+C<codificari> table is of type VARCHAR and without the cast operator
+the order is wrong for the month names.
 
 =head2 toggle_interface_controls
 
