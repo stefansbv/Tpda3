@@ -347,6 +347,7 @@ sub cell_read {
         $field = $self->get_field_for($col);
     }
     my $cell_value = $self->get("$row,$col");
+    $cell_value = undef if !$cell_value;
     $cell_value = $cell_value ? 1 : 0 if $w_type eq 'ckbutton';
     return { $field => $cell_value };
 }
@@ -520,7 +521,7 @@ sub add_embeded_widgets {
         next unless $has_embeded;
         my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
         my $col    = $self->cell_config_for( $field, 'id' );
-        say "make $w_type at $row:$col";
+        # say "make $w_type at $row:$col";
         if ( $w_type eq 'dateentry' ) {
             $self->windowConfigure(
                 "$row,$col",
