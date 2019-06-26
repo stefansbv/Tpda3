@@ -13,12 +13,14 @@ use Regexp::Common;
 use SQL::Abstract;
 use Try::Tiny;
 
-require Tpda3::Exceptions;
-require Tpda3::Config;
-require Tpda3::Codings;
-require Tpda3::Observable;
-require Tpda3::Db;
-require Tpda3::Utils;
+use Tpda3::Exceptions;
+use Tpda3::Config;
+use Tpda3::Codings;
+use Tpda3::Observable;
+use Tpda3::Db;
+use Tpda3::Utils;
+
+use Data::Dump;
 
 sub new {
     my $class = shift;
@@ -41,6 +43,11 @@ sub new {
 sub cfg {
     my $self = shift;
     return $self->{_cfg};
+}
+
+sub verbose {
+    my $self = shift;
+    return $self->cfg->verbose;
 }
 
 sub _log {
@@ -108,13 +115,9 @@ sub set_mode {
 
 sub is_mode {
     my ( $self, $ck_mode ) = @_;
-
     my $mode = $self->get_appmode_observable->get;
-
     return unless $mode;
-
     return 1 if $mode eq $ck_mode;
-
     return;
 }
 
@@ -167,6 +170,8 @@ sub query_records_count {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
+    $self->debug_print_sql($stmt, \@bind);
+
     my $record_count;
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -195,6 +200,7 @@ sub query_records_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $search_limit = $self->cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
@@ -227,6 +233,7 @@ sub query_filter_find {
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+    $self->debug_print_sql($stmt, \@bind);
 
     my @records;
     try {
@@ -256,6 +263,7 @@ sub query_record {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -291,6 +299,7 @@ sub table_batch_query {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
+    $self->debug_print_sql($stmt, \@bind);
 
     my @records;
     try {
@@ -320,6 +329,7 @@ sub query_dictionary {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $lookup_limit = $self->cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit };    # limit search result
@@ -491,6 +501,7 @@ sub tbl_dict_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -525,13 +536,7 @@ sub tbl_lookup_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
-
-    if ($debug) {
-        print "---\n";
-        print "STMT = $stmt\n";
-        print "PARA = ", join ', ', @bind, "\n";
-        print "---\n";
-    }
+    $self->debug_print_sql($stmt, \@bind);
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -569,6 +574,7 @@ sub table_record_insert {
     my $attrib = $has_feature ? { returning => $pkcol } : {};
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $pk_id;
     if ( exists $record->{$pkcol} ) {
@@ -599,8 +605,8 @@ sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
 
     my $sql = SQL::Abstract->new();
-
     my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
+    $self->debug_print_sql($stmt, \@bind);
 
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -619,6 +625,7 @@ sub table_record_select {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+    $self->debug_print_sql($stmt, \@bind);
 
     my $hash_ref;
     try {
@@ -635,13 +642,10 @@ sub table_batch_insert {
     my ( $self, $table, $records ) = @_;
     my $sql = SQL::Abstract->new();
 
-    use Data::Dump;
-    say "table_batch_insert: table = $table";
-    dd $records;
-
     # AoH refs
     foreach my $record ( @{$records} ) {
         my ( $stmt, @bind ) = $sql->insert( $table, $record );
+        $self->debug_print_sql($stmt, \@bind);
         try {
             my $sth = $self->dbh->prepare($stmt);
             $sth->execute(@bind);
@@ -725,6 +729,10 @@ sub prepare_record_insert {
 sub prepare_record_update {
     my ( $self, $record ) = @_;
 
+    say 'prepare_record_update:';
+    say ' record:';
+    dd $record;
+
     #- Main record
 
     my $mainmeta = $record->[0]{metadata};
@@ -733,12 +741,18 @@ sub prepare_record_update {
     my $table = $mainmeta->{table};
     my $where = $mainmeta->{where};
 
-    use Data::Dump;
-    say $table;
+    say "$table:";
+    say ' maindata:';
     dd $maindata;
+    say ' where:';
     dd $where;
 
-    $self->table_record_update( $table, $maindata, $where );
+    if ( %{$maindata} ) {
+        $self->table_record_update( $table, $maindata, $where );
+    }
+    else {
+        say "No main data to update for '$table'" if $self->verbose;
+    }
 
     #- Dependent records
 
@@ -750,6 +764,11 @@ sub prepare_record_update {
         my $updstyle = $depmeta->{updstyle};
         my $table    = $depmeta->{table};
         my $where    = $depmeta->{where};
+
+        say 'depmeta:';
+        dd $depmeta;
+        say 'depdata:';
+        dd $depdata;
 
         if ( $updstyle eq 'delete+add' ) {
 
@@ -814,9 +833,11 @@ sub table_batch_update {
     my $to_update
         = $self->table_update_compare( \@to_update, $depmeta, $depdata );
 
-    # print "To update: @{$to_update}\n" if ref $to_update;
-    # print "To insert: @to_insert\n";
-    # print "To delete: @to_delete\n";
+    if ( $self->verbose ) {
+        print "To update: @{$to_update}\n" if ref $to_update;
+        print "To insert: @to_insert\n";
+        print "To delete: @to_delete\n";
+    }
 
     $self->table_update_prepare( $to_update, $depmeta, $depdata );
     $self->table_insert_prepare( \@to_insert, $depmeta, $depdata );
@@ -1163,6 +1184,17 @@ sub update_or_insert {
         };
     }
 
+    return;
+}
+
+sub debug_print_sql {
+    my ( $self, $stmt, $bind ) = @_;
+    if ( $self->verbose ) {
+        print "---\n";
+        print "STMT = $stmt\n";
+        print "PARA = ", join ', ', @{$bind}, "\n";
+        print "---\n";
+    }
     return;
 }
 
