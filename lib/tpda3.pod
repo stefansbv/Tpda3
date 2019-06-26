@@ -1,0 +1,74 @@
+# ABSTRACT: tpda3
+# PODNAME: tpda3.pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+tpda3 - Data intersections
+
+=head1 SYNOPSIS
+
+  tpda3 [<options>] <command> [<command-options>] [<args>]
+
+=head1 DESCRIPTION
+
+Tpda3 is a classic desktop database application framework and
+run-time, written in Perl.  The graphical user interface is based on
+PerlTk. It supports the CUBRID, Firebird, PostgreSQL and SQLite RDBMS.
+
+=head1 TERMINOLOGY
+
+=over
+
+=item C<screen>
+
+=back
+
+=head1 COMMANDS
+
+=head1 CONFIGURATION
+
+=head2 Toolbars
+
+=head3 The main toolbar
+
+=over
+
+=item tb_fm  Toggle find mode
+
+=item tb_fe  Execute search
+
+=item tb_fc  Execute count
+
+=item tb_pr  Print preview
+
+=item tb_gr  Generate document
+
+=item tb_tn  Copy record
+
+=item tb_tr  Paste record
+
+=item tb_rr  Reload record
+
+=item tb_ad  Add record
+
+=item tb_rm  Remove record
+
+=item tb_sv  Save record
+
+=item tb_at  Save current window geometry
+
+=item tb_qt  Quit
+
+=back
+
+=head1 AUTHOR
+
+Stefan Suciu <stefbv70@gmail.com>
+
+=head1 LICENSE
+
+TODO
+
+=cut
