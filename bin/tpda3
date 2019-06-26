@@ -16,6 +16,7 @@ use Tpda3::Config;
 my $help    = q{};
 my $man     = q{};
 my $verbose = 0;                             # be quiet
+my $debug   = 0;
 my ($list, $init, $user, $pass, $default, $cfpath);
 
 # Process options.
@@ -24,6 +25,7 @@ if ( @ARGV > 0 ) {
         'help|?'     => \$help,
         'man'        => \$man,
         'verbose'    => \$verbose,
+        'debug'      => \$debug,
         'list:s'     => \$list,
         'user=s'     => \$user,
         'password=s' => \$pass,
@@ -85,6 +87,7 @@ $opts->{pass} = $pass;
 $opts->{cfname}  = $cfname;
 $opts->{cfpath}  = $cfpath;
 $opts->{verbose} = $verbose;
+$opts->{debug}   = $debug;
 
 # Go and run the app
 Tpda3->new( $opts )->run;

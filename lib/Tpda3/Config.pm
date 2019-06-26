@@ -67,6 +67,7 @@ sub init_configurations {
         user    => $args->{user}, # make accessors for user
         pass    => $args->{pass}, # and pass
         verbose => $args->{verbose},
+        debug   => $args->{debug},
         default => catfile( $configpath, $args->{cfgdefa} ),
     };
 
