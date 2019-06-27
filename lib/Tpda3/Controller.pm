@@ -1698,7 +1698,7 @@ sub toggle_screen_interface_controls {
     my $page = $self->view->get_nb_current_page();
     my $mode = $self->model->get_appmode;
 
-    return if $page eq 'lst' or $page eq 'det';
+    return if $page eq 'lst';
 
     #- Toolbar (table)
 
