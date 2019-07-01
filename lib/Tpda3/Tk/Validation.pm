@@ -29,13 +29,23 @@ sub new {
     return $self;
 }
 
+sub scrcfg {
+    my $self = shift;
+    return $self->{_scf};
+}
+
 sub init_cfgdata {
     my ( $self, $tm_ds ) = @_;
-    my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns');
+    my $table_cfg = $self->scrcfg->deptable($tm_ds, 'columns');
     my $cols      = Tpda3::Utils->sort_hash_by_id($table_cfg);
     my %cols      = map { $_ => $cols->[$_] } 0 .. $#{$cols};
     $self->{$tm_ds} = \%cols;
     return;
+}
+
+sub tm_selector_col {
+    my ($self, $tm_ds) = @_;
+    return $self->scrcfg->deptable_selectorcol($tm_ds);
 }
 
 sub column_name_from_idx {
@@ -45,13 +55,13 @@ sub column_name_from_idx {
 
 sub maintable_attribs {
     my ( $self, $column ) = @_;
-    my $table_cfg = $self->{_scf}->maintable('columns', $column);
+    my $table_cfg = $self->scrcfg->maintable('columns', $column);
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
 sub deptable_attribs {
     my ( $self, $tm_ds, $column ) = @_;
-    my $table_cfg = $self->{_scf}->deptable($tm_ds, 'columns', $column);
+    my $table_cfg = $self->scrcfg->deptable($tm_ds, 'columns', $column);
     return @{$table_cfg}{qw(datatype valid_width numscale)};    # hash slice
 }
 
@@ -63,6 +73,8 @@ sub validate_entry {
 
 sub validate_table_cell {
     my ( $self, $tm_ds, $row, $col, $old, $new, $cidx ) = @_;
+    my $sc = $self->tm_selector_col($tm_ds);
+    next if defined $sc and $sc == $col;     # skip SC
     my $column = $self->column_name_from_idx( $tm_ds, $col );
     my ( $type, $valid_width, $numscale )
         = $self->deptable_attribs( $tm_ds, $column );
