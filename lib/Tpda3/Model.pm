@@ -812,10 +812,16 @@ sub prepare_record_delete {
 sub table_batch_update {
     my ( $self, $depmeta, $depdata ) = @_;
 
-    my $compare_col = $depmeta->{tmpkcol};
+    my $fkcol;
+    if ( exists $depmeta->{tmpkcol} ) {
+        $fkcol = $depmeta->{tmpkcol};
+    }
+    else {
+        $fkcol = $depmeta->{fkcol};
+    }
 
     my $tb_data = $self->table_selectcol_as_array($depmeta);
-    my $tm_data = $self->aoh_column_extract( $depdata, $compare_col );
+    my $tm_data = $self->aoh_column_extract( $depdata, $fkcol );
 
     my $lc = List::Compare->new( $tm_data, $tb_data );
     my @to_update = $lc->get_intersection;
@@ -843,16 +849,21 @@ sub table_update_compare {
     return unless scalar( @{$to_update} ) > 0;
 
     my $table   = $depmeta->{table};
-    my $fkcol   = $depmeta->{fkcol};
-    my $tmpkcol = $depmeta->{tmpkcol};
+    my $fkcol;
+    if ( exists $depmeta->{tmpkcol} ) {
+        $fkcol = $depmeta->{tmpkcol};
+    }
+    else {
+        $fkcol = $depmeta->{fkcol};
+    }
     my $where   = $depmeta->{where};
 
     my @toupdate;
     foreach my $id ( @{$to_update} ) {
-        $where->{$tmpkcol} = $id;
+        $where->{$fkcol} = $id;
 
         # Filter data; record is Aoh
-        my $record = ( grep { $_->{$tmpkcol} == $id } @{$depdata} )[0];
+        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
         my $oldrec = $self->table_record_select( $table, $where );
         my $dc = Data::Compare->new( $oldrec, $record );
         if (!$dc->Cmp) {
@@ -870,8 +881,13 @@ sub table_update_prepare {
     return unless scalar( @{$to_update} ) > 0;
 
     my $table   = $depmeta->{table};
-    my $fkcol   = $depmeta->{fkcol};
-    my $tmpkcol = $depmeta->{tmpkcol};
+    my $fkcol;
+    if ( exists $depmeta->{tmpkcol} ) {
+        $fkcol = $depmeta->{tmpkcol};
+    }
+    else {
+        $fkcol = $depmeta->{fkcol};
+    }
     my $where   = $depmeta->{where};
 
     if ($self->debug) {
@@ -883,10 +899,10 @@ sub table_update_prepare {
     }
 
     foreach my $id ( @{$to_update} ) {
-        $where->{$tmpkcol} = $id;
+        $where->{$fkcol} = $id;
 
         # Filter data; record is Aoh
-        my $record = ( grep { $_->{$tmpkcol} == $id } @{$depdata} )[0];
+        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
 
         ### delete $record->{$fkcol}; # remove FK col from update data;
         # does NOT work, it's like remove
@@ -957,7 +973,13 @@ sub table_selectcol_as_array {
     my ( $self, $opts ) = @_;
 
     my $table  = $opts->{table};
-    my $fields = $opts->{tmpkcol};
+    my $fields;
+    if ( exists $opts->{tmpkcol} ) {
+        $fields = $opts->{tmpkcol};
+    }
+    else {
+        $fields = $opts->{fkcol};
+    }
     my $where  = $opts->{where};
     my $order  = $fields;
 
@@ -1193,7 +1215,7 @@ sub update_or_insert {
 
 sub debug_print_sql {
     my ( $self, $meth, $stmt, $bind ) = @_;
-    die "debug_print_sql: wrong params!"
+    warn "debug_print_sql: wrong params!"
         unless $meth and $stmt and ref $bind;
     my $bind_params_no = scalar @{$bind};
     my $params = 'none';
