@@ -7,7 +7,6 @@ use strict;
 use warnings;
 use Carp;
 use Scalar::Util qw(looks_like_number);
-use Date::Calc;
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
 use Tk::widgets qw< Checkbutton Radiobutton DateEntry JComboBox >;
@@ -15,6 +14,70 @@ use Tk::widgets qw< Checkbutton Radiobutton DateEntry JComboBox >;
 use Tpda3::Utils;
 
 Tk::Widget->Construct('TM');
+
+sub tag_defaults {
+    return {
+        'detail' => {
+            -bg     => 'darkseagreen2',
+            -relief => 'sunken',
+        },
+        'detail2' => {
+            -bg     => 'burlywood2',
+            -relief => 'sunken',
+        },
+        'detail3' => {
+            -bg     => 'lightyellow',
+            -relief => 'sunken',
+        },
+        'expnd' => {
+            -bg     => 'grey85',
+            -relief => 'raised',
+        },
+        'find_left' => {
+            -anchor => 'w',
+            -bg     => 'lightgreen',
+        },
+        'find_center' => {
+            -anchor => 'n',
+            -bg     => 'lightgreen',
+        },
+        'find_right' => {
+            -anchor => 'e',
+            -bg     => 'lightgreen',
+        },
+        'ro_left' => {
+            -state  => 'disabled',
+            -anchor => 'w',
+            -bg     => 'lightgrey',
+        },
+        'ro_center' => {
+            -state  => 'disabled',
+            -anchor => 'n',
+            -bg     => 'lightgrey',
+        },
+        'ro_right' => {
+            -state  => 'disabled',
+            -anchor => 'e',
+            -bg     => 'lightgrey',
+        },
+        'enter_left' => {
+            -anchor => 'w',
+            -bg     => 'white',
+        },
+        'enter_center' => {
+            -anchor => 'n',
+            -bg     => 'white',
+        },
+        'enter_center_blue' => {
+            -anchor => 'n',
+            -bg     => 'lightblue',
+        },
+        'enter_right' => {
+            -anchor => 'e',
+            -bg     => 'white',
+        },
+    };
+}
 
 sub ClassInit {
     my ( $class, $mw ) = @_;
@@ -40,6 +103,34 @@ sub ClassInit {
                       $w->icursor($posn + 1);
                   }
               );
+
+    # From the dynarows demo script.
+    # Bindings:
+    # Make the active area move after we press return:
+    # We Have to use class binding here so that we override
+    #  the default return binding
+    $mw->bind( $class, '<Return>',
+               sub {
+                   my $w = shift;
+                   my $r = $w->index( 'active', 'row' );
+                   my $c = $w->index( 'active', 'col' );
+
+                   # Table refresh
+                   $w->activate('origin');
+                   $w->activate("$r,$c");
+                   $w->reread();
+                   my $ci = $w->cget('-cols') - 1;    # max col index
+                   my $ac = $c;
+                   my $sc = 1;                        # skip cols
+                   $ac += $sc;                        # new active col
+                   $w->activate("$r,$ac");
+                   $w->see('active');
+                   Tk->break;
+               }
+           );
+
+    # Make enter do the same thing as return:
+    $mw->bind('<KP_Enter>', $mw->bind('<Return>'));
 
     return;
 }
@@ -94,42 +185,10 @@ sub get_row_count {
 sub set_tags {
     my $self = shift;
 
-    my $cols = scalar keys %{ $self->{columns} };
+    my $attribs = $self->tag_defaults;
+    my $cols_no = scalar keys %{ $self->{columns} };
 
-    # Tags for the detail data:
-    $self->tagConfigure(
-        'detail',
-        -bg     => 'darkseagreen2',
-        -relief => 'sunken',
-    );
-    $self->tagConfigure(
-        'detail2',
-        -bg     => 'burlywood2',
-        -relief => 'sunken',
-    );
-    $self->tagConfigure(
-        'detail3',
-        -bg     => 'lightyellow',
-        -relief => 'sunken',
-    );
-
-    $self->tagConfigure(
-        'expnd',
-        -bg     => 'grey85',
-        -relief => 'raised',
-    );
-    $self->tagCol( 'expnd', 0 );
-
-    # Make enter do the same thing as return
-    $self->bind( '<KP_Enter>', $self->bind('<Return>') );
-
-    $self->configure( -cols => $cols ) if $cols;
-
-    $self->tagConfigure(
-        'active',
-        -bg     => 'lightyellow',
-        -relief => 'sunken',
-    );
+    # Create common tags
     $self->tagConfigure(
         'title',
         -bg     => 'tan',
@@ -137,45 +196,26 @@ sub set_tags {
         -relief => 'raised',
         -anchor => 'n',
     );
-    $self->tagConfigure( 'find_left', -anchor => 'w', -bg => 'lightgreen' );
     $self->tagConfigure(
-        'find_center',
-        -anchor => 'n',
-        -bg     => 'lightgreen',
+        'active',
+        -bg     => 'lightyellow',
+        -relief => 'sunken',
     );
-    $self->tagConfigure(
-        'find_right',
-        -anchor => 'e',
-        -bg     => 'lightgreen',
-    );
-    $self->tagConfigure(
-        'ro_left',
-        -state  => 'disabled',
-        -anchor => 'w',
-        -bg     => 'lightgrey',
-    );
-    $self->tagConfigure(
-        'ro_center',
-        -state  => 'disabled',
-        -anchor => 'n',
-        -bg     => 'lightgrey',
-    );
-    $self->tagConfigure(
-        'ro_right',
-        -state  => 'disabled',
-        -anchor => 'e',
-        -bg     => 'lightgrey',
-    );
-    $self->tagConfigure( 'enter_left',   -anchor => 'w', -bg => 'white' );
-    $self->tagConfigure( 'enter_center', -anchor => 'n', -bg => 'white' );
-    $self->tagConfigure(
-        'enter_center_blue',
-        -anchor => 'n',
-        -bg     => 'lightblue',
-    );
-    $self->tagConfigure( 'enter_right', -anchor => 'e', -bg => 'white' );
 
-    # $self->tagConfigure( 'find_row', -bg => 'lightgreen' );
+    # Create column tags
+    foreach my $field ( keys %{ $self->{columns} } ) {
+        my $tag   = $self->cell_config_for( $field, 'tag' );
+        if ($tag) {
+            my $attr = $attribs->{$tag};
+            $self->tagConfigure( $tag, %{$attr} );
+            $self->tagCol( 'expnd', 0 ) if $tag eq 'expnd';
+        }
+    }
+
+    # # Make enter do the same thing as return
+    # $self->bind( '<KP_Enter>', $self->bind('<Return>') );
+
+    $self->configure( -cols => $cols_no ) if $cols_no;
 
     # TableMatrix header, Set Name, Align, Width
     foreach my $field ( keys %{ $self->{columns} } ) {
@@ -280,7 +320,7 @@ sub write_row {
     my $nr_col = 0;
     foreach my $field ( @{ $self->{fields} } ) {
         if ( !exists $record->{$field} ) {
-            warn "write_row: the field $field is not in the record\n";
+            # warn "write_row: the field $field is not in the record\n";
             next;
         }
         my $value    = $record->{$field};

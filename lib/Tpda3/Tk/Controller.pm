@@ -2,6 +2,7 @@ package Tpda3::Tk::Controller;
 
 # ABSTRACT: The Controller, specific for the Tk interface
 
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -13,9 +14,9 @@ use Log::Log4perl qw(get_logger :levels);
 use Tk;
 use Tk::Font;
 
-require Tpda3::Tk::View;
-require Tpda3::Tk::Dialog::Message;
-require Tpda3::Tk::Dialog::Tiler;
+use Tpda3::Tk::View;
+use Tpda3::Tk::Dialog::Message;
+use Tpda3::Tk::Dialog::Tiler;
 
 use base qw{Tpda3::Controller};
 
@@ -209,13 +210,10 @@ sub setup_bindings_table {
     my $self = shift;
 
     foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls } ) {
-
         my $bindings = $self->scrcfg()->tablebindings->{$tm_ds};
-
         my $dispatch = {};
         foreach my $bind_type ( keys %{$bindings} ) {
             next unless $bind_type;            # skip if just an empty tag
-
             my $bnd = $bindings->{$bind_type};
             if ( $bind_type eq 'lookup' ) {
                 foreach my $bind_name ( keys %{$bnd} ) {
@@ -246,7 +244,6 @@ sub setup_bindings_table {
         my $tm = $self->scrobj()->get_tm_controls($tm_ds);
 
         $tm->bind(
-            'Tpda3::Tk::TM',
             '<Return>',
             sub {
                 my $r = $tm->index( 'active', 'row' );
@@ -256,18 +253,21 @@ sub setup_bindings_table {
                 $tm->activate('origin');
                 $tm->activate("$r,$c");
                 $tm->reread();
-
                 my $ci = $tm->cget('-cols') - 1;    # max col index
-                my $sc = $self->method_for( $dispatch, $bindings, $r, $c,
-                    $tm_ds );
-                my $ac = $c;
-                $sc ||= 1;                          # skip cols
-                $ac += $sc;                         # new active col
-                $tm->activate("$r,$ac");
-                $tm->see('active');
-                Tk->break;
+                my $sc = $self->method_for(
+                    $dispatch, $bindings, $r, $c, $tm_ds );
+                # No Tk::break here, we want the class callback to be
+                # invoked, but after the instance binding, this is
+                # accomplished by swaping the tags (see bellow)
             }
         );
+
+        # Swap the binding tags for the TM, so the instance binding
+        # callback is called before the class binding callback
+        my $tmw = $tm->Subwidget('scrolled');
+        my (@tm_tags) = $tmw->bindtags;
+        $tmw->bindtags( [ @tm_tags[1, 0, 2, 3] ] );
+        @tm_tags = $tmw->bindtags;
     }
 
     return;
