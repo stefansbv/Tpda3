@@ -592,7 +592,8 @@ sub add_embeded_widgets {
 
 sub embeded_sel_buttons {
     my ( $self, $row, $col ) = @_;
-    if ( $self->{selectorstyle} eq 'checkbox' ) {
+    return unless $self->{selectorcol};
+    if ( $self->{selectorstyle} and $self->{selectorstyle} eq 'checkbox' ) {
         $self->windowConfigure(
             "$row,$col",
             -sticky => 's',
