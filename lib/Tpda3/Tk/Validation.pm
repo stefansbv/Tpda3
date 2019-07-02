@@ -74,7 +74,7 @@ sub validate_entry {
 sub validate_table_cell {
     my ( $self, $tm_ds, $row, $col, $old, $new, $cidx ) = @_;
     my $sc = $self->tm_selector_col($tm_ds);
-    next if defined $sc and $sc == $col;     # skip SC
+    return if defined $sc and $sc == $col;     # skip SC
     my $column = $self->column_name_from_idx( $tm_ds, $col );
     my ( $type, $valid_width, $numscale )
         = $self->deptable_attribs( $tm_ds, $column );
