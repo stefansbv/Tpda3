@@ -112,22 +112,20 @@ sub make_toolbar_for_table {
 
 sub tmatrix_add_row {
     my ( $self, $tm_ds ) = @_;
-
     my $tmx = $self->get_tm_controls($tm_ds);
-    $tmx->add_row();
-    $self->screen_update();
-
+    my $row = $tmx->add_row();
+    $self->screen_update($tm_ds, $row, 'add');
     return;
 }
 
 sub tmatrix_remove_row {
     my ( $self, $tm_ds ) = @_;
-
     my $tmx = $self->get_tm_controls($tm_ds);
     my $row = $tmx->get_active_row();
-    $tmx->remove_row($row) if $row;
-    $self->screen_update();
-
+    if ($row) {
+        $tmx->remove_row($row);
+        $self->screen_update($tm_ds, $row, 'remove');
+    }
     return;
 }
 
