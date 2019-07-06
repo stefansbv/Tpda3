@@ -804,6 +804,13 @@ sub count_is_checked {
     return $count;
 }
 
+sub activate_cell {
+    my ($self, $row, $col) = @_;
+    $self->activate("$row,$col");
+    $self->see('active');
+    return;
+}
+
 1;
 
 =head1 SYNOPSIS
@@ -964,5 +971,10 @@ RadioButtons!
 =head2 count_is_checked
 
 Return how many buttons are checked.
+
+=head2 activate_cell
+
+Helper method for cell activation.  The parameters are the row and
+the column.
 
 =cut
