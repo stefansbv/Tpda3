@@ -15,7 +15,7 @@ has 'debug' => (
     default => sub { 0 },
 );
 
-has 'fk_key' => (
+has 'fk_col' => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -41,7 +41,7 @@ has 'db_fk_data' => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        return $self->aoh_column_extract( $self->db_data, $self->fk_key );
+        return $self->aoh_column_extract( $self->db_data, $self->fk_col );
     },
 );
 
@@ -52,7 +52,7 @@ has 'db_data_hoh' => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        return $self->aoh_to_hoh( $self->db_data, $self->fk_key );
+        return $self->aoh_to_hoh( $self->db_data, $self->fk_col );
     },
     handles   => {
         get_db_data => 'get',
@@ -65,7 +65,7 @@ has 'tm_fk_data' => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        return $self->aoh_column_extract( $self->tm_data, $self->fk_key );
+        return $self->aoh_column_extract( $self->tm_data, $self->fk_col );
     },
 );
 
@@ -76,7 +76,7 @@ has 'tm_data_hoh' => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        return $self->aoh_to_hoh( $self->tm_data, $self->fk_key );
+        return $self->aoh_to_hoh( $self->tm_data, $self->fk_col );
     },
     handles   => {
         get_tm_data => 'get',
