@@ -102,7 +102,7 @@ my $tm_data = [
 my $db_data = $record->[1]{tm1}{data};
 
 ok my $muc = Tpda3::Model::Update::Compare->new(
-    fk_key    => 'orderlinenumber',
+    fk_col    => 'orderlinenumber',
     db_data   => $db_data,
     tm_data   => $tm_data,
 ), 'new update object';
@@ -111,18 +111,16 @@ is $muc->to_insert, [4], 'fk to insert';
 is $muc->to_delete, [3], 'fk to delete';
 is $muc->to_update, [1, 2], 'records to update';
 
-my $meta_m_data = $record->[0];
-my $meta_d_data = $record->[1]{tm1};
-
-ok my $mm = Tpda3::Model::Meta::Main->new($meta_m_data), 'new Meta::Main';
-ok my $md = Tpda3::Model::Meta::Dep->new($meta_d_data), 'new Meta::Dep';
+my $meta = $record->[1]{tm1}{metadata};
 
 ok my $mu = Tpda3::Model::Update->new(
-    meta_main => $mm,
-    meta_dep  => $md,
-    compare   => $muc,
+    table   => $meta->{table},
+    fk_col  => $meta->{fkcol},
+    where   => $meta->{where},
+    compare => $muc,
 ), 'new update object';
 
-ok $mu->where_for_insert(1), '';
+is $mu->fkcol_where(1), { orderlinenumber => 1, ordernumber => 10199 },
+  'fkcol_where';
 
 done_testing;

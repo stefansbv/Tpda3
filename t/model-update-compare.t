@@ -129,7 +129,7 @@ my $db_data_hoh = {
 my $db_data = $record->[1]{tm1}{data};
 
 ok my $mu = Tpda3::Model::Update::Compare->new(
-    fk_key    => 'orderlinenumber',
+    fk_col    => 'orderlinenumber',
     db_data   => $db_data,
     tm_data   => $tm_data,
 ), 'new update object';

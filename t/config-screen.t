@@ -255,7 +255,20 @@ subtest 'Orders screen config' => sub {
     is $conf->deptable_colstretch('tm1'),    2,     'deptable colstretch';
     is $conf->deptable_orderby('tm1'), 'orderlinenumber', 'deptable orderby';
 
-    is ref $conf->deptable_columns('tm1'), 'HASH',    'deptable columns';
+    is ref $conf->deptable_columns('tm1'), 'HASH', 'deptable columns is a hash';
+    my $expected_cols = [
+        qw(
+          orderlinenumber
+          ordervalue
+          priceeach
+          productcode
+          productname
+          quantityordered
+    )];
+    my $cols_h = $conf->deptable_columns('tm1');
+    my @cols = sort keys %{$cols_h};
+    is \@cols, $expected_cols, 'deptable columns';
+    
     my $col = $conf->deptable_columns('tm1', 'orderlinenumber');
 
     is ref $col, 'HASH', 'deptable column orderlinenumber';
@@ -274,8 +287,27 @@ subtest 'Orders screen config' => sub {
     is ref $conf->deptable_keys('tm1'), 'HASH', 'deptable_keys';
     is $conf->deptable_keys( 'tm1', 'name' ),
       [qw(ordernumber orderlinenumber)], 'deptable_keys';
+
+    is ref $conf->deptable_columns_rw('tm1'), 'HASH', 'deptable rw columns';
+    my $expected_rw_cols = [
+        qw(
+          orderlinenumber
+          priceeach
+          productcode
+          quantityordered
+    )];
+    my $cols_rw_h = $conf->deptable_columns_rw('tm1');
+    my @cols_rw = sort keys %{$cols_rw_h};
+    is \@cols_rw, $expected_rw_cols, 'deptable rw columns';
 };
 
+# productcode     - rw
+# quantityordered - rw
+# priceeach       - rw
+# ordervalue      - ro
+# orderlinenumber - rw
+# productname     - ro
+    
 # {
 #   datatype => "integer",
 #   displ_width => 5,
