@@ -7,7 +7,6 @@ use strict;
 use warnings;
 
 use Data::Compare;
-use List::Compare;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
 use SQL::Abstract;
@@ -19,6 +18,11 @@ use Tpda3::Codings;
 use Tpda3::Observable;
 use Tpda3::Db;
 use Tpda3::Utils;
+
+use Tpda3::Model::Update;
+use Tpda3::Model::Update::Compare;
+# use Tpda3::Model::Meta::Main;
+# use Tpda3::Model::Meta::Dep;
 
 use Data::Dump;
 
@@ -175,7 +179,8 @@ sub query_records_count {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
-    $self->debug_print_sql('query_records_count', $stmt, \@bind);
+    $self->debug_print_sql('query_records_count', $stmt, \@bind)
+        if $self->debug;
 
     my $record_count;
     try {
@@ -205,7 +210,8 @@ sub query_records_find {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $pkcol );
-    $self->debug_print_sql('query_records_find', $stmt, \@bind);
+    $self->debug_print_sql('query_records_find', $stmt, \@bind)
+        if $self->debug;
 
     my $search_limit = $self->cfg->application->{limits}{search} || 100;
     my $args = { MaxRows => $search_limit };    # limit search result
@@ -238,7 +244,8 @@ sub query_filter_find {
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-    $self->debug_print_sql('query_filter_find', $stmt, \@bind);
+    $self->debug_print_sql('query_filter_find', $stmt, \@bind)
+        if $self->debug;
 
     my @records;
     try {
@@ -268,7 +275,7 @@ sub query_record {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where );
-    $self->debug_print_sql('query_record', $stmt, \@bind);
+    $self->debug_print_sql('query_record', $stmt, \@bind) if $self->debug;
 
     my $hash_ref;
     try {
@@ -304,7 +311,8 @@ sub table_batch_query {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $colslist, $where, $order );
-    $self->debug_print_sql('table_batch_query', $stmt, \@bind);
+    $self->debug_print_sql('table_batch_query', $stmt, \@bind)
+        if $self->debug;
 
     my @records;
     try {
@@ -334,7 +342,8 @@ sub query_dictionary {
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
 
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-    $self->debug_print_sql('query_dictionary', $stmt, \@bind);
+    $self->debug_print_sql('query_dictionary', $stmt, \@bind)
+        if $self->debug;
 
     my $lookup_limit = $self->cfg->application->{limits}{lookup} || 50;
     my $args = { MaxRows => $lookup_limit };    # limit search result
@@ -506,7 +515,7 @@ sub tbl_dict_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
-    $self->debug_print_sql('tbl_dict_query', $stmt, \@bind);
+    $self->debug_print_sql('tbl_dict_query', $stmt, \@bind) if $self->debug;
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -541,7 +550,7 @@ sub tbl_lookup_query {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where );
-    $self->debug_print_sql('tbl_lookup_query', $stmt, \@bind);
+    $self->debug_print_sql('tbl_lookup_query', $stmt, \@bind) if $self->debug;
 
     my $sth;
     try { $sth = $self->dbh->prepare($stmt); }
@@ -579,7 +588,8 @@ sub table_record_insert {
     my $attrib = $has_feature ? { returning => $pkcol } : {};
 
     my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
-    $self->debug_print_sql('table_record_insert', $stmt, \@bind);
+    $self->debug_print_sql('table_record_insert', $stmt, \@bind)
+        if $self->debug;
 
     my $pk_id;
     if ( exists $record->{$pkcol} ) {
@@ -611,7 +621,8 @@ sub table_record_update {
 
     my $sql = SQL::Abstract->new();
     my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
-    $self->debug_print_sql('table_record_update', $stmt, \@bind);
+    $self->debug_print_sql('table_record_update', $stmt, \@bind)
+        if $self->debug;
 
     try {
         my $sth = $self->dbh->prepare($stmt);
@@ -630,7 +641,8 @@ sub table_record_select {
     my $sql = SQL::Abstract->new();
 
     my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
-    $self->debug_print_sql('table_record_select', $stmt, \@bind);
+    $self->debug_print_sql('table_record_select', $stmt, \@bind)
+        if $self->debug;
 
     my $hash_ref;
     try {
@@ -650,7 +662,8 @@ sub table_batch_insert {
     # AoH refs
     foreach my $record ( @{$records} ) {
         my ( $stmt, @bind ) = $sql->insert( $table, $record );
-        $self->debug_print_sql('table_batch_insert', $stmt, \@bind);
+        $self->debug_print_sql('table_batch_insert', $stmt, \@bind)
+            if $self->debug;
         try {
             my $sth = $self->dbh->prepare($stmt);
             $sth->execute(@bind);
@@ -820,183 +833,104 @@ sub table_batch_update {
         $fkcol = $depmeta->{fkcol};
     }
 
-    my $tb_data = $self->table_selectcol_as_array($depmeta);
-    my $tm_data = $self->aoh_column_extract( $depdata, $fkcol );
-
-    my $lc = List::Compare->new( $tm_data, $tb_data );
-    my @to_update = $lc->get_intersection;
-    my @to_insert = $lc->get_unique;
-    my @to_delete = $lc->get_complement;
-    my $to_update
-        = $self->table_update_compare( \@to_update, $depmeta, $depdata );
-
-    if ( $self->debug ) {
-        say "To update: @{$to_update}" if ref $to_update;
-        say "To insert: @to_insert";
-        say "To delete: @to_delete";
-    }
-
-    $self->table_update_prepare( $to_update, $depmeta, $depdata );
-    $self->table_insert_prepare( \@to_insert, $depmeta, $depdata );
-    $self->table_delete_prepare( \@to_delete, $depmeta );
-
-    return;
-}
-
-sub table_update_compare {
-    my ( $self, $to_update, $depmeta, $depdata ) = @_;
-
-    return unless scalar( @{$to_update} ) > 0;
-
-    my $table   = $depmeta->{table};
-    my $fkcol;
-    if ( exists $depmeta->{tmpkcol} ) {
-        $fkcol = $depmeta->{tmpkcol};
-    }
-    else {
-        $fkcol = $depmeta->{fkcol};
-    }
-    my $where   = $depmeta->{where};
-
-    my @toupdate;
-    foreach my $id ( @{$to_update} ) {
-        $where->{$fkcol} = $id;
-
-        # Filter data; record is Aoh
-        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
-        my $oldrec = $self->table_record_select( $table, $where );
-        my $dc = Data::Compare->new( $oldrec, $record );
-        if (!$dc->Cmp) {
-            push @toupdate, $id;
-            say" add $id to Update" if $self->verbose;
-        }
-    }
-    return \@toupdate;
-}
-
-sub table_update_prepare {
-    my ( $self, $to_update, $depmeta, $depdata ) = @_;
-
-    return unless ref $to_update;
-    return unless scalar( @{$to_update} ) > 0;
-
-    my $table   = $depmeta->{table};
-    my $fkcol;
-    if ( exists $depmeta->{tmpkcol} ) {
-        $fkcol = $depmeta->{tmpkcol};
-    }
-    else {
-        $fkcol = $depmeta->{fkcol};
-    }
-    my $where   = $depmeta->{where};
-
-    if ($self->debug) {
-        say '*** table_update_prepare:';
-        say " table = $table";
-        say " fkcol = $fkcol";
-        say " where (orig):";
-        dd $where;
-    }
-
-    foreach my $id ( @{$to_update} ) {
-        $where->{$fkcol} = $id;
-
-        # Filter data; record is Aoh
-        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
-
-        ### delete $record->{$fkcol}; # remove FK col from update data;
-        # does NOT work, it's like remove
-        # from the original datastructure?!
-
-        if ($self->debug) {
-            say "update in $table:";
-            say "*** record ***\n";
-            dd $record;
-            say " where:\n";
-            dd $where;
-        }
-        $self->table_record_update( $table, $record, $where );
-    }
-
-    return;
-}
-
-sub table_insert_prepare {
-    my ( $self, $to_insert, $depmeta, $depdata ) = @_;
-
-    return unless scalar( @{$to_insert} ) > 0;
-
     my $table = $depmeta->{table};
-    my $fkcol = $depmeta->{fkcol};
-
-    my @records;
-    foreach my $fk_id ( @{$to_insert} ) {
-
-        # Filter data; record is Aoh
-        my $rec = ( grep { $_->{$fkcol} == $fk_id } @{$depdata} )[0];
-
-        push @records, $rec;
-    }
-    if ($self->debug) {
-        say "insert in $table:";
-        dd @records;
-    }
-
-    $self->table_batch_insert( $table, \@records );
-    return;
-}
-
-sub table_delete_prepare {
-    my ( $self, $to_delete, $depmeta ) = @_;
-
-    return unless scalar( @{$to_delete} ) > 0;
-
-    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
     my $where = $depmeta->{where};
 
-    $self->table_record_delete( $table, $where );
+    my $oldrec = $self->get_record($depmeta);
+    my $muc = Tpda3::Model::Update::Compare->new(
+        fk_col  => $fkcol,
+        db_data => $oldrec,
+        tm_data => $depdata,
+    );
+
+    my $to_insert = $muc->to_insert;
+    my $to_delete = $muc->to_delete;
+    my $to_update = $muc->to_update;
+
+    if ( $self->debug ) {
+        say "To update: $fkcol => @{$to_update}";
+        say "To insert: $fkcol => @{$to_insert}";
+        say "To delete: $fkcol => @{$to_delete}";
+    }
+
+    my $mu = Tpda3::Model::Update->new(
+        table   => $table,
+        fk_col  => $fkcol,
+        where   => $where,
+        compare => $muc,
+    );
+
+    # INSERT
+    foreach my $id ( @{$to_insert} ) {
+
+        # Filter data by the fkcol value; record is AoH
+        my $rec = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
+        $self->table_record_insert($table, $pkcol, $rec);
+    }
+
+    # UPDATE
+    foreach my $id ( @{$to_update} ) {
+        my $where = $mu->fkcol_where($id);
+
+        # Filter data by the fkcol value; record is AoH
+        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
+
+        ### delete $rec->{$fkcol}; # remove FK col from update data;
+        # does NOT work, it's like remove from the original
+        # datastructure?!
+        my $rec = {};
+        foreach my $field ( keys %{$record} ) {
+            next if grep { $_ eq $field } keys %{$where};
+            $rec->{$field} = $record->{$field};
+        }
+        $self->table_record_update( $table, $rec, $where );
+    }
+
+    # DELETE
+    foreach my $id ( @{$to_delete} ) {
+        my $where = $mu->fkcol_where($id);
+        $self->table_record_delete( $table, $where );
+    }
 
     return;
 }
 
-sub aoh_column_extract {
-    my ( $self, $depdata, $column ) = @_;
-    my @dep_data;
-    foreach my $rec ( @{$depdata} ) {
-        my $data = $rec->{$column};
-        push @dep_data, $data;
-    }
-    return \@dep_data;
+sub get_record {
+    my ( $self, $depmeta ) = @_;
+    unshift @{$depmeta->{colslist}}, $depmeta->{pkcol};
+    my $record = $self->table_batch_query($depmeta);
+    return $record;
 }
 
-sub table_selectcol_as_array {
-    my ( $self, $opts ) = @_;
+# sub table_selectcol_as_array {
+#     my ( $self, $opts ) = @_;
 
-    my $table  = $opts->{table};
-    my $fields;
-    if ( exists $opts->{tmpkcol} ) {
-        $fields = $opts->{tmpkcol};
-    }
-    else {
-        $fields = $opts->{fkcol};
-    }
-    my $where  = $opts->{where};
-    my $order  = $fields;
+#     my $table  = $opts->{table};
+#     my $fields;
+#     if ( exists $opts->{tmpkcol} ) {
+#         $fields = $opts->{tmpkcol};
+#     }
+#     else {
+#         $fields = $opts->{fkcol};
+#     }
+#     my $where  = $opts->{where};
+#     my $order  = $fields;
 
-    my $sql = SQL::Abstract->new();
+#     my $sql = SQL::Abstract->new();
 
-    my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+#     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
 
-    my $records;
-    try {
-        $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
-    }
-    catch {
-        $self->db_exception($_, 'Select failed');
-    };
+#     my $records;
+#     try {
+#         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
+#     }
+#     catch {
+#         $self->db_exception($_, 'Select failed');
+#     };
 
-    return $records;
-}
+#     return $records;
+# }
 
 sub record_compare {
     my ( $self, $witness, $record ) = @_;
@@ -1223,13 +1157,11 @@ sub debug_print_sql {
         my @para = map { defined $_ ? $_ : 'undef' } @{$bind};
         $params  = scalar @para > 0 ? join( ', ', @para ) : 'none';
     }
-    if ( $self->debug ) {
-        say "---";
-        say "$meth:";
-        say "  SQL=$stmt";
-        say "  Params=($params)";
-        say "---";
-    }
+    say "---";
+    say "$meth:";
+    say "  SQL=$stmt";
+    say "  Params=($params)";
+    say "---";
     return;
 }
 
@@ -1523,22 +1455,6 @@ to insert, update or delete.
 
 Compare data in TM with the data in DB row by row and update only if
 different.
-
-=head2 table_update_prepare
-
-Prepare data for batch update.
-
-=head2 table_insert_prepare
-
-Prepare data for batch insert.
-
-=head2 table_delete_prepare
-
-Prepare data for batch delete.
-
-=head2 aoh_column_extract
-
-Extract only a column from an AoH data structure.
 
 =head2 table_selectcol_as_array
 
