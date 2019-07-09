@@ -2505,13 +2505,13 @@ sub record_save {
     my $type = $self->scrcfg()->screen('style');
   SWITCH: {
         $type eq 'report'
-            && do { print "$type"; $self->record_save_todb; last SWITCH };
+            && do { $self->record_save_todb; last SWITCH };
         $type eq 'default'
-            && do { print "$type"; $self->record_save_todb; last SWITCH };
+            && do { $self->record_save_todb; last SWITCH };
         $type eq 'dependent'
-            && do { print "$type"; $self->record_save_todb; last SWITCH };
+            && do { $self->record_save_todb; last SWITCH };
         $type eq 'config'
-            && do { print "$type"; $self->record_save_conf; last SWITCH };
+            && do { $self->record_save_conf; last SWITCH };
         die "Unknown screen style: $type\n";
     }
     return;
@@ -2550,6 +2550,7 @@ sub record_save_todb {
         }
 
         my $record = $self->get_screen_data_record('upd');
+        # use Data::Dump; dd $record;
 
         try   { $self->check_required_data($record) }
         catch { $self->catch_data_exceptions($_)    };
@@ -2864,7 +2865,13 @@ sub dep_table_metadata {
         die "Bad parameter: $for_sql";
     }
 
-    my $columns = $self->scrcfg->deptable_columns($tm);
+    my $columns;
+    if ( $for_sql eq 'qry' ) {
+        $columns = $self->scrcfg->deptable_columns($tm);
+    }
+    else {
+        $columns = $self->scrcfg->deptable_columns_rw($tm);
+    }
 
     $metadata->{pkcol}    = $pk_key;
     $metadata->{fkcol}    = $self->table_key($page, $tm)->get_key(1)->name;

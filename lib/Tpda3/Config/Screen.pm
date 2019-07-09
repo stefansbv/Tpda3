@@ -150,6 +150,19 @@ sub deptable_columns  {
     return $columns;
 }
 
+sub deptable_columns_rw {
+    my ( $self, $tm_ds ) = @_;
+    die "deptable_columns: the \$tm_ds parameter is required" unless $tm_ds;
+    my $columns = $self->deptable( $tm_ds, 'columns' );
+    return undef if $self->is_href_is_empty($columns);
+    my $columns_rw = {};
+    foreach my $field ( keys %{$columns} ) {
+        next unless $columns->{$field}{readwrite} eq 'rw';
+        $columns_rw->{$field} = $columns->{$field};
+    }
+    return $columns_rw;
+}
+
 sub deptable_keys {
     my ($self, $tm_ds, @args) = @_;
     die "deptable_keys: the \$tm_ds parameter is required" unless $tm_ds;
