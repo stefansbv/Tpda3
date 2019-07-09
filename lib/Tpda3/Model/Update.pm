@@ -13,15 +13,21 @@ has 'debug' => (
     default => sub { 0 },
 );
 
-has 'meta_main' => (
+has 'table' => (
     is       => 'ro',
-    isa      => 'Tpda3::Model::Meta::Main',
+    isa      => 'Str',
     required => 1,
 );
 
-has 'meta_dep' => (
+has 'fk_col' => (
     is       => 'ro',
-    isa      => 'Tpda3::Model::Meta::Dep',
+    isa      => 'Str',
+    required => 1,
+);
+
+has 'where' => (
+    is       => 'ro',
+    isa      => 'HashRef',
     required => 1,
 );
 
@@ -31,15 +37,12 @@ has 'compare' => (
     required => 1,
 );
 
-sub where_for_insert {
-    my ($self, $id) = @_;
-    die "insert_where: the \$id parameter is missing" unless defined $id;
-    my $where = $self->meta_dep->where;
-    my $fkcol = $self->meta_dep->fkcol;
-    say "table = ", $self->meta_main->table;
-    say "   fk = $fkcol";
+sub fkcol_where {
+    my ( $self, $id ) = @_;
+    die "Model::Update where: the \$id parameter is missing" unless defined $id;
+    my $where = $self->where;
+    my $fkcol = $self->fk_col;
     $where->{$fkcol} = $id;
-    dd $where;
     return $where;
 }
 
