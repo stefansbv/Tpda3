@@ -129,6 +129,14 @@ sub tmatrix_remove_row {
     return;
 }
 
+sub tmatrix_renumber_rows {
+    my ( $self, $tm_ds ) = @_;
+    my $tmx = $self->get_tm_controls($tm_ds);
+    $tmx->renum_row();
+    $self->screen_update($tm_ds, 'all_rows', 'renumber');
+    return;
+}
+
 sub app_toolbar_names {
     my ($self, $name) = @_;
 
