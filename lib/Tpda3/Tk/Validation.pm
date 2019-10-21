@@ -23,9 +23,10 @@ sub new {
 
     bless $self, $class;
 
-    $self->{_scf} = $scrcfg;
-    $self->{view} = $view;
-
+    $self->{_scf}  = $scrcfg;
+    $self->{view}  = $view;
+    $self->{model} = $self->{view}->model;
+        
     return $self;
 }
 
@@ -83,6 +84,7 @@ sub validate_table_cell {
 
 sub validate {
     my ( $self, $proc, $p1, $maxlen, $numscale, $column ) = @_;
+    $proc = 'anychar' if $self->{model}->is_mode('find');
     if ( !$proc ) {
         print "EE: Config error for '$column', no proc for validation!\n";
         return;
@@ -277,9 +279,8 @@ from the screen configuration, for the dependent table(s).
 
 Validation for Tk::Entry widgets.
 
-TODO: Change I<proc> to I<anychar> when in find mode, to allow
-searching for 'NULL' string to be entered. This would be than be
-interpreted as a 'column IS NULL' SQL WHERE clause.
+Changes I<proc> to I<anychar> when in find mode, to allow searching
+for any character, including the wildcard characters '%' and '!'.
 
 =head2 validate_table_cell
 
