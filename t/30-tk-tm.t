@@ -30,35 +30,25 @@ my $header = {
     selectorcol   => '',
     selectorstyle => '',
     columns       => {
+        orderlinenumber => {
+            id          => 0,
+            label       => 'Art',
+            tag         => 'ro_center',
+            displ_width => 5,
+            valid_width => 5,
+            numscale    => 0,
+            readwrite   => 'rw',
+            datatype    => 'integer',
+        },
         productcode => {
             id          => 1,
             label       => 'Code',
-            tag         => 'find_center',
+            tag         => 'find_left',
             displ_width => 15,
             valid_width => 15,
             numscale    => 0,
             readwrite   => 'rw',
             datatype    => 'alphanum',
-        },
-        ordervalue => {
-            id          => 5,
-            label       => 'Value',
-            tag         => 'ro_right',
-            displ_width => 12,
-            valid_width => 12,
-            numscale    => 2,
-            readwrite   => 'rw',
-            datatype    => 'numeric',
-        },
-        quantityordered => {
-            id          => 3,
-            label       => 'Quantity',
-            tag         => 'enter_right',
-            displ_width => 12,
-            valid_width => 12,
-            numscale    => 0,
-            readwrite   => 'rw',
-            datatype    => 'numeric',
         },
         productname => {
             id          => 2,
@@ -70,6 +60,16 @@ my $header = {
             readwrite   => 'rw',
             datatype    => 'alphanumplus',
         },
+        quantityordered => {
+            id          => 3,
+            label       => 'Quantity',
+            tag         => 'enter_right',
+            displ_width => 12,
+            valid_width => 12,
+            numscale    => 0,
+            readwrite   => 'rw',
+            datatype    => 'numeric',
+        },
         priceeach => {
             id          => 4,
             label       => 'Price',
@@ -80,16 +80,16 @@ my $header = {
             readwrite   => 'rw',
             datatype    => 'numeric',
         },
-        orderlinenumber => {
-            id          => 0,
-            label       => 'Art',
-            tag         => 'ro_center',
-            displ_width => 5,
-            valid_width => 5,
-            numscale    => 0,
+        ordervalue => {
+            id          => 5,
+            label       => 'Value',
+            tag         => 'ro_right',
+            displ_width => 12,
+            valid_width => 12,
+            numscale    => 2,
             readwrite   => 'rw',
-            datatype    => 'integer',
-        }
+            datatype    => 'numeric',
+        },
     },
 };
 
@@ -147,7 +147,7 @@ ok !$tm->init( $mw, $header ), 'make header';
 
 $tm->pack( -expand => 1, -fill => 'both');
 
-my ( $delay, $milisec ) = ( 1, 100 );
+my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
     $delay * $milisec,
@@ -203,6 +203,21 @@ $mw->after(
     }
 );
 
+$delay++;
+$delay++;
+$delay++;
+
+$mw->after(
+    $delay * $milisec,
+    sub {
+        my @names = $tm->tagNames();
+        use Data::Dump; dd @names;
+        $tm->add_row_find;
+    }
+);
+
+$delay++;
+$delay++;
 $delay++;
 
 $mw->after( $delay * $milisec, sub { $mw->destroy } );

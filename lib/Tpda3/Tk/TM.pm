@@ -33,16 +33,26 @@ sub tag_defaults {
             -bg     => 'grey85',
             -relief => 'raised',
         },
+        'find_mode' => {
+            -state  => 'normal',
+            -anchor => 'w',
+            -bg     => 'lightgreen',
+        },
+        'find_none' => {
+            -state  => 'disabled',
+            -anchor => 'n',
+            -bg     => 'lightgrey',
+        },
         'find_left' => {
             -anchor => 'w',
             -bg     => 'lightgreen',
         },
-        'find_center' => {
-            -anchor => 'n',
-            -bg     => 'lightgreen',
-        },
         'find_right' => {
             -anchor => 'e',
+            -bg     => 'lightgreen',
+        },
+        'find_center' => {
+            -anchor => 'n',
             -bg     => 'lightgreen',
         },
         'ro_left' => {
@@ -202,18 +212,20 @@ sub set_tags {
         -relief => 'sunken',
     );
 
-    # Create column tags
+    my $tags = {};
     foreach my $field ( keys %{ $self->{columns} } ) {
-        my $tag   = $self->cell_config_for( $field, 'tag' );
-        if ($tag) {
-            my $attr = $attribs->{$tag};
-            $self->tagConfigure( $tag, %{$attr} );
-            $self->tagCol( 'expnd', 0 ) if $tag eq 'expnd';
-        }
+        my $tag = $self->cell_config_for( $field, 'tag' );
+        $tags->{$tag} = $attribs->{$tag} if $tag;
     }
 
-    # # Make enter do the same thing as return
-    # $self->bind( '<KP_Enter>', $self->bind('<Return>') );
+    # Create find mode tags
+    $self->tagConfigure( 'find_none', %{ $attribs->{find_none} } );
+    $self->tagConfigure( 'find_mode', %{ $attribs->{find_mode} } );
+
+    # Create column tags
+    foreach my $tag ( keys %{$tags} ) {
+        $self->tagConfigure( $tag, %{ $tags->{$tag} } );
+    }
 
     $self->configure( -cols => $cols_no ) if $cols_no;
 
@@ -222,6 +234,7 @@ sub set_tags {
         my $col      = $self->cell_config_for($field, 'id');
         my $datatype = $self->cell_config_for($field, 'datatype');
         my $numscale = $self->cell_config_for($field, 'numscale');
+        my $findtype = $self->cell_config_for($field, 'findtype');
 
         $self->tagCol( $self->cell_config_for($field, 'tag'), $col );
         $self->set( "0,$col", $self->cell_config_for($field, 'label') );
@@ -297,18 +310,22 @@ sub data_read {
 }
 
 sub read_row {
-    my ( $self, $row, $all_cols ) = @_;
+    my ( $self, $row, $all_cols, $not_null ) = @_;
     my $row_data = {};
     foreach my $field ( @{ $self->{fields} } ) {
         my $rw = $self->cell_config_for( $field, 'readwrite' );
         if ( !$all_cols ) {
             next if $rw eq 'ro';    # skip ro cols
         }
-        #say "reading TM cell on row '$row' for field '$field'";
         my $cell_data = $self->cell_read( $row, $field );
         foreach my $key ( keys %{$cell_data} ) {
-            $row_data->{$key} = $cell_data->{$key};
-            #say " $key => ", $cell_data->{$key};
+            if ($not_null) {
+                $row_data->{$key} = $cell_data->{$key}
+                  if defined $cell_data->{$key};
+            }
+            else {
+                $row_data->{$key} = $cell_data->{$key};
+            }
         }
     }
     return $row_data;
@@ -481,6 +498,35 @@ sub add_row {
     $self->focus;
     $self->activate("$new_r,1");
     $self->see("$new_r,1");
+
+    return $new_r;
+}
+
+sub add_row_find {
+    my $self = shift;
+    $self->configure( state => 'normal' );    # normal state
+    $self->insertRows('end');
+    my $new_r = $self->index( 'end', 'row' );    # get new row index
+
+    # Create find tags
+    foreach my $field ( keys %{ $self->{columns} } ) {
+        my $col      = $self->cell_config_for($field, 'id');
+        my $findtype = $self->cell_config_for( $field, 'findtype' );
+        if ( defined $findtype ) {
+            print "$field: findtype = $findtype\n";
+            if ( $findtype eq 'none' ) {
+                $self->tagCell( 'find_none', "$new_r,$col" );
+            }
+            else {
+                $self->tagCell( 'find_mode', "$new_r,$col" );
+            }
+        }
+    }
+
+    # Focus to newly inserted row, column 0
+    $self->focus;
+    $self->activate("$new_r,0");
+    $self->see("$new_r,0");
 
     return $new_r;
 }
