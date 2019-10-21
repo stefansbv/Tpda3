@@ -174,23 +174,34 @@ sub query_records_count {
     my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
     my $where = $self->build_sql_where($opts);
 
+    my $sub_table = $opts->{sub_table};
+
     return if !ref $where;
 
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+    use Data::Dump; dd $where;
 
-    my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
-    $self->debug_print_sql('query_records_count', $stmt, \@bind)
-        if $self->debug;
+    # my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+
+    # my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
+
+    # my ($sub_stmt, @sub_bind) = $sql->select($table, "*", $sub_where);
+    # $where = {
+    #     -and => [ foo => 1234,
+    #     \["EXISTS ($sub_stmt)" => @sub_bind],
+    #   ]};
+
+    # $self->debug_print_sql('query_records_count', $stmt, \@bind)
+    #     if $self->debug;
 
     my $record_count;
-    try {
-        my $sth = $self->dbh->prepare($stmt);
-        $sth->execute(@bind);
-        ($record_count) = $sth->fetchrow_array();
-    }
-    catch {
-        $self->db_exception($_, 'Count failed');
-    };
+    # try {
+    #     my $sth = $self->dbh->prepare($stmt);
+    #     $sth->execute(@bind);
+    #     ($record_count) = $sth->fetchrow_array();
+    # }
+    # catch {
+    #     $self->db_exception($_, 'Count failed');
+    # };
 
     $record_count = 0 unless defined $record_count;
 
@@ -405,13 +416,13 @@ sub build_sql_where {
     foreach my $field ( keys %{ $opts->{where} } ) {
         my $attrib    = $opts->{where}{$field};
         my $searchstr = $attrib->[0];
-        my $find_type = $attrib->[1];
+        my $findtype  = $attrib->[1];
 
-        unless ($find_type) {
-            die "Unknown 'find_type': $find_type for '$field'";
+        unless ($findtype) {
+            die "Unknown 'findtype': $findtype for '$field'";
         }
 
-        if ( $find_type eq 'contains' ) {
+        if ( $findtype eq 'contains' ) {
             my $cmp = $self->cmp_function($searchstr);
             if ($cmp eq '-CONTAINING') {
                 # Firebird specific
@@ -425,10 +436,10 @@ sub build_sql_where {
                 };
             }
         }
-        elsif ( $find_type eq 'full' ) {
+        elsif ( $findtype eq 'full' ) {
             $where->{$field} = $searchstr;
         }
-        elsif ( $find_type eq 'date' ) {
+        elsif ( $findtype eq 'date' ) {
             my $ret = Tpda3::Utils->process_date_string($searchstr);
             if ( $ret eq 'dataerr' ) {
                 $self->_print('warn#Wrong search parameter');
@@ -438,20 +449,20 @@ sub build_sql_where {
                 $where->{$field} = $ret;
             }
         }
-        elsif ( $find_type eq 'isnull' ) {
+        elsif ( $findtype eq 'isnull' ) {
             $where->{$field} = undef;
         }
-        elsif ( $find_type eq 'notnull' ) {
+        elsif ( $findtype eq 'notnull' ) {
             $where->{$field} = undef;
             my $notnull = q{IS NOT NULL};
             $where->{$field} = \$notnull;
         }
-        elsif ( $find_type eq 'none' ) {
+        elsif ( $findtype eq 'none' ) {
 
             # just skip
         }
         else {
-            die "Unknown 'find_type': $find_type for '$field'";
+            die "Unknown 'findtype': $findtype for '$field'";
         }
     }
 

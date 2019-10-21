@@ -1117,7 +1117,9 @@ sub on_screen_mode_find {
     $self->record_clear;
 
     foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
-        $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
+        my $tm = $self->scrobj()->get_tm_controls($tm_ds);
+        $tm->clear_all;
+        $tm->add_row_find;
     }
 
     $self->controls_state_set('find');
@@ -1729,8 +1731,8 @@ sub record_find_execute {
     my $columns = $self->scrcfg('rec')->maintable('columns');
 
     # Add findtype info to screen data
-    foreach my $field ( keys %{ $self->{_scrdata} } ) {
-        my $value = $self->{_scrdata}{$field};
+    foreach my $field ( keys %{ $self->{_scrdata}{rec} } ) {
+        my $value = $self->{_scrdata}{rec}{$field};
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
@@ -1801,8 +1803,8 @@ sub record_find_count {
     my $params = {};
 
     # Add findtype info to screen data
-    foreach my $field ( keys %{ $self->{_scrdata} } ) {
-        my $value = $self->{_scrdata}{$field};
+    foreach my $field ( keys %{ $self->{_scrdata}{rec} } ) {
+        my $value = $self->{_scrdata}{rec}{$field};
         chomp $value;
         my $findtype = $columns->{$field}{findtype};
 
@@ -1815,9 +1817,32 @@ sub record_find_count {
         $params->{where}{$field} = [ $value, $findtype ];
     }
 
+    # Add findtype info to TM data
+    foreach my $tm_ds ( keys %{ $self->{_scrdata} } ) {
+        next if $tm_ds eq 'rec';
+        print "TM: $tm_ds\n";
+        foreach my $field ( keys %{ $self->{_scrdata}{$tm_ds} } ) {
+            my $value = $self->{_scrdata}{$tm_ds}{$field};
+            chomp $value;
+            my $columns = $self->scrcfg()->deptable_columns($tm_ds);
+
+            my $findtype = $columns->{$field}{findtype};
+
+            # Create a where clause like this:
+            #  field1 IS NOT NULL and field2 IS NULL
+            # for entry values equal to '%' or '!'
+            $findtype = q{notnull} if $value eq q{%};
+            $findtype = q{isnull}  if $value eq q{!};
+
+            $params->{sub_where}{$tm_ds}{$field} = [ $value, $findtype ];
+        }
+    }
     # Table data
     $params->{table} = $self->table_key('rec','main')->view;
     $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
+
+    print "*** count params\n";
+    dd $params;
 
     my $record_count;
     try {
@@ -2002,15 +2027,21 @@ sub screen_read {
         # Control config attributes
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{readwrite};
-
         if ( !$all ) {
             unless ( $self->model->is_mode('find') ) {
                 next if ( $ctrlrw eq 'r' ) or ( $ctrlrw eq 'ro' );
             }
         }
-
         $self->ctrl_read_from($field, $date_format);
     }
+
+    #- Dependent table(s) data, (if any)
+    foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls } ) {
+        my $tmx = $self->scrobj()->get_tm_controls($tm_ds);
+        $self->{_scrdata}{$tm_ds} = $tmx->read_row(1, 1, 1); # all_cols, not_null
+    }
+
+    use Data::Dump; dd $self->{_scrdata};
 
     return;
 }
@@ -2042,13 +2073,13 @@ sub clean_and_save_value {
     # Find mode
     if ( $self->model->is_mode('find') ) {
         if ($value) {
-            $self->{_scrdata}{$field} = $value;
+            $self->{_scrdata}{rec}{$field} = $value;
         }
         else {
             if ($ctrltype eq 'e') {
                 # Can't use numeric eq (==) here
                 if (defined($value) and ( $value =~ m{^0+$} ) ) {
-                    $self->{_scrdata}{$field} = $value;
+                    $self->{_scrdata}{rec}{$field} = $value;
                 }
             }
         }
@@ -2056,21 +2087,21 @@ sub clean_and_save_value {
     # Add mode, non empty fields, 0 is allowed
     elsif ( $self->model->is_mode('add') ) {
         if ( defined($value) and ( $value =~ m{\S+} ) ) {
-            $self->{_scrdata}{$field} = $value;
+            $self->{_scrdata}{rec}{$field} = $value;
         }
     }
     # Edit mode, non empty fields, 0 is allowed
     elsif ( $self->model->is_mode('edit') ) {
         if ( defined($value) and ( $value =~ m{\S+} ) ) {
-            $self->{_scrdata}{$field} = $value;
+            $self->{_scrdata}{rec}{$field} = $value;
         }
         else {
-            $self->{_scrdata}{$field} = undef;
+            $self->{_scrdata}{rec}{$field} = undef;
         }
     }
     else {
         # Idle mode -> empty record
-        $self->{_scrdata}{$field} = undef;
+        $self->{_scrdata}{rec}{$field} = undef;
     }
 
     return;
@@ -2550,7 +2581,7 @@ sub record_save_todb {
         }
 
         my $record = $self->get_screen_data_record('upd');
-        # use Data::Dump; dd $record;
+        use Data::Dump; dd $record;
 
         try   { $self->check_required_data($record) }
         catch { $self->catch_data_exceptions($_)    };
@@ -2760,8 +2791,8 @@ sub get_screen_data_record {
     $record->{data}     = {};
 
     #-- Data
-    foreach my $field ( keys %{ $self->{_scrdata} } ) {
-        $record->{data}{$field} = $self->{_scrdata}{$field};
+    foreach my $field ( keys %{ $self->{_scrdata}{rec} } ) {
+        $record->{data}{$field} = $self->{_scrdata}{rec}{$field};
     }
     push @record, $record;    # rec data at index 0
 
