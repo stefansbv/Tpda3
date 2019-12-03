@@ -95,6 +95,12 @@ sub get_bgcolor {
     return $self->{bg} // 'white';
 }
 
+sub make_toolbar_in_frame {
+    my $self = shift;
+    $self->make_toolbar_for_table(@_);
+    return;
+}
+
 sub make_toolbar_for_table {
     my ( $self, $toolbar, $tb_frame ) = @_;
 
