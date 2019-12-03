@@ -12,6 +12,8 @@ use Try::Tiny;
 use YAML::Tiny;
 use Path::Tiny;
 use File::HomeDir;
+use DateTime;
+use DateTime::Locale;
 
 require Tpda3::Exceptions;
 
@@ -379,6 +381,56 @@ sub get_sqlitedb_filename {
     return path( File::HomeDir->my_data, $dbname )->stringify;
 }
 
+sub dt_today {
+    my ( $self, $locale ) = @_;
+    $locale //= 'ro';    # the default locale is ro ;)
+    return DateTime->now( locale => $locale );
+}
+
+sub month_names {
+    my ( $self, $format, $locale ) = @_;
+    my $today = $self->dt_today($locale);
+    my $arr_ref =
+        $format eq 'abbrev' ? $today->locale->month_stand_alone_abbreviated
+      : $format eq 'narrow' ? $today->locale->month_stand_alone_narrow
+      : $format eq 'wide'   ? $today->locale->month_stand_alone_wide
+      :                    undef;
+    die "'$format' is not a valid format, try: abbrev, narrow or wide\n"
+      unless $arr_ref;
+    return $arr_ref;
+}
+
+sub day_names {
+    my ( $self, $format, $locale ) = @_;
+    my $today = $self->dt_today($locale);
+    my $arr_ref =
+        $format eq 'abbrev' ? $today->locale->day_stand_alone_abbreviated
+      : $format eq 'narrow' ? $today->locale->day_stand_alone_narrow
+      : $format eq 'wide'   ? $today->locale->day_stand_alone_wide
+      :                    undef;
+    die "'$format' is not a valid format, try: abbrev, narrow or wide\n"
+      unless $arr_ref;
+    return $arr_ref;
+}
+
+sub get_month_name {
+    my ( $self, $month, $format, $locale ) = @_;
+    die "get_month_name: wrong month parameter: $month"
+      if $month <= 0 or $month > 12;
+    my $months = $self->month_names( $format, $locale );
+    my $i      = $month - 1;
+    return $months->[$i];
+}
+
+sub get_day_name {
+    my ( $self, $day, $format, $locale ) = @_;
+    die "get_day_name: wrong day parameter: $day"
+      if $day <= 0 or $day > 7;
+    my $days = $self->day_names( $format, $locale );
+    my $i    = $day - 1;
+    return $days->[$i];
+}
+
 1;
 
 __END__
@@ -490,6 +542,10 @@ Parse a message text in the following format:
 
 and return the coresponding mesage text and color.
 
+=head3 read_yaml
+
+=head3 write_yaml
+
 =head2 get_sqlitedb_filename
 
 Returns the absolute path and file name of the SQLite database.
@@ -498,5 +554,28 @@ file.
 If the configured path is an absolute path and a file name, retur it,
 else make a path from the user data path (as returned by
 File::HomeDir), and the configured path and file name.
+
+=head2 dt_today
+
+Returns a DateTime object instance for the 'ro' locale, the default or
+the locale name provided with the parameter;
+
+=head2 month_names
+
+Returns an ordered array reference with the month names from a locale.
+January is at index 0.
+
+The parameters are:
+
+format: (abbrev, narrow or wide), required
+
+locale: all names suported by L<DateTime::Locale> module, the default
+        is 'ro'
+
+=head3 day_names
+
+=head3 get_month_name
+
+=head3 get_day_name
 
 =cut
