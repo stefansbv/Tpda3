@@ -95,24 +95,28 @@ sub get_bgcolor {
     return $self->{bg} // 'white';
 }
 
-sub make_toolbar_in_frame {
+sub make_toolbar_for_table {
     my $self = shift;
-    $self->make_toolbar_for_table(@_);
+    $self->make_toolbar_in_frame(@_);
     return;
 }
 
-sub make_toolbar_for_table {
-    my ( $self, $toolbar, $tb_frame ) = @_;
-
-    $self->{tb}{$toolbar} = $tb_frame->TB(qw/-movable 0 -side top -cursorcontrol 0/);
-
+sub make_toolbar_in_frame {
+    my ( $self, $toolbar, $tb_frame, $tb_opts ) = @_;
+    my $side = 'top';
+    if (ref $tb_opts eq 'HASH') {
+        $side = $tb_opts->{side} if $tb_opts->{side};
+    }
+    $self->{tb}{$toolbar} = $tb_frame->TB(
+        -movable       => 0,
+        -side          => $side,
+        -cursorcontrol => 0,
+    );
     my ($toolbars) = $self->{scrcfg}->scr_toolbar_names($toolbar);
     my $attribs    = $self->{scrcfg}->app_toolbar_attribs($toolbar);
-
     foreach my $name ( @{$toolbars} ) {
         $self->{tb}{$toolbar}->make_toolbar_button( $name, $attribs->{$name} );
     }
-
     return;
 }
 
