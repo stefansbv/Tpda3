@@ -29,8 +29,6 @@ use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
 
-use Data::Dump;
-
 sub new {
     my $class = shift;
 
@@ -1841,8 +1839,8 @@ sub record_find_count {
     $params->{table} = $self->table_key('rec','main')->view;
     $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
 
-    print "*** count params\n";
-    dd $params;
+    # print "*** count params\n";
+    # dd $params;
 
     my $record_count;
     try {
@@ -2040,9 +2038,6 @@ sub screen_read {
         my $tmx = $self->scrobj()->get_tm_controls($tm_ds);
         $self->{_scrdata}{$tm_ds} = $tmx->read_row(1, 1, 1); # all_cols, not_null
     }
-
-    use Data::Dump; dd $self->{_scrdata};
-
     return;
 }
 
@@ -2581,8 +2576,6 @@ sub record_save_todb {
         }
 
         my $record = $self->get_screen_data_record('upd');
-        use Data::Dump; dd $record;
-
         try   { $self->check_required_data($record) }
         catch { $self->catch_data_exceptions($_)    };
 
