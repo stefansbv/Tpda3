@@ -796,11 +796,14 @@ sub prepare_record_update {
             # data and TableMatrix data
             $self->table_batch_update( $depmeta, $depdata );
         }
+        elsif ( $updstyle eq 'none' ) {
+
+            # do nothing!
+        }
         else {
             die "TM table update style '$updstyle' not implemented!\n";
         }
     }
-
     return;
 }
 
