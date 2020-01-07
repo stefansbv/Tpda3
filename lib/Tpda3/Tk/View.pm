@@ -989,92 +989,66 @@ sub control_write_e {
 
 sub control_write_t {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::Frame') ) {
         warn qq(Widget for writing text '$field' not found\n);
         return;
     }
-
     $state = $state || $control->cget('-state');
-
     $value = q{} unless defined $value;    # Empty
-
-    # Tip TextEntry 't'
     $control->delete( '1.0', 'end' );
     $control->insert( '1.0', $value ) if defined $value;
-
     $control->configure( -state => $state );
-
     return;
 }
 
 sub control_write_d {
     my ( $self, $field, $control_ref, $value, $state, $date_format ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::DateEntry') ) {
         warn qq(Widget for writing date '$field' not found\n);
         return;
     }
-
     $state = $state || $control->cget('-state');
-
     $value = q{} unless defined $value;    # empty
-
     if ($value) {
         my ( $y, $m, $d )
             = Tpda3::Utils->dateentry_parse_date( 'iso', $value );
         $value
             = Tpda3::Utils->dateentry_format_date( $date_format, $y, $m, $d );
     }
-
     ${ $control_ref->[0] } = $value;
-
     $control->configure( -state => $state );
-
     return;
 }
 
 sub control_write_m {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::JComboBox') ) {
         warn qq(Widget for writing combobox '$field' not found\n);
         return;
     }
-
     $state = $state || $control->cget('-state');
-
     if ($value) {
         $control->setSelected( $value, -type => 'value' );
     }
     else {
         ${ $control_ref->[0] } = q{};    # Empty
     }
-
     $control->configure( -state => $state );
-
     return;
 }
 
 sub control_write_c {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::Checkbutton') ) {
         warn qq(Widget for writing checkbox '$field' not found\n);
         return;
     }
-
     my $off_value = $control->cget('-offvalue');
     my $on_value  = $control->cget('-onvalue');
-
     $state = $state || $control->cget('-state');
     $value = $off_value unless $value;
     if ( $value eq $on_value ) {
@@ -1084,31 +1058,35 @@ sub control_write_c {
         $control->deselect;
     }
     $control->configure( -state => $state );
-
     return;
 }
 
 sub control_write_r {
     my ( $self, $field, $control_ref, $value, $state ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::RadiobuttonGroup') ) {
         warn qq(Widget for writing radiobutton '$field' not found\n);
         return;
     }
-
     $state = $state || $control->cget('-state');
-
     if ($value) {
         ${ $control_ref->[0] } = $value;
     }
     else {
         ${ $control_ref->[0] } = undef;
     }
-
     $control->configure( -state => $state );
+    return;
+}
 
+sub control_write_i {
+    my ( $self, $field, $control_ref, $value, $state ) = @_;
+    my $control = $control_ref->[1];
+    unless ( blessed $control and $control->isa('Tpda3::Tk::PhotoLabel') ) {
+        warn qq(Widget for writing image '$field' not found\n);
+        return;
+    }
+    $control->write_data($value);             # to Photo
     return;
 }
 
@@ -1116,35 +1094,27 @@ sub control_write_r {
 
 sub control_read_e {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::Entry') ) {
         warn qq(Widget for reading entry '$field' not found\n);
         return;
     }
-
     return $control->get;
 }
 
 sub control_read_t {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::Frame') ) {
         warn qq(Widget for reading text '$field' not found\n);
         return;
     }
-
     return $control->get( '0.0', 'end' );
 }
 
 sub control_read_d {
     my ( $self, $field, $control_ref, $date_format ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::DateEntry') ) {
         warn qq(Widget for reading date '$field' not found\n);
         return;
@@ -1164,55 +1134,53 @@ sub control_read_d {
             }
         }
     }
-
     return $value;
 }
 
 sub control_read_m {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::JComboBox') ) {
         warn qq(Widget for reading combobox '$field' not found\n);
         return;
     }
-
     return ${ $control_ref->[0] };           # value from variable
 }
 
 sub control_read_c {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::Checkbutton') ) {
         warn qq(Widget for reading checkbox '$field' not found\n);
         return;
     }
-
     return ${ $control_ref->[0] };           # value from variable
 }
 
 sub control_read_r {
     my ( $self, $field, $control_ref ) = @_;
-
     my $control = $control_ref->[1];
-
     unless ( blessed $control and $control->isa('Tk::RadiobuttonGroup') ) {
         warn qq(Widget for reading radiobutton '$field' not found\n);
         return;
     }
-
     return ${ $control_ref->[0] };           # value from variable
+}
+
+sub control_read_i {
+    my ( $self, $field, $control_ref ) = @_;
+    my $control = $control_ref->[1];
+    unless ( blessed $control and $control->isa('Tpda3::Tk::PhotoLabel') ) {
+        warn qq(Widget for reading image '$field' not found\n);
+        return;
+    }
+    return $control->read_data;   # value from Photo object
 }
 
 sub configure_controls {
     my ($self, $ctrl_ref, $ctrl_state, $bg_color) = @_;
-
     $ctrl_ref->configure( -state      => $ctrl_state, );
     $ctrl_ref->configure( -background => $bg_color, );
-
     return;
 }
 
