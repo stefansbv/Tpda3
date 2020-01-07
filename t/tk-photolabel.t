@@ -7,7 +7,7 @@ use Path::Tiny;
 
 use lib qw( lib ../lib );
 
-use Tpda3::Tk::PhotoFrame;
+use Tpda3::Tk::PhotoLabel;
 
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
@@ -25,9 +25,13 @@ $mw->geometry('+20+20');
 
 my $ph;
 eval {
-    $ph = $mw->PhotoFrame->pack;
+    $ph = $mw->PhotoLabel(
+        -width  => 300,
+        -height => 100,
+        -background => 'lightgreen',
+    )->pack;
 };
-ok !$@, 'create PhotoFrame';
+ok !$@, 'create PhotoLabel';
 
 $ph->pack( -expand => 1, -fill => 'both');
 

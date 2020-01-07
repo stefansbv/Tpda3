@@ -8,9 +8,9 @@ use warnings;
 
 use Tk;
 use Tk::Photo;
-use Tk::PNG;
+#use Tk::PNG;
 use Tk::JPEG;
-use Tk::TIFF;
+#use Tk::TIFF;
 
 use base qw(Tk::Derived Tk::Canvas);
 
@@ -20,7 +20,7 @@ our $foto;
 
 sub ClassInit {
     my ( $class, $mw ) = @_;
-    $foto = $mw->Photo();
+    $foto = $mw->Photo;
     $class->SUPER::ClassInit($mw);
 }
 
@@ -28,8 +28,8 @@ sub Populate {
     my ( $self, $args ) = @_;
 
     $self->ConfigSpecs(
-        -width              => [ qw(SELF width              Width              400   ) ],
-        -height             => [ qw(SELF height             Height             100   ) ],
+        -width              => [ qw(SELF width              Width              320   ) ],
+        -height             => [ qw(SELF height             Height             240   ) ],
         -relief             => [ qw(SELF relief             Relief             raised) ],
         -borderwidth        => [ qw(SELF borderWidth        BorderWidth        1     ) ],
         -highlightthickness => [ qw(SELF highlightThickness HighlightThickness 0     ) ],
@@ -45,20 +45,27 @@ sub Populate {
     );
 }
 
-sub load_data {
+sub write_data {
     my ( $self, $stream ) = @_;
-    die "load_image: parameter \$stream missing\n" unless $stream;
+    $stream //= '';
     $foto->blank;
-    $foto->configure( -data => $stream );
+    $foto->configure( -format => 'jpeg', -data => $stream ) if $stream;
     return 1;
 }
 
-sub load_image {
+sub read_data {
+    return $foto->cget('-data');
+}
+
+sub write_image {
     my ( $self, $file ) = @_;
-    die "load_image: parameter \$file missing\n" unless $file;
     $foto->blank;
-    $foto->configure( -file => $file );
+    $foto->configure( -file => $file ) if $file;
     return 1;
+}
+
+sub get_photo {
+    return $foto;
 }
 
 1;
