@@ -171,17 +171,16 @@ sub init {
 
     # Embeded widgets init
     $self->{embeded_meta} = { fields => $self->find_embeded_widgets };
-    foreach my $emb ( @{ $self->{embeded_meta}{fields} } ) {
-        if ( exists $args->{$emb} ) {
-            $self->{embeded_meta}{$emb} = { choices => $args->{$emb} };
+    foreach my $field ( @{ $self->{embeded_meta}{fields} } ) {
+        my $w_type = $self->cell_config_for( $field, 'embed' ) // '';
+        if ( exists $args->{$field} ) {
+            $self->{embeded_meta}{$field} = { choices => $args->{$field} };
         }
         else {
-            warn "No init args for '$emb'\n"; # TODO: show only for ckbuttons
+            warn "No init args for jcombobox: '$field'\n" if $w_type eq 'jcombobox';
         }
     }
-
     $self->set_tags();
-
     return;
 }
 
