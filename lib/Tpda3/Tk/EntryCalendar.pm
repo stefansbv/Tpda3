@@ -144,9 +144,9 @@ sub Populate {    # {{{
         -width       => 480,
         -height      => 320,
 
-        #-borderwidth => 2,
-        #-relief      => 'sunken',
-        #-background => 'blue',          # does not work (!?)
+        -borderwidth => 2,
+        -relief      => 'sunken',
+        -background => 'blue',          # does not work (!?)
     );
     $top_frm->pack(qw/-side top -padx 1c -pady 5/);
 
