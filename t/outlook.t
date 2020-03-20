@@ -6,7 +6,16 @@ use strict;
 use warnings;
 use Test::More;
 
-use Tpda3::Outlook;
+BEGIN {
+    unless ( $^O eq 'MSWin32' ) {
+        plan skip_all => 'This module is only for Windows';
+        exit 0;
+    }
+    eval { require Tpda3::Outlook };
+    if ($@) {
+        plan( skip_all => 'Mail::Outlook is required for this test' );
+    }
+}
 
 subtest 'Test with string address' => sub {
     my $send_to = 'name1@example.ro';
