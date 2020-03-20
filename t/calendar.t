@@ -22,6 +22,7 @@ subtest 'Calendar month - 2019, 1' => sub {
     is $cal->work_days_count, 20,   'zile lucratoare';
     is $cal->first_day_week_day, 2,'first day week day';
     is $cal->last_day_week_day, 4, 'last day week day';
+    is $cal->last_day_prec_month, 31, 'last day precedent month';
 
     my @we_days_exp = ( 5, 6, 12, 13, 19, 20, 26, 27 );    # 2019-01
     my @we_days = sort { $a <=> $b } $cal->all_weekend_days;
