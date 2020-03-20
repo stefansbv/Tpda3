@@ -611,7 +611,7 @@ sub dialog_info {
 sub dialog_error {
     my ( $self, $message, $details ) = @_;
     my $dialog_e = $self->MsgBox(
-        -title   => __ 'Info',
+        -title   => __ 'Error',
         -type    => 'ok',
         -icon    => 'error',
         -message => $message,
