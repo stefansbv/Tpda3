@@ -101,6 +101,25 @@ sub _build_last_day {
     return $tm_new->day_of_month;
 }
 
+has 'last_day_prec_month' => (
+    is       => 'ro',
+    isa      => 'Int',
+    init_arg => undef,
+    lazy     => 1,
+    builder  => '_build_last_day_prec_month',
+);
+
+sub _build_last_day_prec_month {
+    my $self = shift;
+    my $tm   = Time::Moment->new(
+        year  => $self->year,
+        month => $self->month,
+        day   => 1,
+    );
+    my $tm_new = $tm->minus_days(1);
+    return $tm_new->day_of_month;
+}
+
 has 'last_day_week_day' => (
     is       => 'ro',
     isa      => 'Int',
@@ -197,30 +216,30 @@ sub is_weekend {
     return $found_w;
 }
 
-sub is_weekend_sat {
+sub weekday {
     my ($self, $day) = @_;
     my $tm   = Time::Moment->new(
         year  => $self->year,
         month => $self->month,
         day   => $day,
     );
-    return $tm->day_of_week == 6;
+    return $tm->day_of_week;
+}
+
+sub is_weekend_sat {
+    my ($self, $day) = @_;
+    return $self->weekday($day) == 6;
 }
 
 sub is_weekend_sun {
     my ($self, $day) = @_;
-    my $tm   = Time::Moment->new(
-        year  => $self->year,
-        month => $self->month,
-        day   => $day,
-    );
-    return $tm->day_of_week == 7;
+    return $self->weekday($day) == 7;
 }
 
 sub is_holliday {
     my ($self, $day) = @_;
     my $found_h = $self->find_hollyday( sub { $day == $_ } );
-    return $found_h;
+    return defined($found_h);
 }
 
 has 'tm' => (
