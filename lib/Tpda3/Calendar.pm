@@ -2,18 +2,22 @@ package Tpda3::Calendar;
 
 # ABSTRACT: Calendar
 
-use utf8;
-use 5.010001;
-use Moose;
-use MooseX::Types::Path::Tiny qw(File);
+use Moo;
+use MooX::HandlesVia;
+use Tpda3::Types qw(
+    Int
+    Path
+    TimeMoment
+    Tpda3Config
+    Tpda3Hollyday
+);
 use Time::Moment;
-use namespace::autoclean;
-
 use Tpda3::Hollyday;
+use namespace::autoclean;
 
 has 'year' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     required => 1,
     default  => sub {
         my $tm     = Time::Moment->now;
@@ -24,7 +28,7 @@ has 'year' => (
 
 has 'month' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     required => 1,
     default  => sub {
         my $tm     = Time::Moment->now;
@@ -35,13 +39,13 @@ has 'month' => (
 
 has 'config' => (
     is       => 'ro',
-    isa      => 'Tpda3::Config',
+    isa      => Tpda3Config,
     required => 0,
 );
 
 has 'hollyday_file' => (
     is       => 'ro',
-    isa      => File,
+    isa      => Path,
     required => 1,
     coerce   => 1,
     default  => sub {
@@ -52,7 +56,7 @@ has 'hollyday_file' => (
 
 has 'hollyday' => (
     is      => 'ro',
-    isa     => 'Tpda3::Hollyday',
+    isa     => Tpda3Hollyday,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -66,7 +70,7 @@ has 'hollyday' => (
 
 has 'first_day_week_day' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_first_day_week_day',
@@ -84,7 +88,7 @@ sub _build_first_day_week_day {
 
 has 'last_day' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_last_day',
@@ -103,7 +107,7 @@ sub _build_last_day {
 
 has 'last_day_prec_month' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_last_day_prec_month',
@@ -122,7 +126,7 @@ sub _build_last_day_prec_month {
 
 has 'last_day_week_day' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_last_day_week_day',
@@ -140,9 +144,8 @@ sub _build_last_day_week_day {
 }
 
 has '_week_end_days' => (
-    traits  => ['Array'],
-    is      => 'ro',
-    isa     => 'ArrayRef[Int]',
+    is          => 'ro',
+    handles_via => 'Array',
     lazy    => 1,
     builder => '_build_week_end_days',
     handles => {
@@ -170,9 +173,8 @@ sub _build_week_end_days {
 }
 
 has '_hollyday_days' => (
-    traits  => ['Array'],
-    is      => 'ro',
-    isa     => 'ArrayRef[Int]',
+    is          => 'ro',
+    handles_via => 'Array',
     lazy    => 1,
     builder => '_build_hollyday_days',
     handles => {
@@ -193,7 +195,7 @@ sub _build_hollyday_days {
 
 has 'work_days_count' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_work_days_count',
@@ -244,7 +246,7 @@ sub is_holliday {
 
 has 'tm' => (
     is      => 'ro',
-    isa     => 'Time::Moment',
+    isa     => TimeMoment,
     lazy    => 1,
     default => sub {
         my $self = shift;

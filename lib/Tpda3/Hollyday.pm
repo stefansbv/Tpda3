@@ -2,38 +2,38 @@ package Tpda3::Hollyday;
 
 # ABSTRACT: Salariu holydays
 
-use utf8;
-use 5.010001;
-use Moose;
-use MooseX::Types::Path::Tiny qw(File);
-use namespace::autoclean;
-
+use Moo;
+use MooX::HandlesVia;
+use Tpda3::Types qw(
+    Int
+    Path
+);
 use Tpda3::Utils;
+use namespace::autoclean;
 
 has 'year' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     required => 1,
 );
 
 has 'month' => (
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     required => 1,
 );
 
 has 'hollyday_file' => (
     is       => 'ro',
-    isa      => File,
+    isa      => Path,
     required => 1,
     coerce   => 1,
 );
 
 has '_hollyday' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    traits   => ['Hash'],
-    lazy     => 1,
+    is          => 'ro',
+    handles_via => 'Hash',
+    lazy    => 1,
     init_arg => undef,
     builder  => '_build_hollyday',
     handles  => {

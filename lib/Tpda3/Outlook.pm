@@ -11,6 +11,7 @@ use Tpda3::Types qw(
     Str
 );
 use Mail::Outlook;
+use namespace::autoclean;
 
 has 'subject' => (
     is       => 'ro',
@@ -104,8 +105,6 @@ sub make_message {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 __END__
 
