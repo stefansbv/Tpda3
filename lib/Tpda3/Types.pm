@@ -17,6 +17,7 @@ use Type::Library 0.040 -base, -declare => qw(
     Tpda3Config
     Tpda3Compare
     Tpda3Hollyday
+    Tpda3Record
 );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -36,5 +37,6 @@ class_type ListCompare,        { class => 'List::Compare' };
 class_type Tpda3Config,   { class => 'Tpda3::Config' };
 class_type Tpda3Hollyday, { class => 'Tpda3::Hollyday' };
 class_type Tpda3Compare,  { class => 'Tpda3::Model::Update::Compare' };
+class_type Tpda3Record ,  { class => 'Tpda3::Model::Table::Record' };
 
 1;

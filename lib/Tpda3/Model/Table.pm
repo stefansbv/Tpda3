@@ -2,44 +2,57 @@ package Tpda3::Model::Table;
 
 # ABSTRACT: Database table meta data
 
-use Mouse;
-use Mouse::Util::TypeConstraints;
-
+use Moo;
+use MooX::HandlesVia;
+use Tpda3::Types qw(
+    ArrayRef
+    Str
+    Tpda3Record
+);
 use Tpda3::Model::Table::Record;
+use namespace::autoclean;
 
-subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
-
-coerce 'TableRecordObject', from 'ArrayRef', via {
-    [   map { Tpda3::Model::Table::Record->new( name => $_, value => undef ) }
-            @{$_}
-    ];
-};
+# subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
+# coerce 'TableRecordObject', from 'ArrayRef', via {
+#     [   map { Tpda3::Model::Table::Record->new( name => $_, value => undef ) }
+#             @{$_}
+#     ];
+# };
 
 has 'table' => (
     is  => 'ro',
-    isa => 'Str',
+    isa => Str,
 );
 
 has 'view' => (
     is  => 'ro',
-    isa => 'Str',
+    isa => Str,
 );
 
 has '_keys' => (
-    is       => 'ro',
-    isa      => 'TableRecordObject',
-    traits   => ['Array'],
-    init_arg => 'keys',
-    required => 1,
-    lazy     => 1,
-    coerce   => 1,
-    default  => sub { [] },
-    handles  => {
-        get_key     => 'get',
-        all_keys    => 'elements',
-        map_keys    => 'map',
-        find_key    => 'first',
-        count_keys  => 'count',
+    is          => 'ro',
+    handles_via => 'Array',
+    init_arg    => 'keys',
+    required    => 1,
+    lazy        => 1,
+    default     => sub { [] },
+    coerce      => sub {
+        my $keys = shift;
+        return [   map {
+                Tpda3::Model::Table::Record->new(
+                    name  => $_,
+                    value => undef
+                )
+            } @{$keys}
+        ];
+    },
+    isa     => ArrayRef[Tpda3Record],
+    handles => {
+        get_key    => 'get',
+        all_keys   => 'elements',
+        map_keys   => 'map',
+        find_key   => 'first',
+        count_keys => 'count',
     },
 );
 
@@ -72,8 +85,6 @@ sub update_key_index {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 =head1 SYNOPSIS
 
