@@ -7,14 +7,16 @@ use strict;
 use warnings;
 use utf8;
 use Type::Library 0.040 -base, -declare => qw(
-    DateSimple
     DateRange
-    Path
+    DateSimple
+    ListCompare
     MailOutlook
     MailOutlookMessage
-    Tpda3Config
-    Tpda3Hollyday
+    Path
     TimeMoment
+    Tpda3Config
+    Tpda3Compare
+    Tpda3Hollyday
 );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -29,9 +31,10 @@ class_type Path,               { class => 'Path::Tiny' };
 class_type MailOutlook,        { class => 'Mail::Outlook' };
 class_type MailOutlookMessage, { class => 'Mail::Outlook::Message' };
 class_type TimeMoment,         { class => 'Time::Moment' };
+class_type ListCompare,        { class => 'List::Compare' };
 
 class_type Tpda3Config,   { class => 'Tpda3::Config' };
 class_type Tpda3Hollyday, { class => 'Tpda3::Hollyday' };
-
+class_type Tpda3Compare,  { class => 'Tpda3::Model::Update::Compare' };
 
 1;

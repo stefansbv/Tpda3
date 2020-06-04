@@ -2,10 +2,15 @@ package Tpda3::Model::Table::Record;
 
 # ABSTRACT: Database table meta data record ( name => value )
 
-use Mouse;
+use Moo;
+use Tpda3::Types qw(
+    Int
+    Str
+    Maybe
+);
 
-has 'name'  => ( is  => 'ro', isa => 'Str' );
-has 'value' => ( is  => 'rw', isa => 'Maybe[Str]' );
+has 'name'  => ( is  => 'ro', isa => Str );
+has 'value' => ( is  => 'rw', isa => Maybe[Str] );
 
 sub get_href {
     my $self = shift;
@@ -13,8 +18,6 @@ sub get_href {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 =head1 SYNOPSIS
 

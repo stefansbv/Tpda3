@@ -2,38 +2,43 @@ package Tpda3::Model::Update;
 
 # ABSTRACT: Update
 
-use 5.010;
-use Mouse;
-
-use Data::Dump;
+use Moo;
+use MooX::HandlesVia;
+use Tpda3::Types qw(
+    Bool
+    Str
+    HashRef
+    Tpda3Compare
+);
+use namespace::autoclean;
 
 has 'debug' => (
     is      => 'ro',
-    isa     => 'Bool',
+    isa     => Bool,
     default => sub { 0 },
 );
 
 has 'table' => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'fk_col' => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'where' => (
     is       => 'ro',
-    isa      => 'HashRef',
+    isa      => HashRef,
     required => 1,
 );
 
 has 'compare' => (
     is       => 'ro',
-    isa      => 'Tpda3::Model::Update::Compare',
+    isa      => Tpda3Compare,
     required => 1,
 );
 
@@ -48,8 +53,6 @@ sub fkcol_where {
 
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 __END__
 

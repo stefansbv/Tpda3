@@ -2,13 +2,14 @@ package Tpda3::Config::Toolbar;
 
 # ABSTRACT: Toolbar configurations
 
-use Mouse;
+use Moo;
+use MooX::HandlesVia;
 use Locale::TextDomain 1.20 qw(Tpda3);
+use namespace::autoclean;
 
 has 'toolnames' => (
-    traits  => ['Array'],
-    is      => 'ro',
-    isa     => 'ArrayRef',
+    is          => 'ro',
+    handles_via => 'Array',
     default => sub {
         [   "tb_fm", "tb_fe", "tb_fc", "tb_pr", "tb_gr", "tb_tn",
             "tb_tr", "tb_rr", "tb_ad", "tb_rm", "tb_sv", "tb_at",
@@ -21,9 +22,8 @@ has 'toolnames' => (
 );
 
 has 'tool' => (
-    traits  => ['Hash'],
-    is      => 'rw',
-    isa     => 'HashRef',
+    is          => 'rw',
+    handles_via => 'Hash',
     default => sub {
         {   tb_rr => {
                 tooltip => __ 'Reload record',
@@ -346,7 +346,5 @@ has 'tool' => (
 );
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 1;

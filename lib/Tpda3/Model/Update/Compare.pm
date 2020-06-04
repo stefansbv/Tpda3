@@ -2,34 +2,41 @@ package Tpda3::Model::Update::Compare;
 
 # ABSTRACT: Update
 
-use 5.010;
+use Moo;
+use MooX::HandlesVia;
+use Tpda3::Types qw(
+    Int
+    Bool
+    Str
+    ArrayRef
+    HashRef
+    ListCompare
+);
 use Data::Compare;
 use List::Compare;
-use Mouse;
-
-use Data::Dump;
+use namespace::autoclean;
 
 has 'debug' => (
     is      => 'ro',
-    isa     => 'Bool',
+    isa     => Bool,
     default => sub { 0 },
 );
 
 has 'fk_col' => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'db_data' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => ArrayRef,
     required => 1,
 );
 
 has 'tm_data' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => ArrayRef,
     required => 1,
 );
 
@@ -37,7 +44,7 @@ has 'tm_data' => (
 
 has 'db_fk_data' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => ArrayRef,
     lazy     => 1,
     default  => sub {
         my $self = shift;
@@ -46,22 +53,19 @@ has 'db_fk_data' => (
 );
 
 has 'db_data_hoh' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    traits   => ['Hash'],
-    lazy     => 1,
-    default  => sub {
+    is          => 'ro',
+    handles_via => 'Hash',
+    lazy        => 1,
+    default     => sub {
         my $self = shift;
         return $self->aoh_to_hoh( $self->db_data, $self->fk_col );
     },
-    handles   => {
-        get_db_data => 'get',
-    },
+    handles => { get_db_data => 'get', },
 );
 
 has 'tm_fk_data' => (
     is       => 'ro',
-    isa      => 'ArrayRef',
+    isa      => ArrayRef,
     lazy     => 1,
     default  => sub {
         my $self = shift;
@@ -70,22 +74,19 @@ has 'tm_fk_data' => (
 );
 
 has 'tm_data_hoh' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    traits   => ['Hash'],
-    lazy     => 1,
-    default  => sub {
+    is          => 'ro',
+    handles_via => 'Hash',
+    lazy        => 1,
+    default     => sub {
         my $self = shift;
         return $self->aoh_to_hoh( $self->tm_data, $self->fk_col );
     },
-    handles   => {
-        get_tm_data => 'get',
-    },
+    handles => { get_tm_data => 'get', },
 );
 
 has '_lc' => (
     is      => 'ro',
-    isa     => 'List::Compare',
+    isa     => ListCompare,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -95,7 +96,7 @@ has '_lc' => (
 
 has 'to_insert' => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -106,7 +107,7 @@ has 'to_insert' => (
 
 has 'to_delete' => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -117,7 +118,7 @@ has 'to_delete' => (
 
 has '_to_update' => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub {
         my $self      = shift;
@@ -128,7 +129,7 @@ has '_to_update' => (
 
 has 'to_update' => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -166,8 +167,6 @@ sub aoh_to_hoh {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 __END__
 

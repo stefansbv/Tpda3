@@ -2,25 +2,23 @@ package Tpda3::Config::Menu;
 
 # ABSTRACT: Menu configurations
 
-use Mouse;
+use Moo;
+use MooX::HandlesVia;
 use Locale::TextDomain 1.20 qw(Tpda3);
+use namespace::autoclean;
 
 has 'menu_names' => (
-    traits  => ['Array'],
-    is      => 'ro',
-    isa     => 'ArrayRef',
-    default => sub {
-        [ 'menu_app', 'menu_admin', 'menu_help', ],
+    is          => 'ro',
+    handles_via => 'Array',
+    default     => sub {
+        [ 'menu_app', 'menu_admin', 'menu_help', ],;
     },
-    handles => {
-        all_menus => 'elements',
-    },
+    handles => { all_menus => 'elements', },
 );
 
 has 'menu' => (
-    traits  => ['Hash'],
-    is      => 'rw',
-    isa     => 'HashRef',
+    is          => 'rw',
+    handles_via => 'Hash',
     default => sub {
         {   'menu_app' => {
                 'id'        => '5001',
@@ -143,7 +141,5 @@ has 'menu' => (
 );
 
 __PACKAGE__->meta->make_immutable;
-
-no Mouse;
 
 1;
