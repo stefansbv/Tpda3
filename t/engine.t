@@ -26,7 +26,7 @@ my $die = '';
 ENGINE: {
     # Stub out a engine.
     package Tpda3::Engine::whu;
-    use Moose;
+    use Moo;
     extends 'Tpda3::Engine';
     $INC{'App/Tpda3Dev/Engine/whu.pm'} = __FILE__;
 
@@ -52,7 +52,7 @@ ok my $target = Tpda3::Target->new(
 ), 'new target instance';
 
 throws_ok { $CLASS->new }
-    qr/\QAttribute (target) is required/,
+    qr/\QMissing required arguments: target/,
     'Should get an exception for missing target param';
 lives_ok { $CLASS->new( target => $target ) }
     'Should get no exception';

@@ -2,15 +2,17 @@ package Tpda3::Engine::sqlite;
 
 # ABSTRACT: The SQLite engine
 
-use 5.010001;
-use Moose;
+use Moo;
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Try::Tiny;
 use Regexp::Common;
 use Path::Tiny;
-use namespace::autoclean;
-
+use Tpda3::Types qw(
+    DBIxConnector
+    DBIdb
+);
 use Tpda3::Exceptions;
+use namespace::autoclean;
 
 extends 'Tpda3::Engine';
 sub dbh;                                     # required by DBIEngine;
@@ -19,7 +21,7 @@ with qw(Tpda3::Role::DBIEngine
 
 has conn => (
     is      => 'rw',
-    isa     => 'DBIx::Connector',
+    isa     => DBIxConnector,
     lazy    => 1,
     clearer => 'reset_conn',
     default => sub {
@@ -62,7 +64,7 @@ has conn => (
 
 has dbh => (
     is      => 'rw',
-    isa     => 'DBI::db',
+    isa     => DBIdb,
     lazy    => 1,
     default => sub {
         my $self = shift;

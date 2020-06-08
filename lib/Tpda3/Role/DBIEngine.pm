@@ -4,11 +4,14 @@ package Tpda3::Role::DBIEngine;
 
 use 5.010001;
 use utf8;
-use Moose::Role;
+use Moo::Role;
 use DBIx::Connector;
 use Try::Tiny;
 use Locale::TextDomain qw(App-Tpda3Dev);
 use Log::Log4perl qw(get_logger :levels);
+use Tpda3::Types qw(
+    Logger
+);
 use namespace::autoclean;
 #with 'MooX::Log::Any';
 
@@ -16,7 +19,7 @@ requires 'dbh';
 
 has 'logger' => (
     is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
+    isa     => Logger,
     lazy    => 1,
     default => sub {
         return get_logger(),
@@ -41,7 +44,7 @@ sub rollback_work {
     return $self;
 }
 
-no Moose::Role;
+no Moo::Role;
 
 1;
 

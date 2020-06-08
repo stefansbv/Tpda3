@@ -2,14 +2,16 @@ package Tpda3::Engine::pg;
 
 # ABSTRACT: The PostgreSQL engine
 
-use 5.010001;
-use Moose;
+use Moo;
 use Locale::TextDomain 1.20 qw(Tpda3);
 use Try::Tiny;
 use Regexp::Common;
-use namespace::autoclean;
-
+use Tpda3::Types qw(
+    DBIxConnector
+    DBIdb
+);
 use Tpda3::Exceptions;
+use namespace::autoclean;
 
 extends 'Tpda3::Engine';
 sub dbh;                                     # required by DBIEngine;
@@ -18,7 +20,7 @@ with qw(Tpda3::Role::DBIEngine
 
 has conn => (
     is      => 'rw',
-    isa     => 'DBIx::Connector',
+    isa     => DBIxConnector,
     lazy    => 1,
     clearer => 'reset_conn',
     default => sub {
@@ -41,7 +43,7 @@ has conn => (
 
 has dbh => (
     is      => 'rw',
-    isa     => 'DBI::db',
+    isa     => DBIdb,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -254,22 +256,22 @@ __END__
 
 =encoding utf8
 
-=head1 Name
+=head1 NAME
 
-Tpda3::Engine::pg - Tpda3Dev PostgreSQL engine
+Tpda3::Engine::pg - Tpda3 PostgreSQL engine
 
-=head1 Synopsis
+=head1 SYNOPSIS
 
   my $engine = Tpda3::Engine->load( engine => 'pg' );
 
-=head1 Description
+=head1 DESCRIPTION
 
 Tpda3::Engine::pg provides the Pg database engine
 for Tpda3Dev.  It supports Pg X.X and higher XXX ???.
 
-=head1 Interface
+=head1 INTERFACE
 
-=head2 Instance Methods
+=head2 INSTANCE METHODS
 
 =head3 C<parse_error>
 
@@ -283,13 +285,13 @@ Return a table info hash reference data structure.
 
 Return true if the table provided as parameter exists in the database.
 
-=head1 Author
+=head1 AUTHOR
 
 David E. Wheeler <david@justatheory.com>
 
 Ștefan Suciu <stefan@s2i2.ro>
 
-=head1 License
+=head1 LICENSE
 
 Copyright (c) 2012-2014 iovation Inc.
 

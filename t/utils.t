@@ -24,12 +24,12 @@ subtest 'Test "get_sqlitedb_filename" with dbname from config' => sub {
 
     ok my ( $dbname, $driver ) = @{$conf}{qw(dbname driver)}, 'get configs';
     is $driver, 'sqlite',        'driver config';
-    is $dbname, 'classicmodels', 'dbname config';
+    is $dbname, 'classicmodels.db', 'dbname config';
 
     ok my $data_path = File::HomeDir->my_data, 'my data path';
     ok my $dbfile = Tpda3::Utils->get_sqlitedb_filename($dbname), 'db file';
 
-    is $dbfile, path( $data_path, "$dbname.db" ), 'db file path';
+    is $dbfile, path( $data_path, $dbname ), 'db file path';
 };
 
 subtest 'Test "get_sqlitedb_filename" with absolute path' => sub {

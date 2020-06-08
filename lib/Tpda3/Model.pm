@@ -3,14 +3,25 @@ package Tpda3::Model;
 # ABSTRACT: The Model
 
 use feature 'say';
-use Mouse;
+use Moo;
 use Data::Compare;
 use List::Compare;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
 use SQL::Abstract;
 use Try::Tiny;
-
+use Tpda3::Types qw(
+    Bool
+    HashRef
+    Logger
+    Maybe
+    Str
+    Tpda3Config
+    Tpda3ConfigConnection
+    Tpda3Observable
+    Tpda3Target
+    URIdb
+);
 use Tpda3::Exceptions;
 use Tpda3::Config;
 use Tpda3::Codings;
@@ -59,14 +70,16 @@ sub _log {
     return $self->{_log};
 }
 
+use namespace::autoclean;
+
 has 'debug' => (
     is  => 'ro',
-    isa => 'Bool',
+    isa => Bool,
 );
 
 has 'info_db' => (
     is      => 'ro',
-    isa     => 'Tpda3::Config::Connection',
+    isa     => Tpda3ConfigConnection,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -76,7 +89,7 @@ has 'info_db' => (
 
 has 'target' => (
     is      => 'ro',
-    isa     => 'Tpda3::Target',
+    isa     => Tpda3Target,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -98,7 +111,7 @@ my $observables = [
 
 has $observables => (
     is      => 'ro',
-    isa     => 'Tpda3::Observable',
+    isa     => Tpda3Observable,
     default => sub {
         return Tpda3::Observable->new;
     },
@@ -106,7 +119,7 @@ has $observables => (
 
 has 'cfg' => (
     is      => 'ro',
-    isa     => 'Tpda3::Config',
+    isa     => Tpda3Config,
     default => sub {
         return Tpda3::Config->instance;
     },
@@ -114,7 +127,7 @@ has 'cfg' => (
 
 has '_msg_dict' => (
     is      => 'ro',
-    isa     => 'Maybe[HashRef]',
+    isa     => Maybe[HashRef],
     default => sub {
         return {},
     },
@@ -122,7 +135,7 @@ has '_msg_dict' => (
 
 has 'logger' => (
     is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
+    isa     => Logger,
     default => sub {
         return get_logger(),
     },

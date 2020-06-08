@@ -41,7 +41,7 @@ is $target->password, $uri->password, 'Password should be from URI';
 # - found: AttributeIsRequired (Attribute (uri) is required     for v5.14,16
 # - found: AttributeIsRequired (Attribute (tranfer) is required for v5.18
 throws_ok { $CLASS->new() }
-    qr/\QAttribute (uri) is required/,
+    qr/\QMissing required arguments: uri/,
     'Should get an exception for missing uri param';
 
 # Pass both tpda3dev and URI.

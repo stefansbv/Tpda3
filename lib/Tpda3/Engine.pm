@@ -2,17 +2,18 @@ package Tpda3::Engine;
 
 # ABSTRACT: Base class for the engine interface
 
-use 5.010001;
-use Moose;
+use Moo;
 use Try::Tiny;
 use Locale::TextDomain qw(Tpda3);
-use namespace::autoclean;
-
+use Tpda3::Types qw(
+    Tpda3Target
+);
 use Tpda3::Exceptions;
+use namespace::autoclean;
 
 has target => (
     is       => 'ro',
-    isa      => 'Tpda3::Target',
+    isa      => Tpda3Target,
     required => 1,
     weak_ref => 1,
     handles => {

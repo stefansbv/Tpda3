@@ -2,16 +2,22 @@ package Tpda3::Config::Connection;
 
 # ABSTRACT: Make URI from connection file
 
-use 5.010001;
-use Mouse;
+use Moo;
 use Try::Tiny;
 use URI::db;
-
+use Tpda3::Types qw(
+    HashRef
+    Maybe
+    Str
+    Tpda3Config
+    URIdb
+);
 use Tpda3::Config;
+use namespace::autoclean;
 
 has 'config' => (
     is      => 'ro',
-    isa     => 'Tpda3::Config',
+    isa     => Tpda3Config,
     lazy    => 1,
     default => sub {
         return Tpda3::Config->instance;
@@ -20,7 +26,7 @@ has 'config' => (
 
 has 'connection' => (
     is      => 'ro',
-    isa     => 'HashRef',
+    isa     => HashRef,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -33,12 +39,12 @@ has 'connection' => (
 
 has 'uri' => (
     is  => 'rw',
-    isa => 'Str',
+    isa => Str,
 );
 
 has 'driver' => (
     is      => 'ro',
-    isa     => 'Str',
+    isa     => Str,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -48,7 +54,7 @@ has 'driver' => (
 
 has 'host' => (
     is      => 'ro',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -58,7 +64,7 @@ has 'host' => (
 
 has 'dbname' => (
     is      => 'ro',
-    isa     => 'Str',
+    isa     => Str,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -68,7 +74,7 @@ has 'dbname' => (
 
 has 'port' => (
     is      => 'ro',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -78,7 +84,7 @@ has 'port' => (
 
 has 'user' => (
     is      => 'ro',
-    isa     => 'Maybe[Str]',
+    isa     => Maybe[Str],
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -88,12 +94,12 @@ has 'user' => (
 
 has 'role' => (
     is  => 'rw',
-    isa => 'Maybe[Str]',
+    isa => Maybe[Str],
 );
 
 has 'uri_db' => (
     is      => 'ro',
-    isa     => 'URI::db',
+    isa     => URIdb,
     lazy    => 1,
     builder => '_build_uri',
 );

@@ -4,14 +4,14 @@ package Tpda3::Role::DBIMessages;
 
 use 5.0100;
 use utf8;
-use Moose::Role;
+use Moo::Role;
+use MooX::HandlesVia;
 
 has '_messages' => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    traits   => ['Hash'],
-    init_arg => undef,
-    default  => sub {
+    is          => 'ro',
+    handles_via => 'Hash',
+    init_arg    => undef,
+    default     => sub {
         return {
             badtoken    => 'error#Token unknown: {name}',
             checkconstr => 'error#Check: {name}',
@@ -37,7 +37,7 @@ has '_messages' => (
     handles => { get_message => 'get', },
 );
 
-no Moose::Role;
+no Moo::Role;
 
 1;
 

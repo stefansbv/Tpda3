@@ -3,30 +3,34 @@ package Tpda3::Target;
 # ABSTRACT: Tpda3Dev database target
 
 use 5.010001;
-use Moose;
-use Moose::Util::TypeConstraints;
+use Moo;
 use Locale::TextDomain qw(Tpda3);
 use URI::db;
+use Tpda3::Types qw(
+    Str
+    Tpda3Engine
+    URIdb
+);
 use namespace::autoclean;
-
-subtype 'URIdb' => as 'URI::db';
-coerce  'URIdb' => from 'Str' => via { URI::db->new( $_ ) };
 
 has name => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
     lazy     => 0,
-    default  => sub { 'anonim' },
+    default  => sub { '' },
 );
 
 sub target { shift->name }
 
 has uri => (
     is       => 'ro',
-    isa      => 'URIdb',
+    isa      => URIdb,
     required => 1,
-    coerce   => 1,
+    coerce      => sub {
+        my $uri_str = shift;
+        return URI::db->new($uri_str);
+    },
     handles  => {
         engine_key => 'canonical_engine',
         dsn        => 'dbi_dsn',
@@ -37,7 +41,7 @@ has uri => (
 
 has engine => (
     is      => 'ro',
-    isa     => 'Tpda3::Engine',
+    isa     => Tpda3Engine,
     lazy    => 1,
     default => sub {
         my $self = shift;

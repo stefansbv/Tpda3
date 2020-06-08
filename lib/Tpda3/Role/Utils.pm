@@ -4,7 +4,7 @@ package Tpda3::Role::Utils;
 
 use 5.0100;
 use utf8;
-use Moose::Role;
+use Moo::Role;
 
 sub sort_hash_by_pos {
     my ( $self, $attribs ) = @_;
@@ -31,7 +31,7 @@ sub trim {
     return wantarray ? @text : "@text";
 }
 
-no Moose::Role;
+no Moo::Role;
 
 1;
 

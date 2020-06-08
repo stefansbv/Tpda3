@@ -12,13 +12,6 @@ use Tpda3::Types qw(
 use Tpda3::Model::Table::Record;
 use namespace::autoclean;
 
-# subtype 'TableRecordObject', as 'ArrayRef[Tpda3::Model::Table::Record]';
-# coerce 'TableRecordObject', from 'ArrayRef', via {
-#     [   map { Tpda3::Model::Table::Record->new( name => $_, value => undef ) }
-#             @{$_}
-#     ];
-# };
-
 has 'table' => (
     is  => 'ro',
     isa => Str,
