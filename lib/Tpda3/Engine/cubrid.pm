@@ -18,11 +18,11 @@ sub dbh;                                     # required by DBIEngine;
 with qw(Tpda3::Role::DBIEngine
         Tpda3::Role::DBIMessages);
 
-has conn => (
+has 'connector' => (
     is      => 'rw',
     isa     => DBIxConnector,
     lazy    => 1,
-    clearer => 'reset_conn',
+    clearer => 'reset_connector',
     default => sub {
         my $self = shift;
         my $uri  = $self->uri;
@@ -39,13 +39,13 @@ has conn => (
     }
 );
 
-has dbh => (
+has 'dbh' => (
     is      => 'rw',
     isa     => DBIdb,
     lazy    => 1,
     default => sub {
         my $self = shift;
-        $self->conn->dbh;
+        $self->connector->dbh;
     },
 );
 

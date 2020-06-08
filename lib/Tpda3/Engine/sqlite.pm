@@ -19,11 +19,11 @@ sub dbh;                                     # required by DBIEngine;
 with qw(Tpda3::Role::DBIEngine
         Tpda3::Role::DBIMessages);
 
-has conn => (
+has 'connector' => (
     is      => 'rw',
     isa     => DBIxConnector,
     lazy    => 1,
-    clearer => 'reset_conn',
+    clearer => 'reset_connector',
     default => sub {
         my $self = shift;
         $self->alter_dsn;
@@ -31,7 +31,7 @@ has conn => (
         my $dsn  = $uri->dbi_dsn;
         $self->use_driver;
         $self->logger->debug("Connecting: $dsn");
-        my $conn = DBIx::Connector->new($dsn, undef, undef, {
+        my $connector = DBIx::Connector->new($dsn, undef, undef, {
             $uri->query_params,
             PrintError       => 0,
             RaiseError       => 0,
@@ -50,25 +50,25 @@ has conn => (
         });
 
         # Make sure we support this version.
-        my @v = split /[.]/ => $conn->dbh->{sqlite_version};
-        my $version = $conn->dbh->{sqlite_version};
+        my @v = split /[.]/ => $connector->dbh->{sqlite_version};
+        my $version = $connector->dbh->{sqlite_version};
         die
             "Tpda3 requires SQLite 3.7.11 or later; DBD::SQLite was built with $version"
             unless $v[0] > 3
             || ( $v[0] == 3
                  && ( $v[1] > 7 || ( $v[1] == 7 && $v[2] >= 11 ) ) );
 
-        return $conn;
+        return $connector;
     },
 );
 
-has dbh => (
+has 'dbh' => (
     is      => 'rw',
     isa     => DBIdb,
     lazy    => 1,
     default => sub {
         my $self = shift;
-        $self->conn->dbh;
+        $self->connector->dbh;
     },
 );
 

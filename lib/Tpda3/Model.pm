@@ -145,7 +145,7 @@ sub db_connect {
     my $self = shift;
     try {
         my $engine = $self->target->engine;
-        $engine->reset_conn;
+        $engine->reset_connector;
         $self->{_dbh} = $engine->dbh;
     }
     catch {
@@ -166,9 +166,9 @@ sub dbc {
     return $self->target->engine;
 }
 
-sub conn {
+sub connector {
     my $self = shift;
-    return $self->target->engine->conn;
+    return $self->target->engine->connector;
 }
 
 sub is_connected {
@@ -260,7 +260,7 @@ sub query_records_count {
 
     my $record_count;
     try {
-        my $sth = $self->conn->run(
+        my $sth = $self->connector->run(
             fixup => sub {
                 my $sth = $_->prepare($stmt);
                 $sth->execute(@bind);
@@ -297,7 +297,7 @@ sub query_records_find {
     my $args = { MaxRows => $search_limit };    # limit search result
     my $aref;
     try {
-        $aref = $self->conn->run(
+        $aref = $self->connector->run(
             fixup => sub {
                 my $aref = $self->dbh->selectall_arrayref( $stmt, $args, @bind );
                 return $aref;
@@ -719,7 +719,7 @@ sub table_record_insert {
         unless (defined $pk_id) {
             $pk_id = $has_feature
             ? $sth->fetch()->[0]
-            : $self->dbh->last_insert_id(undef, undef, $table, undef);
+            : $dbh->last_insert_id(undef, undef, $table, undef);
         }
     }
     catch {
@@ -1079,12 +1079,12 @@ sub db_exception {
     # print "Context  : '$context'\n";
 
     if ( my $e = Exception::Base->catch($exc) ) {
-        # print "Catched!\n";
+        print "Catched!\n";
 
         if ( $e->isa('Exception::Db::Connect') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-            # print "Exc Conn: $usermsg :: $logmsg\n";
+            warn "!! Connect exception ($message, $details) !!\n";
             $e->throw;    # rethrow the exception
         }
         elsif ( $e->isa('Exception::Db::SQL') ) {
@@ -1096,7 +1096,7 @@ sub db_exception {
 
             # Throw other exception
             my $message = $self->user_message($exc);
-            # print "Message:   '$message'\n";
+            print "! Message:   '$message !'\n";
             Exception::Db::SQL->throw(
                 logmsg  => $message,
                 usermsg => $context,
