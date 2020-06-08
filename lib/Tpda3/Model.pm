@@ -5,6 +5,7 @@ package Tpda3::Model;
 use feature 'say';
 use Mouse;
 use Data::Compare;
+use List::Compare;
 use Log::Log4perl qw(get_logger :levels);
 use Regexp::Common;
 use SQL::Abstract;
@@ -57,6 +58,11 @@ sub _log {
     my $self = shift;
     return $self->{_log};
 }
+
+has 'debug' => (
+    is  => 'ro',
+    isa => 'Bool',
+);
 
 has 'info_db' => (
     is      => 'ro',
@@ -751,6 +757,7 @@ sub table_record_select {
 
 sub table_batch_insert {
     my ( $self, $table, $records ) = @_;
+
     my $sql = SQL::Abstract->new();
 
     # AoH refs
@@ -766,6 +773,7 @@ sub table_batch_insert {
             $self->db_exception($_, 'Batch insert failed');
         };
     }
+
     return;
 }
 
@@ -850,7 +858,7 @@ sub prepare_record_update {
     my $where = $mainmeta->{where};
 
     if ( %{$maindata} ) {
-        $self->table_record_update( $table, $maindata, $where );
+    $self->table_record_update( $table, $maindata, $where );
     }
     else {
         say "No main data to update for '$table'" if $self->verbose;
@@ -987,7 +995,7 @@ sub table_batch_update {
     # DELETE
     foreach my $id ( @{$to_delete} ) {
         my $where = $mu->fkcol_where($id);
-        $self->table_record_delete( $table, $where );
+    $self->table_record_delete( $table, $where );
     }
 
     return;
@@ -1054,52 +1062,28 @@ sub user_message {
 sub db_exception {
     my ( $self, $exc, $context ) = @_;
 
-<<<<<<< HEAD
-    say "Exception: '$exc'";
-    say "Context  : '$context'";
-
-    if ( my $e = Exception::Base->catch($exc) ) {
-        say "Catched!";
-=======
     # print "Exception: '$exc'\n";
     # print "Context  : '$context'\n";
 
     if ( my $e = Exception::Base->catch($exc) ) {
         # print "Catched!\n";
->>>>>>> Convert find and count methods to use Connector.
 
         if ( $e->isa('Exception::Db::Connect') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-<<<<<<< HEAD
-            say "ExceptionConnect: $usermsg :: $logmsg";
-=======
             # print "Exc Conn: $usermsg :: $logmsg\n";
->>>>>>> Convert find and count methods to use Connector.
             $e->throw;    # rethrow the exception
         }
         elsif ( $e->isa('Exception::Db::SQL') ) {
             my $logmsg  = $e->logmsg;
             my $usermsg = $e->usermsg;
-<<<<<<< HEAD
-            say "ExceptionSQL: $usermsg :: $logmsg";
-=======
-            # print "Exc SQL: $usermsg :: $logmsg\n";
->>>>>>> Convert find and count methods to use Connector.
             $e->throw;    # rethrow the exception
         }
         else {
 
             # Throw other exception
-<<<<<<< HEAD
-            say "ExceptioOther new";
-            my $message = $self->user_message($exc);
-            say "Message:   '$message'";
-=======
-            # print "Exc Other new\n";
             my $message = $self->user_message($exc);
             # print "Message:   '$message'\n";
->>>>>>> Convert find and count methods to use Connector.
             Exception::Db::SQL->throw(
                 logmsg  => $message,
                 usermsg => $context,
@@ -1107,10 +1091,6 @@ sub db_exception {
         }
     }
     else {
-<<<<<<< HEAD
-        say "New thrown (model)";
-=======
->>>>>>> Convert find and count methods to use Connector.
         Exception::Db::SQL->throw(
             logmsg  => "error#$exc",
             usermsg => $context,
