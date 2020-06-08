@@ -12,7 +12,7 @@ use Tk;
 use lib qw( lib ../lib );
 
 my ( $delay, $milisec ) = ( 1, 100 );
-$milisec *= 10 if $^O eq 'MSWin32';
+$milisec *= 10 if $^O eq 'MSWin32' || $ENV{COVER};
 
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
