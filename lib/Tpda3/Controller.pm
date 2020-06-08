@@ -1797,7 +1797,7 @@ sub record_find_execute {
 
     my ($ary_ref, $limit);
     try {
-         ($ary_ref, $limit) = $self->model->query_records_find($params);
+         ($ary_ref, $limit) = $self->model->db->query_records_find($params);
     }
     catch {
         warn "AHA! $_";
@@ -1870,7 +1870,7 @@ sub record_find_count {
 
     my $record_count;
     try {
-        $record_count = $self->model->query_records_count($params);
+        $record_count = $self->model->db->query_records_count($params);
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -2017,7 +2017,7 @@ sub get_alternate_data_record {
     #-- Data
 
     try {
-        $record->{data} = $self->model->query_record( $record->{metadata} );
+        $record->{data} = $self->model->db->query_record( $record->{metadata} );
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -2382,7 +2382,7 @@ sub record_load {
 
     my $record;
     try {
-        $record = $self->model->query_record($params);
+        $record = $self->model->db->query_record($params);
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -2399,7 +2399,7 @@ sub record_load {
         my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
         my $records;
         try {
-            $records = $self->model->table_batch_query($tm_params);
+            $records = $self->model->db->table_batch_query($tm_params);
         }
         catch {
             $self->catch_db_exceptions($_);
@@ -2472,7 +2472,7 @@ sub record_delete {
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
     try {
-        $self->model->prepare_record_delete( \@record );
+        $self->model->db->prepare_record_delete( \@record );
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -2601,7 +2601,7 @@ sub record_save_todb {
         try   { $self->check_required_data($record) }
         catch { $self->catch_data_exceptions($_)    };
 
-        try   { $self->model->prepare_record_update($record) }
+        try   { $self->model->db->prepare_record_update($record) }
         catch { $self->catch_db_exceptions($_)               };
 
         $self->view->set_status(__ 'Saved', 'ms', 'darkgreen');
@@ -2708,7 +2708,7 @@ sub record_save_insert {
     my ( $self, $record ) = @_;
     my $pk_val;
     try {
-        $pk_val = $self->model->prepare_record_insert($record);
+        $pk_val = $self->model->db->prepare_record_insert($record);
     }
     catch {
         $self->catch_db_exceptions($_);
@@ -2754,7 +2754,7 @@ sub record_changed {
     }
     my $witness = retrieve($witness_file);
     my $record = $self->get_screen_data_record('upd');
-    return $self->model->record_compare( $witness, $record );
+    return $self->model->db->record_compare( $witness, $record );
 }
 
 sub take_note {

@@ -10,7 +10,7 @@ use Try::Tiny;
 use Locale::TextDomain qw(App-Tpda3Dev);
 use Log::Log4perl qw(get_logger :levels);
 use Tpda3::Types qw(
-    Logger
+    AppLogger
 );
 use namespace::autoclean;
 #with 'MooX::Log::Any';
@@ -19,7 +19,7 @@ requires 'dbh';
 
 has 'logger' => (
     is      => 'ro',
-    isa     => Logger,
+    isa     => AppLogger,
     lazy    => 1,
     default => sub {
         return get_logger(),

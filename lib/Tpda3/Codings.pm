@@ -39,7 +39,7 @@ sub get_coding_init {
 
         # Query database table
         $self->{_code}{$field} = $self->{_model}
-            ->tbl_dict_query( $para, $label_label, $value_label );
+            ->db->tbl_dict_query( $para, $label_label, $value_label );
     }
 
     if (   $para->{default} =~ m{null}i

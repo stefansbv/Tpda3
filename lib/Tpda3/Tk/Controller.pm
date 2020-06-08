@@ -442,7 +442,7 @@ sub tmshr_fill_table {
     my $countcol = $mainmeta->{rowcount};
     my $sum_up_cols = $self->get_table_sumup_cols($level);
 
-    my ($records, $levelmeta) = $self->model->report_data($mainmeta);
+    my ($records, $levelmeta) = $self->model->db->report_data($mainmeta);
 
     #- Add main records to the tree
 
@@ -495,7 +495,7 @@ sub tmshr_process_level {
                 my $mdrec = $uprec->{$row};
                 $metadata->{where} = $mdrec;
                 my ( $records, $leveldata )
-                    = $self->model->report_data( $metadata, $row );
+                    = $self->model->db->report_data( $metadata, $row );
                 foreach my $rec ( @{$records} ) {
                     my $nodename0 = ( keys %{$mdrec} )[0] . ':' . $row;
                     my $record

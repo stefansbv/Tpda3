@@ -1,246 +1,99 @@
-package Tpda3::Model;
+package Tpda3::Model::DB;
 
-# ABSTRACT: The Model
+# ABSTRACT: The DB Model
 
 use feature 'say';
 use Moo;
-#use Log::Log4perl qw(get_logger :levels);
+use Data::Compare;
+use List::Compare;
+use Regexp::Common;
+use SQL::Abstract;
 use Try::Tiny;
 use Tpda3::Types qw(
     Bool
+    DBIdb
     DBIxConnector
     HashRef
     Maybe
+    Str
     Tpda3Config
-    Tpda3ConfigConnection
-    Tpda3ModelDB
     Tpda3Observable
     Tpda3Target
+    URIdb
 );
 use Tpda3::Exceptions;
 use Tpda3::Config;
 use Tpda3::Codings;
 use Tpda3::Observable;
+use Tpda3::Config::Connection;
+use Tpda3::Target;
 use Tpda3::Utils;
-use Tpda3::Model::Update;
-use Tpda3::Model::Update::Compare;
-use Tpda3::Model::DB;
 use namespace::autoclean;
 
-sub new {
-    my $class = shift;
-
-    my $self = {
-        _connected   => Tpda3::Observable->new(),
-        _stdout      => Tpda3::Observable->new(),
-        _appmode     => Tpda3::Observable->new(),
-        _scrdata_rec => Tpda3::Observable->new(),
-        _cfg         => Tpda3::Config->instance(),
-        _msg_dict    => {},
-        _log         => get_logger(),
-    };
-
-    bless $self, $class;
-
-    return $self;
-}
-
-sub cfg {
-    my $self = shift;
-    return $self->{_cfg};
-}
-
-sub verbose {
-    my $self = shift;
-    return $self->cfg->verbose;
-}
-
-sub debug {
-    my $self = shift;
-    return $self->cfg->debug;
-}
-
-sub _log {
-    my $self = shift;
-    return $self->{_log};
-}
+has 'cfg' => (
+    is       => 'ro',
+    isa      => Tpda3Config,
+    required => 1,
+);
 
 has 'debug' => (
     is  => 'ro',
     isa => Bool,
 );
 
-has 'cfg' => (
-    is      => 'ro',
-    isa     => Tpda3Config,
-    default => sub {
-        return Tpda3::Config->instance;
-    },
-);
-
-has 'info_db' => (
-    is      => 'ro',
-    isa     => Tpda3ConfigConnection,
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        return Tpda3::Config::Connection->new;
-    },
-);
-
-has 'target' => (
-    is      => 'ro',
-    isa     => Tpda3Target,
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        $self->info_db->dbname;       # need to call this before 'uri'
-        return Tpda3::Target->new(
-            uri => $self->info_db->uri,
-        );
-    },
-);
-
 has 'connector' => (
-    is      => 'ro',
-    isa     => DBIxConnector,
-    default => sub {
-        my $self = shift;
-        return $self->target->engine->connector;
-    },
+    is       => 'ro',
+    isa      => DBIxConnector,
+    required => 1,
 );
-
-has 'db' => (
-    is      => 'ro',
-    isa     => Tpda3ModelDB,
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        return Tpda3::Model::DB->new(
-            cfg       => $self->cfg,
-            debug     => $self->debug,
-            target    => $self->target,
-            connector => $self->connector,
-        );
-    },
-);
-
-my $observables = [
-    qw{
-        _connected
-        _stdout
-        _appmode
-        _scrdata_rec
-      }
-];
-
-has $observables => (
-    is      => 'ro',
-    isa     => Tpda3Observable,
-    default => sub {
-        return Tpda3::Observable->new;
-    },
-);
-
-has '_msg_dict' => (
-    is      => 'ro',
-    isa     => Maybe[HashRef],
-    default => sub {
-        return {},
-    },
-);
-
-sub db_connect {
-    my $self = shift;
-    try {
-        my $engine = $self->target->engine;
-        $engine->reset_connector;
-        $self->{_dbh} = $engine->dbh;
-    }
-    catch {
-        $self->db_exception($_, 'Connection failed');
-    };
-    $self->get_connection_observable->set(1);
-    $self->_print('info#Connected');
-    return;
-}
 
 sub dbh {
     my $self = shift;
-    return $self->{_dbh} if $self->{_dbh}->isa('DBI::db');
+    return $self->connector->dbh;
 }
 
-sub is_connected {
+# has 'dbh' => (
+#     is      => 'rw',
+#     isa     => DBIdb,
+#     lazy    => 1,
+#     default => sub {
+#         my $self = shift;
+#         $self->connector->dbh;
+#     },
+# );
+
+#---
+
+sub dbc {
     my $self = shift;
-    return $self->get_connection_observable->get;
+    return $self->target->engine;
 }
 
-sub get_connection_observable {
-    my $self = shift;
-    return $self->{_connected};
-}
+has 'target' => (
+    is       => 'ro',
+    isa      => Tpda3Target,
+    required => 1,
+);
 
-sub get_stdout_observable {
-    my $self = shift;
-    return $self->{_stdout};
-}
+# sub db_connect {
+#     my $self = shift;
+#     try {
+#         my $engine = $self->target->engine;
+#         $engine->reset_connector;
+#         $self->{_dbh} = $engine->dbh;
+#     }
+#     catch {
+#         $self->db_exception($_, 'Connection failed');
+#     };
+#     $self->get_connection_observable->set(1);
+#     $self->_print('info#Connected');
+#     return;
+# }
 
-sub _print {
-    my ( $self, $data ) = @_;
-    $self->get_stdout_observable->set($data);
-    return;
-}
-
-sub set_mode {
-    my ( $self, $mode ) = @_;
-    $self->get_appmode_observable->set($mode);
-    return;
-}
-
-sub is_mode {
-    my ( $self, $ck_mode ) = @_;
-    my $mode = $self->get_appmode_observable->get;
-    return unless $mode;
-    return 1 if $mode eq $ck_mode;
-    return;
-}
-
-sub get_appmode_observable {
-    my $self = shift;
-    return $self->{_appmode};
-}
-
-sub get_appmode {
-    my $self = shift;
-    return $self->get_appmode_observable->get;
-}
-
-sub set_scrdata_rec {
-    my ( $self, $state ) = @_;
-    $self->get_scrdata_rec_observable->set($state);
-    return;
-}
-
-sub unset_scrdata_rec {
-    my $self = shift;
-    $self->get_scrdata_rec_observable->unset();
-    return;
-}
-
-sub get_scrdata_rec_observable {
-    my $self = shift;
-    return $self->{_scrdata_rec};
-}
-
-sub is_modified {
-    my $self = shift;
-    return $self->get_scrdata_rec_observable->get;
-}
-
-sub is_loaded {
-    my $self = shift;
-    return defined $self->get_scrdata_rec_observable->get;
-}
+# sub connector {
+#     my $self = shift;
+#     return $self->target->engine->connector;
+# }
 
 sub query_records_count {
     my ( $self, $opts ) = @_;
@@ -309,7 +162,7 @@ sub query_records_find {
 }
 
 sub query_filter_find {
-    my ( $self, $opts, $debug, $limit ) = @_;
+    my ( $self, $opts, $debug ) = @_;
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
@@ -326,8 +179,6 @@ sub query_filter_find {
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
-    $stmt .= qq{ LIMIT $limit} if defined $limit and $limit > 0;
-
     $self->debug_print_sql('query_filter_find', $stmt, \@bind)
         if $self->debug;
 
@@ -347,34 +198,6 @@ sub query_filter_find {
     };
 
     return \@records;
-}
-
-sub query_filter_count {
-    my ( $self, $opts, $debug ) = @_;
-
-    my $table = $opts->{table};
-    my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
-    my $where = $opts->{where};
-
-    return if !ref $where;
-
-    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
-    my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
-
-    $self->debug_print_sql('query_filter_count', $stmt, \@bind)
-        if $self->debug;
-
-    my $record_count;
-    try {
-        my $sth = $self->dbh->prepare($stmt);
-        $sth->execute(@bind);
-        ($record_count) = $sth->fetchrow_array();
-    }
-    catch {
-        $self->db_exception($_, 'Count failed');
-    };
-
-    return $record_count;
 }
 
 sub query_record {
@@ -682,58 +505,536 @@ sub tbl_lookup_query {
     return $row_rf;
 }
 
-sub get_codes {
-    my ( $self, $field, $para, $widget ) = @_;
-    my $codings = Tpda3::Codings->new($self);
-    my $codes = $codings->get_coding_init( $field, $para, $widget );
-    return $codes;
+sub table_record_insert {
+    my ( $self, $table, $pkcol, $record ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    my $has_feature = $self->dbc->has_feature_returning();
+    my $attrib = $has_feature ? { returning => $pkcol } : {};
+
+    my ( $stmt, @bind ) = $sql->insert( $table, $record, $attrib );
+    $self->debug_print_sql('table_record_insert', $stmt, \@bind)
+        if $self->debug;
+
+    my $pk_id;
+    if ( exists $record->{$pkcol} ) {
+        $pk_id = $record->{$pkcol};
+    }
+
+    try {
+        my $dbh = $self->dbh;
+
+        my $sth = $dbh->prepare($stmt) or die $dbh->errstr;
+
+        $sth->execute(@bind) or die $dbh->errstr;
+
+        unless (defined $pk_id) {
+            $pk_id = $has_feature
+            ? $sth->fetch()->[0]
+            : $dbh->last_insert_id(undef, undef, $table, undef);
+        }
+    }
+    catch {
+        $self->db_exception($_, 'Insert failed');
+    };
+
+    return $pk_id;
 }
 
-sub other_data {
-    my ($self, $model_name) = @_;
+sub table_record_update {
+    my ( $self, $table, $record, $where ) = @_;
 
-    # Specific data for the current template
-    my $args = {};
-    $args->{table}    = 'templates';
-    $args->{colslist} = [qw{id_tt}];
-    $args->{where}    = { tt_file => $model_name };
-    my $tt_aref       = $self->db->table_batch_query($args);
-    my $id_tt         = $tt_aref->[0]{id_tt};
+    my $sql = SQL::Abstract->new();
+    my ( $stmt, @bind ) = $sql->update( $table, $record, $where );
+    $self->debug_print_sql('table_record_update', $stmt, \@bind)
+        if $self->debug;
 
-    # Common data for all templates
-    my $tt_datasources = $self->db->get_template_datasources($id_tt);
-    my $common_table
-        = ( ref $tt_datasources eq 'HASH' )
-        ? $tt_datasources->{common_data}
-        : undef;
-    my %common;
-    if ($common_table) {
-        $args             = {};
-        $args->{table}    = $common_table;              # ex: semnaturi
-        $args->{colslist} = [qw{var_name var_value}];
-        $args->{order}    = undef;
-        $args->{where}    = undef;
-        my $common_aref = $self->db->table_batch_query($args);
-        %common = map { $_->{var_name} => $_->{var_value} } @{$common_aref};
+    try {
+        my $sth = $self->dbh->prepare($stmt);
+        $sth->execute(@bind);
+    }
+    catch {
+        $self->db_exception($_, 'Update failed');
+    };
+
+    return;
+}
+
+sub table_record_select {
+    my ( $self, $table, $where ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    my ( $stmt, @bind ) = $sql->select( $table, undef, $where );
+    $self->debug_print_sql('table_record_select', $stmt, \@bind)
+        if $self->debug;
+
+    my $hash_ref;
+    try {
+        $hash_ref = $self->dbh->selectrow_hashref( $stmt, undef, @bind );
+    }
+    catch {
+        $self->db_exception($_, 'Select failed');
+    };
+
+    return $hash_ref;
+}
+
+sub table_batch_insert {
+    my ( $self, $table, $records ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    # AoH refs
+    foreach my $record ( @{$records} ) {
+        my ( $stmt, @bind ) = $sql->insert( $table, $record );
+        $self->debug_print_sql('table_batch_insert', $stmt, \@bind)
+            if $self->debug;
+        try {
+            my $sth = $self->dbh->prepare($stmt);
+            $sth->execute(@bind);
+        }
+        catch {
+            $self->db_exception($_, 'Batch insert failed');
+        };
+    }
+
+    return;
+}
+
+sub table_record_delete {
+    my ( $self, $table, $where ) = @_;
+
+    my $sql = SQL::Abstract->new();
+
+    # Safety net..., is enough ???
+    die "Empty TABLE name in DELETE command!" unless $table;
+    die "Empty SQL WHERE in DELETE command!"  unless ( %{$where} );
+
+    #$self->logger->debug("Deleting from $table: ");
+    # $self->logger->debug( sub { Dumper($where) } );
+
+    my ( $stmt, @bind ) = $sql->delete( $table, $where );
+
+    try {
+        my $sth = $self->dbh->prepare($stmt);
+        $sth->execute(@bind);
+    }
+    catch {
+        $self->db_exception($_, 'Delete failed');
+    };
+
+    return;
+}
+
+sub prepare_record_insert {
+    my ( $self, $record ) = @_;
+
+    my $mainrec = $record->[0];    # main record first
+
+    my $mainmeta = $mainrec->{metadata};
+    my $maindata = $mainrec->{data};
+
+    my $table = $mainmeta->{table};
+    my $pkcol = $mainmeta->{pkcol};
+
+    #- Main record
+
+    my $pk_id = $self->table_record_insert( $table, $pkcol, $maindata );
+
+    return unless $pk_id;
+
+    #- Dependent records
+
+    my $deprec = $record->[1];
+
+    # One table at a time ...
+    foreach my $tm ( keys %{$deprec} ) {
+        my $depmeta = $deprec->{$tm}{metadata};
+        my $depdata = $deprec->{$tm}{data};
+
+        my $updstyle = $depmeta->{updstyle};
+        my $table    = $depmeta->{table};
+        my $pkcol    = $depmeta->{pkcol};
+
+        # Update params for where
+        $depmeta->{where}{$pkcol} = [ $pk_id, 'full' ];
+
+        # Update PK column with the new $pk_id
+        foreach my $rec ( @{$depdata} ) {
+            $rec->{$pkcol} = $pk_id;
+        }
+
+        $self->table_batch_insert( $table, $depdata );
+    }
+
+    return $pk_id;
+}
+
+sub prepare_record_update {
+    my ( $self, $record ) = @_;
+
+    #- Main record
+
+    my $mainmeta = $record->[0]{metadata};
+    my $maindata = $record->[0]{data};
+
+    my $table = $mainmeta->{table};
+    my $where = $mainmeta->{where};
+
+    if ( %{$maindata} ) {
+    $self->table_record_update( $table, $maindata, $where );
     }
     else {
-        %common = ();
+        say "No main data to update for '$table'" if $self->verbose;
     }
 
-    # Specific data for the current template
-    $args = {};
-    $args->{table}    = 'templates_var';
-    $args->{colslist} = [qw{var_name var_value}];
+    #- Dependent records
+
+    # One table at a time ...
+    foreach my $tm ( keys %{ $record->[1] } ) {
+        my $depmeta = $record->[1]{$tm}{metadata};
+        my $depdata = $record->[1]{$tm}{data};
+
+        my $updstyle = $depmeta->{updstyle};
+        my $table    = $depmeta->{table};
+        my $where    = $depmeta->{where};
+
+        if ( $updstyle eq 'delete+add' ) {
+
+            # Delete all articles and reinsert from TM ;)
+            $self->table_record_delete( $table, $where );
+            $self->table_batch_insert( $table, $depdata );
+        }
+        elsif ( $updstyle eq 'update' ) {
+
+            # Update based on comparison between the database table
+            # data and TableMatrix data
+            $self->table_batch_update( $depmeta, $depdata );
+        }
+        elsif ( $updstyle eq 'none' ) {
+
+            # do nothing!
+        }
+        else {
+            die "TM table update style '$updstyle' not implemented!\n";
+        }
+    }
+    return;
+}
+
+sub prepare_record_delete {
+    my ( $self, $record ) = @_;
+
+    #- Dependent records
+
+    # One table at a time ...
+    foreach my $tm ( keys %{ $record->[1] } ) {
+        my $depmeta = $record->[1]{$tm}{metadata};
+
+        my $table = $depmeta->{table};
+        my $where = $depmeta->{where};
+
+        # Delete all articles
+        $self->table_record_delete( $table, $where );
+    }
+
+    #- Main record
+
+    my $mainmeta = $record->[0]{metadata};
+
+    my $table = $mainmeta->{table};
+    my $where = $mainmeta->{where};
+
+    # Delete record
+    $self->table_record_delete( $table, $where );
+
+    return;
+}
+
+sub table_batch_update {
+    my ( $self, $depmeta, $depdata ) = @_;
+
+    my $fkcol;
+    if ( exists $depmeta->{tmpkcol} ) {
+        $fkcol = $depmeta->{tmpkcol};
+    }
+    else {
+        $fkcol = $depmeta->{fkcol};
+    }
+
+    my $table = $depmeta->{table};
+    my $pkcol = $depmeta->{pkcol};
+    my $where = $depmeta->{where};
+
+    my $oldrec = $self->get_record($depmeta);
+    my $muc = Tpda3::Model::Update::Compare->new(
+        fk_col  => $fkcol,
+        db_data => $oldrec,
+        tm_data => $depdata,
+    );
+
+    my $to_insert = $muc->to_insert;
+    my $to_delete = $muc->to_delete;
+    my $to_update = $muc->to_update;
+
+    if ( $self->debug ) {
+        say "To update: $fkcol => @{$to_update}";
+        say "To insert: $fkcol => @{$to_insert}";
+        say "To delete: $fkcol => @{$to_delete}";
+    }
+
+    my $mu = Tpda3::Model::Update->new(
+        table   => $table,
+        fk_col  => $fkcol,
+        where   => $where,
+        compare => $muc,
+    );
+
+    # INSERT
+    foreach my $id ( @{$to_insert} ) {
+
+        # Filter data by the fkcol value; record is AoH
+        my $rec = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
+        $self->table_record_insert($table, $pkcol, $rec);
+    }
+
+    # UPDATE
+    foreach my $id ( @{$to_update} ) {
+        my $where = $mu->fkcol_where($id);
+
+        # Filter data by the fkcol value; record is AoH
+        my $record = ( grep { $_->{$fkcol} == $id } @{$depdata} )[0];
+
+        ### delete $rec->{$fkcol}; # remove FK col from update data;
+        # does NOT work, it's like remove from the original
+        # datastructure?!
+        my $rec = {};
+        foreach my $field ( keys %{$record} ) {
+            next if grep { $_ eq $field } keys %{$where};
+            $rec->{$field} = $record->{$field};
+        }
+        $self->table_record_update( $table, $rec, $where );
+    }
+
+    # DELETE
+    foreach my $id ( @{$to_delete} ) {
+        my $where = $mu->fkcol_where($id);
+    $self->table_record_delete( $table, $where );
+    }
+
+    return;
+}
+
+sub get_record {
+    my ( $self, $depmeta ) = @_;
+    unshift @{$depmeta->{colslist}}, $depmeta->{pkcol};
+    my $record = $self->table_batch_query($depmeta);
+    return $record;
+}
+
+# sub table_selectcol_as_array {
+#     my ( $self, $opts ) = @_;
+
+#     my $table  = $opts->{table};
+#     my $fields;
+#     if ( exists $opts->{tmpkcol} ) {
+#         $fields = $opts->{tmpkcol};
+#     }
+#     else {
+#         $fields = $opts->{fkcol};
+#     }
+#     my $where  = $opts->{where};
+#     my $order  = $fields;
+
+#     my $sql = SQL::Abstract->new();
+
+#     my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+
+#     my $records;
+#     try {
+#         $records = $self->dbh->selectcol_arrayref( $stmt, undef, @bind );
+#     }
+#     catch {
+#         $self->db_exception($_, 'Select failed');
+#     };
+
+#     return $records;
+# }
+
+sub record_compare {
+    my ( $self, $witness, $record ) = @_;
+    my $dc = Data::Compare->new( $witness, $record );
+    if ( $self->debug ) {
+        say 'Structures of $witness and $record are ',
+            $dc->Cmp ? "" : "not ", "identical.";
+    }
+    return !$dc->Cmp;
+}
+
+sub user_message {
+    my ($self, $error) = @_;
+
+    $error =~ s{[\n\r]}{ }gmix;
+    my $user_message = $self->dbc->parse_error($error);
+    $user_message =~ s{"\."}{\.}gmix;        # "d"."t" ->  "d.t"
+
+    #$self->_print($user_message);
+
+    return $user_message;
+}
+
+sub db_exception {
+    my ( $self, $exc, $context ) = @_;
+
+    # print "Exception: '$exc'\n";
+    # print "Context  : '$context'\n";
+
+    if ( my $e = Exception::Base->catch($exc) ) {
+        print "Catched!\n";
+
+        if ( $e->isa('Exception::Db::Connect') ) {
+            my $logmsg  = $e->logmsg;
+            my $usermsg = $e->usermsg;
+            warn "!! Connect exception ($logmsg) !!\n";
+            $e->throw;    # rethrow the exception
+        }
+        elsif ( $e->isa('Exception::Db::SQL') ) {
+            my $logmsg  = $e->logmsg;
+            my $usermsg = $e->usermsg;
+            $e->throw;    # rethrow the exception
+        }
+        else {
+
+            # Throw other exception
+            my $message = $self->user_message($exc);
+            print "! Message:   '$message !'\n";
+            Exception::Db::SQL->throw(
+                logmsg  => $message,
+                usermsg => $context,
+            );
+        }
+    }
+    else {
+        Exception::Db::SQL->throw(
+            logmsg  => "error#$exc",
+            usermsg => $context,
+        );
+    }
+
+    return;
+}
+
+sub report_data {
+    my ( $self, $mainmeta, $parentrow ) = @_;
+
+    $parentrow = defined $parentrow ? $parentrow : 0;
+
+    my $records = $self->table_batch_query($mainmeta);
+    my $pk_col  = $mainmeta->{pkcol};
+    my $cnt_col = $mainmeta->{rowcount};
+
+    # Seperate ...
+    my (@records, @uplevel);
+
+    my %levelmeta;
+    my $rc = 1;    # row count
+    foreach my $r ( @{$records} ) {
+        my ( $rec, $upl ) = ( {}, {} );
+        foreach my $fld ( keys %{$r} ) {
+            if ( $fld eq $pk_col ) {
+                $upl->{$fld} = $r->{$fld};
+            }
+            else {
+                $rec->{$fld} = $r->{$fld};
+            }
+        }
+        $rec->{$cnt_col} = $rc;                  # add row count
+
+        push @records, $rec;
+        push @uplevel, { $rc => $upl };
+
+        $rc++;
+    }
+
+    $levelmeta{$parentrow} = [@uplevel];
+
+    return (\@records, \%levelmeta);
+}
+
+sub table_columns {
+    my ($self, $table_name) = @_;
+    return $self->dbc->get_columns($table_name);
+}
+
+sub table_keys {
+    my ($self, $table_name) = @_;
+    return $self->dbc->table_keys($table_name);
+}
+
+sub get_template_datasources {
+    my ($self, $id_tt) = @_;
+
+    # Get datasources
+    my $args = {};
+    $args->{table}    = 'templates';
+    $args->{colslist} = [qw{table_name view_name common_data}];
     $args->{where}    = { id_tt => $id_tt };
     $args->{order}    = 'id_tt';
-    my $specif_aref   = $self->table_batch_query($args);
-    my %specific = map { $_->{var_name} => $_->{var_value} } @{$specif_aref};
+    my $datasources = $self->table_batch_query($args);
 
-    # Merge and return
-    return Hash::Merge->new->merge(
-        \%common,
-        \%specific,
-    );
+    return $datasources->[0];
+}
+
+sub update_or_insert {
+    my ($self, $table, $columns, $matching, $records) = @_;
+
+    my $cols_list  = join ",", @{$columns};
+    my $match_list = join ",", @{$matching};
+    my $sql = qq{UPDATE OR INSERT INTO $table
+                            ($cols_list)
+                     VALUES (?, ?, ?, ?)
+                     MATCHING ($match_list)
+    };
+
+    my $sth;
+    try {
+        $sth = $self->dbh->prepare($sql);
+    }
+    catch {
+        $self->db_exception( $_, "'update_or_insert' prepare failed" );
+    };
+
+    foreach my $rec ( @{$records} ) {
+        my @bind = @$rec{ @{$columns} };     # hash slice
+        try {
+            $sth->execute(@bind);
+        }
+        catch {
+            $self->db_exception( $_, "'update_or_insert' failed" );
+        };
+    }
+
+    return;
+}
+
+sub debug_print_sql {
+    my ( $self, $meth, $stmt, $bind ) = @_;
+    warn "debug_print_sql: wrong params!"
+        unless $meth and $stmt and ref $bind;
+    my $bind_params_no = scalar @{$bind};
+    my $params = 'none';
+    if ( $bind_params_no > 0 ) {
+        my @para = map { defined $_ ? $_ : 'undef' } @{$bind};
+        $params  = scalar @para > 0 ? join( ', ', @para ) : 'none';
+    }
+    say "---";
+    say "$meth:";
+    say "  SQL=$stmt";
+    say "  Params=($params)";
+    say "---";
+    return;
 }
 
 1;
@@ -837,15 +1138,13 @@ Count records in table. TODO.
 
 =head2 query_records_find
 
-TODO: fix pod contents! Here we need the contents of the screen to build an sql
-where clause and also the column names from the I<columns>
-configuration.
+Count records in table.  Here we need the contents of the screen to
+build an sql where clause and also the column names from the
+I<columns> configuration.
 
 =head2 query_filter_find
 
 Same as C<query_records_find> but returns an AoH suitable for TM fill.
-
-=head2 query_filter_count
 
 =head2 query_record
 
