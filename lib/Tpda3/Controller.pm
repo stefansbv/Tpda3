@@ -92,9 +92,7 @@ sub start {
 
 sub connect_dialog {
     my $self = shift;
-
     my $error;
-
   TRY:
     while ( not $self->model->is_connected ) {
 
@@ -124,7 +122,6 @@ sub connect_dialog {
             $error = 'error#User and password are required';
         }
     }
-
     return;
 }
 
@@ -1803,6 +1800,7 @@ sub record_find_execute {
          ($ary_ref, $limit) = $self->model->query_records_find($params);
     }
     catch {
+        warn "AHA! $_";
         $self->catch_db_exceptions($_);
     };
 
@@ -3103,17 +3101,13 @@ sub DESTROY {
 
 sub on_quit {
     my $self = shift;
-
     print "Shutting down...\n";
-
     $self->view->on_close_window(@_);
 }
 
 sub catch_db_exceptions {
     my ($self, $exc) = @_;
-
     my ($message, $details);
-
     if ( my $e = Exception::Base->catch($exc) ) {
         if ( $e->isa('Exception::Db::SQL') ) {
             $message = $e->usermsg;
@@ -3123,15 +3117,16 @@ sub catch_db_exceptions {
         elsif ( $e->isa('Exception::Db::Connect') ) {
             $message = $e->usermsg;
             $details = $e->logmsg;
-            print "Exception is a Connect ($message, $details)\n";
+            warn "* Connect exception ($message, $details) *\n";
+            $self->connect_dialog;
+            return;
         }
         else {
-            warn "*** Unknown exception:\n";
+            warn "*** Unknown exception ***\n";
             $self->_log->error( $e->to_string );
             $e->throw;          # rethrow the exception
             return;
         }
-
         $self->message_dialog($message, $details, 'error', 'close');
     }
 
