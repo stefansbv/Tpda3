@@ -16,6 +16,9 @@ use Tk;
 
 use lib qw( lib ../lib );
 
+my ( $delay, $milisec ) = ( 1, 100 );
+$milisec *= 10 if $^O eq 'MSWin32';
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -181,8 +184,6 @@ ok(!$@, 'create TMSHR');
 is( $tm->make_header($header), undef, 'make header' );
 
 $tm->pack( -expand => 1, -fill => 'both');
-
-my ( $delay, $milisec ) = ( 1, 100 );
 
 $mw->after( $delay * $milisec,
     sub { is( $tm->fill_main($record, 'nr_crt'), undef, 'fill TMSHR' ); } );

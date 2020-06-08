@@ -9,6 +9,9 @@ use lib qw( lib ../lib );
 
 use Tpda3::Tk::PhotoLabel;
 
+my ( $delay, $milisec ) = ( 1, 100 );
+$milisec *= 10 if $^O eq 'MSWin32';
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -34,8 +37,6 @@ eval {
 ok !$@, 'create PhotoLabel';
 
 $ph->pack( -expand => 1, -fill => 'both');
-
-my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
     $delay * $milisec,

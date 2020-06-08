@@ -11,6 +11,9 @@ use Tk;
 
 use lib qw( lib ../lib );
 
+my ( $delay, $milisec ) = ( 1, 100 );
+$milisec *= 10 if $^O eq 'MSWin32';
+
 BEGIN {
     unless ( $ENV{DISPLAY} or $^O eq 'MSWin32' ) {
         plan skip_all => 'Needs DISPLAY';
@@ -157,8 +160,6 @@ is $tm->cell_config_for( 1, 'embed' ), 'jcombobox',
   'cell_config_for 1';    # call after init!
 
 $tm->pack( -expand => 1, -fill => 'both' );
-
-my ( $delay, $milisec ) = ( 1, 1000 );
 
 $mw->after(
     $delay * $milisec,
