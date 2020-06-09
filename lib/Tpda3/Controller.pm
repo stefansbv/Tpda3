@@ -32,6 +32,8 @@ use Tpda3::Config::Screen::Details;
 
 use Data::Dump qw/dump/;
 
+use Data::Dump;
+
 sub new {
     my $class = shift;
     my $cfg   = Tpda3::Config->instance();
@@ -1355,9 +1357,9 @@ sub screen_module_load {
     # Set Key column names
     $self->{_tblkeys}{rec} = undef; # reset
     $self->screen_init_keys( 'rec', $self->scrcfg('rec') );
-
     $self->screen_init_details( $self->scrcfg('rec') );
 
+    $self->buid_metadata_main;
     $self->set_app_mode('idle');
 
     # List header
@@ -2828,6 +2830,41 @@ sub get_screen_data_record {
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
     return \@record;
+}
+
+sub buid_metadata_main {
+    my $self = shift;
+
+    my $metadata = {};
+    my $page = $self->view->get_nb_current_page();
+
+    $metadata->{qry}{table} = $self->table_key($page, 'main')->view;
+    my @keys = $self->table_key($page, 'main')->all_keys;
+    foreach my $key (@keys) {
+        $metadata->{qry}{where}{ $key->name } = $key->value;
+    }
+
+    # elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
+    $metadata->{upd}{table} = $self->table_key($page, 'main')->table;
+    @keys = $self->table_key($page, 'main')->all_keys;
+    foreach my $key (@keys) {
+        $metadata->{upd}{where}{ $key->name } = $key->value;
+    }
+
+    # ( $for_sql eq 'ins' ) {
+    $metadata->{ins}{table} = $self->table_key($page, 'main')->table;
+    $metadata->{ins}{pkcol} = $self->table_key($page, 'main')->get_key(0)->name;
+
+    # my $data = {
+    #     metadata => {
+    #         table => "orders",
+    #         where => {},
+    #     },
+    # };
+
+    # my $tmu = Tpda3::Model::Meta::Main->new($data), 'new object';
+    dd $metadata;
+    return;
 }
 
 sub main_table_metadata {
