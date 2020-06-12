@@ -8,10 +8,8 @@ use warnings;
 
 use Data::Diver qw( Dive ); #  DiveError
 use Hash::Merge;
-
 use Tpda3::Config;
-
-use Data::Dump;
+# use Data::Dump;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -152,8 +150,27 @@ sub deptable_columns  {
 
 sub deptable_columns_rw {
     my ( $self, $tm_ds ) = @_;
-    die "deptable_columns: the \$tm_ds parameter is required" unless $tm_ds;
+    die "deptable_columns_rw: the \$tm_ds parameter is required" unless $tm_ds;
     my $columns = $self->deptable( $tm_ds, 'columns' );
+    return undef if $self->is_href_is_empty($columns);
+    my $columns_rw = {};
+    foreach my $field ( keys %{$columns} ) {
+        next unless $columns->{$field}{readwrite} eq 'rw';
+        $columns_rw->{$field} = $columns->{$field};
+    }
+    return $columns_rw;
+}
+
+sub maintable_columns {
+    my ($self, @args) = @_;
+    my $columns = $self->maintable( 'columns', @args );
+    return undef if $self->is_href_is_empty($columns);
+    return $columns;
+}
+
+sub maintable_columns_rw {
+    my ($self, @args) = @_;
+    my $columns = $self->maintable( 'columns', @args );
     return undef if $self->is_href_is_empty($columns);
     my $columns_rw = {};
     foreach my $field ( keys %{$columns} ) {
