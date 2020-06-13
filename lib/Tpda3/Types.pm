@@ -15,6 +15,7 @@ use Type::Library 0.040 -base, -declare => qw(
     ListCompare
     MailOutlook
     MailOutlookMessage
+    ModelMetaElement
     Path
     TimeMoment
     Tpda3Compare
@@ -53,10 +54,11 @@ class_type Tpda3ConfigConnection, { class => 'Tpda3::Config::Connection' };
 class_type Tpda3Hollyday,         { class => 'Tpda3::Hollyday' };
 class_type Tpda3Model,            { class => 'Tpda3::Model' };
 class_type Tpda3ModelDB,          { class => 'Tpda3::Model::DB' };
+class_type ModelMetaElement,      { class => 'Tpda3::Model::Meta::Element' };
 class_type Tpda3Observable,       { class => 'Tpda3::Observable' };
 class_type Tpda3Engine,           { class => 'Tpda3::Engine' };
 class_type Tpda3Target,           { class => 'Tpda3::Target' };
-class_type Tpda3Compare,          { class => 'Tpda3::Model::Update::Compare' };
-class_type Tpda3Record,           { class => 'Tpda3::Model::Table::Record' };
+class_type Tpda3Compare, { class => 'Tpda3::Model::Update::Compare' };
+class_type Tpda3Record,  { class => 'Tpda3::Model::Table::Record' };
 
 1;
