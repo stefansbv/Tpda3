@@ -1193,7 +1193,7 @@ sub make_binding_entry {
 
 sub lookup_description {
     my ($self, $para) = @_;
-    my $descr_caen = $self->model->tbl_lookup_query($para);
+    my $descr_caen = $self->model->db->tbl_lookup_query($para);
     return $descr_caen->[0];
 }
 
@@ -1204,20 +1204,20 @@ sub tbl_selection_query {
 }
 
 sub tbl_selection_count {
-    my ($self, $para, $debug) = @_;
-    my $rec_cnt = $self->model->query_filter_count($para);
-    return $rec_cnt;
+    my ($self, $para) = @_;
+    my $records_count = $self->model->db->query_records_count($para);
+    return $records_count;
 }
 
 sub query_proxy {
     my ($self, $method, $para) = @_;
-    my $record = $self->model->$method($para);
+    my $record = $self->model->db->$method($para);
     return $record;
 }
 
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
-    $self->model->table_record_update($table, $record, $where);
+    $self->model->db->table_record_update($table, $record, $where);
     return;
 }
 
@@ -1238,7 +1238,7 @@ sub generate_doc {
     $args->{colslist} = [qw{id_tt}];
     $args->{where}    = { tt_file => $model_name };
     $args->{order}    = 'id_tt';
-    my $id_tt_aref = $self->model->table_batch_query($args);
+    my $id_tt_aref = $self->model->db->table_batch_query($args);
     my $id_tt =  $id_tt_aref->[0]{id_tt};
 
     # Required fields list from table
@@ -1247,7 +1247,7 @@ sub generate_doc {
     $args->{colslist} = [qw{var_name}];
     $args->{where}    = { id_tt => $id_tt, required => 1 };
     $args->{order}    = 'var_name';
-    my $required = $self->model->table_batch_query($args);
+    my $required = $self->model->db->table_batch_query($args);
 
     # List of the fields with values from the screen
     my @record_cmp;

@@ -307,7 +307,7 @@ sub search_command {
             = [ values %{$filter}, 'full' ];
     }
 
-    my $records = $model->query_dictionary($params);
+    my $records = $model->db->query_dictionary($params);
 
     # Sterg continutul tabelului - init
     $self->{box}->delete( 0, 'end' );
