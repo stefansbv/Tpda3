@@ -10,7 +10,7 @@ use utf8;
 use IPC::System::Simple 1.17 qw(capture);
 use Class::Unload;
 use File::Basename;
-use Hash::Merge;
+use Hash::Merge::Simple qw/merge/;
 use File::Spec::Functions qw(catfile);
 use List::Util qw(any);
 use List::MoreUtils qw(uniq);
@@ -29,10 +29,9 @@ use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
 use Tpda3::Config::Screen::Details;
+#use Tpda3::Model::Meta::Record;
 
 use Data::Dump qw/dump/;
-
-use Data::Dump;
 
 sub new {
     my $class = shift;
@@ -40,6 +39,8 @@ sub new {
     my $model = Tpda3::Model->new;
     my $self  = {
         _model   => $model,
+        debug    => $conf->debug,
+        verbose  => $conf->verbose,
         _rscrcls => undef,
         _rscrobj => undef,
         _dscrcls => undef,
@@ -152,12 +153,12 @@ sub debug {
     return $self->cfg->debug;
 }
 
-sub table_key {
+sub table_meta {
     my ($self, $page, $name) = @_;
-    die "Unknown 'page' parameter for 'table_key'"
+    die "Unknown 'page' parameter for 'table_meta'"
         unless defined $page
         and ( $page eq 'rec' or $page eq 'det' );
-    die "Unknown 'name' parameter for 'table_key'" unless $name;
+    die "Unknown 'name' parameter for 'table_meta'" unless $name;
     return $self->{_tblkeys}{$page}{$name};
 }
 
@@ -265,7 +266,7 @@ sub _set_event_handlers {
     $self->view->event_handler_for_menu(
         'mn_er',
         sub {
-            $self->screen_module_load('Reports','tools');
+            $self->screen_module_load_rec('Reports','tools');
         }
     );
 
@@ -273,7 +274,7 @@ sub _set_event_handlers {
     $self->view->event_handler_for_menu(
         'mn_et',
         sub {
-            $self->screen_module_load('Templates','tools');
+            $self->screen_module_load_rec('Templates','tools');
         }
     );
 
@@ -296,7 +297,7 @@ sub _set_event_handlers {
     $self->view->event_handler_for_menu(
         'mn_cfg',
         sub {
-            $self->screen_module_load('Configs','tools');
+            $self->screen_module_load_rec('Configs','tools');
         }
     );
 
@@ -307,7 +308,7 @@ sub _set_event_handlers {
         $self->view->event_handler_for_menu(
             $item,
             sub {
-                $self->screen_module_load($item);
+                $self->screen_module_load_rec($item);
             }
         );
     }
@@ -463,13 +464,17 @@ sub on_page_rec_activate {
         $self->set_app_mode('idle');
         return;
     }
+    if ( $self->debug ) {
+        print "# selected:\n";
+        dump $selected_href;
+    }
 
     #- Compare Key values, load record only if different
 
     $self->ask_to_save if $self->model->is_modified;
 
-    if ( my $table_key = $self->table_key( 'rec', 'main' ) ) {
-        my @current  = $table_key->map_keys( sub { $_->value } );
+    if ( my $table_meta = $self->table_meta( 'rec', 'main' ) ) {
+        my @current  = $table_meta->map_keys( sub { $_->value } );
         my @selected = values %{$selected_href};
         my $dc       = Data::Compare->new( \@selected, \@current );
         my $diff     = $dc->Cmp ? 0 : 1;
@@ -501,8 +506,8 @@ sub on_page_det_activate {
 
     #- Compare Key values, load detail record only if different
 
-    if ( my $table_key = $self->table_key( 'det', 'main' ) ) {
-        my @current = $table_key->map_keys( sub { $_->value } );
+    if ( my $table_meta = $self->table_meta( 'det', 'main' ) ) {
+        my @current = $table_meta->map_keys( sub { $_->value } );
         my $selected_pk_href = $self->view->list_read_selected();
         my @selected         = values %{$selected_pk_href};
         my $selected_fk_href = $self->tmx_read_selected;
@@ -556,17 +561,41 @@ sub screen_detail_name {
             }
         }
     }
-    print " screen_detail_name: $sdn\n" if $self->verbose;
+    print "# screen_detail_name: $sdn\n" if $self->debug;
     return $sdn;
+}
+
+sub has_detail_screen {
+    my $self = shift;
+    my $screen_cfg = $self->scrcfg('rec');
+    if ( my $screen = $screen_cfg->screen('details') ) {
+        return 1 if $screen;
+    }
+    return 0;
 }
 
 sub get_selected_and_store_key {
     my $self = shift;
-    my $rec_params = $self->table_key('rec', 'main')->get_key(0)->get_href;
-    $self->screen_store_key_values($rec_params);
+
+    my $page = $self->view->get_nb_current_page;
+    print "# get_selected_and_store_key ($page)\n";
+
+
+    my $rec_params = $self->table_meta('rec', 'main')->get_key(0)->get_href;
     my $det_params = $self->tmx_read_selected;
-    if ( defined $det_params and scalar %{$det_params} ) {
-        $self->screen_store_key_values($det_params);
+    if ( ref $rec_params and ref $det_params ) {
+        my $params = merge $rec_params, $det_params;
+        foreach my $what ( keys %{ $self->{_tblkeys}{$page} } ) {
+            $self->screen_store_key_values($params, $page, $what);
+        }
+    }
+    else {
+        print "get_selected_and_store_key: error\n";
+        print "-- rec and det params:\n";
+        dump $rec_params;
+        dump $det_params;
+        print "---\n";
+        die "get_selected_and_store_key: error\n";
     }
     return;
 }
@@ -599,7 +628,7 @@ sub screen_detail_load {
     my ( $self, $sdn ) = @_;
     my $dscrstr = $self->screen_string('det');
     unless ( $dscrstr && ( $dscrstr eq lc($sdn) ) ) {
-        $self->screen_module_detail_load($sdn); # load detail screen
+        $self->screen_module_load_det($sdn); # load detail screen
     }
     return;
 }
@@ -1086,7 +1115,7 @@ sub set_app_mode {
 
 sub is_record {
     my $self  = shift;
-    my $table = $self->table_key('rec', 'main');
+    my $table = $self->table_meta('rec', 'main');
     return if !$table or !$table->isa('Tpda3::Model::Table');
     return $table->get_key(0)->value;
 }
@@ -1271,7 +1300,7 @@ sub screen_module_class {
     return;
 }
 
-sub screen_module_load {
+sub screen_module_load_rec {
     my ( $self, $module, $from_tools ) = @_;
     print "Loading >$module<\n" if $self->verbose;
     my $rscrstr = lc $module;
@@ -1419,13 +1448,20 @@ sub screen_init_keys {
         "Configuration error!\nThe key fields configuration was changed in Tpda3 v0.70.\nSorry for the inconvenience.\n"
         unless defined $keys_m and ref($keys_m) eq 'ARRAY';
 
-    my $table  = Tpda3::Model::Table->new(
-        keys   => $keys_m,
-        table  => $self->scrcfg->maintable('name'),
-        view   => $self->scrcfg->maintable('view'),
+    my @fields    = keys %{ $self->scrcfg->maintable_columns };
+    my @fields_rw = keys %{ $self->scrcfg->maintable_columns_rw };
+    my $table = Tpda3::Model::Table->new(
+        page      => $page,
+        display   => 'record',
+        keys      => $keys_m,
+        table     => $self->scrcfg->maintable('name'),
+        view      => $self->scrcfg->maintable('view'),
+        fields    => \@fields,
+        fields_rw => \@fields_rw,
     );
-    if (ref $table) {
-        # Register main table object on $page page
+    if ( ref $table ) {
+
+        # Register main table object on the '$page' page
         $self->{_tblkeys}{$page}{main} = $table;
     }
 
@@ -1437,19 +1473,29 @@ sub screen_init_keys {
         if any { $_ eq 'columns' } @tms;
 
     foreach my $tm (@tms) {
+        my $fields_all = Tpda3::Utils->sort_hash_by_id(
+            $self->scrcfg->deptable_columns($tm) );
+        my $fields_rw = Tpda3::Utils->sort_hash_by_id(
+            $self->scrcfg->deptable_columns_rw($tm) );
+
         my $keys_d = $self->scrcfg->deptable_keys( $tm, 'name' );
         my $table = Tpda3::Model::Table->new(
-            keys   => $keys_d,
-            table  => $self->scrcfg->deptable_name($tm),
-            view   => $self->scrcfg->deptable_view($tm),
+            page      => $page,
+            display   => 'table',
+            keys      => $keys_d,
+            table     => $self->scrcfg->deptable_name($tm),
+            view      => $self->scrcfg->deptable_view($tm),
+            fields    => $fields_all,
+            fields_rw => $fields_rw,
+            order     => $self->scrcfg->deptable_orderby($tm),
+            updstyle  => $self->scrcfg->deptable_updatestyle($tm),
         );
+        if ( ref $table ) {
 
-        if (ref $table) {
-            # Register dep '$tm' table object on $page page
+            # Register dep '$tm' table object on '$page' page
             $self->{_tblkeys}{$page}{$tm} = $table;
         }
     }
-
     return;
 }
 
@@ -1500,7 +1546,7 @@ sub set_event_handler_screen {
     print 'set_event_handler_screen not implemented in ', __PACKAGE__, "\n";
 }
 
-sub screen_module_detail_load {
+sub screen_module_load_det {
     my ( $self, $module ) = @_;
     my $dscrstr = lc $module;
 
@@ -1794,8 +1840,8 @@ sub record_find_execute {
     }
 
     # Table data
-    $params->{table} = $self->table_key('rec','main')->view;
-    $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
+    $params->{table} = $self->table_meta('rec','main')->view;
+    $params->{pkcol} = $self->table_meta('rec','main')->get_key(0)->name;
 
     my ($ary_ref, $limit);
     try {
@@ -1867,8 +1913,8 @@ sub record_find_count {
     }
 
     # Table data
-    $params->{table} = $self->table_key('rec','main')->view;
-    $params->{pkcol} = $self->table_key('rec','main')->get_key(0)->name;
+    $params->{table} = $self->table_meta('rec','main')->view;
+    $params->{pkcol} = $self->table_meta('rec','main')->get_key(0)->name;
 
     my $record_count;
     try {
@@ -1889,8 +1935,8 @@ sub screen_report_print {
 
     return unless ref $self->scrobj('rec');
 
-    my $pk_col = $self->table_key('rec','main')->get_key(0)->name;
-    my $pk_val = $self->table_key('rec','main')->get_key(0)->value;
+    my $pk_col = $self->table_meta('rec','main')->get_key(0)->name;
+    my $pk_val = $self->table_meta('rec','main')->get_key(0)->value;
 
     my $param;
     if ($pk_val) {
@@ -1934,18 +1980,13 @@ sub screen_report_print {
 
 sub screen_document_generate {
     my $self = shift;
-
     return unless ref $self->scrobj('rec');
 
-    my $record;
-
     my $datasource = $self->scrcfg()->defaultdocument('datasource');
-    if ($datasource) {
-        $record = $self->get_alternate_data_record($datasource);
-    }
-    else {
-        $record = $self->get_screen_data_record('qry', 'all');
-    }
+    my $record
+        = $datasource
+        ? $self->get_alternate_data_record($datasource)
+        : $self->get_screen_data_record( 'query', 'all' );
 
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
@@ -1973,10 +2014,7 @@ sub screen_document_generate {
     my $other_data = $self->model->other_data($model_name);
 
     $record = $record->[0]{data};            # only the data
-    my $rec = Hash::Merge->new->merge(
-        $record,
-        $other_data,
-    );
+    my $rec = merge $record, $other_data;
 
     # Change the date format from ISO to configured (required!: ISO from DB)
     # Avoid UTF-8 problems in TeX
@@ -2008,26 +2046,30 @@ sub screen_document_generate {
 
 sub get_alternate_data_record {
     my ( $self, $datasource ) = @_;
+    my $page = $self->view->get_nb_current_page();
 
     #-- Metadata
-
     my $record = {};
-    $record->{metadata} = $self->main_table_metadata('qry');
+    # $record->{metadata} = $self->main_table_metadata('query');
+    $record->{metadata} = $self->table_meta($page, 'main')->build_sql_params_main('query');
+    if ( $self->debug ) {
+        print "# get_alternate_data_record:\n";
+        dump $record->{metadata};
+        print "---\n";
+    }
+
     $record->{data}     = {};
     $record->{metadata}{table} = $datasource;      # change datasource
 
     #-- Data
-
     try {
         $record->{data} = $self->model->db->query_record( $record->{metadata} );
     }
     catch {
         $self->catch_db_exceptions($_);
     };
-
     my @rec;
     push @rec, $record;    # rec data at index 0
-
     return \@rec;
 }
 
@@ -2225,7 +2267,7 @@ sub tmatrix_set_selected {
 sub toggle_mode_find {
     my $self = shift;
 
-    say "toggle find modified=", $self->model->is_modified ? 'yes' : 'no'
+    say "# toggle find modified=", $self->model->is_modified ? 'yes' : 'no'
       if $self->debug;
 
     if ( $self->model->is_modified ) {
@@ -2250,7 +2292,7 @@ sub toggle_mode_find {
 sub toggle_mode_add {
     my $self = shift;
 
-    say "toggle add modified=", $self->model->is_modified ? 'yes' : 'no'
+    say "# toggle add modified=", $self->model->is_modified ? 'yes' : 'no'
       if $self->debug;
 
     if ( $self->model->is_modified ) {
@@ -2355,7 +2397,11 @@ sub control_states {
 
 sub record_load_new {
     my ( $self, $selected_href ) = @_;
-    $self->screen_store_key_values($selected_href);
+    print "* record_load_new\n";
+    my $page = $self->view->get_nb_current_page;
+    foreach my $what ( keys %{ $self->{_tblkeys}{$page} } ) {
+        $self->screen_store_key_values($selected_href, $page, $what);
+    }
     $self->tmatrix_set_selected();    # initialize selector
     $self->record_load();
     if ( $self->model->is_loaded ) {
@@ -2376,11 +2422,23 @@ sub record_reload {
 
 sub record_load {
     my $self = shift;
-
+    # print "** record_load\n";
     my $page = $self->view->get_nb_current_page();
 
     #-  Main table
-    my $params = $self->main_table_metadata('qry');
+    my $params0 = $self->main_table_metadata('query');
+    if ( $self->debug ) {
+        print "# old main record_load params:\n";
+        dump $params0;
+        print "---\n";
+    }
+    # my $params =
+    my $params = $self->table_meta($page, 'main')->build_sql_params_main('query');
+    if ( $self->debug ) {
+        print "# new main record_load params:\n";
+        dump $params;
+        print "---\n";
+    }
 
     my $record;
     try {
@@ -2398,7 +2456,24 @@ sub record_load {
 
     #- Dependent table(s), (if any)
     foreach my $tm_ds ( keys %{ $self->scrobj($page)->get_tm_controls() } ) {
-        my $tm_params = $self->dep_table_metadata( $tm_ds, 'qry' );
+        my $tm_params = $self->dep_table_metadata( $tm_ds, 'query' );
+        if ( $self->debug ) {
+            print "# old dep record_load params:\n";
+            dump $tm_params;
+            print "---\n";
+        }
+        print "** $page\n";
+        my $pk_key = $self->table_meta($page, 'main')->get_key(0)->name;
+        my $pk_val = $self->table_meta($page, 'main')->get_key(0)->value;
+        say "*** $pk_key : $pk_val";
+
+        $tm_params = $self->table_meta($page, $tm_ds)->build_sql_params_deps('query');
+        if ( $self->debug ) {
+            print "# new dep record_load params:\n";
+            dump $tm_params;
+            print "---\n";
+        }
+
         my $records;
         try {
             $records = $self->model->db->table_batch_query($tm_params);
@@ -2461,7 +2536,19 @@ sub record_delete {
     my @record;
 
     my $record = {};
-    $record->{metadata} = $self->main_table_metadata('del');
+    my $metadata = $self->main_table_metadata('delete');
+    if ( $self->debug ) {
+        print "# old record_delete params:\n";
+        dump $metadata;
+        print "---\n";
+    }
+    my $page = $self->view->get_nb_current_page();
+    $record->{metadata} = $self->table_meta($page, 'main')->build_sql_params_main('delete');
+    if ( $self->debug ) {
+        print "# new record_delete params:\n";
+        dump $record;
+        print "---\n";
+    }
     push @record, $record;    # rec data at index 0
 
     #-  Dependent table(s), if any
@@ -2469,7 +2556,7 @@ sub record_delete {
     my $deprec = {};
     foreach my $tm_ds ( keys %{ $self->scrobj->get_tm_controls } ) {
         $deprec->{$tm_ds}{metadata}
-            = $self->dep_table_metadata( $tm_ds, 'del' );
+            = $self->dep_table_metadata( $tm_ds, 'delete' );
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
 
@@ -2572,7 +2659,7 @@ sub record_save_todb {
 
     if ( $self->model->is_mode('add') ) {
 
-        my $record = $self->get_screen_data_record('ins');
+        my $record = $self->get_screen_data_record('insert');
 
         try   { $self->check_required_data($record); }
         catch { $self->catch_data_exceptions($_);    };
@@ -2599,7 +2686,7 @@ sub record_save_todb {
             return;
         }
 
-        my $record = $self->get_screen_data_record('upd');
+        my $record = $self->get_screen_data_record('update');
         try   { $self->check_required_data($record) }
         catch { $self->catch_data_exceptions($_)    };
 
@@ -2632,7 +2719,7 @@ sub record_save_todb {
 
 sub record_save_conf {
     my $self = shift;
-    print "record_save_conf\n";
+    print "record_save_conf not implemented!\n";
     return;
 }
 
@@ -2727,7 +2814,7 @@ sub record_save_insert {
 sub list_update_add {
     my $self = shift;
     my $columns = $self->list_column_names();
-    my $current = $self->get_screen_data_record('upd');
+    my $current = $self->get_screen_data_record('update');
     my @list;
     foreach my $field ( @{$columns} ) {
         push @list, $current->[0]->{data}{$field};
@@ -2738,7 +2825,7 @@ sub list_update_add {
 
 sub list_remove {
     my $self = shift;
-    my @keys = $self->table_key('rec','main')->all_keys;
+    my @keys = $self->table_meta('rec','main')->all_keys;
     my $key_values = {};
     foreach my $key (@keys) {
         $key_values->{$key->name} = $key->value;
@@ -2755,7 +2842,7 @@ sub record_changed {
         die "Can't find saved data for comparison!";
     }
     my $witness = retrieve($witness_file);
-    my $record = $self->get_screen_data_record('upd');
+    my $record = $self->get_screen_data_record('update');
     return $self->model->db->record_compare( $witness, $record );
 }
 
@@ -2805,9 +2892,22 @@ sub get_screen_data_record {
     #-- Metadata
     my $record = {};
     $record->{metadata} = $self->main_table_metadata($for_sql);
-    $record->{data}     = {};
+    # if ( $self->debug ) {
+    #     print "# old get_screen_data_record params:\n";
+    #     dump $record->{metadata};
+    #     print "---\n";
+    # }
+    my $page = $self->view->get_nb_current_page();
+    $record->{metadata} = $self->table_meta($page, 'main')->build_sql_params_main($for_sql);
+    # if ( $self->debug ) {
+    #     print "# new get_screen_data_record params:\n";
+    #     dump $record->{metadata};
+    #     print "---\n";
+    # }
 
     #-- Data
+
+    $record->{data} = {};
     foreach my $field ( keys %{ $self->{_scrdata} } ) {
         $record->{data}{$field} = $self->{_scrdata}{$field};
     }
@@ -2829,146 +2929,118 @@ sub get_screen_data_record {
         }
     }
     push @record, $deprec if scalar keys %{$deprec};    # det data at index 1
+    # if ( $self->debug ) {
+    #     print "# get_screen_data_record: metadata \n";
+    #     dump @record;
+    # }
     return \@record;
-}
-
-sub buid_metadata_main {
-    my $self = shift;
-
-    my $metadata = {};
-    my $page = $self->view->get_nb_current_page();
-
-    $metadata->{qry}{table} = $self->table_key($page, 'main')->view;
-    my @keys = $self->table_key($page, 'main')->all_keys;
-    foreach my $key (@keys) {
-        $metadata->{qry}{where}{ $key->name } = $key->value;
-    }
-
-    # elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
-    $metadata->{upd}{table} = $self->table_key($page, 'main')->table;
-    @keys = $self->table_key($page, 'main')->all_keys;
-    foreach my $key (@keys) {
-        $metadata->{upd}{where}{ $key->name } = $key->value;
-    }
-
-    # ( $for_sql eq 'ins' ) {
-    $metadata->{ins}{table} = $self->table_key($page, 'main')->table;
-    $metadata->{ins}{pkcol} = $self->table_key($page, 'main')->get_key(0)->name;
-
-    # my $data = {
-    #     metadata => {
-    #         table => "orders",
-    #         where => {},
-    #     },
-    # };
-
-    # my $tmu = Tpda3::Model::Meta::Main->new($data), 'new object';
-    dd $metadata;
-    return;
 }
 
 sub main_table_metadata {
     my ( $self, $for_sql ) = @_;
-
-    my $metadata = {};
     my $page = $self->view->get_nb_current_page();
+    my $meta = {};
 
-    if ( $for_sql eq 'qry' ) {
-        $metadata->{table} = $self->table_key($page, 'main')->view;
-        my @keys = $self->table_key($page, 'main')->all_keys;
+    if ( $for_sql eq 'query' ) {
+        $meta->{table} = $self->table_meta($page, 'main')->view;
+        my @keys = $self->table_meta($page, 'main')->all_keys;
         foreach my $key (@keys) {
-            $metadata->{where}{ $key->name } = $key->value;
+            $meta->{where}{ $key->name } = $key->value;
         }
     }
-    elsif ( ( $for_sql eq 'upd' ) or ( $for_sql eq 'del' ) ) {
-        $metadata->{table} = $self->table_key($page, 'main')->table;
-        my @keys = $self->table_key($page, 'main')->all_keys;
+    elsif ( ( $for_sql eq 'update' ) or ( $for_sql eq 'delete' ) ) {
+        $meta->{table} = $self->table_meta($page, 'main')->table;
+        my @keys = $self->table_meta($page, 'main')->all_keys;
         foreach my $key (@keys) {
-            $metadata->{where}{ $key->name } = $key->value;
+            $meta->{where}{ $key->name } = $key->value;
         }
     }
-    elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->table_key($page, 'main')->table;
-        $metadata->{pkcol} = $self->table_key($page, 'main')->get_key(0)->name;
+    elsif ( $for_sql eq 'insert' ) {
+        $meta->{table} = $self->table_meta($page, 'main')->table;
+        $meta->{pkcol} = $self->table_meta($page, 'main')->get_key(0)->name;
     }
     else {
         warn "Wrong parameter: $for_sql\n";
         return;
     }
-    return $metadata;
+    # print "mainmeta:\n";
+    # dump $meta;
+    # print "---\n";
+    return $meta;
 }
 
 sub dep_table_metadata {
     my ( $self, $tm, $for_sql ) = @_;
-
-    my $metadata = {};
-
-    my $page = $self->view->get_nb_current_page();
-
-    my $pk_key = $self->table_key($page, 'main')->get_key(0)->name;
-    my $pk_val = $self->table_key($page, 'main')->get_key(0)->value;
+    my $page   = $self->view->get_nb_current_page();
+    my $pk_key = $self->table_meta($page, 'main')->get_key(0)->name;
+    my $pk_val = $self->table_meta($page, 'main')->get_key(0)->value;
 
     my @main_keys = ();
     if ($page eq 'det') {
-        @main_keys = $self->table_key($page, 'main')->all_keys;
+        @main_keys = $self->table_meta($page, 'main')->all_keys;
     }
+    my $meta = {};
 
-    if ( $for_sql eq 'qry' ) {
-        $metadata->{table} = $self->table_key($page, $tm)->view;
-        $metadata->{where}{$pk_key} = $pk_val;
+    if ( $for_sql eq 'query' ) {
+        $meta->{table} = $self->table_meta($page, $tm)->view;
+        $meta->{where}{$pk_key} = $pk_val;
         foreach my $key (@main_keys) {
             my $key_name = $key->name;
-            next if exists $metadata->{where}{$key_name}; # skip pk_key
+            next if exists $meta->{where}{$key_name}; # skip pk_key
             my $key_val = $key->value;
-            $metadata->{where}{$key_name} = $key_val;
+            $meta->{where}{$key_name} = $key_val;
         }
     }
-    elsif ( $for_sql eq 'upd' or $for_sql eq 'del' ) {
-        $metadata->{table} = $self->table_key( $page, $tm )->table;
-        $metadata->{where}{$pk_key} = $pk_val;
+    elsif ( $for_sql eq 'update' or $for_sql eq 'delete' ) {
+        $meta->{table} = $self->table_meta( $page, $tm )->table;
+        $meta->{where}{$pk_key} = $pk_val;
         foreach my $key (@main_keys) {
             my $key_name = $key->name;
-            next if exists $metadata->{where}{$key_name}; # skip pk_key
+            next if exists $meta->{where}{$key_name}; # skip pk_key
             my $key_val = $key->value;
-            $metadata->{where}{$key_name} = $key_val;
+            $meta->{where}{$key_name} = $key_val;
         }
         if ( $page eq 'det' ) {
-            my @tm_keys = $self->table_key( $page, $tm )->all_keys;
+            my @tm_keys = $self->table_meta( $page, $tm )->all_keys;
             foreach my $key (@tm_keys) {
                 my $key_name = $key->name;
-                next if exists $metadata->{where}{$key_name};    # skip key
-                $metadata->{tmpkcol} = $key_name;                # add key
+                next if exists $meta->{where}{$key_name};    # skip key
+                $meta->{tmpkcol} = $key_name;                # add key
             }
         }
     }
-    elsif ( $for_sql eq 'ins' ) {
-        $metadata->{table} = $self->table_key($page, $tm)->table;
+    elsif ( $for_sql eq 'insert' ) {
+        $meta->{table} = $self->table_meta($page, $tm)->table;
     }
     else {
         die "Bad parameter: $for_sql";
     }
 
-    my $columns;
-    if ( $for_sql eq 'qry' ) {
-        $columns = $self->scrcfg->deptable_columns($tm);
-    }
-    else {
-        $columns = $self->scrcfg->deptable_columns_rw($tm);
-    }
+    my $columns
+        = $for_sql eq 'query'
+        ? $self->scrcfg->deptable_columns($tm)
+        : $self->scrcfg->deptable_columns_rw($tm);
 
-    $metadata->{pkcol}    = $pk_key;
-    $metadata->{fkcol}    = $self->table_key($page, $tm)->get_key(1)->name;
-    $metadata->{order}    = $self->scrcfg->deptable_orderby($tm);
-    $metadata->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
-    $metadata->{updstyle} = $self->scrcfg->deptable_updatestyle($tm);
+    # print "*** dep:\n";
+    # dump $meta;
 
-    return $metadata;
+    $meta->{pkcol}    = $pk_key;
+    $meta->{fkcol}    = $self->table_meta($page, $tm)->get_key(1)->name;
+    $meta->{order}    = $self->scrcfg->deptable_orderby($tm);
+    $meta->{colslist} = Tpda3::Utils->sort_hash_by_id($columns);
+    $meta->{updstyle} = $self->scrcfg->deptable_updatestyle($tm);
+
+    # print "depmeta:\n";
+    # dump $meta;
+    # print "---\n";
+
+    return $meta;
 }
 
 sub report_table_metadata {
     my ( $self, $level ) = @_;
 
-    my $metadata = {};
+    my $meta = {};
 
     # DataSourceS meta-data
     my $dss    = $self->scrcfg()->repotable('datasources');
@@ -2982,33 +3054,33 @@ sub report_table_metadata {
     my @datasource = grep { m/^[^=]/ } keys %{$ds};
     my @tables = uniq @datasource;
     if (scalar @tables == 1) {
-        $metadata->{table} = $tables[0];
+        $meta->{table} = $tables[0];
     }
     else {
         # Wrong datasources config for level $level?
         return;
     }
 
-    $metadata->{pkcol}    = $pkcol;
-    $metadata->{colslist} = $ds->{$tables[0]};
-    $metadata->{rowcount} = $cntcol;
-    push @{ $metadata->{colslist} }, $pkcol;  # add PK to cols list
+    $meta->{pkcol}    = $pkcol;
+    $meta->{colslist} = $ds->{$tables[0]};
+    $meta->{rowcount} = $cntcol;
+    push @{ $meta->{colslist} }, $pkcol;  # add PK to cols list
 
-    return $metadata;
+    return $meta;
 }
 
 sub get_table_sumup_cols {
     my ( $self, $tm_ds, $level ) = @_;
 
-    my $metadata = $self->scrcfg->repo_table_columns_by_level($tm_ds, $level);
+    my $meta = $self->scrcfg->repo_table_columns_by_level($tm_ds, $level);
 
-    return $metadata->{'=sumup'};
+    return $meta->{'=sumup'};
 }
 
 sub save_screendata {
     my ( $self, $data_file ) = @_;
 
-    my $record = $self->get_screen_data_record('upd');
+    my $record = $self->get_screen_data_record('update');
 
     $self->_log->trace("Saving screen data in '$data_file'");
 
@@ -3053,11 +3125,19 @@ sub restore_screendata {
 }
 
 sub screen_store_key_values {
-    my ( $self, $record_href ) = @_;
-    my $page = $self->view->get_nb_current_page();
+    my ( $self, $record_href, $page, $what ) = @_;
+    die "screen_store_key_values: the $record_href parameter is required!"
+        unless defined $record_href and ref $record_href;
+    $page //= $self->view->get_nb_current_page;
+    $what //= 'main';
+    if ( $self->debug ) {
+        print "# screen_store_key_values($page, $what): \n";
+        dump $record_href;
+        print "---\n";
+    }
     foreach my $field ( keys %{$record_href} ) {
         my $value = $record_href->{$field};
-        $self->table_key( $page, 'main' )->update_key_field( $field, $value );
+        $self->table_meta( $page, $what )->update_key_field( $field, $value );
     }
     return;
 }
@@ -3065,9 +3145,9 @@ sub screen_store_key_values {
 sub screen_clear_key_values {
     my $self = shift;
     my $page = $self->view->get_nb_current_page();
-    my $table_keys = $self->table_key($page, 'main');
-    return unless blessed $table_keys;
-    foreach my $key ( $table_keys->all_keys ) {
+    my $table_meta = $self->table_meta($page, 'main');
+    return unless blessed $table_meta;
+    foreach my $key ( $table_meta->all_keys ) {
         $key->value(undef);
     }
     return;
@@ -3250,9 +3330,9 @@ Return view instance variable
 
 Return configuration instance object.
 
-=head2 table_key
+=head2 table_meta
 
-Return the table keys.
+Return the table metadata.
 
 =head2 _log
 
@@ -3327,6 +3407,10 @@ or
             name        = Consult
         </detail>
     </details>
+
+=head2 has_detail_screen
+
+Return screen detail name or false if not configured.
 
 =head2 get_selected_and_store_key
 
@@ -3650,9 +3734,9 @@ Main application class name.
 
 Return screen module class and file name.
 
-=head2 screen_module_load
+=head2 screen_module_load_rec
 
-Load screen chosen from the menu.
+Load the main screen chosen from the menu, into the 'Record' page.
 
 =head2 screen_init_keys
 
@@ -3679,7 +3763,7 @@ C<scrtoolbar> section of the current screen configuration.
 Default usage is for the I<add> and I<delete> buttons attached to the
 TableMatrix widget.
 
-=head2 screen_module_detail_load
+=head2 screen_module_load_det
 
 Load detail screen.
 
@@ -3839,7 +3923,9 @@ Generate default document assigned to screen.
 
 =head2 get_alternate_data_record
 
-Datasource from configuration for default document assigned to screen.
+The default data source for the generated documents is the current
+record.  The alternative is to use a table as datasource,
+configured... TODO!
 
 =head2 screen_read
 
