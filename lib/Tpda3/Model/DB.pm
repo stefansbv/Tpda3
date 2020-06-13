@@ -28,7 +28,11 @@ use Tpda3::Observable;
 use Tpda3::Config::Connection;
 use Tpda3::Target;
 use Tpda3::Utils;
+use Tpda3::Model::Update;
+use Tpda3::Model::Update::Compare;
 use namespace::autoclean;
+
+use Data::Dump qw/dump/;
 
 has 'cfg' => (
     is       => 'ro',
@@ -37,6 +41,11 @@ has 'cfg' => (
 );
 
 has 'debug' => (
+    is  => 'ro',
+    isa => Bool,
+);
+
+has 'verbose' => (
     is  => 'ro',
     isa => Bool,
 );
@@ -200,8 +209,14 @@ sub query_filter_find {
     return \@records;
 }
 
+# called by record_load, get_alternate_data_record from Controller.pm
 sub query_record {
     my ( $self, $opts ) = @_;
+    if ( $self->debug ) {
+        print "# query_record: params\n";
+        dump $opts;
+        print "---\n";
+    }
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
@@ -684,7 +699,7 @@ sub prepare_record_update {
     my $where = $mainmeta->{where};
 
     if ( %{$maindata} ) {
-    $self->table_record_update( $table, $maindata, $where );
+        $self->table_record_update( $table, $maindata, $where );
     }
     else {
         say "No main data to update for '$table'" if $self->verbose;
@@ -726,6 +741,12 @@ sub prepare_record_update {
 
 sub prepare_record_delete {
     my ( $self, $record ) = @_;
+
+    if ( $self->debug ) {
+        print "# prepare_record_delete: params\n";
+        dump $record;
+        print "---\n";
+    }
 
     #- Dependent records
 
@@ -1148,6 +1169,18 @@ Same as C<query_records_find> but returns an AoH suitable for TM fill.
 
 =head2 query_record
 
+Parameters:
+
+=over
+
+=item table  - the table name (scalar)
+
+=item colums - field list (array reference)
+
+=item where  - the where clause (hash reference)
+
+=back
+
 Return a record as hash reference
 
 =head2 table_batch_query
@@ -1155,6 +1188,20 @@ Return a record as hash reference
 Query records and return an AoH.
 
 Option to add row count field to the returned data structure.
+
+Parameters:
+
+=over
+
+=item table
+
+=item colslist
+
+=item where
+
+=item order
+
+=back
 
 =head2 query_dictionary
 
