@@ -57,7 +57,7 @@ sub test_screen {
 
     $ctrl->{_view}->after(
         $delay * 100,
-        sub { ok( $ctrl->screen_module_load($screen_name), 'Load Screen' ); }
+        sub { ok( $ctrl->screen_module_load_rec($screen_name), 'Load Screen' ); }
     );
 
     #-- Test screen configs
