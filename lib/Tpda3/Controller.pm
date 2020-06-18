@@ -28,8 +28,11 @@ use Tpda3::Model;
 use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
+<<<<<<< HEAD
 use Tpda3::Config::Screen::Details;
 #use Tpda3::Model::Meta::Record;
+=======
+>>>>>>> e95c540... Cleanup (empty lines)
 
 use Data::Dump qw/dump/;
 
@@ -580,7 +583,6 @@ sub get_selected_and_store_key {
     my $page = $self->view->get_nb_current_page;
     print "# get_selected_and_store_key ($page)\n";
 
-
     my $rec_params = $self->table_meta('rec', 'main')->get_key(0)->get_href;
     my $det_params = $self->tmx_read_selected;
     if ( ref $rec_params and ref $det_params ) {
@@ -1093,22 +1095,16 @@ sub fields_cfg_hash {
 
 sub set_app_mode {
     my ( $self, $mode ) = @_;
-
     $self->model->set_mode($mode);
-
     $self->toggle_interface_controls;
-
     return unless ref $self->scrobj('rec');
-
     $self->toggle_screen_interface_controls;
-
     if ( my $method_name = $self->{method_for_mode}{$mode} ) {
         $self->$method_name();
     }
     else {
         print "WW: '$mode' not implemented!\n";
     }
-
     return 1;    # to make ok from Test::More happy
                  # probably missing something :) TODO!
 }
@@ -1124,15 +1120,11 @@ sub on_screen_mode_idle {
     my $self = shift;
 
     # Empty the main controls and TM, if any
-
     $self->record_clear;
-
     foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
         $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
-
     $self->controls_state_set('off');
-
     $self->view->nb_set_page_state( 'det', 'disabled');
     $self->view->nb_set_page_state( 'lst', 'normal');
 
@@ -1141,22 +1133,17 @@ sub on_screen_mode_idle {
     $self->scrobj($page)->on_mode_idle()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_idle');
-
     return;
 }
 
 sub on_screen_mode_add {
     my $self = shift;
-
     $self->record_clear;              # empty the main controls and TM
     $self->tmatrix_set_selected();    # initialize selector
-
     foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
         $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
-
     $self->controls_state_set('edit');
-
     $self->view->nb_set_page_state( 'det', 'disabled' );
     $self->view->nb_set_page_state( 'lst', 'disabled' );
 
@@ -1171,7 +1158,6 @@ sub on_screen_mode_add {
     $self->scrobj($page)->on_mode_add()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_add');
-
     return;
 }
 
@@ -1179,13 +1165,10 @@ sub on_screen_mode_find {
     my $self = shift;
 
     # Empty the main controls and TM, if any
-
     $self->record_clear;
-
     foreach my $tm_ds ( keys %{ $self->scrobj()->get_tm_controls() } ) {
         $self->scrobj()->get_tm_controls($tm_ds)->clear_all();
     }
-
     $self->controls_state_set('find');
 
     # Trigger 'on_mode_find' method in screen if defined
@@ -1193,13 +1176,11 @@ sub on_screen_mode_find {
     $self->scrobj($page)->on_mode_find()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_find');
-
     return;
 }
 
 sub on_screen_mode_edit {
     my $self = shift;
-
     $self->controls_state_set('edit');
     $self->view->nb_set_page_state( 'det', 'normal');
     $self->view->nb_set_page_state( 'lst', 'normal');
@@ -1209,22 +1190,18 @@ sub on_screen_mode_edit {
     $self->scrobj($page)->on_mode_edit()
         if ( $page eq 'rec' or $page eq 'det' )
         and $self->scrobj($page)->can('on_mode_edit');
-
     return;
 }
 
 sub on_screen_mode_sele {
     my $self = shift;
-
     my $nb = $self->view->get_notebook();
     $self->view->nb_set_page_state( 'det', 'disabled');
-
     return;
 }
 
 sub _control_states_init {
     my $self = shift;
-
     $self->{control_states} = {
         off => {
             state      => 'disabled',
@@ -1243,7 +1220,6 @@ sub _control_states_init {
             background => 'from_config',
         },
     };
-
     $self->{method_for_mode} = {
         add  => 'on_screen_mode_add',
         find => 'on_screen_mode_find',
@@ -1251,18 +1227,14 @@ sub _control_states_init {
         edit => 'on_screen_mode_edit',
         sele => 'on_screen_mode_sele',
     };
-
     return;
 }
 
 sub scrcfg {
     my ( $self, $page ) = @_;
     $page ||= $self->view->get_nb_current_page();
-
     return unless $page;
-
     die "Wrong page (scrcfg): $page!" if $page eq 'lst';
-
     my $scrobj = $self->scrobj($page);
     return $scrobj->{scrcfg}
         if blessed $scrobj and ( exists $scrobj->{scrcfg} );
@@ -1270,21 +1242,16 @@ sub scrcfg {
 
 sub scrobj {
     my ( $self, $page ) = @_;
-
     $page ||= $self->view->get_nb_current_page();
-
     return $self->{_rscrobj}
         if $page eq 'rec'
         and exists $self->{_rscrobj}
         and blessed $self->{_rscrobj};
-
     return $self->{_dscrobj}
         if $page eq 'det'
         and exists $self->{_dscrobj}
         and blessed $self->{_dscrobj};
-
     die "Wrong call to 'scrobj'" unless $page;
-
     return;
 }
 
@@ -1332,7 +1299,6 @@ sub screen_module_load_rec {
     $self->view->create_notebook();
     $self->_set_event_handler_nb('rec');
     $self->_set_event_handler_nb('lst');
-
     my ( $class, $module_file )
         = $self->screen_module_class( $module, $from_tools );
     eval { require $module_file };
@@ -1340,7 +1306,6 @@ sub screen_module_load_rec {
         print "EE: Can't load '$module_file'\n";
         return;
     }
-
     unless ( $class->can('run_screen') ) {
         my $msg = "EE: Screen '$class' can not 'run_screen'";
         print "$msg\n";
@@ -1355,7 +1320,6 @@ sub screen_module_load_rec {
         },
     );
     $self->_log->trace("New screen instance: $module");
-
     return unless $self->check_cfg_version;  # current version is 5
 
     # Details page
@@ -1441,13 +1405,11 @@ sub screen_init_keys {
     my ($self, $page, $scrcfg) = @_;
 
     #-- Main table on the '$page' page
-
     my $keys_m = $self->scrcfg->maintable( 'keys', 'name' );
 
     die
         "Configuration error!\nThe key fields configuration was changed in Tpda3 v0.70.\nSorry for the inconvenience.\n"
         unless defined $keys_m and ref($keys_m) eq 'ARRAY';
-
     my @fields    = keys %{ $self->scrcfg->maintable_columns };
     my @fields_rw = keys %{ $self->scrcfg->maintable_columns_rw };
     my $table = Tpda3::Model::Table->new(
@@ -1468,7 +1430,6 @@ sub screen_init_keys {
     #-- Dependent tables (TableMatrix)
 
     my @tms = keys %{ $self->scrcfg->deptable };
-
     die "The screen configuration for the dependent tables requires a label (for example: 'tm1').\n"
         if any { $_ eq 'columns' } @tms;
 
@@ -1477,7 +1438,6 @@ sub screen_init_keys {
             $self->scrcfg->deptable_columns($tm) );
         my $fields_rw = Tpda3::Utils->sort_hash_by_id(
             $self->scrcfg->deptable_columns_rw($tm) );
-
         my $keys_d = $self->scrcfg->deptable_keys( $tm, 'name' );
         my $table = Tpda3::Model::Table->new(
             page      => $page,
@@ -1512,12 +1472,9 @@ sub screen_init_details {
 
 sub check_cfg_version {
     my $self = shift;
-
     my $cfg = $self->scrcfg()->screen;
-
     my $req_ver = 5;            # current screen config version
     my $cfg_ver = ( exists $cfg->{version} ) ? $cfg->{version} : 1;
-
     unless ( $cfg_ver == $req_ver ) {
         my $screen_name = $self->scrcfg->screen('name');
         my $msg = "Screen configuration ($screen_name.conf) error!\n\n";
@@ -1549,7 +1506,6 @@ sub set_event_handler_screen {
 sub screen_module_load_det {
     my ( $self, $module ) = @_;
     my $dscrstr = lc $module;
-
     $self->view->notebook_page_clean('det');
 
     # Unload current screen
@@ -1561,7 +1517,6 @@ sub screen_module_load_det {
     }
 
     $self->_set_event_handler_nb('det');
-
     my $from_tools = $self->{_rscrobj}->toolscr;
     my ( $class, $module_file )
         = $self->screen_module_class( $module, $from_tools );
@@ -1569,7 +1524,6 @@ sub screen_module_load_det {
     if ($@) {
         die "EE: Can't load '$module_file'";
     }
-
     unless ( $class->can('run_screen') ) {
         my $msg = "Error! Screen '$class' can not 'run_screen'";
         print "$msg\n";
@@ -1604,7 +1558,6 @@ sub screen_module_load_det {
 
     # Load lists into ComboBox like widgets
     $self->screen_load_lists();
-
     $self->view->set_status( '', 'ms' );
 
     # Set Key column names
@@ -1620,9 +1573,7 @@ sub screen_module_load_det {
 
 sub screen_string {
     my ( $self, $page ) = @_;
-
     $page ||= $self->view->get_nb_current_page();
-
     my $module;
     if ( $page eq 'rec' ) {
         $module = $self->{_rscrcls};
@@ -1634,43 +1585,34 @@ sub screen_string {
         print "WW: screen_string called with page '$page'\n";
         return;
     }
-
     my $scrstr = ( split /::/, $module )[-1] || q{};    # or nothing
-
     return lc $scrstr;
 }
 
 sub save_geometry {
     my $self = shift;
-
     my $scr_name = $self->scrcfg()
         ? $self->scrcfg()->screen('name')
         : 'main';
-
     $self->cfg->config_save_instance(
         $scr_name,
         $self->view->get_geometry()
     );
-
     return;
 }
 
 sub set_mnemonic {
     my $self = shift;
-
     print 'set_mnemonic not implemented in ', __PACKAGE__, "\n";
-
     return;
 }
 
 sub set_geometry {
     my $self = shift;
-
     my $scr_name
         = $self->scrcfg()
         ? $self->scrcfg()->screen('name')
         : return;
-
     my $geom;
     if ( $self->cfg->can('geometry') ) {
         my $go = $self->cfg->geometry();
@@ -1681,9 +1623,7 @@ sub set_geometry {
     unless ($geom) {
         $geom = $self->scrcfg('rec')->screen('geometry');
     }
-
     $self->view->set_geometry($geom);
-
     return;
 }
 
@@ -1698,25 +1638,19 @@ sub screen_load_lists {
 
     # Entry objects hash
     my $ctrl_ref = $self->scrobj()->get_controls();
-
     return unless scalar keys %{$ctrl_ref};
-
     foreach my $field ( keys %{ $self->scrcfg()->maintable('columns') } ) {
 
         # Control config attributes
         my $fld_cfg  = $self->scrcfg()->maintable('columns', $field);
         my $ctrltype = $fld_cfg->{ctrltype};
         my $ctrlrw   = $fld_cfg->{readwrite};
-
         my $para = $self->scrcfg()->lists_ds($field);
-
         next unless defined $para;      # should not happen
         next unless scalar %{$para};    # skip empty config for lists_ds
 
         # Query table and return data to fill the lists
-
         my $choices = $self->model->get_codes( $field, $para, $ctrltype );
-
         if ( $ctrltype eq 'm' ) {
             if ( $ctrl_ref->{$field}[1] ) {
                 my $control = $ctrl_ref->{$field}[1];
@@ -1730,19 +1664,15 @@ sub screen_load_lists {
             print "EE: No '$ctrltype' ctrl type for writing '$field'!\n";
         }
     }
-
     return;
 }
 
 sub toggle_interface_controls {
     my $self = shift;
-
     my $conf = $self->cfg->toolbar;
     my $mode = $self->model->get_appmode;
     my $page = $self->view->get_nb_current_page();
-
     my $is_rec = $self->is_record();
-
     foreach my $name ( $conf->all_buttons ) {
         my $status = $conf->get_tool($name)->{state}{$page}{$mode};
 
@@ -1784,16 +1714,13 @@ sub toggle_interface_controls {
 
         $self->view->enable_tool( $name, $status );
     }
-
     return;
 }
 
 sub toggle_screen_interface_controls {
     my $self = shift;
-
     my $page = $self->view->get_nb_current_page();
     my $mode = $self->model->get_appmode;
-
     return if $page eq 'lst';
 
     #- Toolbar (table)
@@ -1814,7 +1741,6 @@ sub toggle_screen_interface_controls {
 
 sub record_find_execute {
     my $self = shift;
-
     $self->screen_read();
     my $params = {};
 
@@ -1842,7 +1768,6 @@ sub record_find_execute {
     # Table data
     $params->{table} = $self->table_meta('rec','main')->view;
     $params->{pkcol} = $self->table_meta('rec','main')->get_key(0)->name;
-
     my ($ary_ref, $limit);
     try {
          ($ary_ref, $limit) = $self->model->db->query_records_find($params);
@@ -1857,13 +1782,11 @@ sub record_find_execute {
         # die "Find failed!";
         return;
     }
-
     my $record_count = scalar @{$ary_ref};
     my $msg1 = __n 'record', 'records', $record_count;
     my $msg0 = $record_count == $limit
              ? __ 'first'
              : q{};
-
     my $message = __x(
         "{pre} {count} {post}",
         pre   => $msg0,
@@ -1871,7 +1794,6 @@ sub record_find_execute {
         post  => $msg1
     );
     $self->view->set_status($message, 'ms', 'darkgreen');
-
     $self->view->list_init();
     my $record_inlist = $self->view->list_populate($ary_ref);
     $self->view->list_raise() if $record_inlist > 0;
@@ -1883,18 +1805,15 @@ sub record_find_execute {
 
     # Set mode to sele if found
     $self->set_app_mode('sele') if $record_inlist > 0;
-
     return;
 }
 
 sub record_find_count {
     my $self = shift;
-
     $self->screen_read();
 
     # Table configs
     my $columns = $self->scrcfg('rec')->maintable('columns');
-
     my $params = {};
 
     # Add findtype info to screen data
@@ -1915,7 +1834,6 @@ sub record_find_count {
     # Table data
     $params->{table} = $self->table_meta('rec','main')->view;
     $params->{pkcol} = $self->table_meta('rec','main')->get_key(0)->name;
-
     my $record_count;
     try {
         $record_count = $self->model->db->query_records_count($params);
@@ -1923,21 +1841,16 @@ sub record_find_count {
     catch {
         $self->catch_db_exceptions($_);
     };
-
     my $msg = __ 'records';
     $self->view->set_status( "$record_count $msg", 'ms', 'darkgreen' );
-
     return;
 }
 
 sub screen_report_print {
     my $self = shift;
-
     return unless ref $self->scrobj('rec');
-
     my $pk_col = $self->table_meta('rec','main')->get_key(0)->name;
     my $pk_val = $self->table_meta('rec','main')->get_key(0)->value;
-
     my $param;
     if ($pk_val) {
         $param = "$pk_col=$pk_val";          # default parameter ID
@@ -1947,7 +1860,6 @@ sub screen_report_print {
         $self->view->status_message("error#$textstr");
         return;
     }
-
     my $report_exe  = $self->cfg->cfextapps->{repman}{exe_path};
     my $report_name = $self->scrcfg('rec')->defaultreport('file');
     my $report_file = $self->cfg->resource_path_for($report_name, 'rep');
@@ -1963,7 +1875,6 @@ sub screen_report_print {
         $self->_log->debug("No parameters for RepMan");
         die "No parameters for RepMan\n",
     }
-
     my $output = q{};
     try {
         $output = capture("$cmd @opts");
@@ -1974,35 +1885,29 @@ sub screen_report_print {
             logmsg  => $output,
         );
     };
-
     return;
 }
 
 sub screen_document_generate {
     my $self = shift;
     return unless ref $self->scrobj('rec');
-
     my $datasource = $self->scrcfg()->defaultdocument('datasource');
     my $record
         = $datasource
         ? $self->get_alternate_data_record($datasource)
         : $self->get_screen_data_record( 'query', 'all' );
-
     my $fields_no = scalar keys %{ $record->[0]{data} };
     if ( $fields_no <= 0 ) {
         $self->view->set_status(__ 'Empty record', 'ms', 'red');
         $self->_log->error('Generator: no data!');
     }
-
     my $model_name = $self->scrcfg()->defaultdocument('file');
     my $model_file = $self->cfg->resource_path_for($model_name, 'tex', 'model');
-
     unless ( -f $model_file ) {
         $self->view->set_status(__ 'Report failed!', 'ms', 'red' );
         $self->_log->error('Generator: Template not found');
         return;
     }
-
     my $out_path = $self->cfg->resource_path_for(undef, 'tex', 'output');
     unless ( -d $out_path ) {
         $self->view->set_status(__ 'Output path not found', 'ms', 'red' );
@@ -2012,7 +1917,6 @@ sub screen_document_generate {
 
     # Data from other sources
     my $other_data = $self->model->other_data($model_name);
-
     $record = $record->[0]{data};            # only the data
     my $rec = merge $record, $other_data;
 
@@ -2038,9 +1942,7 @@ sub screen_document_generate {
     if ($self->scrobj()->can($method)) {
         $rec = $self->scrobj()->$method($rec);
     }
-
     $self->view->generate_doc( $model_file, $rec);
-
     return;
 }
 
