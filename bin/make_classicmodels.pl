@@ -43,6 +43,7 @@ Create the test database.
 sub create_classicmodels {
 
     my $dbfile = get_testdb_filename();
+    print "The database: $dbfile\n";
 
     if (-f $dbfile) {
         unlink $dbfile;
