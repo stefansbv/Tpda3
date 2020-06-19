@@ -385,11 +385,6 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 SYNOPSIS
 
-    use Tpda3::Db::Connection::OdbcFb;
-
-    my $db = Tpda3::Db::Connection::OdbcFb->new();
-
-    $db->db_connect($connection);
 
 =head2 new
 
