@@ -19,7 +19,6 @@ require Tpda3::Tk::TB;
 require Tpda3::Tk::TM;
 require Tpda3::Utils;
 require Tpda3::Lookup;
-require Tpda3::Db;
 require Tpda3::Exceptions;
 
 use base q{Tpda3::Tk::Screen};
