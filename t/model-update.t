@@ -7,10 +7,6 @@ use lib qw( lib ../lib );
 
 use Tpda3::Model::Update;
 use Tpda3::Model::Update::Compare;
-use Tpda3::Model::Meta::Main;
-use Tpda3::Model::Meta::Dep;
-
-use Data::Dump;
 
 # An orders + orderdetails record:
 
