@@ -11,6 +11,7 @@ use Tpda3::Types qw(
     Tpda3Config
     Tpda3Hollyday
 );
+use Path::Tiny;
 use Time::Moment;
 use Tpda3::Hollyday;
 use namespace::autoclean;
@@ -50,7 +51,7 @@ has 'hollyday_file' => (
     coerce   => 1,
     default  => sub {
         my $self = shift;
-        return $self->config->resource_path_for( 'sarbatori.yml', 'res' );
+        return path $self->config->resource_path_for( 'sarbatori.yml', 'res' );
     },
 );
 
