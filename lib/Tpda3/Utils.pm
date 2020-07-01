@@ -320,6 +320,7 @@ sub decode_unless_utf {
     return $value;
 }
 
+# TODO: should be sub categorize_message
 sub parse_message {
     my ($self, $text) = @_;
     (my $type, $text) = split /#/, $text, 2;
@@ -336,6 +337,7 @@ sub parse_message {
         $type eq 'warn'  && do { $color = 'orange';    last SWITCH; };
         $color = 'black';                    # default
     }
+    # return ($text, $color, $type);
     return ($text, $color);
 }
 
