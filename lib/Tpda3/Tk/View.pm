@@ -1198,15 +1198,15 @@ sub lookup_description {
 }
 
 sub tbl_selection_query {
-    my ($self, $para, $debug) = @_;
-    my $ary_ref = $self->model->query_filter_find($para, $debug);
+    my ($self, $para, $debug, $limit) = @_;
+    my $ary_ref = $self->model->query_filter_find($para, $debug, $limit);
     return $ary_ref;
 }
 
 sub tbl_selection_count {
-    my ($self, $para) = @_;
-    my $records_count = $self->model->query_records_count($para);
-    return $records_count;
+    my ($self, $para, $debug) = @_;
+    my $rec_cnt = $self->model->query_filter_count($para);
+    return $rec_cnt;
 }
 
 sub query_proxy {
