@@ -223,7 +223,7 @@ sub query_records_find {
 }
 
 sub query_filter_find {
-    my ( $self, $opts, $debug ) = @_;
+    my ( $self, $opts, $debug, $limit ) = @_;
 
     my $table = $opts->{table};
     my $cols  = $opts->{columns};
@@ -240,6 +240,8 @@ sub query_filter_find {
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
+    $stmt .= qq{ LIMIT $limit} if defined $limit and $limit > 0;
+
     $self->debug_print_sql('query_filter_find', $stmt, \@bind)
         if $self->debug;
 
@@ -259,6 +261,34 @@ sub query_filter_find {
     };
 
     return \@records;
+}
+
+sub query_filter_count {
+    my ( $self, $opts, $debug ) = @_;
+
+    my $table = $opts->{table};
+    my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
+    my $where = $opts->{where};
+
+    return if !ref $where;
+
+    my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
+    my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
+
+    $self->debug_print_sql('query_filter_count', $stmt, \@bind)
+        if $self->debug;
+
+    my $record_count;
+    try {
+        my $sth = $self->dbh->prepare($stmt);
+        $sth->execute(@bind);
+        ($record_count) = $sth->fetchrow_array();
+    }
+    catch {
+        $self->db_exception($_, 'Count failed');
+    };
+
+    return $record_count;
 }
 
 sub query_record {
@@ -1265,13 +1295,15 @@ Count records in table. TODO.
 
 =head2 query_records_find
 
-Count records in table.  Here we need the contents of the screen to
-build an sql where clause and also the column names from the
-I<columns> configuration.
+TODO: fix pod contents! Here we need the contents of the screen to build an sql
+where clause and also the column names from the I<columns>
+configuration.
 
 =head2 query_filter_find
 
 Same as C<query_records_find> but returns an AoH suitable for TM fill.
+
+=head2 query_filter_count
 
 =head2 query_record
 
