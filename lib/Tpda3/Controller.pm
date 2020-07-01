@@ -29,6 +29,8 @@ use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
 
+use Data::Dump qw/dump/;
+
 sub new {
     my $class = shift;
 
@@ -517,9 +519,17 @@ sub screen_detail_name {
     my $sdn;
     if ( my $screen_cfg = $self->scrcfg('rec') ) {
         if ( my $screen = $screen_cfg->screen('details') ) {
+            if ($self->debug) {
+                print "#  screen:\n";
+                dump $screen;
+                print "---\n";
+            }
             if ( ref $screen ) {
                 if ( $sdn = $self->get_sdn_name($screen) ) {
                     $sdn = $screen->{default} if $sdn eq 'default';
+                }
+                else {
+                    $sdn = $screen->{default};
                 }
             }
             else {
