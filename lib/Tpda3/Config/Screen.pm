@@ -404,13 +404,15 @@ Return a Perl data structure from a configuration file.
 
 Return the L<screen> section data structure.
 
+The L<screen> section is required.
+
 The B<details> section can be used for loading different screen
 modules in the B<Details> tab, based on a field value from the
 B<Record> tab.
 
 In the screen config example below C<cod_tip> can be B<CS> or B<CT>,
 and for each, the corresponding screen module is loaded.  The
-C<filter> parametere is the foreign key of the database table.
+C<filter> parameter is the foreign key of the database table.
 
     <screen>
         version             = 5
@@ -432,7 +434,41 @@ C<filter> parametere is the foreign key of the database table.
         </details>
     </screen>
 
-The L<screen> section is required.
+Here C<cod_tip> and C<id_act> are fields from the TableMatrix widget
+on the C<rec> page, coresponding to the fields with the same name from
+a details database table.
+
+Another example, the simplest configuration with a default screen
+C<Pontaj>:
+
+    <screen>
+    ...
+        <details>
+            match             = id_pontaj
+            filter            = id_pontaj
+            default           = Pontaj
+        </details>
+    </screen>
+
+Or this?
+
+    <screen>
+      version               = 5
+      ...
+      details               = LocuDet
+    </screen>
+
+Another example...
+
+  <details>
+      match           = id_prsrv
+      filter          = id_art
+      default         = Details
+      <detail>
+          value       = 4
+          name        = Gunoi
+      </detail>
+  </details>
 
 =head2 defaultreport
 
