@@ -28,15 +28,15 @@ use Tpda3::Model;
 use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
+use Tpda3::Config::Screen::Details;
 
 use Data::Dump qw/dump/;
 
 sub new {
     my $class = shift;
-
-    my $model   = Tpda3::Model->new;
-
-    my $self = {
+    my $cfg   = Tpda3::Config->instance();
+    my $model = Tpda3::Model->new;
+    my $self  = {
         _model   => $model,
         _rscrcls => undef,
         _rscrobj => undef,
@@ -44,12 +44,11 @@ sub new {
         _dscrobj => undef,
         _tblkeys => undef,
         _scrdata => undef,
-        _cfg     => Tpda3::Config->instance(),
+        _cfg     => $cfg,
+        _csd     => undef,
         _log     => get_logger(),
     };
-
     bless $self, $class;
-
     return $self;
 }
 
@@ -517,23 +516,29 @@ sub on_page_det_activate {
 sub screen_detail_name {
     my $self = shift;
     my $sdn;
+
+    say 'has detail = ', $self->{_csd}->has_no_detail ? 'YES' : 'NO';
+    say 'filter     = ', $self->{_csd}->filter ? $self->{_csd}->filter : 'none';
+    say 'match      = ', $self->{_csd}->match ? $self->{_csd}->match : 'none';
+    say 'default    = ', $self->{_csd}->default ? $self->{_csd}->default : 'none';
+
     if ( my $screen_cfg = $self->scrcfg('rec') ) {
-        if ( my $screen = $screen_cfg->screen('details') ) {
+        if ( my $detail = $screen_cfg->screen('details') ) {
             if ($self->debug) {
                 print "#  screen:\n";
-                dump $screen;
+                dump $detail;
                 print "---\n";
             }
-            if ( ref $screen ) {
-                if ( $sdn = $self->get_sdn_name($screen) ) {
-                    $sdn = $screen->{default} if $sdn eq 'default';
+            if ( ref $detail ) {
+                if ( $sdn = $self->get_sdn_name($detail) ) {
+                    $sdn = $detail->{default} if $sdn eq 'default';
                 }
                 else {
-                    $sdn = $screen->{default};
+                    $sdn = $detail->{default};
                 }
             }
             else {
-                $sdn = $screen;
+                $sdn = $detail;
             }
         }
     }
@@ -585,6 +590,9 @@ sub screen_detail_load {
     return;
 }
 
+# Get the detail screen name based on a value of a field from the
+# TableMatrix table
+# sub sdn_dispatch {
 sub get_sdn_name {
     my ( $self, $detscr ) = @_;
     my $row = $self->tmatrix_get_selected;
@@ -1329,6 +1337,8 @@ sub screen_module_load {
     $self->{_tblkeys}{rec} = undef; # reset
     $self->screen_init_keys( 'rec', $self->scrcfg('rec') );
 
+    $self->screen_init_details( $self->scrcfg('rec') );
+
     $self->set_app_mode('idle');
 
     # List header
@@ -1419,6 +1429,17 @@ sub screen_init_keys {
         }
     }
 
+    return;
+}
+
+sub screen_init_details {
+    my ( $self, $scrcfg ) = @_;
+    my $details = $scrcfg->screen('details');
+    print "dump details:\n";
+    dump $details;
+    print "---\n";
+    $self->{_csd}
+        = Tpda3::Config::Screen::Details->new( details => $details );
     return;
 }
 

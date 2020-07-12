@@ -1,0 +1,11 @@
+# tpda3
+# Interface configuration
+# Don't touch!, not for users ;)
+---
+application:
+  widgetset: Tk
+  module:    Test
+  limits:
+    search: 100
+    lookup: 50
+  dateformat: usa
