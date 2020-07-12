@@ -412,7 +412,8 @@ B<Record> tab.
 
 In the screen config example below C<cod_tip> can be B<CS> or B<CT>,
 and for each, the corresponding screen module is loaded.  The
-C<filter> parameter is the foreign key of the database table.
+C<filter> parameter is the foreign key of the database table.  There
+si no default screen in this example.
 
     <screen>
         version             = 5
@@ -439,26 +440,17 @@ on the C<rec> page, coresponding to the fields with the same name from
 a details database table.
 
 Another example, the simplest configuration with a default screen
-C<Pontaj>:
-
-    <screen>
-    ...
-        <details>
-            match             = id_pontaj
-            filter            = id_pontaj
-            default           = Pontaj
-        </details>
-    </screen>
-
-Or this?
+C<Activity>:
 
     <screen>
       version               = 5
       ...
-      details               = LocuDet
+      details               = Activity
     </screen>
 
-Another example...
+In the screen config example below C<id_prsrv> can be B<4> and the
+corresponding screen module C<Gunoi> is loaded.  Or can have any other
+value and the default screen named C<Details> is loaded.
 
   <details>
       match           = id_prsrv
