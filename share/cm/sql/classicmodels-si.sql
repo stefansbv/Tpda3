@@ -39,16 +39,6 @@
 
 Database: classicmodels
 
-DROP DATABASE classicmodels;
-
-createdb -E LATIN1 -O username -U postgres classicmodels
-
-or
-
-CREATE DATABASE classicmodels
-  WITH OWNER = 'user-name'
-       ENCODING = 'LATIN1'
-       TABLESPACE = pg_default;
 */
 
 
