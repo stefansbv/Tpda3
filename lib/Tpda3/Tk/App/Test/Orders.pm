@@ -24,6 +24,8 @@ sub run_screen {
 
     my $date_format = $self->{scrcfg}->app_dateformat();
 
+    my $f1d = 140;    # distance from left
+    
     #- Top Frame
 
     my $frm_top = $rec_page->Frame()->pack(
@@ -90,7 +92,7 @@ sub run_screen {
     my $ecustomername = $frame1->MEntry( -width => 35 );
     $ecustomername->form(
         -top  => [ '&', $lcustomername, 0 ],
-        -left => [ %0,  110 ],
+        -left => [ %0,  $f1d ],
     );
 
     #-+ Customer number (customernumber)
@@ -122,7 +124,7 @@ sub run_screen {
     );
     $eordernumber->form(
         -top  => [ '&', $lordernumber, 0 ],
-        -left => [ %0,  110 ],
+        -left => [ %0,  $f1d ],
     );
 
     #-+ Orderdate (orderdate)
@@ -190,7 +192,7 @@ sub run_screen {
 
     $drequireddate->form(
         -top  => [ '&', $lrequireddate, 0 ],
-        -left => [ %0,  110 ],
+        -left => [ %0,  $f1d ],
     );
 
     #-+ Shippeddate (shippeddate)
@@ -248,7 +250,7 @@ sub run_screen {
 
     $bstatuscode->form(
         -top       => [ '&', $lstatuscode, 0 ],
-        -left      => [ %0,  110 ],
+        -left      => [ %0,  $f1d ],
         -padbottom => 6,
     );
 
@@ -264,7 +266,7 @@ sub run_screen {
     # );
     # $bstatuscode->form(
     #     -top  => [ '&', $lstatuscode, 0 ],
-    #     -left => [ %0,  110 ],
+    #     -left => [ %0,  $f1d ],
     # );
 
     #-- Font
@@ -319,6 +321,12 @@ sub run_screen {
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     $xtable->init( $frm_t, $header );
+    $xtable->update;
+
+    # Prepare screen configuration data for tables
+    foreach my $tm_ds ( keys %{ $self->{tm_controls} } ) {
+        $validation->init_cfgdata($tm_ds);
+    }
 
     #- Ordertotal (ordertotal)
 
