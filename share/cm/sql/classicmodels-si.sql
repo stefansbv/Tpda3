@@ -374,11 +374,12 @@ SELECT e.employeenumber
      , e.firstname || ' ' || e.lastname AS salesrepemployee
      , e.extension
      , e.email
-     , e.officecode
-     , e.reportsto
+     , e.officecode, o.city AS office
+     , e.reportsto, (SELECT r.firstname || ' ' || r.lastname FROM employees r) AS boss
      , e.jobtitle
-FROM employees e;
-
+FROM employees e
+     LEFT JOIN offices o
+          ON e.officecode = o.officecode;
 
 CREATE VIEW v_customers
 AS
