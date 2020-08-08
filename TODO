@@ -24,6 +24,7 @@ Note: The main development focus is on the PerlTk interface, at least
     - [ ] Add installers for Linux and Windows;
   - [X] Fix the mnemonic list in the "default application" dialog;
   - [ ] Use localized date and number format (DateTime::Locale and Number::Format)
+  - [ ] Use SQL::Abstract::More to implement LIMIT and OFFSET
 
 
 
