@@ -724,6 +724,13 @@ sub setup_lookup_bindings_entry {
 
         $para->{columns} = [@cols];    # add columns info to parameters
 
+        if ( $self->debug ) {
+            say "bindings params:";
+            say "---";
+            dump $para;
+            say "---";
+        }
+
         my $dict = Tpda3::Lookup->new;
         $self->view->make_binding_entry(
             $ctrl_ref->{$column}[1],
