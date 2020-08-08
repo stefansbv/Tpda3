@@ -3,8 +3,8 @@
 # docspath is deprecated, use docsoutpath instead
 ---
 runtime:
-  docsbasepath: D:/Documente/Fiset
-  docsoutpath: D:/Documente
+  docsbasepath: C:/Users/stefan.suciu/Downloads
+  docsoutpath: C:/Users/stefan.suciu/Documents
 resource:
   icons: etc/interfaces/icons
 externalapps:

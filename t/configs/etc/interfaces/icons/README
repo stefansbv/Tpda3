@@ -1,0 +1,13 @@
+
+The icons are from the Tk::ToolBar module.
+
+Quote from Tk-ToolBar-0.10 POD:
+
+"As far as I know, all the bundled images are in the free domain. If
+that is not the case, then please let me know."
+
+"Also thanks to the various artists of the KDE team for creating those
+great icons, and to Adrian Davis for packaging them in a Tk-friendly
+format."
+
+Extracted from the original tkIcons file to individual gif files.
