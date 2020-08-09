@@ -27,47 +27,42 @@ use Tpda3::Model::Update::Compare;
 use Tpda3::Model::DB;
 use namespace::autoclean;
 
-sub new {
-    my $class = shift;
-
-    my $self = {
-        _connected   => Tpda3::Observable->new(),
-        _stdout      => Tpda3::Observable->new(),
-        _appmode     => Tpda3::Observable->new(),
-        _scrdata_rec => Tpda3::Observable->new(),
-        _cfg         => Tpda3::Config->instance(),
-        _msg_dict    => {},
-        _log         => get_logger(),
-    };
-
-    bless $self, $class;
-
-    return $self;
-}
-
-sub cfg {
-    my $self = shift;
-    return $self->{_cfg};
-}
-
-sub verbose {
-    my $self = shift;
-    return $self->cfg->verbose;
-}
-
-sub debug {
-    my $self = shift;
-    return $self->cfg->debug;
-}
+# sub new {
+#     my $class = shift;
+#     my $self = {
+#         _connected   => Tpda3::Observable->new(),
+#         _stdout      => Tpda3::Observable->new(),
+#         _appmode     => Tpda3::Observable->new(),
+#         _scrdata_rec => Tpda3::Observable->new(),
+#         _cfg         => Tpda3::Config->instance(),
+#         _msg_dict    => {},
+#         _log         => get_logger(),
+#     };
+#     bless $self, $class;
+#     return $self;
+# }
 
 sub _log {
     my $self = shift;
     return $self->{_log};
 }
 
+has 'verbose' => (
+    is      => 'ro',
+    isa     => Bool,
+    default => sub {
+        my $self = shift;
+        return $self->cfg->verbose;
+    },
+);
+
 has 'debug' => (
-    is  => 'ro',
-    isa => Bool,
+    is      => 'ro',
+    isa     => Bool,
+    default => sub {
+        my $self = shift;
+        return $self->cfg->debug;
+    },
 );
 
 has 'cfg' => (
