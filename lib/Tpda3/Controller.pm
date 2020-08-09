@@ -38,8 +38,8 @@ sub new {
     my $model = Tpda3::Model->new;
     my $self  = {
         _model   => $model,
-        debug    => $conf->debug,
-        verbose  => $conf->verbose,
+        debug    => $cfg->debug,
+        verbose  => $cfg->verbose,
         _rscrcls => undef,
         _rscrobj => undef,
         _dscrcls => undef,
@@ -1348,7 +1348,7 @@ sub screen_module_load_rec {
     $self->screen_init_keys( 'rec', $self->scrcfg('rec') );
     $self->screen_init_details( $self->scrcfg('rec') );
 
-    $self->buid_metadata_main;
+    # $self->build_metadata_main;
     $self->set_app_mode('idle');
 
     # List header
