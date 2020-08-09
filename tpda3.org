@@ -1,0 +1,16 @@
+
+
+** main_table_metadata
+
+called by:
+ - [X] get_alternate_data_record (not tested!)
+ - [X] record_load
+ - [X] record_delete
+ - [X] get_screen_data_record
+
+** dep_table_metadata
+
+called by:
+ - [ ] record_load
+ - [ ] record_delete
+ - [ ] get_screen_data_record
