@@ -4,9 +4,10 @@ package Tpda3::Model;
 
 use feature 'say';
 use Moo;
-#use Log::Log4perl qw(get_logger :levels);
+use Log::Log4perl qw(get_logger :levels);
 use Try::Tiny;
 use Tpda3::Types qw(
+    AppLogger
     Bool
     DBIxConnector
     HashRef
@@ -27,25 +28,13 @@ use Tpda3::Model::Update::Compare;
 use Tpda3::Model::DB;
 use namespace::autoclean;
 
-# sub new {
-#     my $class = shift;
-#     my $self = {
-#         _connected   => Tpda3::Observable->new(),
-#         _stdout      => Tpda3::Observable->new(),
-#         _appmode     => Tpda3::Observable->new(),
-#         _scrdata_rec => Tpda3::Observable->new(),
-#         _cfg         => Tpda3::Config->instance(),
-#         _msg_dict    => {},
-#         _log         => get_logger(),
-#     };
-#     bless $self, $class;
-#     return $self;
-# }
-
-sub _log {
-    my $self = shift;
-    return $self->{_log};
-}
+has '_log' => (
+    is  => 'ro',
+    isa => AppLogger,
+    default => sub {
+        return get_logger(),
+    },
+);
 
 has 'verbose' => (
     is      => 'ro',
