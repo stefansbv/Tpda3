@@ -28,11 +28,7 @@ use Tpda3::Model;
 use Tpda3::Lookup;
 use Tpda3::Selected;
 use Tpda3::Model::Table;
-<<<<<<< HEAD
 use Tpda3::Config::Screen::Details;
-#use Tpda3::Model::Meta::Record;
-=======
->>>>>>> e95c540... Cleanup (empty lines)
 
 use Data::Dump qw/dump/;
 
