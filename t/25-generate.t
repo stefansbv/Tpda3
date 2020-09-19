@@ -17,29 +17,20 @@ use lib qw( lib ../lib );
 
 use Tpda3::Config;
 
-unless ( $ENV{RELEASE_TESTING} ) {
-    plan( skip_all => "Author tests not required for installation" );
-}
-
 my $cwd        = Cwd::cwd();
 my $model_file = catfile( $cwd, qw{t tex model test.tt} );
 my $out_path   = catdir( $cwd, qw{t tex output} );
 
-# BEGIN {
-#     eval { require Tpda3::Generator; };      # for M$Windows
-#     if ($@) {
-#         plan( skip_all => 'pdflatex is required for this test' );
-#     }
-#     else {
-#         plan tests => 5;
-#     }
-# }
-
-END {
-    # Cleanup
-    foreach my $file (qw{test.aux test.log test.pdf test.tex}) {
-        my $tmpfile = catfile($out_path, $file);
-        unlink $tmpfile if -f $tmpfile;
+BEGIN {
+    unless ( $ENV{RELEASE_TESTING} ) {
+        plan( skip_all => "Author tests not required for installation" );
+    }
+    eval { require Tpda3::Generator; };      # for M$Windows
+    if ($@) {
+        plan( skip_all => 'pdflatex is required for this test' );
+    }
+    else {
+        plan tests => 5;
     }
 }
 
@@ -74,6 +65,10 @@ SKIP: {
         'Generate PDF from LaTeX';
 }
 
-done_testing;
+# Cleanup
+foreach my $file (qw{test.aux test.log test.pdf test.tex}) {
+    my $tmpfile = catfile($out_path, $file);
+    unlink $tmpfile if -f $tmpfile;
+}
 
 # end test

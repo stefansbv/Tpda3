@@ -15,9 +15,9 @@ use Log::Log4perl qw(get_logger :levels);
 use Template;
 use Template::Context;
 
-require Tpda3::Exceptions;
-require Tpda3::Config;
-require Tpda3::Utils;
+use Tpda3::Exceptions;
+use Tpda3::Config;
+use Tpda3::Utils;
 
 sub new {
     my $type = shift;
@@ -129,7 +129,7 @@ sub pdf_from_latex {
     # Options for TeXLive
     #my @opts  = qw{-halt-on-error -no-shell-escape -interaction=batchmode};
     # Options for standard TeX
-    my @opts  = qw{-halt-on-error -interaction=batchmode};
+    my @opts  = qw{-halt-on-error -interaction=batchmode -file-line-error};
     push @opts, qq{-output-directory="$output_path"};
     push @opts, qq{"$tex_file"};
 
