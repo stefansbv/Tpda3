@@ -1442,9 +1442,11 @@ sub screen_init_keys {
 sub screen_init_details {
     my ( $self, $scrcfg ) = @_;
     my $details = $scrcfg->screen('details');
-    print "dump details:\n";
-    dump $details;
-    print "---\n";
+    if ( $self->debug ) {
+        print "dump details:\n";
+        dump $details;
+        print "---\n";
+    }
     $self->{_csd}
         = Tpda3::Config::Screen::Details->new( details => $details );
     return;
