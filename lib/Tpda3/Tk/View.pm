@@ -1205,13 +1205,13 @@ sub tbl_selection_query {
 
 sub tbl_selection_count {
     my ($self, $para, $debug) = @_;
-    my $rec_cnt = $self->model->query_filter_count($para);
+    my $rec_cnt = $self->model->query_filter_count($para, $debug);
     return $rec_cnt;
 }
 
 sub query_proxy {
-    my ($self, $method, $para) = @_;
-    my $record = $self->model->$method($para);
+    my ($self, $method, $para, $debug) = @_;
+    my $record = $self->model->$method($para, $debug);
     return $record;
 }
 
