@@ -236,7 +236,10 @@ sub query_filter_find {
         $cols = \@columns;
     }
 
-    return if !ref $where;
+    if ( !ref $where ) {
+        warn "query_filter_find: missing \$where parameter\n";
+        return;
+    }
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, $cols, $where, $order );
@@ -270,13 +273,16 @@ sub query_filter_count {
     my $pkcol = $opts->{pkcol} ? $opts->{pkcol} : '*';
     my $where = $opts->{where};
 
-    return if !ref $where;
+    if ( !ref $where ) {
+        warn "query_filter_count: missing \$where parameter\n";
+        return;
+    }
 
     my $sql = SQL::Abstract->new( special_ops => Tpda3::Utils->special_ops );
     my ( $stmt, @bind ) = $sql->select( $table, ["COUNT($pkcol)"], $where );
 
     $self->debug_print_sql('query_filter_count', $stmt, \@bind)
-        if $self->debug;
+        if $self->debug or $debug;
 
     my $record_count;
     try {
