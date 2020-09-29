@@ -49,8 +49,10 @@ CREATE DATABASE classicmodels
   WITH OWNER = 'user-name'
        ENCODING = 'LATIN1'
        TABLESPACE = pg_default;
-*/
 
+psql -U user -f sql/classicmodels-pg.sql -d classicmodels
+
+*/
 
 -- Drop
 
