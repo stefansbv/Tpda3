@@ -20,6 +20,8 @@ require Tpda3::Utils;
 require Tpda3::Lookup;
 require Tpda3::Tk::Dialog::Message;
 
+use Tk::widgets qw(Table);
+
 use base q{Tpda3::Tk::Screen};
 
 sub new {
@@ -44,7 +46,7 @@ sub run_screen {
 
     $self->{tlw} = $view->Toplevel();
     $self->{tlw}->title('Preview and print reports');
-    $self->{tlw}->geometry('480x520');
+    # $self->{tlw}->geometry('478x560');
 
     $self->{view}  = $view;
     $self->{model} = $view->{_model};
@@ -178,7 +180,7 @@ sub run_screen {
     );
     $frm_middle->pack(
         -expand => 0,
-        -fill   => 'x',
+        -fill   => 'both',
         -ipadx  => 3,
         -ipady  => 3,
     );
@@ -205,24 +207,6 @@ sub run_screen {
         -left => [ %0, $f1d ],
     );
 
-    # #-+ id_user
-
-    # my $eid_user = $frm_middle->Entry(
-    #     -width => 12,
-    # );
-    # $eid_user->form(
-    #     -top   => [ '&', $lid_rep, 0 ],
-    #     -right => [ %100, -10 ],
-    # );
-    # my $lid_user = $frm_middle->Label(
-    #     -text => 'User',
-    # );
-    # $lid_user->form(
-    #     -top   => [ '&', $lid_rep, 0 ],
-    #     -right => [ $eid_user, -15 ],
-    #     -padleft => 5,
-    # );
-
     #-- repofile
 
     my $lrepofile = $frm_middle->Label( -text => 'Report file', );
@@ -245,212 +229,385 @@ sub run_screen {
 
     my $frm_para = $mf->LabFrame(
         -foreground => 'blue',
-        -label      => 'Parameters',
+        -label      => 'Criterii',
         -labelside  => 'acrosstop'
-    );
-    $frm_para->pack(
+    )->pack(
+        -side   => 'top',
         -expand => 0,
-        -fill   => 'x',
-        -ipadx  => 3,
-        -ipady  => 5,
+        -fill   => 'both',
     );
 
     #-- Header
 
-    $frm_para->Label(
-        -text => 'Name' 
-    )->grid(
-        -row    => 0,
-        -column => 1,
-        -sticky => 'n',
-        -padx   => 3,
-    );
-    $frm_para->Label(
-        -text => 'Search' 
-    )->grid(
-        -row    => 0,
-        -column => 2,
-        -sticky => 'n',
-        -padx   => 3,
-    );
-    $frm_para->Label(
-        -text => 'Value' 
-    )->grid(
-        -row    => 0,
-        -column => 3,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # $frm_para->Label(
+    #     -text => 'Name' 
+    # )->grid(
+    #     -row    => 0,
+    #     -column => 1,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
+    # $frm_para->Label(
+    #     -text => 'Search' 
+    # )->grid(
+    #     -row    => 0,
+    #     -column => 2,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
+    # $frm_para->Label(
+    #     -text => 'Value' 
+    # )->grid(
+    #     -row    => 0,
+    #     -column => 3,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
     
-    #-- Parameter 1
+    # #-- Parameter 1
 
-    #-- label
-    my $lparameter1 = $frm_para->Label(
-        -text => '# 1' 
-    )->grid(
-        -row    => 1,
-        -column => 0,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- label
+    # my $lparameter1 = $frm_para->Label(
+    #     -text => '# 1' 
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 0,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- hint
-    my $eparahnt1 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 1,
-        -column => 1,
-        -sticky => 'e',
-        -padx   => 3,
-    );
+    # #-- hint
+    # my $eparahnt1 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 1,
+    #     -sticky => 'e',
+    #     -padx   => 3,
+    # );
 
-    #-- den
-    my $eparaden1 = $frm_para->Entry(
-        -width              => 15,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-        -state              => 'disabled',
-    )->grid(
-        -row    => 1,
-        -column => 2,
-        -sticky => 'e',
-        -padx   => 3,
-    );
+    # #-- den
+    # my $eparaden1 = $frm_para->Entry(
+    #     -width              => 15,
+    #     -disabledbackground => $bg,
+    #     -disabledforeground => 'black',
+    #     -state              => 'disabled',
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 2,
+    #     -sticky => 'e',
+    #     -padx   => 3,
+    # );
 
-    #-- value
-    my $eparaval1 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 1,
-        -column => 3,
-        -sticky => 'e',
-        -padx   => 3,
-    );
+    # #-- value
+    # my $eparaval1 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 3,
+    #     -sticky => 'e',
+    #     -padx   => 3,
+    # );
 
-    #-- button
-    $self->{b_dlg1} = $frm_para->Button(
-        -image   => 'edit16',
-        -command => [\&update_value, $self, $view, 1],
-    )->grid(
-        -row    => 1,
-        -column => 4,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- button
+    # $self->{b_dlg1} = $frm_para->Button(
+    #     -image   => 'edit16',
+    #     -command => [\&update_value, $self, $view, 1],
+    # )->grid(
+    #     -row    => 1,
+    #     -column => 4,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- Parameter 2
+    # #-- Parameter 2
 
-    #-- label
-    my $lparameter2 = $frm_para->Label(
-        -text => '# 2',
-    )->grid(
-        -row    => 2,
-        -column => 0,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- label
+    # my $lparameter2 = $frm_para->Label(
+    #     -text => '# 2',
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 0,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- hint
-    my $eparahnt2 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 2,
-        -column => 1,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- hint
+    # my $eparahnt2 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 1,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- den
-    my $eparaden2 = $frm_para->Entry(
-        -width              => 15,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-        -state              => 'disabled',
-    )->grid(
-        -row    => 2,
-        -column => 2,
-        -sticky => 'e',
-        -padx   => 3,
-    );
+    # #-- den
+    # my $eparaden2 = $frm_para->Entry(
+    #     -width              => 15,
+    #     -disabledbackground => $bg,
+    #     -disabledforeground => 'black',
+    #     -state              => 'disabled',
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 2,
+    #     -sticky => 'e',
+    #     -padx   => 3,
+    # );
 
-    #-- value
-    my $eparaval2 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 2,
-        -column => 3,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- value
+    # my $eparaval2 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 3,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- button
-    $self->{b_dlg2} = $frm_para->Button(
-        -image   => 'edit16',
-        -command => [\&update_value, $self, $view, 2],
-    )->grid(
-        -row    => 2,
-        -column => 4,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- button
+    # $self->{b_dlg2} = $frm_para->Button(
+    #     -image   => 'edit16',
+    #     -command => [\&update_value, $self, $view, 2],
+    # )->grid(
+    #     -row    => 2,
+    #     -column => 4,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- Parameter 3
+    # #-- Parameter 3
 
-    #-- label
-    my $lparameter3 = $frm_para->Label(
-        -text => '# 3',
-    )->grid(
-        -row    => 3,
-        -column => 0,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- label
+    # my $lparameter3 = $frm_para->Label(
+    #     -text => '# 3',
+    # )->grid(
+    #     -row    => 3,
+    #     -column => 0,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- hint
-    my $eparahnt3 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 3,
-        -column => 1,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- hint
+    # my $eparahnt3 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 3,
+    #     -column => 1,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
 
-    #-- den
-    my $eparaden3 = $frm_para->Entry(
-        -width              => 15,
-        -disabledbackground => $bg,
-        -disabledforeground => 'black',
-        -state              => 'disabled',
-    )->grid(
-        -row    => 3,
-        -column => 2,
-        -sticky => 'e',
-        -padx   => 3,
-    );
+    # #-- den
+    # my $eparaden3 = $frm_para->Entry(
+    #     -width              => 15,
+    #     -disabledbackground => $bg,
+    #     -disabledforeground => 'black',
+    #     -state              => 'disabled',
+    # )->grid(
+    #     -row    => 3,
+    #     -column => 2,
+    #     -sticky => 'e',
+    #     -padx   => 3,
+    # );
 
-    #-- value
-    my $eparaval3 = $frm_para->Entry(
-        -width => 15,
-    )->grid(
-        -row    => 3,
-        -column => 3,
-        -sticky => 'n',
-        -padx   => 3,
-    );
+    # #-- value
+    # my $eparaval3 = $frm_para->Entry(
+    #     -width => 15,
+    # )->grid(
+    #     -row    => 3,
+    #     -column => 3,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
     
-    #-- button
-    $self->{b_dlg3} = $frm_para->Button(
-        -image   => 'edit16',
-        -command => [\&update_value, $self, $view, 3],
-    )->grid(
-        -row    => 3,
-        -column => 4,
-        -sticky => 'n',
-        -padx   => 3,
+    # #-- button
+    # $self->{b_dlg3} = $frm_para->Button(
+    #     -image   => 'edit16',
+    #     -command => [\&update_value, $self, $view, 3],
+    # )->grid(
+    #     -row    => 3,
+    #     -column => 4,
+    #     -sticky => 'n',
+    #     -padx   => 3,
+    # );
+
+    ###
+
+    # Get list of fields
+    # my $resource_file = $self->{cfg}->resource_path_for( 'impozit.yml', 'res' );
+    # my $cols_ordered  = $self->{cfg}->config_data_from($resource_file);
+    # $self->{columns}  = $self->{scrcfg}->maintable('columns');
+
+    # label hint den value button
+    
+    $self->{columns} = {
+        para1 => {
+            bgcolor     => "white",
+            ctrltype    => "e",
+            datatype    => "integer",
+            displ_width => 10,
+            findtype    => "full",
+            label       => "Hint 1",
+            numscale    => 0,
+            readwrite   => "rw",
+            state       => "disabled",
+            valid_width => 10,
+        },
+        para2 => {
+            bgcolor     => "white",
+            ctrltype    => "e",
+            datatype    => "integer",
+            displ_width => 10,
+            findtype    => "full",
+            label       => "Hint 2",
+            numscale    => 0,
+            readwrite   => "rw",
+            state       => "disabled",
+            valid_width => 10,
+        },
+        para3 => {
+            bgcolor     => "white",
+            ctrltype    => "e",
+            datatype    => "integer",
+            displ_width => 10,
+            findtype    => "full",
+            label       => "Hint 3",
+            numscale    => 0,
+            readwrite   => "rw",
+            state       => "disabled",
+            valid_width => 10,
+        },
+        para4 => {
+            bgcolor     => "white",
+            ctrltype    => "e",
+            datatype    => "integer",
+            displ_width => 10,
+            findtype    => "full",
+            label       => "Hint 4",
+            numscale    => 0,
+            readwrite   => "rw",
+            state       => "disabled",
+            valid_width => 10,
+        },
+        para5 => {
+            bgcolor     => "white",
+            ctrltype    => "e",
+            datatype    => "integer",
+            displ_width => 10,
+            findtype    => "full",
+            label       => "Hint 5",
+            numscale    => 0,
+            readwrite   => "rw",
+            state       => "disabled",
+            valid_width => 10,
+        },
+    };
+    
+    # Screen table columns metadata
+    my @columns;
+    my $idx = 0;
+
+    foreach my $field ( @{ [qw{para1 para2 para3 para4 para5}] } ) {
+        my $findtype = $self->{columns}{$field}{findtype};
+        $columns[$idx] = [
+            $field,
+            $self->{columns}{$field}{label},
+            $self->{columns}{$field}{datatype},
+            $findtype,
+        ];
+        $idx++;
+    }
+
+    my $rows_idx = $#columns;
+
+    $self->{table} = $frm_para->Table(
+        -columns    => 5,
+        -rows       => 3,
+        #-fixedrows  => 1,
+        -scrollbars => 'oe',
+        -relief     => 'raised',
+        -background => 'white'
     );
 
+    #-- Fill table
+
+    foreach my $r ( 0 .. $rows_idx ) {
+        my $findtype = $columns[$r][3];
+        my $no = $r + 1;
+
+        # Label - row number
+        my $crt_label = $self->{table}->Label(
+            -text   => $no,
+            -width  => 3,
+            -relief => 'flat',
+        );
+
+        # Label - field label
+        my $fld_label = $self->{table}->Label(
+            -text   => $columns[$r][1],
+            -width  => 20,
+            -relief => 'sunken',
+            -anchor => 'w',
+            -bg     => 'white',
+        );
+
+        # Negate - checkbox
+        my $v_negate = 0;
+        my $cbx_negate = $self->{table}->Checkbutton(
+            -text => 'nu',
+            -indicatoron => 0,
+            -selectcolor => 'pink',
+            -state       => 'normal',
+            -variable    => \$v_negate,
+            -relief      => 'raised',
+        );
+
+        #- ComboBox choices
+
+        my $selected;
+        my $searchopt = $self->{table}->JComboBox(
+            -entrywidth   => 14,
+            -textvariable => \$selected,
+        );
+
+        my $qry_entry = $self->{table}->Entry(
+            -width    => 15,
+            -relief   => 'sunken',
+            -bg       => 'white',
+            -validate => 'all',
+            -vcmd     => sub {
+                $self->validate_criteria( @_ );
+            },
+        );
+
+        #- Callback to clear the Entry
+        $searchopt->configure(
+            -browsecmd => sub {
+                my ( $self, $search_ctrl, $sele ) = @_;
+                $qry_entry->delete( 0, 'end' ) if $sele eq 'is null';
+            },
+        );
+
+        $self->{table}->put( $r, 1, $crt_label );
+        $self->{table}->put( $r, 2, $fld_label );
+        $self->{table}->put( $r, 3, $cbx_negate );
+        $self->{table}->put( $r, 4, $searchopt );
+        $self->{table}->put( $r, 5, $qry_entry );
+
+        $self->{widgets}[$r] = [ $columns[$r][0], \$v_negate, \$selected ];
+    }
+
+    $self->{table}->pack(
+        -expand => 1,
+        -fill   => 'both',
+        -padx   => 5,
+        -pady   => 5,
+    );
+
+    ###
+    
     #---  Frame Bottom - Description
 
     my $frm_bottom = $mf->LabFrame(
@@ -459,7 +616,7 @@ sub run_screen {
         -labelside  => 'acrosstop',
     );
     $frm_bottom->pack(
-        -expand => 1,
+        -expand => 0,
         -fill   => 'both',
      );
 
@@ -489,15 +646,15 @@ sub run_screen {
         repofile => [ undef, $erepofile ],
         id_rep   => [ undef, $eid_rep   ],
         descr    => [ undef, $tdescr    ],
-        parahnt1 => [ undef, $eparahnt1 ],
-        paraden1 => [ undef, $eparaden1 ],
-        paraval1 => [ undef, $eparaval1 ],
-        parahnt2 => [ undef, $eparahnt2 ],
-        paraden2 => [ undef, $eparaden2 ],
-        paraval2 => [ undef, $eparaval2 ],
-        parahnt3 => [ undef, $eparahnt3 ],
-        paraden3 => [ undef, $eparaden3 ],
-        paraval3 => [ undef, $eparaval3 ],
+        # parahnt1 => [ undef, $eparahnt1 ],
+        # paraden1 => [ undef, $eparaden1 ],
+        # paraval1 => [ undef, $eparaval1 ],
+        # parahnt2 => [ undef, $eparahnt2 ],
+        # paraden2 => [ undef, $eparaden2 ],
+        # paraval2 => [ undef, $eparaval2 ],
+        # parahnt3 => [ undef, $eparahnt3 ],
+        # paraden3 => [ undef, $eparaden3 ],
+        # paraval3 => [ undef, $eparaval3 ],
     };
 
     #-- TM header
@@ -549,6 +706,11 @@ sub run_screen {
     $self->load_report_details();
 
     return;
+}
+
+sub validate_criteria {
+    my ( $self, $char, $ch, $cur, $idx, $act ) = @_;
+    return 1;
 }
 
 sub select_idx {
@@ -655,8 +817,9 @@ sub load_report_details {
 
     foreach my $field ( keys %{$eobj} ) {
         my $value = $self->{_rd}->[0]{$field};
+        # print "# $field = $value\n";
         if ( $field eq 'descr' ) {
-            $self->write_t( $field, $value );
+            $self->write_t( $field, $value,  );
         }
         else {
             $self->write_e( $field, $value );
@@ -667,21 +830,21 @@ sub load_report_details {
 
     $self->{params} = [];
     foreach my $i ( 1 .. 3 ) {
-        my $field = "parahnt$i";
-        my $v_fld = "paraval$i";
-        my $idx = $i - 1;
-        my $value = $self->{_rdd}[$idx]{hint};
-        $eobj->{$field}[1]->delete( 0, 'end' );
-        if (defined $value) {
-            $eobj->{$field}[1]->insert( 0, $value );
-            push @{ $self->{params} }, $value;
-            $eobj->{$field}[1]->configure( '-bg' => 'lightblue' );
-            $eobj->{$v_fld}[1]->configure( '-bg' => 'white' );
-        }
+        # my $field = "parahnt$i";
+        # my $v_fld = "paraval$i";
+        # my $idx = $i - 1;
+        # my $value = $self->{_rdd}[$idx]{hint};
+        # $eobj->{$field}[1]->delete( 0, 'end' );
+        # if (defined $value) {
+        #     $eobj->{$field}[1]->insert( 0, $value );
+        #     push @{ $self->{params} }, $value;
+        #     $eobj->{$field}[1]->configure( '-bg' => 'lightblue' );
+        #     $eobj->{$v_fld}[1]->configure( '-bg' => 'white' );
+        # }
 
-        # Disable the buttons if there is no table config
-        my $state = $self->{_rdd}[$idx]{tablename} ? 'normal' : 'disabled';
-        $self->{"b_dlg${i}"}->configure( -state => $state );
+        # # Disable the buttons if there is no table config
+        # my $state = $self->{_rdd}[$idx]{tablename} ? 'normal' : 'disabled';
+        # $self->{"b_dlg${i}"}->configure( -state => $state );
     }
 
     return;
@@ -758,7 +921,7 @@ sub get_parameters {
 
     my $params = q{};    # empty
 
-    foreach my $i ( 1 .. 3 ) {
+    foreach my $i ( 1 .. 5 ) {
         my $field_def = "paradef$i";
         my $field_val = "paraval$i";
 
@@ -836,6 +999,12 @@ sub update_value {
     $self->write_e( "paraden$p_no", $value_label );
     $self->write_e( "paraval$p_no", $value_param );
 
+    return;
+}
+
+sub update_labels {
+    my ($self, $name, $value) = @_;
+    $self->{$name}->configure(-text => $value) if defined $value;
     return;
 }
 
