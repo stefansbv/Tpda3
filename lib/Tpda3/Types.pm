@@ -19,6 +19,7 @@ use Type::Library 0.040 -base, -declare => qw(
     Tpda3Config
     Tpda3Hollyday
     Tpda3Record
+    Tpda3View
     URIdb
 );
 use Type::Utils -all;
@@ -41,5 +42,6 @@ class_type Tpda3Config,   { class => 'Tpda3::Config' };
 class_type Tpda3Hollyday, { class => 'Tpda3::Hollyday' };
 class_type Tpda3Compare,  { class => 'Tpda3::Model::Update::Compare' };
 class_type Tpda3Record ,  { class => 'Tpda3::Model::Table::Record' };
+class_type Tpda3View ,    { class => 'Tpda3::Tk::View' };
 
 1;
