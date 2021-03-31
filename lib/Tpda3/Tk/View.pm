@@ -995,6 +995,7 @@ sub control_write_t {
         return;
     }
     $state = $state || $control->cget('-state');
+    $control->configure( -state => 'normal' );
     $value = q{} unless defined $value;    # Empty
     $control->delete( '1.0', 'end' );
     $control->insert( '1.0', $value ) if defined $value;
