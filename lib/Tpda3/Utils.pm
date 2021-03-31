@@ -48,7 +48,7 @@ sub dateentry_parse_date {
 
   SWITCH: for ($format) {
         /^$/ && warn "Error in 'dateentry_parse_date'\n";
-        /german/i && do {
+        /german|dmy/i && do {
             ( $d, $m, $y )
                 = ( $date =~ m{([0-9]{2})\.([0-9]{2})\.([0-9]{4})} );
             last SWITCH;
