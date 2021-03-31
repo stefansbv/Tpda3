@@ -46,7 +46,12 @@ has '_to' => (
         my $self    = shift;
         my $send_to = $self->send_to;
         if ( ref $send_to eq 'HASH' ) {
-            return join ';', @{ $send_to->{to} };
+            if ( exists $send_to->{to} ) {
+                return join ';', @{ $send_to->{to} };
+            }
+            else {
+                die "Missing or misconfigured 'to' address!";
+            }
         }
         elsif ( ref $send_to eq 'ARRAY' ) {
             return join ';', @{ $send_to };
@@ -63,7 +68,9 @@ has '_cc' => (
         my $self    = shift;
         my $send_to = $self->send_to;
         if ( ref $send_to eq 'HASH' ) {
-            return join ';', @{ $send_to->{cc} };
+            if ( exists $send_to->{cc} ) {
+                return join ';', @{ $send_to->{cc} };
+            }
         }
         return '';
     },
