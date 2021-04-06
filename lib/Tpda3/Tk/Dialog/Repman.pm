@@ -9,21 +9,23 @@ use utf8;
 
 use IO::File;
 use Try::Tiny;
+use Scalar::Util qw(blessed);
 use File::Spec::Functions;
 use IPC::System::Simple 1.17 qw(capture);
 use Locale::TextDomain 1.20 qw(Tpda3);
 
-require Tpda3::Config;
-require Tpda3::Tk::TB;
-require Tpda3::Tk::TM;
-require Tpda3::Utils;
-require Tpda3::Lookup;
-require Tpda3::Tk::Dialog::Message;
+use Tpda3::Config;
+use Tpda3::Tk::TB;
+use Tpda3::Tk::TM;
+use Tpda3::Utils;
+use Tpda3::Lookup;
+use Tpda3::Tk::Dialog::Message;
 
 use Tk::widgets qw(Table); # Tk::Table
 
 use base q{Tpda3::Tk::Screen};
 
+use Data::Dump qw/dump/;
 sub new {
     my $class = shift;
 
@@ -230,87 +232,13 @@ sub run_screen {
 
     ###
 
-    # label hint den value button
-
     $self->{columns} = {
-        para1 => {
-            bgcolor     => "white",
-            ctrltype    => "e",
-            datatype    => "integer",
-            displ_width => 10,
-            findtype    => "full",
-            label       => "Hint 1",
-            numscale    => 0,
-            readwrite   => "rw",
-            state       => "disabled",
-            valid_width => 10,
-        },
-        para2 => {
-            bgcolor     => "white",
-            ctrltype    => "e",
-            datatype    => "integer",
-            displ_width => 10,
-            findtype    => "full",
-            label       => "Hint 2",
-            numscale    => 0,
-            readwrite   => "rw",
-            state       => "disabled",
-            valid_width => 10,
-        },
-        para3 => {
-            bgcolor     => "white",
-            ctrltype    => "e",
-            datatype    => "integer",
-            displ_width => 10,
-            findtype    => "full",
-            label       => "Hint 3",
-            numscale    => 0,
-            readwrite   => "rw",
-            state       => "disabled",
-            valid_width => 10,
-        },
-        para4 => {
-            bgcolor     => "white",
-            ctrltype    => "e",
-            datatype    => "integer",
-            displ_width => 10,
-            findtype    => "full",
-            label       => "Hint 4",
-            numscale    => 0,
-            readwrite   => "rw",
-            state       => "disabled",
-            valid_width => 10,
-        },
-        para5 => {
-            bgcolor     => "white",
-            ctrltype    => "e",
-            datatype    => "integer",
-            displ_width => 10,
-            findtype    => "full",
-            label       => "Hint 5",
-            numscale    => 0,
-            readwrite   => "rw",
-            state       => "disabled",
-            valid_width => 10,
-        },
+        1 => { ctrltype => "l", purpose => "count" },
+        2 => { ctrltype => "l", purpose => "hint" },
+        3 => { ctrltype => "b", purpose => "select" },
+        4 => { ctrltype => "e", purpose => "paraname" },
+        5 => { ctrltype => "e", purpose => "paravalue" },
     };
-
-    # Screen table columns metadata
-    my @columns;
-    my $idx = 0;
-
-    foreach my $field ( @{ [qw{para1 para2 para3 para4 para5}] } ) {
-        my $findtype = $self->{columns}{$field}{findtype};
-        $columns[$idx] = [
-            $field,
-            $self->{columns}{$field}{label},
-            $self->{columns}{$field}{datatype},
-            $findtype,
-        ];
-        $idx++;
-    }
-
-    my $rows_idx = $#columns;
 
     $self->{table} = $frm_para->Table(
         -columns    => 5,
@@ -323,26 +251,26 @@ sub run_screen {
 
     #-- Fill table
 
-    foreach my $r ( 0 .. $rows_idx ) {
-        my $findtype = $columns[$r][3];
+    foreach my $r ( 0 .. 4 ) {
         my $no = $r + 1;
 
-        # Label - row number
+        # Label - row number - [count]
         my $crt_label = $self->{table}->Label(
             -text   => $no,
             -width  => 3,
             -relief => 'flat',
         );
 
-        # Label - hint
+        # Label - [hint]
         my $hint_label = $self->{table}->Label(
-            -text   => $columns[$r][1],
+            -text   => '',
             -width  => 21,
             -relief => 'sunken',
             -anchor => 'w',
             -bg     => 'white',
         );
 
+        # Button - [select]
         my $b_search = $self->{table}->Button(
             -image   => 'navforward16',
             -state   => 'normal',
@@ -351,24 +279,18 @@ sub run_screen {
             -command => [\&table_entry_read, $self, $r, 4],
         );
 
+        # Entry - [paraname]
         my $entry_search = $self->{table}->Entry(
             -width    => 16,
             -relief   => 'sunken',
             -bg       => 'white',
-            # -validate => 'all',
-            # -vcmd     => sub {
-            #     $self->validate_criteria( @_ );
-            # },
         );
 
+        # Entry - [paravalue]
         my $qry_entry = $self->{table}->Entry(
             -width    => 16,
             -relief   => 'sunken',
             -bg       => 'white',
-            # -validate => 'all',
-            # -vcmd     => sub {
-            #     $self->validate_criteria( @_ );
-            # },
         );
 
         $self->{table}->put( $r, 1, $crt_label );
@@ -376,8 +298,6 @@ sub run_screen {
         $self->{table}->put( $r, 3, $b_search );
         $self->{table}->put( $r, 4, $entry_search );
         $self->{table}->put( $r, 5, $qry_entry );
-
-        $self->{widgets}[$r] = [ $columns[$r][0] ];
     }
 
     $self->{table}->pack(
@@ -485,14 +405,11 @@ sub table_read {
     my $rows = $self->{table}->totalRows;
     print "# $rows in table\n";
     for ( my $row_idx = 0; $row_idx < $rows; $row_idx++ ) {
-        my $widgets = $self->{widgets}[$row_idx];
-        my $field    = $widgets->[0];
         my $widget_search = $self->{table}->get( $row_idx, 4 );
         my $value_search  = $widget_search->get;
-        print " field : $field -> $value_search\n";
         my $widget_param = $self->{table}->get( $row_idx, 5 );
         my $value_param  = $widget_param->get;
-        print "       : $field -> $value_param\n";
+        print "  -> $value_param\n";
 
     }
     return;
@@ -506,17 +423,28 @@ Read user input data.
 
 sub table_entry_read {
     my ($self, $row, $col) = @_;
-    my $widgets = $self->{widgets}[$row];
-    my $field   = $widgets->[0];
     my $widget  = $self->{table}->get( $row, $col );
     my $value   = $widget->get;
-    print " $field -> $value\n";
+    print " -> $value\n";
     return $value;
 }
 
-sub validate_criteria {
-    my ( $self, $char, $ch, $cur, $idx, $act ) = @_;
-    return 1;
+sub table_entry_write {
+    my ( $self, $row, $col, $value, $fg, $bg ) = @_;
+    my $widget = $self->{table}->get( $row, $col );
+
+    # say "$widget on ($row,$col)";
+    my $w_type = $self->{columns}{$col}{ctrltype};
+
+    # say "w_type [$col]: $w_type";
+    my $meth = "control_write_${w_type}";
+    if ( $self->can($meth) ) {
+        $self->$meth( $widget, $value, $fg, $bg );
+    }
+    else {
+        die "table_entry_write: method '$meth' not implemented";
+    }
+    return $value;
 }
 
 sub select_idx {
@@ -633,26 +561,26 @@ sub load_report_details {
     }
 
     #-- parameters
-    # use Data::Dump; dd $self->{_rdd};
+    my @params = @{ $self->{_rdd} };
 
+    # fill params in table
     $self->{params} = [];
-    foreach my $i ( 1 .. 5 ) {
-        my $field = "para$i";
-        my $v_fld = "paraval$i";
-        my $idx = $i - 1;
-        my $value = $self->{_rdd}[$idx]{hint};
-        print " hint [$idx]: $value\n";
-        # print " $field -> $value\n";
-        # $eobj->{$field}[1]->delete( 0, 'end' );
-        # if (defined $value) {
-        #     $eobj->{$field}[1]->insert( 0, $value );
-        #     push @{ $self->{params} }, $value;
-        #     $eobj->{$field}[1]->configure( '-bg' => 'lightblue' );
-        #     $eobj->{$v_fld}[1]->configure( '-bg' => 'white' );
-        # }
-
-        # # Disable the buttons if there is no table config
-        # my $state = $self->{_rdd}[$idx]{tablename} ? 'normal' : 'disabled';
+    foreach my $i ( 0 .. 4 ) {
+        say "#data [$idx]:";
+        dump $params[$i];
+        my $value = $params[$i]{hint};
+        if ( defined $value ) {
+            push @{ $self->{params} }, $value;
+            say "# write: ($i, 3, $value)";
+            $self->table_entry_write( $i, 2, $value, 'black', 'lightblue' );
+        }
+        else {
+            $value = '';
+            say "# write: ($i, 3, $value)";
+            $self->table_entry_write( $i, 2, $value, 'black', 'white' );
+        }
+        # Disable the buttons if there is no table config
+        # my $state = $self->{_rdd}[$i]{tablename} ? 'normal' : 'disabled';
         # $self->{"b_dlg${i}"}->configure( -state => $state );
     }
 
@@ -665,6 +593,39 @@ sub write_e {
         $field, $self->{controls}{$field}, $value );
     return;
 }
+
+sub control_write_e {
+    my ( $self, $control, $value, $fg, $bg ) = @_;
+    unless ( blessed $control and $control->isa('Tk::Entry') ) {
+        warn qq(Widget for writing value'$value' not found\n);
+        return;
+    }
+    my $state = $control->cget('-state');
+    $value = q{} unless defined $value;    # empty
+    $control->configure( -state => 'normal' );
+    $control->delete( 0, 'end' );
+    $control->insert( 0, $value ) if defined $value;
+    $control->configure( -bg => $bg ) if $bg;
+    $control->configure( -fg => $fg ) if $fg;
+    $control->configure( -state => $state );
+    return;
+}
+
+sub control_write_l {
+    my ( $self, $control, $value, $fg, $bg ) = @_;
+    unless ( blessed $control and $control->isa('Tk::Label') ) {
+        warn qq(Widget for writing value'$value' not found\n);
+        return;
+    }
+    my $state = $control->cget('-state');
+    $value = q{} unless defined $value;    # empty
+    $control->configure( -text => $value );
+    $control->configure( -bg => $bg ) if $bg;
+    $control->configure( -fg => $fg ) if $fg;
+    $control->configure( -state => $state );
+    return;
+}
+
 
 sub write_t {
     my ($self, $field, $value) = @_;
