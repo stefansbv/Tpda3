@@ -5,6 +5,7 @@ package Tpda3::Tk::Dialog::Repman;
 use 5.010;
 use strict;
 use warnings;
+use feature 'say';
 use utf8;
 
 use IO::File;
@@ -682,6 +683,8 @@ sub preview_report {
     push @args, $params_str if $params_str;
     push @args, $report_path;
 
+    say "# cmd: >$cmd @args<";
+    
     my $output = q{};
     try {
         # Not capture($cmd, @args)!, always use the shell: ( why?! :) )
