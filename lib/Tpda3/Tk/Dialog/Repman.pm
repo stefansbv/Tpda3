@@ -11,7 +11,7 @@ use IO::File;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 use File::Spec::Functions;
-use IPC::System::Simple 1.17 qw(capture);
+use IPC::System::Simple 1.30 qw(capture);
 use Locale::TextDomain 1.20 qw(Tpda3);
 
 use Tpda3::Config;
@@ -234,7 +234,7 @@ sub run_screen {
 
     $self->{columns} = {
         1 => { ctrltype => "l", purpose => "count" },
-        2 => { ctrltype => "l", purpose => "hint" },
+        2 => { ctrltype => "e", purpose => "hint" },
         3 => { ctrltype => "b", purpose => "select" },
         4 => { ctrltype => "e", purpose => "paraname" },
         5 => { ctrltype => "e", purpose => "paravalue" },
@@ -262,12 +262,12 @@ sub run_screen {
         );
 
         # Label - [hint]
-        my $hint_label = $self->{table}->Label(
-            -text   => '',
+        my $hint_label = $self->{table}->Entry(
             -width  => 21,
             -relief => 'sunken',
-            -anchor => 'w',
             -bg     => 'white',
+            -disabledbackground => $bg,
+            -disabledforeground => 'black',
         );
 
         # Button - [select]
@@ -275,8 +275,7 @@ sub run_screen {
             -image   => 'navforward16',
             -state   => 'normal',
             -relief  => 'raised',
-            # -command => [\&update_value, $self, $view, 2],
-            -command => [\&table_entry_read, $self, $r, 4],
+            -command => [ \&update_value, $self, $view, $r ],
         );
 
         # Entry - [paraname]
@@ -284,6 +283,8 @@ sub run_screen {
             -width    => 16,
             -relief   => 'sunken',
             -bg       => 'white',
+            -disabledbackground => $bg,
+            -disabledforeground => 'black',
         );
 
         # Entry - [paravalue]
@@ -291,6 +292,8 @@ sub run_screen {
             -width    => 16,
             -relief   => 'sunken',
             -bg       => 'white',
+            -disabledbackground => $bg,
+            -disabledforeground => 'black',
         );
 
         $self->{table}->put( $r, 1, $crt_label );
@@ -403,43 +406,38 @@ sub run_screen {
 sub table_read {
     my $self = shift;
     my $rows = $self->{table}->totalRows;
-    print "# $rows in table\n";
-    for ( my $row_idx = 0; $row_idx < $rows; $row_idx++ ) {
-        my $widget_search = $self->{table}->get( $row_idx, 4 );
-        my $value_search  = $widget_search->get;
-        my $widget_param = $self->{table}->get( $row_idx, 5 );
-        my $value_param  = $widget_param->get;
-        print "  -> $value_param\n";
-
+    my @result;
+    for ( my $ri = 0 ; $ri < $rows ; $ri++ ) {
+        my $field = $self->table_entry_read($ri, 4); # fixed cols
+        my $value = $self->table_entry_read($ri, 5);
+        push @result, [ $field, $value ] if $value;
     }
-    return;
+    return \@result;
 }
 
-=head2 table_entry_read
-
-Read user input data.
-
-=cut
+sub get_table_widget {
+    my ( $self, $row, $col ) = @_;
+    my $widget = $self->{table}->get( $row, $col );
+    my $w_type = $self->{columns}{$col}{ctrltype};
+    return ( $widget, $w_type );
+}
 
 sub table_entry_read {
-    my ($self, $row, $col) = @_;
-    my $widget  = $self->{table}->get( $row, $col );
-    my $value   = $widget->get;
-    print " -> $value\n";
-    return $value;
+    my ( $self, $row, $col ) = @_;
+    my ($widget, $w_type) = $self->get_table_widget( $row, $col );
+    my $meth = "control_read_${w_type}";
+    unless ( $self->can($meth) ) {
+        die "table_entry_read: method '$meth' not implemented";
+    }
+    return $self->$meth($widget);
 }
 
 sub table_entry_write {
-    my ( $self, $row, $col, $value, $fg, $bg ) = @_;
-    my $widget = $self->{table}->get( $row, $col );
-
-    # say "$widget on ($row,$col)";
-    my $w_type = $self->{columns}{$col}{ctrltype};
-
-    # say "w_type [$col]: $w_type";
+    my ( $self, $row, $col, $value, $status, $fg, $bg ) = @_;
+    my ($widget, $w_type) = $self->get_table_widget( $row, $col );
     my $meth = "control_write_${w_type}";
     if ( $self->can($meth) ) {
-        $self->$meth( $widget, $value, $fg, $bg );
+        $self->$meth( $widget, $value, $fg, $bg, $status );
     }
     else {
         die "table_entry_write: method '$meth' not implemented";
@@ -447,11 +445,19 @@ sub table_entry_write {
     return $value;
 }
 
+sub table_entry_status {
+    my ( $self, $row, $col, $status ) = @_;
+    my ($widget, $w_type) = $self->get_table_widget( $row, $col );
+    $widget->configure( -state => $status );
+    return $status;
+}
+
 sub select_idx {
     my ($self, $sel) = @_;
-    my $idx = $sel -1 ;
+    my $idx = $sel -1;
     $self->{tmx}->set_selected($sel);
-    $self->load_report_details();
+    $self->reset_params;
+    $self->load_report_details;
     return;
 }
 
@@ -551,7 +557,6 @@ sub load_report_details {
 
     foreach my $field ( keys %{$eobj} ) {
         my $value = $self->{_rd}->[0]{$field};
-        # print "# $field = $value\n";
         if ( $field eq 'descr' ) {
             $self->write_t( $field, $value,  );
         }
@@ -562,28 +567,27 @@ sub load_report_details {
 
     #-- parameters
     my @params = @{ $self->{_rdd} };
-
-    # fill params in table
-    $self->{params} = [];
-    foreach my $i ( 0 .. 4 ) {
-        say "#data [$idx]:";
-        dump $params[$i];
-        my $value = $params[$i]{hint};
-        if ( defined $value ) {
-            push @{ $self->{params} }, $value;
-            say "# write: ($i, 3, $value)";
-            $self->table_entry_write( $i, 2, $value, 'black', 'lightblue' );
+    my $bg = $self->{tlw}->cget('-background');
+    
+    # Fill params in table
+    my $rows = $self->{table}->totalRows;
+    for ( my $ri = 0 ; $ri < $rows ; $ri++ ) {
+        my $hint  = $params[$ri]{hint};
+        my $pname = $params[$ri]{paramname};
+        if ( defined $hint and defined $pname ) {
+            push @{ $self->{params} }, [ $hint, $pname ];
+            $self->table_entry_write( $ri, 2, $hint, 'readonly' );
+            $self->table_entry_status( $ri, 3, 'normal' );
+            $self->table_entry_write( $ri, 4, $pname, 'readonly' );
+            $self->table_entry_write( $ri, 5, '', 'normal' );
         }
         else {
-            $value = '';
-            say "# write: ($i, 3, $value)";
-            $self->table_entry_write( $i, 2, $value, 'black', 'white' );
+            $self->table_entry_write( $ri, 2, '', 'disabled', undef, $bg );
+            $self->table_entry_write( $ri, 4, '', 'disabled' );
+            $self->table_entry_write( $ri, 5, '', 'disabled' );
+            $self->table_entry_status( $ri, 3, 'disabled' );
         }
-        # Disable the buttons if there is no table config
-        # my $state = $self->{_rdd}[$i]{tablename} ? 'normal' : 'disabled';
-        # $self->{"b_dlg${i}"}->configure( -state => $state );
     }
-
     return;
 }
 
@@ -595,12 +599,12 @@ sub write_e {
 }
 
 sub control_write_e {
-    my ( $self, $control, $value, $fg, $bg ) = @_;
+    my ( $self, $control, $value, $fg, $bg, $state ) = @_;
     unless ( blessed $control and $control->isa('Tk::Entry') ) {
         warn qq(Widget for writing value'$value' not found\n);
         return;
     }
-    my $state = $control->cget('-state');
+    $state //= $control->cget('-state');
     $value = q{} unless defined $value;    # empty
     $control->configure( -state => 'normal' );
     $control->delete( 0, 'end' );
@@ -611,13 +615,22 @@ sub control_write_e {
     return;
 }
 
+sub control_read_e {
+    my ( $self, $control ) = @_;
+    unless ( blessed $control and $control->isa('Tk::Entry') ) {
+        warn qq(Widget for reading ... not found\n);
+        return;
+    }
+    return $control->get;
+}
+
 sub control_write_l {
-    my ( $self, $control, $value, $fg, $bg ) = @_;
+    my ( $self, $control, $value, $fg, $bg, $state ) = @_;
     unless ( blessed $control and $control->isa('Tk::Label') ) {
         warn qq(Widget for writing value'$value' not found\n);
         return;
     }
-    my $state = $control->cget('-state');
+    $state //= $control->cget('-state');
     $value = q{} unless defined $value;    # empty
     $control->configure( -text => $value );
     $control->configure( -bg => $bg ) if $bg;
@@ -640,8 +653,8 @@ sub preview_report {
     # Get report filename
     my $report_file = $self->{_rd}[0]{repofile};
 
-    my $params = $self->get_parameters;
-    if ( scalar @{ $self->{params} } > 0 and not $params ) {
+    my $params_str = $self->get_parameters;
+    if ( scalar @{ $self->{params} } > 0 and not $params_str ) {
         my $msg = __ "Input a valid interval, please";
         my $lst = join ', ', @{ $self->{params} };
         my $det = __x( "Input the required parameters for {list}",
@@ -666,16 +679,16 @@ sub preview_report {
     my $cmd = $self->{cfg}->cfextapps->{repman}{exe_path};
 
     my @args = ('-preview');
-    push @args, $params if $params;
+    push @args, $params_str if $params_str;
     push @args, $report_path;
 
     my $output = q{};
     try {
-        # Not capture($cmd, @args)!, always use the shell:
+        # Not capture($cmd, @args)!, always use the shell: ( why?! :) )
         $output = capture("$cmd @args");
     }
     catch {
-        print "EE: '$cmd @args': $_\n";
+        print "EE: '$cmd @args': $_ $output\n";
     }
     finally {
         print "II: >$output<\n";
@@ -686,26 +699,14 @@ sub preview_report {
 
 sub get_parameters {
     my $self = shift;
-
-    my $eobj = $self->get_controls();
-
+    my $result = $self->table_read;
     my $params = q{};    # empty
-
-    foreach my $i ( 1 .. 5 ) {
-        my $field_def = "paradef$i";
-        my $field_val = "paraval$i";
-
-        my $def = $self->{_rd}[0]{$field_def} || q{};
-
-        my $val = $eobj->{$field_val}[1]->get;
+    foreach my $r ( @{$result} ) {
+        my $nam = uc $r->[0];
+        my $val = $r->[1];
         if ( $val =~ /\S+/ ) {
             $val = Tpda3::Utils->trim($val);
-
-            my $ii  = $i - 1;
-            my $rdd = $self->{_rdd}[$ii];
-            my $fld = uc $rdd->{paramname};
-
-            $params .= "-param$fld=$val ";
+            $params .= "-param$nam=$val ";
         }
     }
     say "params=$params";
@@ -713,11 +714,10 @@ sub get_parameters {
 }
 
 sub update_value {
-    my ($self, $view, $p_no) = @_;
+    my ($self, $view, $row) = @_;
 
-    my $ii  = $p_no - 1;
-    my $rd  = $self->{_rd}[$ii];
-    my $rdd = $self->{_rdd}[$ii];
+    my $rd  = $self->{_rd}[$row];   # report details
+    my $rdd = $self->{_rdd}[$row];
 
     return if scalar keys %{$rdd} == 0;
 
@@ -741,9 +741,13 @@ sub update_value {
         columns => [],
     };
 
-    my @headerlist = split /,\s*/, $rdd->{headerlist};
-    my @fields;
-    push @fields, $searchfield, @headerlist, $resultfield;
+    my @fields = ($searchfield, $resultfield);
+    if ( defined $rdd->{headerlist} ) {
+        my @headerlist = split /,\s*/, $rdd->{headerlist};
+        push @fields, @headerlist;
+    }
+    print "# fields:\n";
+    dump @fields;
 
     my @cols;
     foreach my $field (@fields) {
@@ -761,13 +765,11 @@ sub update_value {
     my $dict   = Tpda3::Lookup->new;
     my $record = $dict->lookup( $view, $para );
 
-    #- Update control value
+    #- Update control value in table
 
     my $eobj = $self->get_controls();
-    my $value_label = $record->{$searchfield};
     my $value_param = $record->{$resultfield};
-    $self->write_e( "paraden$p_no", $value_label );
-    $self->write_e( "paraval$p_no", $value_param );
+    $self->table_entry_write( $row, 5, $value_param, 'normal', );
 
     return;
 }
@@ -775,6 +777,16 @@ sub update_value {
 sub update_labels {
     my ($self, $name, $value) = @_;
     $self->{$name}->configure(-text => $value) if defined $value;
+    return;
+}
+
+sub reset_params {
+    my $self = shift;
+    my $rows = $self->{table}->totalRows;
+    for ( my $ri = 0 ; $ri < $rows ; $ri++ ) {
+        $self->table_entry_write( $ri, 4, '', 'disabled' );
+        $self->table_entry_write( $ri, 5, '', 'disabled' );
+    }
     return;
 }
 
