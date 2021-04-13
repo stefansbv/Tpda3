@@ -473,7 +473,7 @@ sub load_report_list {
     my $args = {};
     $args->{table}    = $self->{scrcfg}->maintable->{name}; # reports
     $args->{colslist} = [qw{id_rep title}]; #  id_user
-    $args->{where}    = undef;
+    $args->{where}    = { draft => 0 };
     $args->{order}    = 'title';
 
     my $reports_list = $self->{model}->table_batch_query($args);

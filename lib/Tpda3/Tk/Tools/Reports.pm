@@ -41,7 +41,7 @@ sub run_screen {
         -fill   => 'x',
     );
 
-    my $f1d = 110;              # distance from left
+    my $f1d = 50;              # distance from left
 
     #- id_rep (id_rep)
 
@@ -60,6 +60,29 @@ sub run_screen {
     $eid_rep->form(
         -top  => [ '&', $lid_rep, 0 ],
         -left => [ %0,  $f1d ],
+    );
+
+    #- Draft (draft)
+
+    my $vdraft;
+    my $cdraft = $frm_top->Checkbutton(
+        -image       => 'actcross16',
+        -selectimage => 'actcheck16',
+        -indicatoron => 0,
+        -variable    => \$vdraft,
+        -offvalue    => 0,
+        -onvalue     => 1,
+        -relief      => 'flat',
+        -background  => $self->{bg},
+    );
+    $cdraft->form(
+        -top   => [ '&',  $lid_rep, 0 ],
+        -right => [ %100, -15 ],
+    );
+    my $ldraft = $frm_top->Label( -text => 'Draft' );
+    $ldraft->form(
+        -top   => [ '&',     $lid_rep, 0 ],
+        -right => [ $cdraft, -15 ],
     );
 
     #- repofile (repofile)
@@ -180,10 +203,11 @@ sub run_screen {
     # Entry objects: var_asoc, var_obiect
     # Other configurations in '.conf'
     $self->{controls} = {
-        id_rep   => [ undef, $eid_rep ],
-        repofile => [ undef, $erepofile ],
-        title    => [ undef, $etitle ],
-        descr    => [ undef, $tdescr ],
+        id_rep   => [ undef,    $eid_rep ],
+        repofile => [ undef,    $erepofile ],
+        title    => [ undef,    $etitle ],
+        draft    => [ \$vdraft, $cdraft ],
+        descr    => [ undef,    $tdescr ],
     };
 
     #- TableMatrix objects; just one for now :)
