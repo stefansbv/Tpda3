@@ -655,9 +655,9 @@ sub preview_report {
 
     my $params_str = $self->get_parameters;
     if ( scalar @{ $self->{params} } > 0 and not $params_str ) {
-        my $msg = __ "Input a valid interval, please";
-        my $lst = join ', ', @{ $self->{params} };
-        my $det = __x( "Input the required parameters for {list}",
+        my $msg = __ "Parameters missing!";
+        my $lst = join ', ', map { '"' . $_->[0] . '"' } @{ $self->{params} };
+        my $det = __x( "Input the required parameters for: {list}",
                        list => $lst );
         my $dlg = Tpda3::Tk::Dialog::Message->new( $self->{tlw} );
         $dlg->message_dialog( $msg, $det, 'info', 'ok' );
@@ -709,7 +709,7 @@ sub get_parameters {
             $params .= "-param$nam=$val ";
         }
     }
-    say "params=$params";
+    say "#params=$params";
     return $params;
 }
 
@@ -727,6 +727,12 @@ sub update_value {
 
     my $resultfield = $rdd->{resultfield};
     my $searchfield = $rdd->{searchfield};
+
+    unless ($searchfield) {
+        print "#rdd:\n";
+        dump $rdd;
+        return;
+    }
 
     # Info for the Search dialog table header from L<res/search.conf>,
     # in the application's L<res> config dir.
@@ -746,8 +752,6 @@ sub update_value {
         my @headerlist = split /,\s*/, $rdd->{headerlist};
         push @fields, @headerlist;
     }
-    print "# fields:\n";
-    dump @fields;
 
     my @cols;
     foreach my $field (@fields) {
@@ -787,6 +791,7 @@ sub reset_params {
         $self->table_entry_write( $ri, 4, '', 'disabled' );
         $self->table_entry_write( $ri, 5, '', 'disabled' );
     }
+    $self->{params} = [];
     return;
 }
 
