@@ -342,7 +342,7 @@ sub lookup_reportsto {
 
 =head1 AUTHOR
 
-Stefan Suciu, C<< <stefan@s2i2.ro> >>
+Stefan Suciu
 
 =head1 BUGS
 

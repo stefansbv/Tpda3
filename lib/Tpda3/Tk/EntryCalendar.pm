@@ -502,13 +502,13 @@ __END__
 
 =head1 AUTHOR
 
-Stefan Suciu, E<lt>stefan.suciu@s2i2.roE<gt>
+Stefan Suciu
 
-Lorenz Domke, E<lt>lorenz.domke@gmx.deE<gt>
+Lorenz Domke
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2019 by Stefan Suciu
+Copyright (C) 2021 by Stefan Suciu
 
 Copyright (C) 2008 by Lorenz Domke
 
