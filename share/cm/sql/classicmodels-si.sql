@@ -80,6 +80,7 @@ CREATE TABLE reports (
  , id_user      INTEGER
  , repofile     VARCHAR(150)
  , title        VARCHAR(50)
+ , draft        SMALLINT DEFAULT 0 NOT NULL CHECK (draft IN (0,1))
  , descr        VARCHAR(250)
  , CONSTRAINT pk_reports_id_rep PRIMARY KEY (id_rep)
 );
