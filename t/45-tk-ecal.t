@@ -24,8 +24,6 @@ BEGIN {
     }
 }
 
-plan( skip_all => 'Until fixed!' );
-
 use Tpda3::Tk::EntryCalendar;
 
 my $mw = tkinit;
