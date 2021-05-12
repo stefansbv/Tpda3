@@ -1216,6 +1216,13 @@ sub query_proxy {
     return $record;
 }
 
+# table_record_insert
+sub insert_proxy {
+    my ($self, $method, $pkcol, $record, $debug) = @_;
+    $self->model->$method($pkcol, $record, $debug);
+    return $record;
+}
+
 sub table_record_update {
     my ( $self, $table, $record, $where ) = @_;
     $self->model->table_record_update($table, $record, $where);
