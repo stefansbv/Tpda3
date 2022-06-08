@@ -153,6 +153,7 @@ $mw->after(
     $delay * $milisec,
     sub {
         ok $tm->fill($records), 'fill TM';
+        is $tm->get_col_for('ordervalue'), 5, 'col for field';
     }
 );
 
@@ -211,7 +212,6 @@ $mw->after(
     $delay * $milisec,
     sub {
         my @names = $tm->tagNames();
-        use Data::Dump; dd @names;
         $tm->add_row_find;
     }
 );

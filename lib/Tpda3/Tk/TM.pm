@@ -7,6 +7,7 @@ use strict;
 use warnings;
 use Carp;
 use Scalar::Util qw(looks_like_number);
+use List::MoreUtils qw(firstidx);
 use Tk;
 use base qw< Tk::Derived Tk::TableMatrix >;
 use Tk::widgets qw< Checkbutton Radiobutton DateEntry JComboBox >;
@@ -14,6 +15,12 @@ use Tk::widgets qw< Checkbutton Radiobutton DateEntry JComboBox >;
 use Tpda3::Utils;
 
 Tk::Widget->Construct('TM');
+
+=head3 tag_defaults
+
+Set the default tag attributes.
+
+=cut
 
 sub tag_defaults {
     return {
@@ -89,6 +96,15 @@ sub tag_defaults {
     };
 }
 
+=head2 ClassInit
+
+Class initializations.
+
+Changes the bindings for cursor movements in the cell and between
+cells.
+
+=cut
+
 sub ClassInit {
     my ( $class, $mw ) = @_;
 
@@ -145,11 +161,23 @@ sub ClassInit {
     return;
 }
 
+=head2 Populate
+
+Constructor method, calls SUPER Populate.
+
+=cut
+
 sub Populate {
     my ( $self, $args ) = @_;
     $self->SUPER::Populate($args);
     return $self;
 }
+
+=head2 init
+
+Write header on row 0 of TableMatrix.
+
+=cut
 
 sub init {
     my ( $self, $frame, $args ) = @_;
@@ -184,12 +212,24 @@ sub init {
     return;
 }
 
+=head2 get_row_count
+
+Return number of rows in TM, without the header row.
+
+=cut
+
 sub get_row_count {
     my $self = shift;
     my $rows_no  = $self->cget('-rows');
     my $rows_count = $rows_no - 1;
     return $rows_count;
 }
+
+=head2 set_tags
+
+Define and set tags for the Table Matrix.
+
+=cut
 
 sub set_tags {
     my $self = shift;
@@ -266,6 +306,12 @@ sub set_tags {
     return;
 }
 
+=head2 clear_all
+
+Clear all data from the Tk::TableMatrix widget, but preserve the header.
+
+=cut
+
 sub clear_all {
     my $self = shift;
     my $rows_no  = $self->cget('-rows');
@@ -276,6 +322,12 @@ sub clear_all {
     }
     return;
 }
+
+=head2 fill
+
+Fill TableMatrix widget with data.
+
+=cut
 
 sub fill {
     my ( $self, $records ) = @_;
@@ -289,6 +341,12 @@ sub fill {
     $self->update;
     return $row;
 }
+
+=head2 data_read
+
+Read data from the TM widget.
+
+=cut
 
 sub data_read {
     my ( $self, $with_sel_name, $all_cols ) = @_;
@@ -307,6 +365,26 @@ sub data_read {
     }
     return ( \@tabledata, $sc );
 }
+
+=head3 read_row
+
+Read a row from the TM widget.
+
+Parameters:
+
+=over
+
+=item row - the row number - required
+
+=item all_cols - option to read all the columns
+
+The default is to skip 'ro' cols.
+
+=item not_null - option to return only columns with values (not empty)
+
+=back
+
+=cut
 
 sub read_row {
     my ( $self, $row, $all_cols, $not_null ) = @_;
@@ -329,6 +407,14 @@ sub read_row {
     }
     return $row_data;
 }
+
+=head2 write_row
+
+Write a row to a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+=cut
 
 sub write_row {
     my ( $self, $row, $record ) = @_;
@@ -358,12 +444,35 @@ sub write_row {
     return $nr_col;
 }
 
+=head3 get_field_for
+
+Return the field name for the coresponding col.
+
+=cut
+
 sub get_field_for {
     my ( $self, $col ) = @_;
     croak "get_field_for: the \$col parameter must be numeric"
         unless looks_like_number($col);
     return $self->{fields}[$col];
 }
+
+=head3 get_col_for
+
+Get the col index for a field.
+
+=cut
+
+sub get_col_for {
+    my ( $self, $field ) = @_;
+    croak "get_col_for: the \$field parameter is required"
+      unless $field;
+    return firstidx { $_ eq $field } @{ $self->{fields} };
+}
+
+=head3 cell_config_for
+
+=cut
 
 sub cell_config_for {
     my ( $self, $col, $attrib ) = @_;
@@ -380,10 +489,27 @@ sub cell_config_for {
     }
 }
 
+=head3 is_col_name
+
+Return true if the parameter is not a number.
+
+=cut
+
 sub is_col_name {
     my ($self, $col) = @_;
     return not looks_like_number($col);
 }
+
+=head2 cell_read
+
+Read a cell from a TableMatrix widget and return it as a hash
+reference.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+The I<col> parameter can be a number - column index or a column name.
+
+=cut
 
 sub cell_read {
     my ( $self, $row, $col ) = @_;
@@ -407,6 +533,16 @@ sub cell_read {
     $cell_value = $cell_value ? 1 : 0 if $w_type eq 'ckbutton';
     return { $field => $cell_value };
 }
+
+=head2 cell_write
+
+Write to a cell from a TableMatrix widget.
+
+TableMatrix designator is optional and default to 'tm1'.
+
+The I<col> parameter can be a number - column index or a column name.
+
+=cut
 
 sub cell_write {
     my ( $self, $r, $c, $value ) = @_;
@@ -459,6 +595,12 @@ sub cell_write {
     return;
 }
 
+=head2 add_row
+
+Table matrix methods.  Add TableMatrix row.
+
+=cut
+
 sub add_row {
     my $self = shift;
     my $updstyle = $self->{updatestyle};
@@ -501,6 +643,15 @@ sub add_row {
     return $new_r;
 }
 
+=head2 add_row_find
+
+Not used.  For the search (find) in TM feature.
+
+Add a row where the search criteria can be entered and remove it after
+the search was done.
+
+=cut
+
 sub add_row_find {
     my $self = shift;
     $self->configure( state => 'normal' );    # normal state
@@ -530,6 +681,12 @@ sub add_row_find {
     return $new_r;
 }
 
+=head2 remove_row
+
+Delete TableMatrix row.
+
+=cut
+
 sub remove_row {
     my ( $self, $row ) = @_;
     my $updstyle = $self->{updatestyle};
@@ -554,6 +711,12 @@ sub remove_row {
     return;
 }
 
+=head2 get_active_row
+
+Return the active row.
+
+=cut
+
 sub get_active_row {
     my $self = shift;
     my $r;
@@ -561,6 +724,12 @@ sub get_active_row {
     return if $@;
     return $r;
 }
+
+=head2 renum_row
+
+Renumber TableMatrix rows.
+
+=cut
 
 sub renum_row {
     my $self = shift;
@@ -573,6 +742,12 @@ sub renum_row {
     return;
 }
 
+=head2 tmatrix_make_selector
+
+Make TableMatrix selector.
+
+=cut
+
 sub tmatrix_make_selector {
     my ( $self, $c ) = @_;
     my $rows_no  = $self->cget('-rows');
@@ -582,6 +757,12 @@ sub tmatrix_make_selector {
     }
     return;
 }
+
+=head3 find_embeded_widgets
+
+Return a list of cols with embeded widgets.
+
+=cut
 
 sub find_embeded_widgets {
     my $self = shift;
@@ -593,10 +774,22 @@ sub find_embeded_widgets {
     return \@cols;
 }
 
+=head3 has_embeded_widget
+
+Return true if there are embeded widgets in the TM.
+
+=cut
+
 sub has_embeded_widget {
     my ($self, $field) = @_;
     return exists $self->{embeded_meta}{$field};
 }
+
+=head3 add_embeded_widgets
+
+Add embeded widgets in a row.
+
+=cut
 
 sub add_embeded_widgets {
     my ( $self, $row ) = @_;
@@ -635,6 +828,27 @@ sub add_embeded_widgets {
     return;
 }
 
+=head2 embeded_sel_buttons
+
+Embeded windows.
+
+Config options:
+
+=over
+
+=item L<selectorstyle>
+
+The selector button style can be L<radio> the default, or L<checkbox>;
+
+=item L<selectorcolor>
+
+The selector button color can be any Tk color and the default is
+C<lightblue>;
+
+=back
+
+=cut
+
 sub embeded_sel_buttons {
     my ( $self, $row, $col ) = @_;
     return unless $self->{selectorcol};
@@ -657,6 +871,12 @@ sub embeded_sel_buttons {
     return;
 }
 
+=head3 build_ckbutton
+
+Build a Checkbutton embeded widget.
+
+=cut
+
 sub build_ckbutton {
     my ( $self, $row, $col, $p ) = @_;
     my $text  = exists $p->{text}  ? $p->{text}  : '';
@@ -675,6 +895,12 @@ sub build_ckbutton {
     return $button;
 }
 
+=head3 build_sel_ckbutton
+
+Build a selector Checkbutton embeded widget.
+
+=cut
+
 sub build_sel_ckbutton {
     my ( $self, $row, $col ) = @_;
     my $button = $self->{frame}->Checkbutton(
@@ -688,6 +914,12 @@ sub build_sel_ckbutton {
     );
     return $button;
 }
+
+=head2 build_sel_rbbutton
+
+Build Radiobutton embeded widget.
+
+=cut
 
 sub build_sel_rbbutton {
     my ( $self, $row, $col ) = @_;
@@ -705,10 +937,24 @@ sub build_sel_rbbutton {
     return $button;
 }
 
+=head2 get_selected
+
+Return selected table row, used for tables with embeded radion buttons
+as selectors.
+
+=cut
+
 sub get_selected {
     my $self = shift;
     return $self->{tm_sel};
 }
+
+=head2 set_selected
+
+Set row as selected. The value has to be true, for false values set to
+undef. As a consequence it won't set as selected row 0.
+
+=cut
 
 sub set_selected {
     my ( $self, $selected_row ) = @_;
@@ -721,10 +967,22 @@ sub set_selected {
     return;
 }
 
+=head2 get_selector
+
+Return selector column.
+
+=cut
+
 sub get_selector {
     my $self = shift;
     return $self->{selectorcol};
 }
+
+=head2 build_dateentry
+
+Build a DateEntry embeded widget.
+
+=cut
 
 sub build_dateentry {
     my ( $self, $row, $col ) = @_;
@@ -752,6 +1010,12 @@ sub build_dateentry {
     return $button;
 }
 
+=head2 build_jcombobox
+
+Build a JComboBox embeded widget.
+
+=cut
+
 sub build_jcombobox {
     my ( $self, $row, $col, $choices ) = @_;
     my $var;
@@ -767,11 +1031,23 @@ sub build_jcombobox {
     return $button;
 }
 
+=head jcombo_browse
+
+Callback sub for the JComboBox embeded widget.
+
+=cut
+
 sub jcombo_browse {
     my ( $self, $r, $c, $jcb, $sel_index, $sel_name, $sel_value ) = @_;
     $self->set("$r,$c", $sel_value);
     return;
 }
+
+=head dentry_browse
+
+Callback sub for the DateEntry embeded widget.
+
+=cut
 
 sub dentry_browse {
     my ( $self, $r, $c, $date_str ) = @_;
@@ -779,12 +1055,24 @@ sub dentry_browse {
     return $date_str;
 }
 
+=head ckbutton_browse
+
+Callback sub for the Checkbutton embeded widget.
+
+=cut
+
 sub ckbutton_browse {
     my ( $self, $r, $c ) = @_;
     my $value = $self->is_checked($r, $c) ? 1 : 0;
     $self->set("$r,$c", $value);
     return;
 }
+
+=head2 toggle_ckbutton
+
+Toggle Checkbutton or set state to L<state> if defined state.
+
+=cut
 
 sub toggle_ckbutton {
     my ( $self, $r, $c, $state ) = @_;
@@ -820,6 +1108,15 @@ sub mouse_click_ckbutton {
     return;
 }
 
+=head2 is_checked
+
+Parameters: row, col.
+
+Return true if a embedded CheckButton is checked.  Does not apply for
+RadioButtons!
+
+=cut
+
 sub is_checked {
     my ( $self, $r, $c ) = @_;
     croak "is_checked: missing parameters \$r or/and \$c"
@@ -837,6 +1134,12 @@ sub is_checked {
     return $is_checked;
 }
 
+=head2 count_is_checked
+
+Return how many buttons are checked.
+
+=cut
+
 sub count_is_checked {
     my ( $self, $c ) = @_;
     croak "count_is_checked: missing parameter \$c" unless defined $c;
@@ -848,6 +1151,13 @@ sub count_is_checked {
     }
     return $count;
 }
+
+=head2 activate_cell
+
+Helper method for cell activation.  The parameters are the row and
+the column.
+
+=cut
 
 sub activate_cell {
     my ($self, $row, $col) = @_;
@@ -882,144 +1192,5 @@ sub activate_cell {
     $xtable->pack( -expand => 1, -fill => 'both' );
 
     $xtable->init($frame, $header);
-
-=head2 ClassInit
-
-Class initializations.
-
-Changes the bindings for cursor movements in the cell and between
-cells.
-
-=head2 Populate
-
-Constructor method, calls SUPER Populate.
-
-=head2 init
-
-Write header on row 0 of TableMatrix.
-
-=head2 get_row_count
-
-Return number of rows in TM, without the header row.
-
-=head2 set_tags
-
-Define and set tags for the Table Matrix.
-
-=head2 clear_all
-
-Clear all data from the Tk::TableMatrix widget, but preserve the header.
-
-=head2 fill
-
-Fill TableMatrix widget with data.
-
-=head2 write_row
-
-Write a row to a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-=head2 data_read
-
-Read data from widget.
-
-=head2 cell_read
-
-Read a cell from a TableMatrix widget and return it as a hash
-reference.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-The I<col> parameter can be a number - column index or a column name.
-
-=head2 cell_write
-
-Write to a cell from a TableMatrix widget.
-
-TableMatrix designator is optional and default to 'tm1'.
-
-The I<col> parameter can be a number - column index or a column name.
-
-=head2 add_row
-
-Table matrix methods.  Add TableMatrix row.
-
-=head2 remove_row
-
-Delete TableMatrix row.
-
-=head2 get_active_row
-
-Return the active row.
-
-=head2 renum_row
-
-Renumber TableMatrix rows.
-
-=head2 tmatrix_make_selector
-
-Make TableMatrix selector.
-
-=head2 embeded_sel_buttons
-
-Embeded windows.
-
-Config options:
-
-=over
-
-=item L<selectorstyle>
-
-The selector button style can be L<radio> the default, or L<checkbox>;
-
-=item L<selectorcolor>
-
-The selector button color can be any Tk color and the default is
-C<lightblue>;
-
-=back
-
-=head2 build_sel_rbbutton
-
-Build Radiobutton.
-
-=head2 get_selected
-
-Return selected table row, used for tables with embeded radion buttons
-as selectors.
-
-=head2 set_selected
-
-Set row as selected. The value has to be true, for false values set to
-undef. As a consequence it won't set as selected row 0.
-
-=head2 get_selector
-
-Return selector column.
-
-=head2 build_sel_ckbutton
-
-Build Checkbutton.
-
-=head2 toggle_ckbutton
-
-Toggle Checkbutton or set state to L<state> if defined state.
-
-=head2 is_checked
-
-Parameters: row, col.
-
-Return true if a embedded CheckButton is checked.  Does not apply for
-RadioButtons!
-
-=head2 count_is_checked
-
-Return how many buttons are checked.
-
-=head2 activate_cell
-
-Helper method for cell activation.  The parameters are the row and
-the column.
 
 =cut
