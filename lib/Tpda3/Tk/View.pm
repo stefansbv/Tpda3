@@ -45,7 +45,7 @@ sub new {
     $self->title(" Tpda3 ");
 
     # Make a smaller font for buttons
-    my $s_font = $self->fontCreate(
+    $self->fontCreate(
         'small',
         -family => 'arial',
         -weight => 'bold',
