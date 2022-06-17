@@ -110,6 +110,14 @@ sub ClassInit {
 
     $class->SUPER::ClassInit($mw);
 
+    # Make a smaller font for buttons
+    $mw->fontCreate(
+        'button',
+        -family => 'arial',
+        -weight => 'bold',
+        -size   => 7,
+    );
+
     # Swap some bindings
     $mw->bind($class ,'<Control-Left>',['MoveCell',0,-1]);
     $mw->bind($class ,'<Left>',
@@ -890,6 +898,7 @@ sub build_ckbutton {
         -offvalue    => 0,
         -onvalue     => 1,
         -state       => 'normal',
+        -font        => 'button',
         -command     => sub { $self->ckbutton_browse($row, $col) }
     );
     return $button;
