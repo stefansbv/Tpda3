@@ -13,6 +13,7 @@ use Type::Library 0.040 -base, -declare => qw(
     ListCompare
     MailOutlook
     MailOutlookMessage
+    MustacheSimple
     Path
     TimeMoment
     Tpda3Compare
@@ -24,6 +25,7 @@ use Type::Library 0.040 -base, -declare => qw(
     Tpda3View
     TkToplevel
     URIdb
+    XLSXWorksheet
 );
 use Type::Utils -all;
 use Types::Standard -types;
@@ -37,6 +39,7 @@ class_type DateRange,          { class => 'Date::Range' };
 class_type Path,               { class => 'Path::Tiny' };
 class_type MailOutlook,        { class => 'Mail::Outlook' };
 class_type MailOutlookMessage, { class => 'Mail::Outlook::Message' };
+class_type MustacheSimple,     { class => 'Mustache::Simple' };
 class_type TimeMoment,         { class => 'Time::Moment' };
 class_type ListCompare,        { class => 'List::Compare' };
 class_type URIdb,              { class => 'URI::db' };
@@ -49,5 +52,6 @@ class_type Tpda3Record ,  { class => 'Tpda3::Model::Table::Record' };
 class_type Tpda3View ,    { class => 'Tpda3::Tk::View' };
 class_type Tpda3Contr,    { class => 'Tpda3::Tk::Controller' };
 class_type Tpda3Screen,   { class => 'Tpda3::Tk::Screen' };
+class_type XLSXWorksheet, { class => 'Excel::Writer::XLSX::Worksheet' };
 
 1;
