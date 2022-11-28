@@ -1,9 +1,9 @@
 Tpda3 (Tiny Perl Database Application 3)
 ========================================
 Ștefan Suciu
-2021-04-14
+2022-11-28
 
-Version: 0.99.99
+Version: 1.000
 
 Tpda3 is a classic desktop database application framework and
 run-time, written in Perl.  The graphical user interface is based on
@@ -42,18 +42,6 @@ welcome.
 Installation
 ------------
 
-### The Preffered Way
-
-Because Tpda3 uses a few modules that need to be patched, the best way
-to install is from Stratopan.  (This is a good time to say to the
-Stratopan team: thank you for a great service!).
-
-    cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only --installdeps Tpda3
-    cpanm --mirror https://stratopan.com/stefansbv/Tpda3/master --mirror-only Tpda3
-
-
-### The Classic Way
-
 Download the distribution, unpack and install:
 
     % tar xaf Tpda3-0.NN.tar.gz
@@ -89,53 +77,6 @@ On a fresh installation this command should return:
 Run the demo application with:
 
     % tpda3 test-tk
-
-
-Citrus Perl
------------
-
-__Notes__ for the custom Citrus Perl distribution that includes Tpda3.
-
-### Installation
-
-#### GNU/Linux
-
-Install and start as normal user, not root:
-
-Open a terminal, and:
-
-    % cd test         # or any other playground dir
-    % tar xaf tpda3perl-standard-51402-20903-linux-x86-061.tar.gz
-    % cd Tpda3Perl
-    % ./bin/citrusutils
-
-After exit:
-
-    % source bin/citrusvars.sh
-    % perl -V
-
-Paths should include Tpda3Perl.
-
-Finally we start the app with:
-
-    % tpda3
-
-
-#### Windows
-
-Unzip the distribution to a folder, for example C:\dev\
-
-Run: C:\dev\Tpda3Perl\bin\citrusutls.exe
-
-And, after exit: C:\dev\Tpda3Perl\bin\citrusterm.bat to open a terminal, then:
-
-    % tpda3
-
-Alternatively run: C:\dev\Tpda3Perl\apps\Tpda3.exe
-
-Have fun!
-
-(Thank you, Mark Dootson for Citrus Perl.)
 
 
 Troubleshooting
@@ -192,7 +133,7 @@ https://sourceforge.net/projects/tpda/
 License And Copyright
 ---------------------
 
-Copyright (C) 2010-2021 Ștefan Suciu
+Copyright (C) 2010-2022 Ștefan Suciu
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

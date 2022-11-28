@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Tpda3 0.99.99\n"
+"Project-Id-Version: Tpda3 1.000\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-14 20:02+0300\n"
+"POT-Creation-Date: 2022-11-28 20:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -225,7 +225,7 @@ msgstr ""
 msgid "Not in edit|add mode!"
 msgstr ""
 
-#: lib/Tpda3/Controller.pm:2688 lib/Tpda3/Tk/View.pm:1267
+#: lib/Tpda3/Controller.pm:2688 lib/Tpda3/Tk/View.pm:1274
 msgid "Please, fill in data for:"
 msgstr ""
 
@@ -294,7 +294,7 @@ msgid "Dialog"
 msgstr ""
 
 #: lib/Tpda3/Tk/Dialog/Message.pm:101 lib/Tpda3/Tk/View.pm:614
-#: lib/Tpda3/Tk/View.pm:1400
+#: lib/Tpda3/Tk/View.pm:1407
 msgid "Error"
 msgstr ""
 
@@ -386,18 +386,18 @@ msgstr ""
 msgid "Search results"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:1278
+#: lib/Tpda3/Tk/View.pm:1285
 msgid "Failed to generate TeX"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:1295
+#: lib/Tpda3/Tk/View.pm:1302
 msgid "Failed to generate PDF"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:1344 lib/Tpda3/Tk/View.pm:1369
+#: lib/Tpda3/Tk/View.pm:1351 lib/Tpda3/Tk/View.pm:1376
 msgid "Choose a file"
 msgstr ""
 
-#: lib/Tpda3/Tk/View.pm:1357 lib/Tpda3/Tk/View.pm:1379
+#: lib/Tpda3/Tk/View.pm:1364 lib/Tpda3/Tk/View.pm:1386
 msgid "Choose a directory"
 msgstr ""
