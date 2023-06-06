@@ -185,6 +185,20 @@ sub special_ops {
                 return ( $sql, @bind );
             }
         },
+
+        # special op for PostgreSQL syntax: extract date from timestamp
+        {   regex   => qr/^extractdate$/i,
+            handler => sub {
+                my ( $self, $field, $op, $arg ) = @_;
+                $arg = [$arg] if not ref $arg;
+                my ($placeholder) = $self->_convert('?');
+                my $sql           = $self->_sqlcase('date(') . $field . ')'
+                    . " = $placeholder ";
+                my @bind = $self->_bindtype( $field, @$arg );
+                return ( $sql, @bind );
+            }
+        },
+
         # special op for PostgreSQL syntax: field SIMILAR TO 'regex1'
         {   regex   => qr/^similar_to$/i,
             handler => sub {
@@ -228,15 +242,17 @@ sub process_date_string {
 sub identify_date_string {
     my ( $self, $is ) = @_;
 
-    #                When date format is...                     Type is ...
-    return
-          $is eq q{} ? 'nothing'
-        : $is =~ m/^(\d{4})[\.\/-](\d{2})[\.\/-](\d{2})$/ ? "dateiso:$is"
-        : $is =~ m/^(\d{2})[\.\/-](\d{2})[\.\/-](\d{4})$/ ? "dateamb:$is"
-        : $is =~ m/^(\d{4})[\.\/-](\d{1,2})$/             ? "dateym:$1:$2"
-        : $is =~ m/^(\d{1,2})[\.\/-](\d{4})$/             ? "datemy:$2:$1"
-        : $is =~ m/^(\d{4})$/                             ? "datey:$1"
-        :                                                   "dataerr:$is";
+    #              When date format is...                  Type is ...
+    my $rez =
+          $is eq q{}                                    ? "nothing"
+        : $is =~ m{^(\d{4})[./-](\d{2})[\.\/-](\d{2})$} ? "dateiso:$is"
+        : $is =~ m{^(\d{2})[./-](\d{2})[\.\/-](\d{4})$} ? "dateamb:$is"
+        : $is =~ m{^(\d{4})[./-](\d{1,2})$}             ? "dateym:$1:$2"
+        : $is =~ m{^(\d{1,2})[./-](\d{4})$}             ? "datemy:$2:$1"
+        : $is =~ m{^(\d{4})$}                           ? "datey:$1"
+        :                                                 "dataerr:$is";
+    $rez =~ s{[./]}{-}g;
+    return $rez;
 }
 
 sub format_query {
@@ -267,7 +283,9 @@ sub year_month {
 
 sub date_string {
     my ($date) = @_;
-    return $date;
+    my $where = {};
+    $where->{-extractdate} = [$date] if ($date);
+    return $where;
 }
 
 sub do_error {

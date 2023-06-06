@@ -486,7 +486,7 @@ sub build_sql_where {
             die "Unknown 'find_type': $find_type for '$field'";
         }
     }
-
+    say $where if $self->debug;
     return $where;
 }
 
