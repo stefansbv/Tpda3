@@ -337,7 +337,7 @@ sub about {
     $text->insert( 'end', $PROGRAM_NAME . "\n", 'normal' );
     $text->insert( 'end', "Version " . $PROGRAM_VER . "\n", 'normal' );
     $text->insert( 'end', "Author: Ștefan Suciu\n", 'normal' );
-    $text->insert( 'end', "Copyright 2010-2022\n", 'normal' );
+    $text->insert( 'end', "Copyright 2010-2023\n", 'normal' );
     $text->insert( 'end', "GNU General Public License (GPL)\n", 'normal' );
     $text->insert( 'end', "\n\n" );
     $text->insert( 'end', "$APP_NAME\n", 'normal' );

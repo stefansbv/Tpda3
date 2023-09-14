@@ -150,7 +150,7 @@ sub about {
     $about->SetName($PROGRAM_NAME);
     $about->SetVersion($PROGRAM_VER);
     $about->SetDescription("$PROGRAM_DESC\nDatabase application framework and run-time");
-    $about->SetCopyright('(c) 2010-2022 Ştefan Suciu>');
+    $about->SetCopyright('(c) 2010-2023 Ştefan Suciu>');
     $about->SetLicense($LICENSE);
     $about->SetWebSite( 'http://stefansuciu.ro/', 'The Tpda3 home site');
     $about->AddDeveloper( 'Ştefan Suciu' );
