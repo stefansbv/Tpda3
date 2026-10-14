@@ -7,8 +7,8 @@ use warnings;
 
 use Test::More tests => 5;
 
-use lib qw( lib ../lib );
-use t::lib::TkTest qw/make_database/;
+use lib qw( t/lib ../lib );
+use TkTest qw/make_database/;
 
 use Tpda3::Config;
 use Tpda3::Db::Connection;
