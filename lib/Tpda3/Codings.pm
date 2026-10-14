@@ -57,10 +57,10 @@ sub get_coding_init {
     return $self->{_code}{$field};
 }
 
-sub get_coding {
-    my ( $self, $field, $val ) = @_;
-    return $self->{_code}{$field}{$val};
-}
+# sub get_coding {
+#     my ( $self, $field, $val ) = @_;
+#     return $self->{_code}{$field}{$val};
+# }
 
 1;
 
