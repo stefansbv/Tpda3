@@ -47,10 +47,11 @@ sub message_text {
     my $ttext_entry = $frame_top->Scrolled(
         'Text',
         -width      => 80,
-        -height     => 5,
+        -height     => 17,
         -wrap       => 'word',
         -scrollbars => 'e',
-        -background => 'white',
+        -background => 'lightyellow',
+        -relief     => 'flat',
     );
     $ttext_entry->pack(
         -expand => 1,
