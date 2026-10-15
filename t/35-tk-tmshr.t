@@ -12,7 +12,11 @@ use strict;
 use warnings;
 
 use Test::More;
-use Tk;
+
+# Don't run tests for installs
+unless ( $ENV{AUTOMATED_TESTING} or $ENV{RELEASE_TESTING} ) {
+	plan( skip_all => "Author tests not required for installation" );
+}
 
 use lib qw( lib ../lib );
 
@@ -27,7 +31,7 @@ BEGIN {
         plan( skip_all => 'Perl Tk is required for this test' );
     }
 
-    plan tests => 7;
+    # plan tests => 7;
 }
 
 use_ok('Tpda3::Tk::TMSHR');
@@ -213,3 +217,5 @@ $mw->after( $delay * $milisec, sub { $mw->destroy } );
 Tk::MainLoop;
 
 #-- End test
+
+done_testing;

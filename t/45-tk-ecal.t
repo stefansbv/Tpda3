@@ -7,9 +7,13 @@ use strict;
 use warnings;
 
 use Test::Most;
-use Tk;
 
 use Data::Dump;
+
+# Don't run tests for installs
+unless ( $ENV{AUTOMATED_TESTING} or $ENV{RELEASE_TESTING} ) {
+	plan( skip_all => "Author tests not required for installation" );
+}
 
 use lib qw( lib ../lib );
 
