@@ -2,7 +2,7 @@ package Tpda3::Tk::Controller;
 
 # ABSTRACT: The Controller, specific for the Tk interface
 
-use 5.010;
+use feature 'say';
 use strict;
 use warnings;
 use utf8;

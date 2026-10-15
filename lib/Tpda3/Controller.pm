@@ -2,7 +2,7 @@ package Tpda3::Controller;
 
 # ABSTRACT: The Controller
 
-use 5.010;
+use feature 'say';
 use strict;
 use warnings;
 use utf8;

@@ -2,6 +2,7 @@ package Tpda3::Tk::View;
 
 # ABSTRACT: The View
 
+use feature 'say';
 use strict;
 use warnings;
 use Carp;
