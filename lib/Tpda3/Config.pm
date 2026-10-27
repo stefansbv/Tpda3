@@ -466,7 +466,7 @@ sub config_data_from {
         }
         else {
             my $msg = 'Configuration error!';
-            $msg .= $self->verbose ? ", file not found:\n$conf_file" : "" ;
+            $msg .= ", file not found: $conf_file";
             die "[E] $msg";
         }
     }
