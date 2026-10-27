@@ -12,6 +12,8 @@
 !*highlightThickness 				: 0
 !*padX								: 1m
 !----------------------------------------------------
+*Text*Font                          : Consolas 13
+!----------------------------------------------------
 !*Button*background            		: LightSteelBlue1
 !*Button*side	           			: left
 !*Button*activeBackground       	: gold
