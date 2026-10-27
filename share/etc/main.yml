@@ -3,8 +3,8 @@
 # docspath is deprecated, use docsoutpath instead
 ---
 runtime:
-  docsbasepath: C:/Users/stefan.suciu/Downloads
-  docsoutpath: C:/Users/stefan.suciu/Documents
+  docsbasepath: ~/downloads
+  docsoutpath: ~/
 resource:
   icons: etc/interfaces/icons
 externalapps:
