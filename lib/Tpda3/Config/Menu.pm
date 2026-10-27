@@ -102,13 +102,6 @@ has 'menu' => (
                         'key'       => undef,
                         'sep'       => 'none',
                     },
-                    '5' => {
-                        'name'      => 'mn_cfg',
-                        'label'     => __ 'Configurations (new)',
-                        'underline' => 0,
-                        'key'       => undef,
-                        'sep'       => 'none',
-                    },
                 },
             },
             'menu_help' => {

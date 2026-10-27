@@ -275,13 +275,6 @@ sub _set_event_handlers {
     $self->view->event_handler_for_menu(
         'mn_cf',
         sub {
-            $self->set_app_configs();
-        }
-    );
-
-    $self->view->event_handler_for_menu(
-        'mn_cfg',
-        sub {
             $self->screen_module_load('Configs','tools');
         }
     );
