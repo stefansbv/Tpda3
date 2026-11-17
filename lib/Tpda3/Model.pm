@@ -429,6 +429,34 @@ sub query_exec_proc {
     return \@records;
 }
 
+sub query_exec_func {
+    my ( $self, $opts ) = @_;
+
+    my $func  = $opts->{func};
+    my $cols  = $opts->{columns};
+
+    my $cols_list = join ",", @{$cols};
+    my $sql       = qq{ SELECT $cols_list FROM ${func}(); };
+    my $sth;
+    try {
+        $sth = $self->dbh->prepare($sql);
+    }
+    catch {
+        $self->db_exception( $_, "'query_exec_func' prepare failed" );
+    };
+    my @records;
+    try {
+        $sth->execute();
+        while ( my $record = $sth->fetchrow_hashref('NAME_lc') ) {
+            push( @records, $record );
+        }
+    }
+    catch {
+        $self->db_exception( $_, 'Batch query function failed' );
+    };
+    return \@records;
+}
+
 sub build_sql_where {
     my ( $self, $opts ) = @_;
 
